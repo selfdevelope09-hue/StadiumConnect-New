@@ -1,26 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-
-    <script type="module">
-    // Admin check
-    const isAdmin = localStorage.getItem('adminLoggedIn');
-    const loginTime = localStorage.getItem('adminLoginTime');
-    
-    if (!isAdmin || isAdmin !== 'true') {
+    <script>
+    if (localStorage.getItem('admin') !== 'true') {
         window.location.href = 'admin-login.html';
     }
-    
-    // Check if session expired (24 hours)
-    if (loginTime) {
-        const hours = (new Date() - new Date(loginTime)) / (1000 * 60 * 60);
-        if (hours > 24) {
-            localStorage.removeItem('adminLoggedIn');
-            localStorage.removeItem('adminLoginTime');
-            window.location.href = 'admin-login.html';
-        }
-    }
 </script>
+<head>
+
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Admin Panel - StadiumConnect</title>
