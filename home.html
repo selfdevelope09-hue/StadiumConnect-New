@@ -50,8 +50,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // Load cities from Firebase
-        async function loadCities() {
+        async function loadPopularCities() {
             const container = document.getElementById('cityList');
             container.innerHTML = '<div class="loading-cities">Loading cities...</div>';
             
@@ -64,17 +63,15 @@
                     cities = docSnap.data().list || [];
                 }
                 
-                // Default cities if none in Firebase
-                if (cities.length === 0) {
-                    cities = ['Nagpur', 'Mumbai', 'Pune', 'Delhi', 'Bangalore', 'Hyderabad', 'Chennai', 'Kolkata'];
-                }
+                // Filter only popular cities (where popular = true)
+                const popularCities = cities.filter(c => c.popular === true).map(c => c.name);
                 
-                if (cities.length === 0) {
-                    container.innerHTML = '<div class="loading-cities">No cities added yet. Add from admin panel.</div>';
+                if (popularCities.length === 0) {
+                    container.innerHTML = '<div class="loading-cities">No popular cities added. Add from admin panel.</div>';
                     return;
                 }
                 
-                container.innerHTML = cities.map(city => `
+                container.innerHTML = popularCities.map(city => `
                     <div class="city-chip" onclick="window.location.href='vendors.html?city=${city.toLowerCase()}'">
                         ${city}
                     </div>
@@ -86,12 +83,10 @@
             }
         }
 
-        // Category click handler
         window.goToCategory = (category) => {
             window.location.href = `vendors.html?category=${category}`;
         };
 
-        // Location detection
         window.detectLocation = () => {
             if (navigator.geolocation) {
                 document.getElementById('locationText').innerHTML = '📍 Detecting...';
@@ -104,20 +99,16 @@
                         alert('Please allow location access to see nearby vendors');
                     }
                 );
-            } else {
-                alert('Geolocation not supported');
             }
         };
 
-        // User name from Firebase
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 document.getElementById('userName').innerText = user.displayName || user.email.split('@')[0];
             }
         });
 
-        // Load cities on page load
-        loadCities();
+        loadPopularCities();
     </script>
 </head>
 <body>
@@ -152,7 +143,7 @@
 <div class="cities">
     <div class="section-title">Popular cities</div>
     <div class="city-list" id="cityList">
-        <div class="loading-cities">Loading cities...</div>
+        <div class="loading-cities">Loading...</div>
     </div>
 </div>
 
