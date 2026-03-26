@@ -3,103 +3,345 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StadiumConnect | Advance Admin</title>
+    <title>StadiumConnect | Master Admin Panel v3.0</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
-        body { background: #f8f9fa; padding: 20px; }
-        .card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-        h2 { color: #ff6b35; font-size: 24px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
-        
-        /* Advance Table Styling */
-        .table-container { overflow-x: auto; border-radius: 12px; border: 1px solid #eee; }
-        table { width: 100%; border-collapse: collapse; min-width: 1000px; }
-        th { background: #ff6b35; color: white; padding: 15px; text-align: left; font-size: 13px; text-transform: uppercase; }
-        td { padding: 15px; border-bottom: 1px solid #f1f1f1; font-size: 14px; color: #444; }
-        tr:hover { background: #fffcf9; }
+        :root { --primary: #ff6b35; --secondary: #2ed573; --danger: #ff4757; --dark: #2f3542; --light: #f1f2f6; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        body { background: #f4f7f6; color: #2f3542; line-height: 1.6; }
 
-        /* Status & Badges */
-        .badge { padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+        /* Sidebar & Header */
+        .header { background: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
+        .logo-area h2 { color: var(--primary); display: flex; align-items: center; gap: 10px; }
+        
+        /* Layout Containers */
+        .main-container { max-width: 1400px; margin: 25px auto; padding: 0 20px; }
+        .card { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 25px; border: 1px solid rgba(0,0,0,0.03); }
+
+        /* Stats Grid */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; padding: 20px; border-radius: 15px; text-align: center; border-bottom: 4px solid var(--primary); transition: 0.3s; }
+        .stat-card:hover { transform: translateY(-5px); }
+        .stat-number { font-size: 32px; font-weight: 800; color: var(--primary); display: block; }
+        .stat-label { font-size: 13px; color: #747d8c; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Navigation Tabs */
+        .tabs { display: flex; gap: 12px; margin-bottom: 30px; flex-wrap: wrap; background: #dfe4ea; padding: 8px; border-radius: 50px; width: fit-content; }
+        .tab { padding: 10px 25px; border-radius: 40px; border: none; background: transparent; cursor: pointer; font-weight: 600; color: #57606f; transition: 0.3s; }
+        .tab.active { background: var(--primary); color: white; box-shadow: 0 5px 15px rgba(255,107,53,0.3); }
+
+        /* Buttons */
+        .btn { padding: 10px 22px; border-radius: 30px; border: none; cursor: pointer; font-weight: 600; transition: 0.3s; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-success { background: var(--secondary); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        /* Table Design */
+        .table-wrapper { overflow-x: auto; margin-top: 15px; border-radius: 12px; }
+        table { width: 100%; border-collapse: collapse; background: white; min-width: 900px; }
+        th { background: #f8f9fa; padding: 18px 15px; text-align: left; font-size: 12px; color: #a4b0be; text-transform: uppercase; border-bottom: 2px solid #f1f2f6; }
+        td { padding: 15px; border-bottom: 1px solid #f1f2f6; font-size: 14px; vertical-align: middle; }
+        .vendor-avatar { width: 45px; height: 45px; border-radius: 10px; object-fit: cover; background: #eee; }
+
+        /* Status Badges */
+        .status { padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
         .status-pending { background: #fff3cd; color: #856404; }
         .status-confirmed { background: #d4edda; color: #155724; }
         .status-completed { background: #cce5ff; color: #004085; }
         .status-cancelled { background: #f8d7da; color: #721c24; }
 
-        .time-text { color: #ff6b35; font-weight: 600; font-size: 12px; display: block; }
-        .venue-text { color: #666; font-size: 12px; font-style: italic; }
-        .payment-info { font-weight: bold; color: #28a745; }
+        /* Forms & Inputs */
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-size: 13px; font-weight: 600; color: #57606f; }
+        input, select, textarea { width: 100%; padding: 12px 15px; border: 1px solid #dcdde1; border-radius: 10px; outline: none; transition: 0.3s; font-size: 14px; }
+        input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(255,107,53,0.1); }
 
-        /* Tabs & UI */
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
-        .tab { background: white; padding: 10px 20px; border-radius: 30px; cursor: pointer; border: 1px solid #ddd; white-space: nowrap; transition: 0.3s; }
-        .tab.active { background: #ff6b35; color: white; border-color: #ff6b35; box-shadow: 0 4px 10px rgba(255,107,53,0.3); }
+        /* Modals */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
+        .modal-content { background: white; border-radius: 25px; width: 100%; max-width: 750px; max-height: 90vh; overflow-y: auto; padding: 35px; position: relative; animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .close-modal { position: absolute; top: 20px; right: 25px; font-size: 28px; cursor: pointer; color: #a4b0be; }
+
+        /* Image Previews */
+        .preview-container { display: flex; flex-wrap: wrap; gap: 10px; margin: 10px 0; }
+        .preview-box { width: 80px; height: 80px; border-radius: 10px; border: 2px dashed #ddd; overflow: hidden; position: relative; }
+        .preview-box img { width: 100%; height: 100%; object-fit: cover; }
         
-        button { background: #ff6b35; color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: 600; margin-bottom: 5px; }
-        .btn-action { background: #28a745; margin-right: 5px; }
-        .btn-cancel { background: #dc3545; }
+        /* Notifications */
+        .toast { position: fixed; top: 30px; right: 30px; padding: 15px 30px; border-radius: 10px; color: white; font-weight: 600; z-index: 3000; display: none; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .toast.success { background: var(--secondary); }
+        .toast.error { background: var(--danger); }
 
-        .message { padding: 15px; border-radius: 10px; margin-bottom: 20px; display: none; text-align: center; font-weight: bold; position: fixed; top: 20px; right: 20px; z-index: 2000; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        /* Helper Classes */
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .mb-20 { margin-bottom: 20px; }
+        .text-center { text-align: center; }
     </style>
 </head>
 <body>
 
-<div id="message" class="message"></div>
+<div id="toast" class="toast"></div>
 
-<div class="card">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h2>⚡ StadiumConnect <span style="font-size: 14px; background: #eee; color: #333; padding: 4px 10px; border-radius: 10px;">PRO ADMIN</span></h2>
-        <button onclick="logout()" style="background:#444;">Logout</button>
+<div class="header">
+    <div class="logo-area">
+        <h2>⚡ StadiumConnect <small style="font-size: 12px; background: #eee; padding: 3px 8px; border-radius: 5px; color: #666;">v3.0 Master</small></h2>
+    </div>
+    <div class="user-area">
+        <button class="btn btn-danger" onclick="logout()">Logout</button>
     </div>
 </div>
 
-<div class="tabs">
-    <div class="tab active" onclick="switchTab('bookings')">📋 Bookings & Timeline</div>
-    <div class="tab" onclick="switchTab('vendors')">📦 Vendors</div>
-    <div class="tab" onclick="switchTab('categories')">🏷️ Categories</div>
-    <div class="tab" onclick="switchTab('cities')">📍 Cities</div>
+<div class="main-container">
+    
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span class="stat-number" id="stat-vendors">0</span>
+            <span class="stat-label">Total Vendors</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-number" id="stat-bookings">0</span>
+            <span class="stat-label">Total Bookings</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-number" id="stat-revenue">₹0</span>
+            <span class="stat-label">Completed Revenue</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-number" id="stat-agents">0</span>
+            <span class="stat-label">Active Agents</span>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('vendors')">📦 Vendors</button>
+        <button class="tab" onclick="switchTab('bookings')">📋 Bookings</button>
+        <button class="tab" onclick="switchTab('categories')">🏷️ Categories</button>
+        <button class="tab" onclick="switchTab('cities')">📍 Cities</button>
+        <button class="tab" onclick="switchTab('agents')">🤝 Agents</button>
+    </div>
+
+    <div id="vendorsTab" class="tab-content active">
+        <div class="card">
+            <div class="flex-between mb-20">
+                <h3>Vendor Directory</h3>
+                <button class="btn btn-primary" onclick="openVendorModal()">+ Add New Vendor</button>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Avatar</th>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th>City</th>
+                            <th>Agent Phone</th>
+                            <th>Rating</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="vendorTableBody">
+                        <tr><td colspan="7" class="text-center">Loading vendors...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="bookingsTab" class="tab-content">
+        <div class="card">
+            <div class="flex-between mb-20">
+                <h3>Live Bookings & Event Slots</h3>
+                <div style="display: flex; gap: 10px;">
+                    <select id="filterStatus" onchange="loadBookings()" style="width: 150px;">
+                        <option value="all">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="confirmed">Confirmed</option>
+                    </select>
+                </div>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Event Date & Time</th>
+                            <th>Customer</th>
+                            <th>Vendor</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bookingsTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="categoriesTab" class="tab-content">
+        <div class="card">
+            <div class="flex-between mb-20">
+                <h3>Manage Categories</h3>
+                <button class="btn btn-primary" onclick="openModal('categoryModal')">+ Add Category</button>
+            </div>
+            <div id="categoryGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;"></div>
+        </div>
+    </div>
+
+    <div id="citiesTab" class="tab-content">
+        <div class="card">
+            <div class="flex-between mb-20">
+                <h3>Serviceable Cities</h3>
+                <button class="btn btn-primary" onclick="openModal('cityModal')">+ Add City</button>
+            </div>
+            <div id="cityGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;"></div>
+        </div>
+    </div>
+
+    <div id="agentsTab" class="tab-content">
+        <div class="card">
+            <div class="flex-between mb-20">
+                <h3>Agents Network</h3>
+                <button class="btn btn-primary" onclick="openModal('agentModal')">+ Add Agent</button>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Agent ID</th>
+                            <th>Name</th>
+                            <th>Phone</th>
+                            <th>City</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="agentTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
 </div>
 
-<div id="bookingsTab" class="tab-content active">
-    <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <h3>Event Timeline & Bookings</h3>
-            <input type="text" id="bookingSearch" placeholder="Search Customer/Vendor..." onkeyup="filterBookings()" style="padding: 8px 15px; border-radius: 20px; border: 1px solid #ddd; outline: none;">
-        </div>
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Booking ID</th>
-                        <th>Event Date & Time</th>
-                        <th>Customer Details</th>
-                        <th>Vendor & Venue</th>
-                        <th>Payment Status</th>
-                        <th>Current Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="bookingsTableBody">
-                    <tr><td colspan="7" style="text-align:center;">Fetching advance records...</td></tr>
-                </tbody>
-            </table>
-        </div>
+<div id="vendorModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal('vendorModal')">&times;</span>
+        <h3 id="vendorModalTitle" class="mb-20">Add New Vendor</h3>
+        <form id="vendorForm" onsubmit="event.preventDefault()">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group">
+                    <label>Vendor Business Name *</label>
+                    <input type="text" id="vName" required placeholder="e.g. Shutter Stories">
+                </div>
+                <div class="form-group">
+                    <label>Agent Phone Number *</label>
+                    <input type="tel" id="vAgentPhone" required placeholder="For booking calls">
+                </div>
+                <div class="form-group">
+                    <label>Service Category *</label>
+                    <select id="vCategory" required><option value="">Select Category</option></select>
+                </div>
+                <div class="form-group">
+                    <label>City *</label>
+                    <select id="vCity" required><option value="">Select City</option></select>
+                </div>
+                <div class="form-group">
+                    <label>Base Price (Optional)</label>
+                    <input type="text" id="vPrice" placeholder="e.g. ₹15,000">
+                </div>
+                <div class="form-group">
+                    <label>Initial Rating</label>
+                    <input type="number" id="vRating" step="0.1" min="1" max="5" value="4.5">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea id="vDesc" rows="2" placeholder="Tell something about the vendor..."></textarea>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group">
+                    <label>Logo / Main Image</label>
+                    <input type="file" id="vLogoInput" accept="image/*" onchange="handleFileSelect(event, 'logoPreview')">
+                    <div class="preview-box" id="logoPreviewBox" style="margin-top: 10px;">
+                        <img id="logoPreview" src="https://via.placeholder.com/80" alt="Logo">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Portfolio / Work Photos (Multiple)</label>
+                    <input type="file" id="vWorkInput" accept="image/*" multiple onchange="handleFileSelect(event, 'workPreview')">
+                    <div id="workPreview" class="preview-container"></div>
+                </div>
+            </div>
+
+            <div id="vendorActionStatus" style="display:none; color: var(--primary); font-weight: bold; margin-bottom: 15px;">⏳ Processing... Please don't close.</div>
+            <button type="button" id="submitVendorBtn" onclick="saveVendor()" class="btn btn-success btn-save" style="width: 100%; justify-content: center; font-size: 16px;">SAVE VENDOR DATA</button>
+        </form>
     </div>
 </div>
 
-<div id="vendorsTab" class="tab-content">
-    <div class="card">
-        <button onclick="openAddVendor()">+ Add New Vendor</button>
-        <div class="table-container">
-            <table>
-                <thead><tr><th>Photo</th><th>Name</th><th>Category</th><th>City</th><th>Actions</th></tr></thead>
-                <tbody id="vendorTable"></tbody>
-            </table>
+<div id="categoryModal" class="modal">
+    <div class="modal-content" style="max-width: 400px;">
+        <span class="close-modal" onclick="closeModal('categoryModal')">&times;</span>
+        <h3>Add Category</h3>
+        <div class="form-group">
+            <label>Name</label>
+            <input type="text" id="catName" placeholder="e.g. Photographer">
         </div>
+        <div class="form-group">
+            <label>Icon Emoji</label>
+            <input type="text" id="catIcon" placeholder="e.g. 📸">
+        </div>
+        <button class="btn btn-success" onclick="saveCategory()" style="width: 100%;">Save Category</button>
+    </div>
+</div>
+
+<div id="cityModal" class="modal">
+    <div class="modal-content" style="max-width: 400px;">
+        <span class="close-modal" onclick="closeModal('cityModal')">&times;</span>
+        <h3 id="cityModalTitle">Add Service City</h3>
+        <div class="form-group">
+            <label>City Name</label>
+            <input type="text" id="cityName" placeholder="e.g. Nagpur">
+        </div>
+        <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+            <input type="checkbox" id="cityPopular" style="width: 20px; height: 20px;">
+            <label style="margin: 0;">Show in Popular Section</label>
+        </div>
+        <button class="btn btn-success" onclick="saveCity()" style="width: 100%;">Save City</button>
+    </div>
+</div>
+
+<div id="agentModal" class="modal">
+    <div class="modal-content" style="max-width: 450px;">
+        <span class="close-modal" onclick="closeModal('agentModal')">&times;</span>
+        <h3>Register Agent</h3>
+        <div class="form-group">
+            <label>Agent Name</label>
+            <input type="text" id="agName" placeholder="Full Name">
+        </div>
+        <div class="form-group">
+            <label>Phone Number</label>
+            <input type="tel" id="agPhone" placeholder="10-digit mobile">
+        </div>
+        <div class="form-group">
+            <label>Assign City</label>
+            <select id="agCity"><option value="">Choose City</option></select>
+        </div>
+        <button class="btn btn-success" onclick="saveAgent()" style="width: 100%;">Create Agent Account</button>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, setDoc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+    // --- CONFIGURATION ---
+    const IMGBB_API_KEY = "459b0b4e8a9c6fcceaffd15320a6fdbd"; 
 
     const firebaseConfig = {
         apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
@@ -109,116 +351,447 @@
         messagingSenderId: "458108198578",
         appId: "1:458108198578:web:83d83646f0e24e718b73ab"
     };
+
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    let bookings = [], vendors = [];
+    // Global State
+    let vendors = [], categories = [], cities = [], bookings = [], agents = [];
+    let editingVendorId = null, editingCityIndex = null;
 
-    // --- LIVE BOOKINGS SYNC (ADVANCE) ---
-    onSnapshot(collection(db, "bookings"), (snap) => {
-        bookings = snap.docs.map(d => ({id: d.id, ...d.data()}));
-        renderBookings();
+    // ==========================================
+    // 1. REAL-TIME DATA SYNC (The Heart)
+    // ==========================================
+
+    onSnapshot(collection(db, "categories"), (snap) => {
+        categories = snap.docs.map(d => ({id: d.id, ...d.data()})).filter(c => !c.deleted);
+        renderCategories();
+        updateDropdowns();
+    });
+
+    onSnapshot(doc(db, 'settings', 'cities'), (d) => {
+        cities = d.exists() ? d.data().list : [];
+        renderCities();
+        updateDropdowns();
     });
 
     onSnapshot(collection(db, "vendors"), (snap) => {
         vendors = snap.docs.map(d => ({id: d.id, ...d.data()}));
         renderVendors();
+        updateStats();
     });
+
+    onSnapshot(collection(db, "bookings"), (snap) => {
+        bookings = snap.docs.map(d => ({id: d.id, ...d.data()}));
+        renderBookings();
+        updateStats();
+    });
+
+    onSnapshot(collection(db, "agents"), (snap) => {
+        agents = snap.docs.map(d => ({id: d.id, ...d.data()}));
+        renderAgents();
+        updateStats();
+    });
+
+    // ==========================================
+    // 2. IMAGE UPLOAD LOGIC (ImgBB)
+    // ==========================================
+
+    async function uploadSingleImage(file) {
+        if (!file) return null;
+        const formData = new FormData();
+        formData.append('image', file);
+        try {
+            const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+            return data.success ? data.data.url : null;
+        } catch (e) {
+            console.error("ImgBB Error:", e);
+            return null;
+        }
+    }
+
+    async function uploadMultipleImages(files) {
+        if (!files.length) return [];
+        let urls = [];
+        for (let file of files) {
+            const url = await uploadSingleImage(file);
+            if (url) urls.push(url);
+        }
+        return urls;
+    }
+
+    // ==========================================
+    // 3. VENDOR OPERATIONS
+    // ==========================================
+
+    window.saveVendor = async () => {
+        const name = document.getElementById('vName').value;
+        const cat = document.getElementById('vCategory').value;
+        const city = document.getElementById('vCity').value;
+        const agentPhone = document.getElementById('vAgentPhone').value;
+        const submitBtn = document.getElementById('submitVendorBtn');
+        const statusText = document.getElementById('vendorActionStatus');
+
+        if(!name || !cat || !city || !agentPhone) {
+            showToast("Required fields missing!", "error");
+            return;
+        }
+
+        submitBtn.disabled = true;
+        statusText.style.display = 'block';
+
+        try {
+            // Logo Upload
+            let logoUrl = editingVendorId ? vendors.find(v => v.id === editingVendorId).imageUrl : 'https://via.placeholder.com/80';
+            const logoFile = document.getElementById('vLogoInput').files[0];
+            if (logoFile) logoUrl = await uploadSingleImage(logoFile);
+
+            // Portfolio Upload
+            let portfolioUrls = editingVendorId ? (vendors.find(v => v.id === editingVendorId).photos || []) : [];
+            const portfolioFiles = document.getElementById('vWorkInput').files;
+            if (portfolioFiles.length > 0) {
+                const newPhotos = await uploadMultipleImages(portfolioFiles);
+                portfolioUrls = [...portfolioUrls, ...newPhotos];
+            }
+
+            const vendorData = {
+                name,
+                category: cat,
+                city,
+                agentPhone,
+                imageUrl: logoUrl,
+                photos: portfolioUrls,
+                priceRange: document.getElementById('vPrice').value || '',
+                rating: document.getElementById('vRating').value || '4.5',
+                description: document.getElementById('vDesc').value || '',
+                updatedAt: new Date().toISOString()
+            };
+
+            if (editingVendorId) {
+                await updateDoc(doc(db, "vendors", editingVendorId), vendorData);
+                showToast("Vendor details updated!", "success");
+            } else {
+                vendorData.createdAt = new Date().toISOString();
+                await addDoc(collection(db, "vendors"), vendorData);
+                showToast("New vendor added successfully!", "success");
+            }
+
+            closeModal('vendorModal');
+        } catch (e) {
+            showToast("Error: " + e.message, "error");
+        } finally {
+            submitBtn.disabled = false;
+            statusText.style.display = 'none';
+        }
+    };
+
+    window.editVendor = (id) => {
+        const v = vendors.find(x => x.id === id);
+        if(!v) return;
+        editingVendorId = id;
+        document.getElementById('vendorModalTitle').innerText = "Edit " + v.name;
+        document.getElementById('vName').value = v.name || '';
+        document.getElementById('vCategory').value = v.category || '';
+        document.getElementById('vCity').value = v.city || '';
+        document.getElementById('vAgentPhone').value = v.agentPhone || '';
+        document.getElementById('vPrice').value = v.priceRange || '';
+        document.getElementById('vRating').value = v.rating || '4.5';
+        document.getElementById('vDesc').value = v.description || '';
+        document.getElementById('logoPreview').src = v.imageUrl || 'https://via.placeholder.com/80';
+        
+        // Render existing work photos
+        const container = document.getElementById('workPreview');
+        container.innerHTML = (v.photos || []).map((p, i) => `
+            <div class="preview-box">
+                <img src="${p}">
+                <button onclick="removeWorkPhoto('${v.id}', ${i})" style="position:absolute; top:0; right:0; background:red; color:white; border:none; border-radius:50%; width:18px; height:18px; cursor:pointer; font-size:10px;">×</button>
+            </div>
+        `).join('');
+
+        openModal('vendorModal');
+    };
+
+    window.deleteVendor = async (id) => {
+        if(confirm("Are you sure you want to remove this vendor? This cannot be undone.")) {
+            await deleteDoc(doc(db, "vendors", id));
+            showToast("Vendor deleted", "success");
+        }
+    };
+
+    window.removeWorkPhoto = async (vId, index) => {
+        event.stopPropagation();
+        const v = vendors.find(x => x.id === vId);
+        if(!v) return;
+        let photos = [...v.photos];
+        photos.splice(index, 1);
+        await updateDoc(doc(db, 'vendors', vId), { photos: photos });
+        editVendor(vId); // Refresh UI
+    };
+
+    // ==========================================
+    // 4. CATEGORY & CITY LOGIC
+    // ==========================================
+
+    window.saveCategory = async () => {
+        const name = document.getElementById('catName').value;
+        const icon = document.getElementById('catIcon').value || '🏷️';
+        if(!name) return;
+        const id = name.toLowerCase().replace(/\s+/g, '');
+        try {
+            await setDoc(doc(db, "categories", id), { name, icon });
+            closeModal('categoryModal');
+            showToast("Category Added!", "success");
+        } catch (e) { showToast(e.message, "error"); }
+    };
+
+    window.saveCity = async () => {
+        const name = document.getElementById('cityName').value;
+        const popular = document.getElementById('cityPopular').checked;
+        if(!name) return;
+
+        let newList = [...cities];
+        if(editingCityIndex !== null) {
+            newList[editingCityIndex] = { name, popular };
+        } else {
+            if(cities.find(c => c.name.toLowerCase() === name.toLowerCase())) {
+                showToast("City already exists", "error");
+                return;
+            }
+            newList.push({ name, popular });
+        }
+
+        try {
+            await setDoc(doc(db, 'settings', 'cities'), { list: newList });
+            closeModal('cityModal');
+            showToast("Cities updated!", "success");
+            editingCityIndex = null;
+        } catch (e) { showToast(e.message, "error"); }
+    };
+
+    window.deleteCategory = async (id) => {
+        if(confirm("Hide this category?")) {
+            await updateDoc(doc(db, "categories", id), { deleted: true });
+        }
+    };
+
+    window.deleteCity = async (index) => {
+        if(confirm("Remove this city?")) {
+            let newList = [...cities];
+            newList.splice(index, 1);
+            await setDoc(doc(db, 'settings', 'cities'), { list: newList });
+        }
+    };
+
+    // ==========================================
+    // 5. AGENT OPERATIONS
+    // ==========================================
+
+    window.saveAgent = async () => {
+        const name = document.getElementById('agName').value;
+        const phone = document.getElementById('agPhone').value;
+        const city = document.getElementById('agCity').value;
+        if(!name || !phone || !city) return showToast("Name, Phone, City are required!", "error");
+
+        const id = "AG" + Math.floor(1000 + Math.random() * 9000);
+        try {
+            await setDoc(doc(db, "agents", id), { id, name, phone, city, createdAt: new Date().toISOString() });
+            closeModal('agentModal');
+            showToast("Agent Registered!", "success");
+        } catch (e) { showToast(e.message, "error"); }
+    };
+
+    window.deleteAgent = async (id) => {
+        if(confirm("Remove Agent?")) await deleteDoc(doc(db, "agents", id));
+    };
+
+    // ==========================================
+    // 6. BOOKING MANAGEMENT
+    // ==========================================
+
+    window.loadBookings = () => renderBookings(); // Simple re-render with filters
+
+    window.updateBookingStatus = async (id, status) => {
+        try {
+            await updateDoc(doc(db, "bookings", id), { 
+                status, 
+                updatedAt: new Date().toISOString() 
+            });
+            showToast(`Booking ${status}!`, "success");
+        } catch (e) { showToast(e.message, "error"); }
+    };
+
+    // ==========================================
+    // 7. RENDERERS (UI Update)
+    // ==========================================
+
+    function renderVendors() {
+        const tbody = document.getElementById('vendorTableBody');
+        if(!vendors.length) { tbody.innerHTML = '<tr><td colspan="7" class="text-center">No vendors available.</td></tr>'; return; }
+        
+        tbody.innerHTML = vendors.map(v => `
+            <tr>
+                <td><img src="${v.imageUrl}" class="vendor-avatar"></td>
+                <td><strong>${v.name}</strong></td>
+                <td><span style="background:#f0f2f5; padding:4px 10px; border-radius:5px; font-size:12px;">${v.category}</span></td>
+                <td>${v.city}</td>
+                <td>📞 ${v.agentPhone}</td>
+                <td>⭐ ${v.rating || '4.5'}</td>
+                <td>
+                    <button class="btn btn-outline btn-edit" onclick="editVendor('${v.id}')" style="padding: 5px 12px;">Edit</button>
+                    <button class="btn btn-danger btn-delete" onclick="deleteVendor('${v.id}')" style="padding: 5px 12px;">Del</button>
+                </td>
+            </tr>
+        `).join('');
+    }
 
     function renderBookings() {
         const tbody = document.getElementById('bookingsTableBody');
-        if(!bookings.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No bookings found.</td></tr>'; return; }
+        const filter = document.getElementById('filterStatus').value;
+        
+        let list = [...bookings].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+        if(filter !== 'all') list = list.filter(b => b.status === filter);
 
-        // Sort: Newest First
-        const sortedBookings = [...bookings].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+        if(!list.length) { tbody.innerHTML = '<tr><td colspan="7" class="text-center">No bookings found.</td></tr>'; return; }
 
-        tbody.innerHTML = sortedBookings.map(b => {
-            const eventDate = b.eventDate || 'N/A';
-            const eventTime = b.eventTime || 'Slot Not Fixed';
-            const totalAmt = b.amount || 0;
-            const paidAmt = b.paidAmount || 0;
-            const balance = totalAmt - paidAmt;
-
-            return `
-                <tr>
-                    <td><small>#${b.id.slice(-6).toUpperCase()}</small></td>
-                    <td>
-                        <strong>${eventDate}</strong>
-                        <span class="time-text">⏰ ${eventTime}</span>
-                    </td>
-                    <td>
-                        <strong>${b.userName || 'Guest'}</strong><br>
-                        <small>📞 ${b.userPhone || '-'}</small>
-                    </td>
-                    <td>
-                        <strong>${b.vendorName || 'N/A'}</strong><br>
-                        <span class="venue-text">📍 ${b.venueAddress || b.vendorCity || 'Nagpur'}</span>
-                    </td>
-                    <td>
-                        <span class="payment-info">Paid: ₹${paidAmt}</span><br>
-                        <small style="color:red;">Pending: ₹${balance}</small>
-                    </td>
-                    <td>
-                        <span class="badge status-${b.status || 'pending'}">${b.status || 'Pending'}</span>
-                    </td>
-                    <td>
-                        ${b.status !== 'confirmed' ? `<button class="btn-action" onclick="updateStatus('${b.id}', 'confirmed')">Confirm</button>` : ''}
-                        ${b.status === 'confirmed' ? `<button style="background:#17a2b8;" onclick="updateStatus('${b.id}', 'completed')">Complete</button>` : ''}
-                        <button class="btn-cancel" onclick="updateStatus('${b.id}', 'cancelled')">Cancel</button>
-                    </td>
-                </tr>
-            `;
-        }).join('');
+        tbody.innerHTML = list.map(b => `
+            <tr>
+                <td><small>#${b.id.slice(-6).toUpperCase()}</small></td>
+                <td>
+                    <strong>${b.eventDate || '-'}</strong><br>
+                    <small style="color:var(--primary)">⏰ ${b.eventTime || 'Slot N/A'}</small>
+                </td>
+                <td><strong>${b.userName || 'Guest'}</strong><br><small>${b.userPhone || '-'}</small></td>
+                <td><strong>${b.vendorName}</strong><br><small>${b.vendorCity}</small></td>
+                <td><strong style="color:var(--secondary)">₹${b.amount || 0}</strong></td>
+                <td><span class="status status-${b.status}">${b.status}</span></td>
+                <td>
+                    ${b.status === 'pending' ? `<button class="btn btn-success" onclick="updateBookingStatus('${b.id}', 'confirmed')" style="font-size:10px;">Confirm</button>` : ''}
+                    ${b.status === 'confirmed' ? `<button class="btn btn-primary" onclick="updateBookingStatus('${b.id}', 'completed')" style="font-size:10px;">Complete</button>` : ''}
+                </td>
+            </tr>
+        `).join('');
     }
 
-    window.updateStatus = async (id, newStatus) => {
-        try {
-            await updateDoc(doc(db, "bookings", id), { 
-                status: newStatus,
-                updatedAt: new Date().toISOString() 
-            });
-            showMsg(`Booking marked as ${newStatus}!`, "success");
-        } catch (e) { showMsg(e.message, "error"); }
-    };
+    function renderCategories() {
+        const grid = document.getElementById('categoryGrid');
+        grid.innerHTML = categories.map(c => `
+            <div class="stat-card" style="display:flex; justify-content:space-between; align-items:center; padding:15px;">
+                <span>${c.icon} ${c.name}</span>
+                <button onclick="deleteCategory('${c.id}')" style="background:none; border:none; color:red; cursor:pointer;">&times;</button>
+            </div>
+        `).join('');
+    }
 
-    // --- OTHER UI UTILS ---
-    window.switchTab = (t) => {
+    function renderCities() {
+        const grid = document.getElementById('cityGrid');
+        grid.innerHTML = cities.map((c, i) => `
+            <div class="stat-card" style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom-color:${c.popular?'#ffc107':'#ddd'}">
+                <span>📍 ${c.name} ${c.popular ? '⭐' : ''}</span>
+                <div>
+                    <button onclick="editCityUI(${i})" style="background:none; border:none; color:blue; cursor:pointer; margin-right:8px;">✎</button>
+                    <button onclick="deleteCity(${i})" style="background:none; border:none; color:red; cursor:pointer;">&times;</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function renderAgents() {
+        const tbody = document.getElementById('agentTableBody');
+        tbody.innerHTML = agents.map(a => `
+            <tr>
+                <td><strong>${a.id}</strong></td>
+                <td>${a.name}</td>
+                <td>${a.phone}</td>
+                <td>${a.city}</td>
+                <td><button onclick="deleteAgent('${a.id}')" class="btn btn-danger" style="padding:4px 10px;">Del</button></td>
+            </tr>
+        `).join('');
+    }
+
+    function updateStats() {
+        document.getElementById('stat-vendors').innerText = vendors.length;
+        document.getElementById('stat-bookings').innerText = bookings.length;
+        document.getElementById('stat-agents').innerText = agents.length;
+        const rev = bookings.filter(b => b.status === 'completed').reduce((a, b) => a + (parseInt(String(b.amount).replace(/[₹,]/g,'')) || 0), 0);
+        document.getElementById('stat-revenue').innerText = "₹" + rev.toLocaleString();
+    }
+
+    // ==========================================
+    // 8. UI HELPERS (Modals, Dropdowns, Tabs)
+    // ==========================================
+
+    window.switchTab = (tab) => {
         document.querySelectorAll('.tab, .tab-content').forEach(el => el.classList.remove('active'));
         event.target.classList.add('active');
-        document.getElementById(t + 'Tab').classList.add('active');
+        document.getElementById(tab + 'Tab').classList.add('active');
     };
 
-    window.showMsg = (m, type) => {
-        const el = document.getElementById('message');
-        el.innerText = m;
-        el.className = `message ${type === 'success' ? 'status-confirmed' : 'status-cancelled'}`;
-        el.style.display = 'block';
-        setTimeout(() => el.style.display = 'none', 3000);
+    window.openModal = (id) => document.getElementById(id).style.display = 'flex';
+    window.closeModal = (id) => document.getElementById(id).style.display = 'none';
+
+    window.openVendorModal = () => {
+        editingVendorId = null;
+        document.getElementById('vendorForm').reset();
+        document.getElementById('logoPreview').src = 'https://via.placeholder.com/80';
+        document.getElementById('workPreview').innerHTML = '';
+        document.getElementById('vendorModalTitle').innerText = "Add New Vendor";
+        openModal('vendorModal');
     };
 
-    window.filterBookings = () => {
-        const val = document.getElementById('bookingSearch').value.toLowerCase();
-        const rows = document.querySelectorAll('#bookingsTableBody tr');
-        rows.forEach(row => {
-            row.style.display = row.innerText.toLowerCase().includes(val) ? '' : 'none';
-        });
+    window.editCityUI = (i) => {
+        editingCityIndex = i;
+        document.getElementById('cityName').value = cities[i].name;
+        document.getElementById('cityPopular').checked = cities[i].popular;
+        document.getElementById('cityModalTitle').innerText = "Edit City";
+        openModal('cityModal');
+    };
+
+    function updateDropdowns() {
+        const vCat = document.getElementById('vCategory');
+        const vCity = document.getElementById('vCity');
+        const agCity = document.getElementById('agCity');
+        
+        if(vCat) vCat.innerHTML = '<option value="">Select Category</option>' + categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        if(vCity) vCity.innerHTML = '<option value="">Select City</option>' + cities.map(c => `<option value="${c.name.toLowerCase()}">${c.name}</option>`).join('');
+        if(agCity) agCity.innerHTML = '<option value="">Assign City</option>' + cities.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+    }
+
+    window.handleFileSelect = (event, previewId) => {
+        const files = event.target.files;
+        const container = document.getElementById(previewId);
+        if(previewId === 'logoPreview') {
+            const reader = new FileReader();
+            reader.onload = (e) => container.src = e.target.result;
+            reader.readAsDataURL(files[0]);
+        } else {
+            container.innerHTML = '';
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const div = document.createElement('div');
+                    div.className = 'preview-box';
+                    div.innerHTML = `<img src="${e.target.result}">`;
+                    container.appendChild(div);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+    };
+
+    window.showToast = (msg, type) => {
+        const t = document.getElementById('toast');
+        t.innerText = msg;
+        t.className = `toast ${type}`;
+        t.style.display = 'block';
+        setTimeout(() => t.style.display = 'none', 3000);
     };
 
     window.logout = () => { localStorage.clear(); window.location.href='admin-login.html'; };
 
-    // Initial check
-    if(localStorage.getItem('admin') !== 'true') window.location.href='admin-login.html';
-
-    // Simple Vendor render (Add your full vendor logic here)
-    function renderVendors() {
-        document.getElementById('vendorTable').innerHTML = vendors.map(v => `
-            <tr>
-                <td><img src="${v.imageUrl}" style="width:40px;height:40px;border-radius:8px;object-fit:cover;"></td>
-                <td>${v.name}</td><td>${v.category}</td><td>${v.city}</td>
-                <td><button onclick="deleteVendor('${v.id}')" style="background:red;">Del</button></td>
-            </tr>
-        `).join('');
-    }
 </script>
 </body>
 </html>
