@@ -143,10 +143,10 @@
     <div class="agents-card">
         <div class="section-title"><i class="fas fa-trophy"></i> Top Agents by Revenue</div>
         <div style="overflow-x: auto;">
-            <table>
+            能
                 <thead>  <th>Rank</th><th>Agent ID</th><th>Agent Name</th><th>City</th><th>Target</th><th>Achieved</th><th>Progress</th><th>Revenue</th><th>Commission</th><th>Action</th> </thead>
-                <tbody id="topAgentsTable"><tr><td colspan="10" class="loading">Loading...</td></tr></tbody>
-            </table>
+                <tbody id="topAgentsTable">  <td colspan="10">Loading...   </tbody>
+             </>
         </div>
     </div>
 
@@ -154,10 +154,10 @@
     <div class="agents-card">
         <div class="section-title"><i class="fas fa-users"></i> All Agents</div>
         <div style="overflow-x: auto;">
-            <table>
+            能
                 <thead>  <th>Agent ID</th><th>Name</th><th>City</th><th>Phone</th><th>Target</th><th>Bookings</th><th>Revenue</th><th>Earnings</th><th>Action</th> </thead>
-                <tbody id="allAgentsTable"><tr><td colspan="9" class="loading">Loading...</td></tr></tbody>
-            </table>
+                <tbody id="allAgentsTable">  <td colspan="9">Loading...   </tbody>
+             </>
         </div>
     </div>
 </div>
@@ -197,19 +197,25 @@
 
     // Calculate commission (2.5%)
     function calculateCommission(amount) {
-        const price = parseInt(amount?.replace(/[^0-9]/g, '')) || 0;
+        if (!amount) return 0;
+        // Remove ₹ and commas, get numeric value
+        const price = parseInt(String(amount).replace(/[₹,]/g, '')) || 0;
         return Math.floor(price * 0.025);
     }
 
     async function loadData() {
         try {
+            console.log("Loading agents data...");
+            
             // Load agents
             const agentsSnap = await getDocs(collection(db, "agents"));
             allAgents = agentsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+            console.log("Agents loaded:", allAgents.length);
             
-            // Load bookings (all for stats)
+            // Load bookings
             const bookingsSnap = await getDocs(collection(db, "bookings"));
             allBookings = bookingsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+            console.log("Bookings loaded:", allBookings.length);
             
             // Collect cities for autocomplete
             allAgents.forEach(a => { if(a.city) allCities.add(a.city.toLowerCase()); });
@@ -219,15 +225,17 @@
             renderTopAgents();
             renderAllAgents();
             setupAutocomplete();
+            
         } catch (error) {
             console.error("Error loading data:", error);
-            document.getElementById('topAgentsTable').innerHTML = '<tr><td colspan="10">Error loading data</td></tr>';
+            document.getElementById('topAgentsTable').innerHTML = `<tr><td colspan="10">Error: ${error.message}</td></tr>`;
+            document.getElementById('allAgentsTable').innerHTML = `<tr><td colspan="9">Error: ${error.message}</td></tr>`;
         }
     }
 
     function getAgentStats(agentId) {
         const agentBookings = allBookings.filter(b => b.agentId === agentId && (b.status === 'confirmed' || b.status === 'completed'));
-        const totalAmount = agentBookings.reduce((sum, b) => sum + (parseInt(b.amount?.replace(/[^0-9]/g, '')) || 0), 0);
+        const totalAmount = agentBookings.reduce((sum, b) => sum + (parseInt(String(b.amount).replace(/[₹,]/g, '')) || 0), 0);
         const commission = calculateCommission(totalAmount);
         return { bookings: agentBookings.length, totalAmount, commission };
     }
@@ -235,7 +243,7 @@
     function updateStats() {
         const totalRevenue = allBookings
             .filter(b => b.status === 'confirmed' || b.status === 'completed')
-            .reduce((s, b) => s + (parseInt(b.amount?.replace(/[^0-9]/g, '')) || 0), 0);
+            .reduce((s, b) => s + (parseInt(String(b.amount).replace(/[₹,]/g, '')) || 0), 0);
         const totalCommission = calculateCommission(totalRevenue);
         
         document.getElementById('totalAgents').innerText = allAgents.length;
@@ -250,7 +258,7 @@
         
         const tbody = document.getElementById('topAgentsTable');
         if (topAgents.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="10" class="loading">No agents found</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;">No agents found</td></tr>';
             return;
         }
         
@@ -278,7 +286,7 @@
     function renderAllAgents() {
         const tbody = document.getElementById('allAgentsTable');
         if (allAgents.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="9" class="loading">No agents found</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">No agents found</td></tr>';
             return;
         }
         
@@ -333,7 +341,7 @@
             <h3>📋 Recent Bookings</h3>
             <div style="overflow-x:auto;"><table style="width:100%"><thead><tr><th>ID</th><th>Customer</th><th>Vendor</th><th>Date</th><th>Amount</th><th>Commission</th><th>Status</th></tr></thead><tbody>
                 ${agentBookings.slice(0,10).map(b => {
-                    const amt = parseInt(b.amount?.replace(/[^0-9]/g, '')) || 0;
+                    const amt = parseInt(String(b.amount).replace(/[₹,]/g, '')) || 0;
                     const comm = Math.floor(amt * 0.025);
                     return `<tr><td>${b.id?.slice(-6)}</td><td>${b.userName || '-'}</td><td>${b.vendorName || '-'}</td><td>${b.eventDate || '-'}</td><td>₹${amt.toLocaleString()}</td><td>₹${comm}</td><td><span style="background:#d4edda; padding:4px 12px; border-radius:20px;">${b.status}</span></td></tr>`;
                 }).join('')}
@@ -388,7 +396,7 @@
     window.closeModal = () => document.getElementById('agentModal').style.display = 'none';
     window.logout = () => { localStorage.removeItem('developer'); window.location.href = 'developer-login.html'; };
     
-    // Load data
+    // Load data on page load
     loadData();
 </script>
 </body>
