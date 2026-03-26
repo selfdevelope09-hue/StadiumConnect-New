@@ -6,6 +6,7 @@
     <title>Developer Panel - StadiumConnect</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background: #f0f2f5; }
@@ -81,6 +82,7 @@
         .rank-2 { background: #c0c0c0; color: #000; }
         .rank-3 { background: #cd7f32; color: #fff; }
         .btn-set-target { background: #ffa502; color: white; border: none; padding: 4px 12px; border-radius: 20px; cursor: pointer; font-size: 12px; }
+        .earnings-cell { color: #28a745; font-weight: bold; }
         
         .modal {
             display: none;
@@ -132,21 +134,16 @@
     </div>
 
     <!-- Stats Overview -->
-    <div class="stats-grid" id="statsGrid">
-        <div class="stat-card"><div class="stat-value" id="totalAgents">0</div><div>Total Agents</div></div>
-        <div class="stat-card"><div class="stat-value" id="totalBookings">0</div><div>Total Bookings</div></div>
-        <div class="stat-card"><div class="stat-value" id="totalRevenue">₹0</div><div>Total Revenue</div></div>
-        <div class="stat-card"><div class="stat-value" id="totalCommission">₹0</div><div>Total Commission</div></div>
-    </div>
+    <div class="stats-grid" id="statsGrid"></div>
 
     <!-- Top Agents by Revenue -->
     <div class="agents-card">
         <div class="section-title"><i class="fas fa-trophy"></i> Top Agents by Revenue</div>
         <div style="overflow-x: auto;">
-            能
-                <thead>  <th>Rank</th><th>Agent ID</th><th>Agent Name</th><th>City</th><th>Target</th><th>Achieved</th><th>Progress</th><th>Revenue</th><th>Commission</th><th>Action</th> </thead>
-                <tbody id="topAgentsTable">  <td colspan="10">Loading...   </tbody>
-             </>
+             <table>
+                <thead> <tr><th>Rank</th><th>Agent ID</th><th>Agent Name</th><th>City</th><th>Target</th><th>Achieved</th><th>Progress</th><th>Revenue</th><th>Commission (2.5%)</th><th>Action</th></tr> </thead>
+                <tbody id="topAgentsTable"></tbody>
+             </table>
         </div>
     </div>
 
@@ -154,10 +151,10 @@
     <div class="agents-card">
         <div class="section-title"><i class="fas fa-users"></i> All Agents</div>
         <div style="overflow-x: auto;">
-            能
-                <thead>  <th>Agent ID</th><th>Name</th><th>City</th><th>Phone</th><th>Target</th><th>Bookings</th><th>Revenue</th><th>Earnings</th><th>Action</th> </thead>
-                <tbody id="allAgentsTable">  <td colspan="9">Loading...   </tbody>
-             </>
+             <table>
+                <thead> <tr><th>Agent ID</th><th>Name</th><th>City</th><th>Phone</th><th>Target</th><th>Bookings</th><th>Revenue</th><th>Earnings (2.5%)</th><th>Action</th></tr> </thead>
+                <tbody id="allAgentsTable"></tbody>
+             </table>
         </div>
     </div>
 </div>
@@ -185,84 +182,81 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Developer login check
     const devData = JSON.parse(localStorage.getItem('developer'));
-    if (!devData) {
-        window.location.href = 'developer-login.html';
-    }
+    if (!devData) window.location.href = 'developer-login.html';
+
     document.getElementById('devName').innerText = devData.name || devData.id;
     document.getElementById('devId').innerText = devData.id;
 
     let allAgents = [], allBookings = [], allCities = new Set();
 
-    // Calculate commission (2.5%)
-    function calculateCommission(amount) {
+    // Calculate real commission (2.5% of confirmed/completed bookings)
+    function calculateRealCommission(amount) {
         if (!amount) return 0;
-        // Remove ₹ and commas, get numeric value
         const price = parseInt(String(amount).replace(/[₹,]/g, '')) || 0;
         return Math.floor(price * 0.025);
     }
 
+    function getAgentStats(agentId) {
+        // Only confirmed and completed bookings count for earnings
+        const agentBookings = allBookings.filter(b => 
+            b.agentId === agentId && 
+            (b.status === 'confirmed' || b.status === 'completed')
+        );
+        const totalAmount = agentBookings.reduce((sum, b) => {
+            const price = parseInt(String(b.amount).replace(/[₹,]/g, '')) || 0;
+            return sum + price;
+        }, 0);
+        const commission = calculateRealCommission(totalAmount);
+        return { 
+            bookings: agentBookings.length, 
+            totalAmount: totalAmount, 
+            commission: commission 
+        };
+    }
+
     async function loadData() {
         try {
-            console.log("Loading agents data...");
-            
-            // Load agents
             const agentsSnap = await getDocs(collection(db, "agents"));
             allAgents = agentsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-            console.log("Agents loaded:", allAgents.length);
             
-            // Load bookings
             const bookingsSnap = await getDocs(collection(db, "bookings"));
             allBookings = bookingsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-            console.log("Bookings loaded:", allBookings.length);
             
-            // Collect cities for autocomplete
             allAgents.forEach(a => { if(a.city) allCities.add(a.city.toLowerCase()); });
             
-            // Update UI
             updateStats();
             renderTopAgents();
             renderAllAgents();
             setupAutocomplete();
-            
         } catch (error) {
             console.error("Error loading data:", error);
-            document.getElementById('topAgentsTable').innerHTML = `<tr><td colspan="10">Error: ${error.message}</td></tr>`;
-            document.getElementById('allAgentsTable').innerHTML = `<tr><td colspan="9">Error: ${error.message}</td></tr>`;
         }
-    }
-
-    function getAgentStats(agentId) {
-        const agentBookings = allBookings.filter(b => b.agentId === agentId && (b.status === 'confirmed' || b.status === 'completed'));
-        const totalAmount = agentBookings.reduce((sum, b) => sum + (parseInt(String(b.amount).replace(/[₹,]/g, '')) || 0), 0);
-        const commission = calculateCommission(totalAmount);
-        return { bookings: agentBookings.length, totalAmount, commission };
     }
 
     function updateStats() {
-        const totalRevenue = allBookings
-            .filter(b => b.status === 'confirmed' || b.status === 'completed')
-            .reduce((s, b) => s + (parseInt(String(b.amount).replace(/[₹,]/g, '')) || 0), 0);
-        const totalCommission = calculateCommission(totalRevenue);
+        // Total revenue from confirmed/completed bookings only
+        const confirmedCompleted = allBookings.filter(b => b.status === 'confirmed' || b.status === 'completed');
+        const totalRevenue = confirmedCompleted.reduce((s, b) => {
+            const price = parseInt(String(b.amount).replace(/[₹,]/g, '')) || 0;
+            return s + price;
+        }, 0);
+        const totalCommission = calculateRealCommission(totalRevenue);
         
-        document.getElementById('totalAgents').innerText = allAgents.length;
-        document.getElementById('totalBookings').innerText = allBookings.length;
-        document.getElementById('totalRevenue').innerHTML = `₹${totalRevenue.toLocaleString()}`;
-        document.getElementById('totalCommission').innerHTML = `₹${totalCommission.toLocaleString()}`;
+        document.getElementById('statsGrid').innerHTML = `
+            <div class="stat-card"><div class="stat-value">${allAgents.length}</div><div>Total Agents</div></div>
+            <div class="stat-card"><div class="stat-value">${allBookings.length}</div><div>Total Bookings</div></div>
+            <div class="stat-card"><div class="stat-value">₹${totalRevenue.toLocaleString()}</div><div>Total Revenue</div></div>
+            <div class="stat-card"><div class="stat-value">₹${totalCommission.toLocaleString()}</div><div>Total Commission</div></div>
+        `;
     }
 
     function renderTopAgents() {
-        const agentsWithStats = allAgents.map(a => ({ ...a, ...getAgentStats(a.id) }));
-        const topAgents = agentsWithStats.sort((a, b) => b.totalAmount - a.totalAmount).slice(0, 10);
+        const agents = allAgents.map(a => ({ ...a, ...getAgentStats(a.id) }))
+            .sort((a, b) => b.totalAmount - a.totalAmount)
+            .slice(0, 10);
         
-        const tbody = document.getElementById('topAgentsTable');
-        if (topAgents.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;">No agents found</td></tr>';
-            return;
-        }
-        
-        tbody.innerHTML = topAgents.map((a, i) => {
+        document.getElementById('topAgentsTable').innerHTML = agents.map((a, i) => {
             const target = a.target || 50000;
             const achieved = a.totalAmount;
             const percent = Math.min(100, (achieved / target) * 100);
@@ -276,7 +270,7 @@
                     <td>₹${achieved.toLocaleString()}</td>
                     <td><div style="width:80px; background:#e0e0e0; border-radius:10px;"><div style="width:${percent}%; background:#ff6b35; height:6px; border-radius:10px;"></div></div> ${Math.floor(percent)}%</td>
                     <td>₹${a.totalAmount.toLocaleString()}</td>
-                    <td>₹${a.commission.toLocaleString()}</td>
+                    <td class="earnings-cell">₹${a.commission.toLocaleString()}</td>
                     <td><button class="btn-set-target" onclick="setAgentTarget('${a.id}', ${target})">Set Target</button></td>
                 </tr>
             `;
@@ -284,13 +278,7 @@
     }
 
     function renderAllAgents() {
-        const tbody = document.getElementById('allAgentsTable');
-        if (allAgents.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">No agents found</td></tr>';
-            return;
-        }
-        
-        tbody.innerHTML = allAgents.map(a => {
+        document.getElementById('allAgentsTable').innerHTML = allAgents.map(a => {
             const stats = getAgentStats(a.id);
             return `
                 <tr>
@@ -301,7 +289,7 @@
                     <td>₹${(a.target || 50000).toLocaleString()}</td>
                     <td>${stats.bookings}</td>
                     <td>₹${stats.totalAmount.toLocaleString()}</td>
-                    <td>₹${stats.commission.toLocaleString()}</td>
+                    <td class="earnings-cell">₹${stats.commission.toLocaleString()}</td>
                     <td><button class="btn-set-target" onclick="setAgentTarget('${a.id}', ${a.target || 50000})">Set Target</button></td>
                 </tr>
             `;
@@ -343,7 +331,7 @@
                 ${agentBookings.slice(0,10).map(b => {
                     const amt = parseInt(String(b.amount).replace(/[₹,]/g, '')) || 0;
                     const comm = Math.floor(amt * 0.025);
-                    return `<tr><td>${b.id?.slice(-6)}</td><td>${b.userName || '-'}</td><td>${b.vendorName || '-'}</td><td>${b.eventDate || '-'}</td><td>₹${amt.toLocaleString()}</td><td>₹${comm}</td><td><span style="background:#d4edda; padding:4px 12px; border-radius:20px;">${b.status}</span></td></tr>`;
+                    return `<tr><td>${b.id?.slice(-6)}</td><td>${b.userName || '-'}</td><td>${b.vendorName || '-'}</td><td>${b.eventDate || '-'}</td><td>₹${amt.toLocaleString()}</td><td class="earnings-cell">₹${comm}</td><td><span style="background:#d4edda; padding:4px 12px; border-radius:20px;">${b.status}</span></td></tr>`;
                 }).join('')}
                 ${agentBookings.length === 0 ? '<tr><td colspan="7">No bookings yet</td></tr>' : ''}
             </tbody></table></div>
@@ -352,21 +340,16 @@
     };
 
     function setupAutocomplete() {
-        const input = document.getElementById('citySearch');
-        const drop = document.getElementById('cityAutocomplete');
-        
+        const input = document.getElementById('citySearch'), drop = document.getElementById('cityAutocomplete');
         input.oninput = () => {
-            const val = input.value.toLowerCase();
-            if (!val) { drop.style.display = 'none'; document.getElementById('cityAgentsResult').style.display = 'none'; return; }
-            const suggestions = Array.from(allCities).filter(c => c.includes(val)).slice(0,8);
-            if (!suggestions.length) { drop.style.display = 'none'; return; }
-            drop.innerHTML = suggestions.map(c => `<div class="autocomplete-item" onclick="selectCity('${c}')">📍 ${c.charAt(0).toUpperCase() + c.slice(1)}</div>`).join('');
+            const v = input.value.toLowerCase();
+            if (!v) { drop.style.display = 'none'; document.getElementById('cityAgentsResult').style.display = 'none'; return; }
+            const sug = Array.from(allCities).filter(c => c.includes(v)).slice(0,8);
+            if (!sug.length) { drop.style.display = 'none'; return; }
+            drop.innerHTML = sug.map(c => `<div class="autocomplete-item" onclick="selectCity('${c}')">📍 ${c.charAt(0).toUpperCase() + c.slice(1)}</div>`).join('');
             drop.style.display = 'block';
         };
-        
-        document.addEventListener('click', (e) => {
-            if (!input.contains(e.target) && !drop.contains(e.target)) drop.style.display = 'none';
-        });
+        document.addEventListener('click', (e) => { if (!input.contains(e.target) && !drop.contains(e.target)) drop.style.display = 'none'; });
     }
 
     window.selectCity = (city) => {
@@ -386,7 +369,7 @@
                     <div>🎯 ${(a.target || 50000).toLocaleString()}</div>
                     <div>📊 ${s.bookings} bookings</div>
                     <div>💰 ₹${s.totalAmount.toLocaleString()}</div>
-                    <div>💸 ₹${s.commission.toLocaleString()}</div>
+                    <div class="earnings-cell">💸 ₹${s.commission.toLocaleString()}</div>
                 </div>`;
             }).join('')}</div>`;
         }
@@ -396,7 +379,6 @@
     window.closeModal = () => document.getElementById('agentModal').style.display = 'none';
     window.logout = () => { localStorage.removeItem('developer'); window.location.href = 'developer-login.html'; };
     
-    // Load data on page load
     loadData();
 </script>
 </body>
