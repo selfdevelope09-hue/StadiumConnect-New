@@ -6,12 +6,10 @@
     <title>Vendor Details - StadiumConnect</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background: #f5f7fb; padding-bottom: 80px; }
 
-        /* Header */
         .header {
             background: white;
             padding: 16px 20px;
@@ -27,10 +25,8 @@
         .logo span { color: #ff6b35; }
         .back-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #ff6b35; }
 
-        /* Main Content */
         .content { max-width: 800px; margin: 0 auto; padding: 20px; }
 
-        /* Vendor Profile Card */
         .vendor-card {
             background: white;
             border-radius: 24px;
@@ -56,7 +52,6 @@
         .vendor-rating { display: flex; align-items: center; gap: 8px; }
         .stars { color: #ffb347; font-size: 14px; letter-spacing: 2px; }
 
-        /* Info Rows */
         .info-section { padding: 0 20px; }
         .info-row {
             display: flex;
@@ -76,7 +71,6 @@
         }
         .price-value { font-size: 24px; font-weight: 700; color: #ff6b35; }
 
-        /* Gallery */
         .gallery-section { padding: 0 20px 20px; }
         .gallery-grid {
             display: grid;
@@ -93,7 +87,6 @@
         }
         .gallery-item img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* Booking Form */
         .booking-form-card {
             background: white;
             border-radius: 24px;
@@ -119,23 +112,29 @@
         }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         
-        /* Payment Plan */
         .payment-plan {
             background: #f8f9fa;
             border-radius: 20px;
             padding: 16px;
             margin: 20px 0;
+            text-align: center;
         }
-        .installment-item {
+        .installment-steps {
             display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
+            justify-content: space-around;
+            margin-top: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
-        .installment-amount { font-weight: 700; color: #ff6b35; }
-        .total-amount { font-size: 20px; font-weight: 800; color: #ff6b35; text-align: right; margin-top: 12px; }
+        .step {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 30px;
+            font-weight: 600;
+            color: #ff6b35;
+            border: 1px solid #ff6b35;
+        }
         
-        /* Buttons */
         .action-buttons {
             display: flex;
             gap: 15px;
@@ -174,7 +173,6 @@
         .agent-id-field { background: #fff8f0; border-left: 3px solid #ff6b35; padding: 12px; border-radius: 12px; margin-top: 8px; }
         .optional-badge { font-size: 12px; font-weight: normal; color: #999; margin-left: 8px; }
         
-        /* Lightbox */
         .lightbox {
             display: none;
             position: fixed;
@@ -208,6 +206,7 @@
             .vendor-header { flex-direction: column; text-align: center; }
             .form-row { grid-template-columns: 1fr; }
             .action-buttons { flex-direction: column; }
+            .installment-steps { flex-direction: column; align-items: center; }
         }
     </style>
     <script type="module">
@@ -227,7 +226,6 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        const RAZORPAY_KEY = "rzp_test_XXXXXXXX"; // Replace with your key
         const urlParams = new URLSearchParams(window.location.search);
         const vendorId = urlParams.get('id');
 
@@ -283,28 +281,28 @@
         }
 
         function updatePaymentPlan() {
-            const amount = parseInt(currentVendor.priceRange?.replace(/[^0-9]/g, '')) || 50000;
             const isDecorator = currentVendor.category === 'decorator';
             const planDiv = document.getElementById('paymentPlan');
             
             if (isDecorator) {
-                const inst1 = Math.round(amount * 0.3);
-                const inst2 = Math.round(amount * 0.3);
-                const inst3 = Math.round(amount * 0.4);
                 planDiv.innerHTML = `
                     <div class="payment-plan">
-                        <strong>📅 Payment Plan (Decorator - 3 Installments)</strong>
-                        <div class="installment-item"><span>1st Installment (30%)</span><span class="installment-amount">₹${inst1.toLocaleString()}</span></div>
-                        <div class="installment-item"><span>2nd Installment (30%)</span><span class="installment-amount">₹${inst2.toLocaleString()}</span></div>
-                        <div class="installment-item"><span>Final Installment (40%)</span><span class="installment-amount">₹${inst3.toLocaleString()}</span></div>
-                        <div class="total-amount">Total: ₹${amount.toLocaleString()}</div>
+                        <strong>📅 Payment Plan (Decorator)</strong>
+                        <div class="installment-steps">
+                            <span class="step">1st Payment - 30%</span>
+                            <span class="step">2nd Payment - 30%</span>
+                            <span class="step">Final Payment - 40%</span>
+                        </div>
+                        <p style="font-size: 12px; color: #666; margin-top: 10px;">Pay in 3 easy installments</p>
                     </div>
                 `;
             } else {
                 planDiv.innerHTML = `
                     <div class="payment-plan">
                         <strong>💰 Full Payment</strong>
-                        <div class="installment-item"><span>Total Amount</span><span class="installment-amount">₹${amount.toLocaleString()}</span></div>
+                        <div class="installment-steps">
+                            <span class="step">100% at Booking</span>
+                        </div>
                     </div>
                 `;
             }
@@ -324,7 +322,7 @@
                 vendorName: currentVendor.name,
                 vendorCategory: currentVendor.category,
                 userId: user.uid,
-                userName: user.displayName || user.email,
+                userName: document.getElementById('userName').value || user.displayName || user.email,
                 userPhone: document.getElementById('userPhone').value,
                 eventName: document.getElementById('eventName').value,
                 eventDate: document.getElementById('eventDate').value,
@@ -334,22 +332,21 @@
                 eventType: document.getElementById('eventType').value,
                 specialRequests: document.getElementById('specialRequests').value,
                 agentId: document.getElementById('agentId').value || '',
-                amount: parseInt(currentVendor.priceRange?.replace(/[^0-9]/g, '')) || 50000,
+                amount: currentVendor.priceRange || 'Contact for price',
                 status: 'pending',
                 createdAt: new Date().toISOString()
             };
             
             if (!bookingData.userPhone || !bookingData.eventDate || !bookingData.eventLocation) {
-                alert('Please fill all required fields');
+                alert('Please fill all required fields (Phone, Event Date, Event Location)');
                 return;
             }
             
-            const docRef = await addDoc(collection(db, 'bookings'), bookingData);
-            alert('✅ Booking created! Redirecting to payment...');
-            window.location.href = `payment-page.html?id=${docRef.id}`;
+            await addDoc(collection(db, 'bookings'), bookingData);
+            alert('✅ Booking request sent! Vendor will contact you for payment.');
+            window.location.href = 'dashboard.html';
         };
 
-        // Lightbox functions
         window.openLightbox = (index) => { currentPhotoIndex = index; updateLightbox(); document.getElementById('lightbox').classList.add('active'); };
         function updateLightbox() { document.getElementById('lightboxImage').src = currentPhotos[currentPhotoIndex]; }
         window.closeLightbox = () => document.getElementById('lightbox').classList.remove('active');
@@ -442,7 +439,7 @@
         
         <div class="action-buttons">
             <button class="call-btn" onclick="callAgent()"><i class="fas fa-phone-alt"></i> Call Agent</button>
-            <button class="book-btn" onclick="submitBooking()"><i class="fas fa-credit-card"></i> Book & Pay Now</button>
+            <button class="book-btn" onclick="submitBooking()"><i class="fas fa-check-circle"></i> Book Now</button>
         </div>
     </div>
 </div>
