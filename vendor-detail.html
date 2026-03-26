@@ -212,7 +212,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getFirestore, doc, getDoc, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
         const firebaseConfig = {
@@ -253,6 +253,7 @@
             if (currentVendor && currentVendor.agentPhone) {
                 callBtn.onclick = () => { window.location.href = `tel:${currentVendor.agentPhone}`; };
                 callBtn.style.display = 'flex';
+                callBtn.innerHTML = `<i class="fas fa-phone-alt"></i> Call Agent (${currentVendor.agentPhone})`;
             } else {
                 callBtn.style.display = 'none';
             }
@@ -329,12 +330,13 @@
                 return;
             }
             
+            const userName = document.getElementById('userName').value;
             const userPhone = document.getElementById('userPhone').value;
             const eventDate = document.getElementById('eventDate').value;
             const eventLocation = document.getElementById('eventLocation').value;
             
-            if (!userPhone || !eventDate || !eventLocation) {
-                alert('Please fill Phone Number, Event Date and Event Location');
+            if (!userName || !userPhone || !eventDate || !eventLocation) {
+                alert('Please fill Name, Phone Number, Event Date and Event Location');
                 return;
             }
             
@@ -343,7 +345,8 @@
                 vendorName: currentVendor.name,
                 vendorCity: currentVendor.city,
                 userId: currentUser.uid,
-                userName: currentUser.displayName || currentUser.email,
+                userName: userName,
+                userEmail: currentUser.email,
                 userPhone: userPhone,
                 eventName: document.getElementById('eventName').value || 'Event',
                 eventDate: eventDate,
@@ -378,6 +381,9 @@
         // Auth state
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
+            if (user && !document.getElementById('userName').value) {
+                document.getElementById('userName').value = user.displayName || '';
+            }
         });
 
         loadVendor();
@@ -399,6 +405,11 @@
         <div class="form-title"><i class="fas fa-calendar-alt"></i> Book This Vendor</div>
         
         <div id="paymentPlan"></div>
+        
+        <div class="form-group">
+            <label>Your Full Name *</label>
+            <input type="text" id="userName" placeholder="Enter your full name" required>
+        </div>
         
         <div class="form-group">
             <label>Your Phone Number *</label>
