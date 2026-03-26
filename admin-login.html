@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+   <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -95,18 +95,22 @@
 </div>
 
 <script>
-    // Admin credentials
     const ADMIN_EMAIL = "atharvadarshanwar09@gmail.com";
     const ADMIN_PASSWORD = "Stadium@2025";
+    
+    // Check if already logged in
+    if (localStorage.getItem('adminLoggedIn') === 'true') {
+        window.location.href = 'admin.html';
+    }
     
     async function login() {
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         
         if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-            // Store admin session
             localStorage.setItem('adminLoggedIn', 'true');
             localStorage.setItem('adminEmail', email);
+            localStorage.setItem('adminLoginTime', new Date().toISOString());
             window.location.href = 'admin.html';
         } else {
             document.getElementById('error').innerText = 'Invalid credentials';
