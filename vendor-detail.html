@@ -19,170 +19,156 @@
     const urlParams = new URLSearchParams(window.location.search);
     const vendorId = urlParams.get('id');
 
-    // Inhe window object pe dala hai taaki HTML se access ho sake
+    // Variables ko window pe attach kiya taaki functions unhe har jagah se access kar sakein
     window.currentVendor = null;
     window.currentPhotos = [];
     window.currentPhotoIndex = 0;
     window.cityAgent = null;
 
-    async function getAgentForCity(city) {
-        try {
-            const agentsSnap = await getDocs(collection(db, "agents"));
-            let agents = [];
-            agentsSnap.forEach(doc => agents.push({ id: doc.id, ...doc.data() }));
-            return agents.find(agent => agent.city?.toLowerCase() === city.toLowerCase());
-        } catch (error) {
-            console.error("Error finding agent:", error);
-            return null;
-        }
-    }
-
+    // 1. Load Vendor Data
     async function loadVendor() {
         if (!vendorId) {
-            document.getElementById('vendorDetail').innerHTML = '<div class="loading">Invalid Vendor ID</div>';
+            document.getElementById('vendorDetail').innerHTML = '<div>ID missing in URL</div>';
             return;
         }
 
-        const vendorDoc = await getDoc(doc(db, 'vendors', vendorId));
-        if (vendorDoc.exists()) {
-            window.currentVendor = { id: vendorDoc.id, ...vendorDoc.data() };
-            window.currentPhotos = window.currentVendor.photos || [];
-            if (window.currentPhotos.length === 0 && window.currentVendor.imageUrl) {
-                window.currentPhotos = [window.currentVendor.imageUrl];
-            }
-            
-            if (window.currentVendor.city) {
-                window.cityAgent = await getAgentForCity(window.currentVendor.city);
-                if (window.cityAgent) {
-                    const suggestionDiv = document.getElementById('agentSuggestion');
-                    if (suggestionDiv) {
-                        suggestionDiv.innerHTML = `💡 Agent ${window.cityAgent.name || window.cityAgent.id} (${window.cityAgent.city}) will be assigned automatically.`;
-                    }
+        try {
+            const vendorDoc = await getDoc(doc(db, 'vendors', vendorId));
+            if (vendorDoc.exists()) {
+                window.currentVendor = { id: vendorDoc.id, ...vendorDoc.data() };
+                window.currentPhotos = window.currentVendor.photos || [];
+                if (window.currentPhotos.length === 0 && window.currentVendor.imageUrl) {
+                    window.currentPhotos = [window.currentVendor.imageUrl];
                 }
+                
+                // Agent find karein city ke basis pe
+                if (window.currentVendor.city) {
+                    const agentsSnap = await getDocs(collection(db, "agents"));
+                    agentsSnap.forEach(doc => {
+                        const data = doc.data();
+                        if (data.city && data.city.toLowerCase() === window.currentVendor.city.toLowerCase()) {
+                            window.cityAgent = { id: doc.id, ...data };
+                        }
+                    });
+                }
+                
+                renderVendorUI();
+                updatePaymentPlan();
+                setupCallButton();
+            } else {
+                document.getElementById('vendorDetail').innerHTML = '<div>Vendor not found in database</div>';
             }
-            
-            renderVendor();
-            updatePaymentPlan();
-            setupCallButton();
-        } else {
-            document.getElementById('vendorDetail').innerHTML = '<div class="loading">Vendor not found</div>';
+        } catch (err) {
+            console.error("Load error:", err);
+            document.getElementById('vendorDetail').innerHTML = '<div>Error loading data. Check console.</div>';
         }
     }
 
-    function setupCallButton() {
-        const callBtn = document.getElementById('callBtn');
-        if (!callBtn) return;
-        
-        if (window.cityAgent && window.cityAgent.phone) {
-            callBtn.onclick = () => { window.location.href = `tel:${window.cityAgent.phone}`; };
-            callBtn.innerHTML = `<i class="fas fa-phone-alt"></i> Call ${window.cityAgent.name || 'Agent'}`;
-            callBtn.style.display = 'flex';
-        } else {
-            callBtn.style.display = 'none';
-        }
-    }
-
-    // Lightbox and Render functions (Global exposure)
-    window.renderVendor = () => {
+    // 2. Render UI
+    function renderVendorUI() {
         const v = window.currentVendor;
+        const rating = v.rating || 4.5;
+        let stars = '★'.repeat(Math.floor(rating)) + '☆'.repeat(5 - Math.floor(rating));
+
         document.getElementById('vendorDetail').innerHTML = `
             <div class="vendor-card">
                 <div class="vendor-header">
                     <img src="${v.imageUrl || 'https://via.placeholder.com/80'}" class="vendor-avatar">
                     <div class="vendor-info">
                         <h1>${v.name || 'Vendor'}</h1>
-                        <div class="vendor-rating">
-                            <div class="stars">${'★'.repeat(Math.floor(v.rating || 4))}${'☆'.repeat(5-Math.floor(v.rating || 4))}</div>
-                            <span>${v.rating || 4.5} (${v.reviewsCount || 0} reviews)</span>
-                        </div>
+                        <div class="vendor-rating"><div class="stars">${stars}</div><span>${rating}</span></div>
                     </div>
                 </div>
                 <div class="info-section">
-                    <div class="info-row"><i class="fas fa-map-marker-alt"></i> ${v.location || v.city || 'Location'}</div>
-                    <div class="info-row"><i class="fas fa-tag"></i> ${v.category || 'Category'}</div>
-                    <div class="price-box"><span>Price Range</span><span class="price-value">${v.priceRange || 'Contact for price'}</span></div>
+                    <div class="info-row"><i class="fas fa-map-marker-alt"></i> ${v.location || v.city || 'N/A'}</div>
+                    <div class="info-row"><i class="fas fa-tag"></i> ${v.category || 'Vendor'}</div>
+                    <div class="price-box"><span>Price</span><span class="price-value">${v.priceRange || 'Contact'}</span></div>
                 </div>
                 <div class="gallery-section">
                     <div style="font-weight:600; margin-bottom:12px;">📷 Work Portfolio</div>
                     <div class="gallery-grid">
-                        ${window.currentPhotos.slice(0,6).map((p,i)=>`<div class="gallery-item" onclick="openLightbox(${i})"><img src="${p}"></div>`).join('')}
+                        ${window.currentPhotos.slice(0,6).map((p,i)=>`<div class="gallery-item" onclick="window.openLightbox(${i})"><img src="${p}"></div>`).join('')}
                     </div>
                 </div>
             </div>`;
-    };
+    }
 
-    window.updatePaymentPlan = () => {
-        const isDecorator = window.currentVendor?.category?.toLowerCase() === 'decorator';
+    function updatePaymentPlan() {
         const planDiv = document.getElementById('paymentPlan');
-        planDiv.innerHTML = isDecorator ? `
-            <div class="payment-plan">
-                <strong>📅 Payment Plan (Decorator)</strong>
-                <div class="installment-steps">
-                    <span class="step">30% Adv.</span> <span class="step">30% Mid.</span> <span class="step">40% Final</span>
-                </div>
-            </div>` : `
-            <div class="payment-plan"><strong>💰 Full Payment at Booking</strong></div>`;
-    };
+        if (window.currentVendor.category === 'decorator') {
+            planDiv.innerHTML = `<div class="payment-plan"><strong>📅 3-Step Payment Plan Active</strong></div>`;
+        } else {
+            planDiv.innerHTML = `<div class="payment-plan"><strong>💰 Full Payment at Booking</strong></div>`;
+        }
+    }
 
-    // --- MAIN FIX FOR BOOKING ---
+    function setupCallButton() {
+        const callBtn = document.getElementById('callBtn');
+        if (window.cityAgent && window.cityAgent.phone) {
+            callBtn.style.display = 'flex';
+            callBtn.onclick = () => window.location.href = `tel:${window.cityAgent.phone}`;
+            callBtn.innerHTML = `<i class="fas fa-phone-alt"></i> Call Agent`;
+            
+            const sugg = document.getElementById('agentSuggestion');
+            if(sugg) sugg.innerHTML = `💡 Agent ${window.cityAgent.name} will handle your booking.`;
+        }
+    }
+
+    // 3. BOOKING FUNCTION (Most Important)
     window.submitBooking = async () => {
         const user = auth.currentUser;
-        if (!user) { alert('Please login first'); window.location.href = 'login.html'; return; }
+        if (!user) { alert('Please login first'); return; }
 
-        const name = document.getElementById('userName').value.trim();
-        const phone = document.getElementById('userPhone').value.trim();
-        const date = document.getElementById('eventDate').value;
-        const loc = document.getElementById('eventLocation').value.trim();
+        const bookingBtn = document.querySelector('.book-btn');
+        const originalText = bookingBtn.innerHTML;
 
-        if (!name || !phone || !date || !loc) {
-            alert('Please fill all required fields (*)');
+        // Form values
+        const data = {
+            vendorId: vendorId,
+            vendorName: window.currentVendor?.name || 'Unknown',
+            userId: user.uid,
+            userName: document.getElementById('userName').value,
+            userPhone: document.getElementById('userPhone').value,
+            eventDate: document.getElementById('eventDate').value,
+            eventLocation: document.getElementById('eventLocation').value,
+            eventType: document.getElementById('eventType').value,
+            agentId: document.getElementById('agentId').value || (window.cityAgent ? window.cityAgent.id : 'Direct'),
+            status: 'pending',
+            createdAt: new Date().toISOString()
+        };
+
+        if (!data.userName || !data.userPhone || !data.eventDate || !data.eventLocation) {
+            alert('Please fill all marked (*) fields');
             return;
         }
 
-        const btn = document.querySelector('.book-btn');
-        btn.disabled = true;
-        btn.innerHTML = "Sending...";
-
         try {
-            const bookingData = {
-                vendorId: vendorId,
-                vendorName: window.currentVendor?.name || 'Unknown',
-                userId: user.uid,
-                userName: name,
-                userPhone: phone,
-                eventDate: date,
-                eventLocation: loc,
-                eventType: document.getElementById('eventType').value,
-                agentId: document.getElementById('agentId').value || (window.cityAgent ? window.cityAgent.id : ''),
-                status: 'pending',
-                createdAt: new Date().toISOString()
-            };
-
-            await addDoc(collection(db, 'bookings'), bookingData);
-            alert('✅ Booking request sent successfully!');
+            bookingBtn.disabled = true;
+            bookingBtn.innerHTML = "Processing...";
+            await addDoc(collection(db, 'bookings'), data);
+            alert('✅ Booking Request Sent!');
             window.location.href = 'dashboard.html';
-        } catch (error) {
-            console.error(error);
-            alert('❌ Error: ' + error.message);
-            btn.disabled = false;
-            btn.innerHTML = "Book Now";
+        } catch (err) {
+            alert('❌ Error: ' + err.message);
+            bookingBtn.disabled = false;
+            bookingBtn.innerHTML = originalText;
         }
     };
 
-    // Lightbox Global Functions
-    window.openLightbox = (i) => { window.currentPhotoIndex = i; updateLightbox(); document.getElementById('lightbox').classList.add('active'); };
-    window.closeLightbox = () => { document.getElementById('lightbox').classList.remove('active'); };
-    window.nextPhoto = (e) => { e.stopPropagation(); window.currentPhotoIndex = (window.currentPhotoIndex + 1) % window.currentPhotos.length; updateLightbox(); };
-    window.prevPhoto = (e) => { e.stopPropagation(); window.currentPhotoIndex = (window.currentPhotoIndex - 1 + window.currentPhotos.length) % window.currentPhotos.length; updateLightbox(); };
-    function updateLightbox() { 
-        document.getElementById('lightboxImage').src = window.currentPhotos[window.currentPhotoIndex]; 
-        document.getElementById('lightboxCounter').innerText = `${window.currentPhotoIndex+1}/${window.currentPhotos.length}`;
-    }
+    // 4. Lightbox Functions
+    window.openLightbox = (index) => {
+        window.currentPhotoIndex = index;
+        document.getElementById('lightboxImage').src = window.currentPhotos[index];
+        document.getElementById('lightbox').classList.add('active');
+    };
+    window.closeLightbox = () => document.getElementById('lightbox').classList.remove('active');
 
+    // Auth state logic
     onAuthStateChanged(auth, (user) => {
         if (user) document.getElementById('userName').value = user.displayName || '';
     });
 
+    // Start loading
     loadVendor();
 </script>
 
