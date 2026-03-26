@@ -155,6 +155,7 @@
             justify-content: center;
             gap: 10px;
         }
+        .call-btn:hover { background: #218838; }
         .book-btn {
             flex: 2;
             background: #ff6b35;
@@ -170,6 +171,7 @@
             justify-content: center;
             gap: 10px;
         }
+        .book-btn:hover { background: #e55a2b; }
         .agent-id-field { background: #fff8f0; border-left: 3px solid #ff6b35; padding: 12px; border-radius: 12px; margin-top: 8px; }
         .optional-badge { font-size: 12px; font-weight: normal; color: #999; margin-left: 8px; }
         
@@ -261,11 +263,14 @@
                 // Find agent for this vendor's city
                 if (currentVendor.city) {
                     cityAgent = await getAgentForCity(currentVendor.city);
+                    console.log("Agent found for city", currentVendor.city, cityAgent);
                 }
                 
                 renderVendor();
                 updatePaymentPlan();
                 setupCallButton();
+            } else {
+                document.getElementById('vendorDetail').innerHTML = '<div class="loading">Vendor not found</div>';
             }
         }
 
@@ -279,8 +284,11 @@
                 };
                 callBtn.innerHTML = `<i class="fas fa-phone-alt"></i> Call ${cityAgent.name || 'Agent'} (${cityAgent.city})`;
                 callBtn.style.display = 'flex';
+                callBtn.style.background = '#28a745';
+                console.log("Call button setup for agent:", cityAgent.name);
             } else {
                 callBtn.style.display = 'none';
+                console.log("No agent found for city:", currentVendor?.city);
             }
         }
 
@@ -350,7 +358,21 @@
 
         window.submitBooking = async () => {
             const user = auth.currentUser;
-            if (!user) { alert('Please login first'); window.location.href = 'login.html'; return; }
+            if (!user) { 
+                alert('Please login first'); 
+                window.location.href = 'login.html'; 
+                return; 
+            }
+            
+            const userName = document.getElementById('userName').value;
+            const userPhone = document.getElementById('userPhone').value;
+            const eventDate = document.getElementById('eventDate').value;
+            const eventLocation = document.getElementById('eventLocation').value;
+            
+            if (!userName || !userPhone || !eventDate || !eventLocation) {
+                alert('Please fill all required fields: Name, Phone, Event Date, Event Location');
+                return;
+            }
             
             let agentId = document.getElementById('agentId').value;
             
@@ -365,37 +387,64 @@
                 vendorName: currentVendor.name,
                 vendorCity: currentVendor.city,
                 userId: user.uid,
-                userName: user.displayName || user.email,
-                userPhone: document.getElementById('userPhone').value,
-                eventName: document.getElementById('eventName').value,
-                eventDate: document.getElementById('eventDate').value,
+                userName: userName,
+                userEmail: user.email,
+                userPhone: userPhone,
+                eventName: document.getElementById('eventName').value || 'Event',
+                eventDate: eventDate,
                 eventTime: document.getElementById('eventTime').value,
-                guestCount: document.getElementById('guestCount').value,
-                eventLocation: document.getElementById('eventLocation').value,
+                guestCount: parseInt(document.getElementById('guestCount').value) || 0,
+                eventLocation: eventLocation,
                 eventType: document.getElementById('eventType').value,
-                specialRequests: document.getElementById('specialRequests').value,
+                specialRequests: document.getElementById('specialRequests').value || '',
                 agentId: agentId,
                 amount: currentVendor.priceRange || 'Contact for price',
                 status: 'pending',
                 createdAt: new Date().toISOString()
             };
             
-            if (!bookingData.userPhone || !bookingData.eventDate || !bookingData.eventLocation) {
-                alert('Please fill all required fields (Phone, Event Date, Event Location)');
-                return;
+            try {
+                await addDoc(collection(db, 'bookings'), bookingData);
+                alert('✅ Booking request sent successfully! Vendor will contact you soon.');
+                window.location.href = 'dashboard.html';
+            } catch (error) {
+                console.error('Error saving booking:', error);
+                alert('❌ Failed to send booking. Error: ' + error.message);
             }
-            
-            await addDoc(collection(db, 'bookings'), bookingData);
-            alert('✅ Booking request sent! Agent will contact you.');
-            window.location.href = 'dashboard.html';
         };
 
         // Lightbox functions
-        window.openLightbox = (index) => { currentPhotoIndex = index; updateLightbox(); document.getElementById('lightbox').classList.add('active'); };
-        function updateLightbox() { document.getElementById('lightboxImage').src = currentPhotos[currentPhotoIndex]; }
-        window.closeLightbox = () => document.getElementById('lightbox').classList.remove('active');
-        window.prevPhoto = (e) => { e.stopPropagation(); currentPhotoIndex = (currentPhotoIndex-1+currentPhotos.length)%currentPhotos.length; updateLightbox(); };
-        window.nextPhoto = (e) => { e.stopPropagation(); currentPhotoIndex = (currentPhotoIndex+1)%currentPhotos.length; updateLightbox(); };
+        window.openLightbox = (index) => { 
+            currentPhotoIndex = index; 
+            updateLightbox(); 
+            document.getElementById('lightbox').classList.add('active'); 
+        };
+        function updateLightbox() { 
+            document.getElementById('lightboxImage').src = currentPhotos[currentPhotoIndex]; 
+            document.getElementById('lightboxCounter').innerText = `${currentPhotoIndex+1}/${currentPhotos.length}`;
+        }
+        window.closeLightbox = () => { 
+            document.getElementById('lightbox').classList.remove('active'); 
+        };
+        window.prevPhoto = (e) => { 
+            e.stopPropagation(); 
+            if (currentPhotos.length === 0) return;
+            currentPhotoIndex = (currentPhotoIndex - 1 + currentPhotos.length) % currentPhotos.length; 
+            updateLightbox(); 
+        };
+        window.nextPhoto = (e) => { 
+            e.stopPropagation(); 
+            if (currentPhotos.length === 0) return;
+            currentPhotoIndex = (currentPhotoIndex + 1) % currentPhotos.length; 
+            updateLightbox(); 
+        };
+
+        // Auth state for auto-fill name
+        onAuthStateChanged(auth, (user) => {
+            if (user && !document.getElementById('userName').value) {
+                document.getElementById('userName').value = user.displayName || '';
+            }
+        });
 
         loadVendor();
     </script>
@@ -419,7 +468,7 @@
         
         <div class="form-group">
             <label>Your Full Name *</label>
-            <input type="text" id="userName" placeholder="Enter your full name">
+            <input type="text" id="userName" placeholder="Enter your full name" required>
         </div>
         
         <div class="form-group">
@@ -428,7 +477,7 @@
         </div>
         
         <div class="form-group">
-            <label>Event Name *</label>
+            <label>Event Name</label>
             <input type="text" id="eventName" placeholder="e.g., Wedding Reception, Birthday Party">
         </div>
         
@@ -478,4 +527,35 @@
         
         <div class="agent-id-field">
             <label>Agent ID <span class="optional-badge">(if referred by an agent)</span></label>
-            <input type="text" id="agentId" placeholder="Enter agent ID if any
+            <input type="text" id="agentId" placeholder="Enter agent ID if any">
+            <div id="agentSuggestion" style="font-size:12px; color:#ff6b35; margin-top:5px;"></div>
+        </div>
+        
+        <div class="action-buttons">
+            <button id="callBtn" class="call-btn" style="display:none;"><i class="fas fa-phone-alt"></i> Call Agent</button>
+            <button class="book-btn" onclick="submitBooking()"><i class="fas fa-check-circle"></i> Book Now</button>
+        </div>
+    </div>
+</div>
+
+<!-- Lightbox -->
+<div id="lightbox" class="lightbox" onclick="closeLightbox()">
+    <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
+    <span class="lightbox-prev" onclick="prevPhoto(event)">❮</span>
+    <img id="lightboxImage" class="lightbox-image">
+    <span class="lightbox-next" onclick="nextPhoto(event)">❯</span>
+    <div id="lightboxCounter" style="position:absolute; bottom:30px; left:0; right:0; text-align:center; color:white; background:rgba(0,0,0,0.5); padding:8px; width:fit-content; margin:0 auto; border-radius:20px;">1/1</div>
+</div>
+
+<script>
+    // Show agent suggestion in booking form
+    if (cityAgent) {
+        const suggestionDiv = document.getElementById('agentSuggestion');
+        if (suggestionDiv) {
+            suggestionDiv.innerHTML = `💡 Agent ${cityAgent.name || cityAgent.id} (${cityAgent.city}) will be assigned automatically if you don't enter an ID.`;
+        }
+    }
+</script>
+
+</body>
+</html>
