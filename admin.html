@@ -10,47 +10,40 @@
         .card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         h2 { color: #ff6b35; margin-bottom: 15px; }
         
-        /* Buttons */
         button { background: #ff6b35; color: white; border: none; padding: 10px 18px; border-radius: 25px; cursor: pointer; font-weight: 600; transition: 0.3s; margin-right: 5px; }
         button:hover { opacity: 0.8; transform: translateY(-1px); }
         .btn-delete { background: #ff4757; }
         .btn-edit { background: #ffa502; }
         .btn-save { background: #2ed573; width: 100%; margin-top: 15px; font-size: 16px; font-weight: bold;}
-        .btn-save:disabled { background: #a4b0be; cursor: not-allowed; }
-
-        /* Table */
+        
         .table-container { overflow-x: auto; margin-top: 15px; }
         table { width: 100%; border-collapse: collapse; background: white; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 14px; }
         th { background: #f8f9fa; color: #666; font-size: 13px; text-transform: uppercase; }
         .vendor-img-td { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; }
-
-        /* Form Elements */
+        
         input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 14px; }
         input:focus, select:focus { border-color: #ff6b35; }
         .file-input-label { display: block; margin-top: 8px; font-weight: 600; color: #666; font-size: 14px; }
         
-        /* Tabs */
         .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
         .tab { background: #fff; color: #666; border: 1px solid #ddd; }
         .tab.active { background: #ff6b35; color: white; border-color: #ff6b35; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-
-        /* Modal */
+        
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 1000; }
         .modal-content { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; position: relative; }
         .close { position: absolute; right: 20px; top: 15px; font-size: 24px; cursor: pointer; color: #666;}
-
-        /* Upload Progress */
-        #uploadProgress { display: none; margin-top: 10px; color: #ff6b35; font-weight: bold; font-size: 14px;}
-        .img-preview { width: 100px; height: 100px; border-radius: 10px; object-fit: cover; margin-top: 10px; border: 2px solid #ddd; display: none;}
-
-        /* Helpers */
+        
+        .img-preview { width: 100px; height: 100px; border-radius: 10px; object-fit: cover; margin-top: 10px; border: 2px solid #ddd; display: none; }
+        .upload-progress { display: none; margin-top: 10px; color: #ff6b35; font-weight: bold; font-size: 14px;}
         .message { padding: 12px; border-radius: 8px; margin-bottom: 15px; display: none; text-align: center; }
-        .success { background: #d4edda; color: #155724; }
-        .error { background: #f8d7da; color: #721c24; }
+        .success { background: #d4edda; color: #155724; display: block; }
+        .error { background: #f8d7da; color: #721c24; display: block; }
         .list-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #eee; }
+        .popular-badge { background: #ff6b35; color: white; font-size: 10px; padding: 2px 8px; border-radius: 20px; margin-left: 10px; }
+        .checkbox-group { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
     </style>
 </head>
 <body>
@@ -77,9 +70,7 @@
                 <thead>
                     <tr><th>Photo</th><th>Name</th><th>Category</th><th>City</th><th>Price</th><th>Rating</th><th>Actions</th></tr>
                 </thead>
-                <tbody id="vendorTable">
-                    <tr><td colspan="7" style="text-align:center;">Loading Data...</td></tr>
-                </tbody>
+                <tbody id="vendorTable"><tr><td colspan="7" style="text-align:center;">Loading...</td></tr></tbody>
             </table>
         </div>
     </div>
@@ -87,59 +78,62 @@
 
 <div id="categoriesTab" class="tab-content">
     <div class="card">
-        <button onclick="openModal('categoryModal')">+ Add Category</button>
+        <button onclick="openAddCategory()">+ Add Category</button>
         <div id="categoriesList"></div>
     </div>
 </div>
 
 <div id="citiesTab" class="tab-content">
     <div class="card">
-        <button onclick="openModal('cityModal')">+ Add City</button>
+        <button onclick="openAddCity()">+ Add City</button>
         <div id="citiesList"></div>
     </div>
 </div>
 
+<!-- Vendor Modal -->
 <div id="vendorModal" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeModal('vendorModal')">&times;</span>
         <h3 id="vendorModalTitle">Add Vendor</h3>
-        <form id="vendorForm" onsubmit="event.preventDefault()">
-            
-            <input type="text" id="vendorName" placeholder="Vendor Name *">
-            <select id="vendorCategory"><option value="">-- Loading --</option></select>
-            <select id="vendorCity"><option value="">-- Loading --</option></select>
-            <input type="text" id="vendorLocation" placeholder="Location (Area Name)">
-            <input type="text" id="vendorPrice" placeholder="Price Range (e.g. ₹20,000)">
-            <input type="text" id="vendorRating" placeholder="Rating (1-5)">
-            <input type="text" id="vendorPhone" placeholder="Phone Number">
-            <textarea id="vendorDescription" rows="3" placeholder="Description"></textarea>
-            
-            <label class="file-input-label">Vendor Portrait/Work Photo</label>
-            <input type="file" id="vendorPhoto" accept="image/*" onchange="previewImage(this)">
-            <img id="imgPreview" class="img-preview" alt="Preview">
-            <div id="uploadProgress">Uploading image...</div>
-
-            <button class="btn-save" id="btnSaveVendor" onclick="saveVendor()">SAVE VENDOR</button>
-        </form>
+        <input type="text" id="vendorName" placeholder="Vendor Name *">
+        <select id="vendorCategory"><option value="">-- Loading --</option></select>
+        <select id="vendorCity"><option value="">-- Loading --</option></select>
+        <input type="text" id="vendorLocation" placeholder="Location (Area Name)">
+        <input type="text" id="vendorPrice" placeholder="Price Range (e.g. ₹20,000)">
+        <input type="text" id="vendorRating" placeholder="Rating (1-5)">
+        <input type="text" id="vendorPhone" placeholder="Phone Number">
+        <textarea id="vendorDescription" rows="3" placeholder="Description"></textarea>
+        
+        <label class="file-input-label">Vendor Photo (ImgBB Upload)</label>
+        <input type="file" id="vendorPhoto" accept="image/*" onchange="previewImage(this)">
+        <img id="imgPreview" class="img-preview" alt="Preview">
+        <div id="uploadProgress" class="upload-progress">Uploading image to ImgBB...</div>
+        
+        <button class="btn-save" id="btnSaveVendor" onclick="saveVendor()">SAVE VENDOR</button>
     </div>
 </div>
 
+<!-- Category Modal -->
 <div id="categoryModal" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeModal('categoryModal')">&times;</span>
         <h3>Add Category</h3>
-        <input type="text" id="catName" placeholder="Category Name (e.g. Decorator)">
+        <input type="text" id="catName" placeholder="Category Name (e.g. Mehndi Artist)">
         <input type="text" id="catIcon" placeholder="Icon Emoji (e.g. 🎨)">
         <button class="btn-save" onclick="saveCategory()">SAVE CATEGORY</button>
     </div>
 </div>
 
+<!-- City Modal -->
 <div id="cityModal" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeModal('cityModal')">&times;</span>
         <h3>Add City</h3>
-        <input type="text" id="cityNameInput" placeholder="City Name">
-        <label><input type="checkbox" id="cityPopularCheck"> Show in Popular Cities</label>
+        <input type="text" id="cityNameInput" placeholder="City Name (e.g. Jaipur)">
+        <div class="checkbox-group">
+            <input type="checkbox" id="cityPopularCheck">
+            <label>⭐ Show in Popular Cities (Home Page)</label>
+        </div>
         <button class="btn-save" onclick="saveCity()">SAVE CITY</button>
     </div>
 </div>
@@ -147,58 +141,95 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
     import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js";
 
-    // StadiumConnect Config
     const firebaseConfig = {
         apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
         authDomain: "stadiumconnect-8fecb.firebaseapp.com",
         projectId: "stadiumconnect-8fecb",
-        storageBucket: "stadiumconnect-8fecb.firebasestorage.app", // Ensure this bucket exists in Firebase
+        storageBucket: "stadiumconnect-8fecb.firebasestorage.app",
         messagingSenderId: "458108198578",
         appId: "1:458108198578:web:83d83646f0e24e718b73ab"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const storage = getStorage(app); // Storage initialize (New)
+
+    // ImgBB API Key
+    const IMGBB_API_KEY = "459b0b4e8a9c6fcceaffd15320a6fdbd";
 
     let vendors = [];
     let categories = [];
     let cities = [];
     let editingVendorId = null;
     let editingCityIndex = null;
-    let currentVendorImageUrl = null; // Purani image track karne ke liye (New)
+    let currentImageUrl = null;
 
-    // ==========================================
-    // REAL-TIME SYNC (Sab kuch live rahega)
-    // ==========================================
-
+    // ========== REAL-TIME SYNC ==========
     onSnapshot(collection(db, "categories"), (snap) => {
         categories = [];
-        snap.forEach(d => { if(!d.data().deleted) categories.push({id: d.id, ...d.data()}); });
+        snap.forEach(d => { if(!d.data().deleted) categories.push({ id: d.id, ...d.data() }); });
         renderCategories();
         updateCategoryDropdown();
     });
 
     onSnapshot(doc(db, 'settings', 'cities'), (d) => {
-        if(d.exists()) {
-            cities = d.data().list || [];
-            renderCities();
-            updateCityDropdown();
-        }
+        if(d.exists()) cities = d.data().list || [];
+        else cities = [{ name: 'Nagpur', popular: true }, { name: 'Mumbai', popular: true }, { name: 'Pune', popular: true }, { name: 'Delhi', popular: true }, { name: 'Bangalore', popular: true }];
+        renderCities();
+        updateCityDropdown();
     });
 
     onSnapshot(collection(db, "vendors"), (snap) => {
         vendors = [];
-        snap.forEach(d => vendors.push({id: d.id, ...d.data()}));
+        snap.forEach(d => vendors.push({ id: d.id, ...d.data() }));
         renderVendors();
     });
 
-    // ==========================================
-    // IMAGE HANDLING LOGIC (NEW SECTION)
-    // ==========================================
+    // ========== IMAGE UPLOAD TO IMGBB ==========
+    async function uploadToImgBB(file) {
+        const formData = new FormData();
+        formData.append('image', file);
+        formData.append('key', IMGBB_API_KEY);
+        
+        const response = await fetch('https://api.imgbb.com/1/upload', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            return data.data.url;
+        } else {
+            throw new Error(data.error?.message || 'Upload failed');
+        }
+    }
 
+    async function uploadVendorImage() {
+        const fileInput = document.getElementById('vendorPhoto');
+        if (!fileInput.files.length) return currentImageUrl;
+        
+        const file = fileInput.files[0];
+        const progressEl = document.getElementById('uploadProgress');
+        const saveBtn = document.getElementById('btnSaveVendor');
+        
+        progressEl.style.display = 'block';
+        saveBtn.disabled = true;
+        
+        try {
+            const imageUrl = await uploadToImgBB(file);
+            console.log('Image uploaded to ImgBB:', imageUrl);
+            return imageUrl;
+        } catch (error) {
+            console.error('Upload failed:', error);
+            showMsg('Image upload failed: ' + error.message, 'error');
+            return null;
+        } finally {
+            progressEl.style.display = 'none';
+            saveBtn.disabled = false;
+        }
+    }
+
+    // ========== PREVIEW IMAGE ==========
     window.previewImage = (input) => {
         const file = input.files[0];
         if (file) {
@@ -207,57 +238,23 @@
                 const el = document.getElementById('imgPreview');
                 el.src = e.target.result;
                 el.style.display = 'block';
-            }
+            };
             reader.readAsDataURL(file);
         }
     };
 
-    async function uploadVendorImage(vendorId) {
-        const fileInput = document.getElementById('vendorPhoto');
-        if(!fileInput.files.length) return currentVendorImageUrl; // Agar file select nhi ki, purani wali use karo
-
-        const file = fileInput.files[0];
-        const progressEl = document.getElementById('uploadProgress');
-        const saveBtn = document.getElementById('btnSaveVendor');
-
-        progressEl.style.display = 'block';
-        saveBtn.disabled = true; // Button band taaki upload ke beech mein exit na ho
-
-        // Image path: vendors/vendorId_filename
-        const storageRef = ref(storage, `vendors/${vendorId}_${new Date().getTime()}_${file.name}`);
-        
-        try {
-            await uploadBytes(storageRef, file);
-            const downloadUrl = await getDownloadURL(storageRef);
-            console.log('Image uploaded:', downloadUrl);
-            return downloadUrl;
-        } catch (error) {
-            console.error('Upload fail:', error);
-            showMsg('Photo upload failed: ' + error.message, 'error');
-            return null;
-        } finally {
-            progressEl.style.display = 'none';
-            saveBtn.disabled = false;
-        }
-    }
-
-    // ==========================================
-    // RENDER & UI UPDATERS
-    // ==========================================
-
+    // ========== RENDER FUNCTIONS ==========
     function renderVendors() {
         const tbody = document.getElementById('vendorTable');
-        if(!vendors.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No data found</td></tr>'; return; }
+        if (!vendors.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No vendors found</td></tr>'; return; }
         tbody.innerHTML = vendors.map(v => `
             <tr>
-                <td>
-                    <img src="${v.imageUrl || 'https://via.placeholder.com/50'}" alt="N/A" class="vendor-img-td">
-                </td>
-                <td><strong>${v.name || 'Unnamed'}</strong></td>
+                <td><img src="${v.imageUrl || 'https://via.placeholder.com/50'}" class="vendor-img-td" onerror="this.src='https://via.placeholder.com/50'"></td>
+                <td><strong>${v.name || '-'}</strong></td>
                 <td>${v.category || '-'}</td>
                 <td>${v.city || '-'}</td>
                 <td>${v.priceRange || '-'}</td>
-                <td>⭐ ${v.rating || '0'}</td>
+                <td>⭐ ${v.rating || '-'}</td>
                 <td>
                     <button class="btn-edit" onclick="editVendor('${v.id}')">Edit</button>
                     <button class="btn-delete" onclick="deleteVendor('${v.id}')">Del</button>
@@ -267,18 +264,25 @@
     }
 
     function renderCategories() {
-        document.getElementById('categoriesList').innerHTML = categories.map(c => `
+        const container = document.getElementById('categoriesList');
+        if (!container) return;
+        container.innerHTML = categories.map(c => `
             <div class="list-item">
                 <span>${c.icon || '🏷️'} ${c.name}</span>
-                <button class="btn-delete" onclick="deleteCategory('${c.id}')">Delete</button>
+                <div>
+                    <button class="btn-edit" onclick="editCategory('${c.id}')">Edit</button>
+                    <button class="btn-delete" onclick="deleteCategory('${c.id}')">Del</button>
+                </div>
             </div>
         `).join('');
     }
 
     function renderCities() {
-        document.getElementById('citiesList').innerHTML = cities.map((c, i) => `
+        const container = document.getElementById('citiesList');
+        if (!container) return;
+        container.innerHTML = cities.map((c, i) => `
             <div class="list-item">
-                <span>📍 ${c.name} ${c.popular ? '⭐' : ''}</span>
+                <span>📍 ${c.name} ${c.popular ? '<span class="popular-badge">Popular</span>' : ''}</span>
                 <div>
                     <button class="btn-edit" onclick="editCity(${i})">Edit</button>
                     <button class="btn-delete" onclick="deleteCity(${i})">Del</button>
@@ -289,133 +293,33 @@
 
     function updateCategoryDropdown() {
         const sel = document.getElementById('vendorCategory');
-        if(!sel) return;
-        const val = sel.value;
-        sel.innerHTML = '<option value="">-- Choose Category --</option>' + 
-            categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-        if(val) sel.value = val;
+        if (!sel) return;
+        sel.innerHTML = '<option value="">-- Select Category --</option>' + 
+            categories.map(c => `<option value="${c.id}">${c.icon || '🏷️'} ${c.name}</option>`).join('');
     }
 
     function updateCityDropdown() {
         const sel = document.getElementById('vendorCity');
-        if(!sel) return;
-        const val = sel.value;
-        // Sort for neat dropdown
-        const sorted = [...cities].sort((a,b) => a.name.localeCompare(b.name));
-        sel.innerHTML = '<option value="">-- Choose City --</option>' + 
-            sorted.map(c => `<option value="${c.name.toLowerCase()}">${c.name}</option>`).join('');
-        if(val) sel.value = val;
+        if (!sel) return;
+        sel.innerHTML = '<option value="">-- Select City --</option>' + 
+            cities.map(c => `<option value="${c.name.toLowerCase()}">${c.name}</option>`).join('');
     }
 
-    // ==========================================
-    // CRUD OPERATIONS (UPDATED FOR IMAGE)
-    // ==========================================
-
-    window.saveVendor = async () => {
-        const nameInput = document.getElementById('vendorName');
-        const catInput = document.getElementById('vendorCategory');
-        const cityInput = document.getElementById('vendorCity');
-
-        if(!nameInput.value || !catInput.value || !cityInput.value) { 
-            showMsg('Name, Category & City are mandatory!', 'error'); 
-            return; 
-        }
-
-        // 1. Determine temporary ID for image path
-        const vendorId = editingVendorId || nameInput.value.toLowerCase().replace(/\s+/g, '');
-
-        // 2. Upload Image first (New logic)
-        const imageUrl = await uploadVendorImage(vendorId);
-        
-        // Agar image fail hui upload hone mein
-        if (!imageUrl && document.getElementById('vendorPhoto').files.length) {
-             return; 
-        }
-
-        // 3. Prepare Data
-        const data = {
-            name: nameInput.value,
-            category: catInput.value,
-            city: cityInput.value,
-            imageUrl: imageUrl || 'https://via.placeholder.com/300?text=StadiumConnect', // Default image
-            location: document.getElementById('vendorLocation').value,
-            priceRange: document.getElementById('vendorPrice').value,
-            rating: document.getElementById('vendorRating').value || '4.0',
-            phone: document.getElementById('vendorPhone').value,
-            description: document.getElementById('vendorDescription').value,
-            updatedAt: new Date().toISOString()
-        };
-
-        try {
-            if(editingVendorId) {
-                await updateDoc(doc(db, 'vendors', editingVendorId), data);
-                showMsg('Vendor Updated!', 'success');
-            } else {
-                data.createdAt = new Date().toISOString();
-                // Firestore automatically assigns a unique ID with addDoc
-                await addDoc(collection(db, 'vendors'), data); 
-                showMsg('New Vendor Added!', 'success');
-            }
-            closeModal('vendorModal');
-        } catch(e) { showMsg(e.message, 'error'); }
-    };
-
-    window.saveCategory = async () => {
-        const name = document.getElementById('catName').value;
-        if(!name) return;
-        const id = name.toLowerCase().replace(/\s+/g, '');
-        await setDoc(doc(db, 'categories', id), { 
-            id, name, icon: document.getElementById('catIcon').value || '🏷️'
-        });
-        closeModal('categoryModal');
-        showMsg('Category Added!', 'success');
-    };
-
-    window.saveCity = async () => {
-        const name = document.getElementById('cityNameInput').value;
-        if(!name) return;
-        const pop = document.getElementById('cityPopularCheck').checked;
-        
-        if(editingCityIndex !== null && editingCityIndex !== undefined) {
-             cities[editingCityIndex] = { name, popular: pop };
-        } else {
-             cities.push({ name, popular: pop });
-        }
-
-        await setDoc(doc(db, 'settings', 'cities'), { list: cities });
-        editingCityIndex = null;
-        closeModal('cityModal');
-        showMsg('City Settings Saved!', 'success');
-    };
-
-    // ==========================================
-    // UTILS & GLOBAL BUTTON HANDLERS
-    // ==========================================
-
-    window.openModal = (id) => document.getElementById(id).style.display = 'flex';
-    
-    window.closeModal = (id) => {
-        document.getElementById(id).style.display = 'none';
-        currentVendorImageUrl = null;
-        // Modal reset form clean karega
-    };
-    
+    // ========== VENDOR CRUD ==========
     window.openAddVendor = () => {
         editingVendorId = null;
-        currentVendorImageUrl = null;
+        currentImageUrl = null;
         document.getElementById('vendorForm').reset();
-        document.getElementById('vendorModalTitle').innerText = 'Add Vendor';
-        // Reset image preview
         document.getElementById('imgPreview').style.display = 'none';
-        document.getElementById('imgPreview').src = '';
+        document.getElementById('vendorModalTitle').innerText = 'Add Vendor';
         openModal('vendorModal');
     };
 
     window.editVendor = (id) => {
         const v = vendors.find(x => x.id === id);
-        if(!v) return;
+        if (!v) return;
         editingVendorId = id;
-        currentVendorImageUrl = v.imageUrl || null; // Track existing image
+        currentImageUrl = v.imageUrl || null;
         
         document.getElementById('vendorName').value = v.name || '';
         document.getElementById('vendorCategory').value = v.category || '';
@@ -426,59 +330,175 @@
         document.getElementById('vendorPhone').value = v.phone || '';
         document.getElementById('vendorDescription').value = v.description || '';
         
-        // Photo preview update
         const preview = document.getElementById('imgPreview');
-        if(v.imageUrl) {
+        if (v.imageUrl) {
             preview.src = v.imageUrl;
             preview.style.display = 'block';
         } else {
             preview.style.display = 'none';
         }
-
+        
+        document.getElementById('vendorModalTitle').innerText = 'Edit Vendor';
         openModal('vendorModal');
     };
 
-    window.deleteVendor = async (id) => { 
-        if(confirm('Warning: Is vendor ko permantly delete kar diya jayega?')) 
-            await deleteDoc(doc(db, 'vendors', id)); 
-    };
-    
-    window.deleteCategory = async (id) => { 
-        if(confirm('Is category ko hidden mark kar diya jaye?')) 
-            await setDoc(doc(db, 'categories', id), { deleted: true }); 
-    };
-
-    window.editCity = (i) => {
-        window.editingCityIndex = i;
-        document.getElementById('cityNameInput').value = cities[i].name;
-        document.getElementById('cityPopularCheck').checked = cities[i].popular;
-        openModal('cityModal');
-    };
-
-    window.deleteCity = async (i) => {
-        if(confirm('Is city ko list se permantly hata diya jaye?')) {
-            cities.splice(i, 1);
-            await setDoc(doc(db, 'settings', 'cities'), { list: cities });
+    window.deleteVendor = async (id) => {
+        if (confirm('Delete this vendor?')) {
+            await deleteDoc(doc(db, 'vendors', id));
+            showMsg('Vendor deleted!', 'success');
         }
     };
 
-    window.switchTab = (t) => {
-        document.querySelectorAll('.tab, .tab-content').forEach(el => el.classList.remove('active'));
-        event.target.classList.add('active');
-        document.getElementById(t + 'Tab').classList.add('active');
+    window.saveVendor = async () => {
+        const name = document.getElementById('vendorName').value;
+        const category = document.getElementById('vendorCategory').value;
+        const city = document.getElementById('vendorCity').value;
+        
+        if (!name || !category || !city) {
+            showMsg('Name, Category & City are required!', 'error');
+            return;
+        }
+        
+        const imageUrl = await uploadVendorImage();
+        if (document.getElementById('vendorPhoto').files.length && !imageUrl) return;
+        
+        const vendorData = {
+            name: name,
+            category: category,
+            city: city,
+            imageUrl: imageUrl || currentImageUrl || 'https://via.placeholder.com/300?text=No+Image',
+            location: document.getElementById('vendorLocation').value || '',
+            priceRange: document.getElementById('vendorPrice').value || '',
+            rating: document.getElementById('vendorRating').value || '4.0',
+            phone: document.getElementById('vendorPhone').value || '',
+            description: document.getElementById('vendorDescription').value || '',
+            updatedAt: new Date().toISOString()
+        };
+        
+        try {
+            if (editingVendorId) {
+                await updateDoc(doc(db, 'vendors', editingVendorId), vendorData);
+                showMsg('Vendor updated successfully!', 'success');
+            } else {
+                vendorData.createdAt = new Date().toISOString();
+                await addDoc(collection(db, 'vendors'), vendorData);
+                showMsg('Vendor added successfully!', 'success');
+            }
+            closeModal('vendorModal');
+        } catch (error) {
+            showMsg('Error: ' + error.message, 'error');
+        }
     };
 
-    window.showMsg = (m, type) => {
-        const el = document.getElementById('message');
-        el.innerText = m; el.className = `message ${type}`; el.style.display = 'block';
-        setTimeout(() => el.style.display = 'none', 3000);
+    // ========== CATEGORY CRUD ==========
+    window.openAddCategory = () => {
+        document.getElementById('catName').value = '';
+        document.getElementById('catIcon').value = '';
+        openModal('categoryModal');
+    };
+
+    window.editCategory = (id) => {
+        const cat = categories.find(c => c.id === id);
+        if (!cat) return;
+        document.getElementById('catName').value = cat.name;
+        document.getElementById('catIcon').value = cat.icon || '';
+        document.getElementById('categoryModal').style.display = 'flex';
+        window.editingCategoryId = id;
+    };
+
+    window.deleteCategory = async (id) => {
+        if (confirm('Delete this category?')) {
+            await setDoc(doc(db, 'categories', id), { deleted: true });
+            showMsg('Category deleted!', 'success');
+        }
+    };
+
+    window.saveCategory = async () => {
+        const name = document.getElementById('catName').value;
+        if (!name) { showMsg('Enter category name', 'error'); return; }
+        const id = name.toLowerCase().replace(/ /g, '');
+        const icon = document.getElementById('catIcon').value || '🏷️';
+        const cat = { id, name, icon };
+        
+        try {
+            await setDoc(doc(db, 'categories', id), cat);
+            showMsg('Category saved!', 'success');
+            closeModal('categoryModal');
+        } catch (error) {
+            showMsg('Error: ' + error.message, 'error');
+        }
+    };
+
+    // ========== CITY CRUD ==========
+    window.openAddCity = () => {
+        editingCityIndex = null;
+        document.getElementById('cityNameInput').value = '';
+        document.getElementById('cityPopularCheck').checked = false;
+        openModal('cityModal');
+    };
+
+    window.editCity = (index) => {
+        editingCityIndex = index;
+        document.getElementById('cityNameInput').value = cities[index].name;
+        document.getElementById('cityPopularCheck').checked = cities[index].popular || false;
+        openModal('cityModal');
+    };
+
+    window.deleteCity = async (index) => {
+        if (confirm('Delete this city?')) {
+            cities.splice(index, 1);
+            await setDoc(doc(db, 'settings', 'cities'), { list: cities });
+            showMsg('City deleted!', 'success');
+        }
+    };
+
+    window.saveCity = async () => {
+        const name = document.getElementById('cityNameInput').value;
+        if (!name) { showMsg('Enter city name', 'error'); return; }
+        const popular = document.getElementById('cityPopularCheck').checked;
+        
+        if (editingCityIndex !== null) {
+            cities[editingCityIndex] = { name, popular };
+        } else {
+            if (cities.find(c => c.name === name)) {
+                showMsg('City already exists!', 'error');
+                return;
+            }
+            cities.push({ name, popular });
+        }
+        
+        await setDoc(doc(db, 'settings', 'cities'), { list: cities });
+        showMsg('City saved!', 'success');
+        closeModal('cityModal');
+        editingCityIndex = null;
+    };
+
+    // ========== UTILITIES ==========
+    function showMsg(msg, type) {
+        const msgDiv = document.getElementById('message');
+        msgDiv.className = `message ${type}`;
+        msgDiv.innerText = msg;
+        setTimeout(() => { msgDiv.style.display = 'none'; }, 3000);
     }
 
-    window.logout = () => { localStorage.removeItem('admin'); window.location.href = 'admin-login.html'; };
+    window.openModal = (id) => document.getElementById(id).style.display = 'flex';
+    window.closeModal = (id) => document.getElementById(id).style.display = 'none';
+    
+    window.switchTab = (tab) => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.getElementById(`${tab}Tab`).classList.add('active');
+    };
 
-    // Initial Auth Check
-    if (localStorage.getItem('admin') !== 'true') window.location.href = 'admin-login.html';
+    window.logout = () => {
+        localStorage.removeItem('admin');
+        window.location.href = 'admin-login.html';
+    };
 
+    if (localStorage.getItem('admin') !== 'true') {
+        window.location.href = 'admin-login.html';
+    }
 </script>
 </body>
 </html>
