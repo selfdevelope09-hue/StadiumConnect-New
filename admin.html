@@ -56,51 +56,78 @@
         let editingCatId = null;
         let editingCity = null;
 
-        // ========== LOAD DATA ==========
+        // Test connection first
+        async function testFirebaseConnection() {
+            try {
+                const testRef = doc(db, "test", "connection");
+                await setDoc(testRef, { status: "ok", time: new Date().toISOString() });
+                showMessage("✅ Firebase connected!", "success");
+                return true;
+            } catch (error) {
+                showMessage("❌ Firebase Error: " + error.message, "error");
+                console.error("Firebase error:", error);
+                return false;
+            }
+        }
+
         async function loadVendors() {
-            const snapshot = await getDocs(collection(db, "vendors"));
-            vendors = [];
-            snapshot.forEach(doc => vendors.push({ id: doc.id, ...doc.data() }));
-            renderVendors();
-            updateStats();
+            try {
+                const snapshot = await getDocs(collection(db, "vendors"));
+                vendors = [];
+                snapshot.forEach(doc => vendors.push({ id: doc.id, ...doc.data() }));
+                renderVendors();
+                updateStats();
+            } catch (error) {
+                showMessage("Error loading vendors: " + error.message, "error");
+            }
         }
 
         async function loadCategories() {
-            const snapshot = await getDocs(collection(db, "categories"));
-            categories = [];
-            snapshot.forEach(doc => { if (!doc.data().deleted) categories.push({ id: doc.id, ...doc.data() }); });
-            if (categories.length === 0) {
-                categories = [
-                    { id: 'decorator', name: 'Decorators', icon: '🎨' },
-                    { id: 'photographer', name: 'Photographers', icon: '📸' },
-                    { id: 'caterer', name: 'Caterers', icon: '🍽️' },
-                    { id: 'bandbaja', name: 'Band Baja', icon: '🎵' },
-                    { id: 'stadium', name: 'Stadiums', icon: '🏟️' }
-                ];
+            try {
+                const snapshot = await getDocs(collection(db, "categories"));
+                categories = [];
+                snapshot.forEach(doc => { if (!doc.data().deleted) categories.push({ id: doc.id, ...doc.data() }); });
+                if (categories.length === 0) {
+                    categories = [
+                        { id: 'decorator', name: 'Decorators', icon: '🎨' },
+                        { id: 'photographer', name: 'Photographers', icon: '📸' },
+                        { id: 'caterer', name: 'Caterers', icon: '🍽️' },
+                        { id: 'bandbaja', name: 'Band Baja', icon: '🎵' },
+                        { id: 'stadium', name: 'Stadiums', icon: '🏟️' }
+                    ];
+                }
+                renderCategories();
+                updateCategorySelect();
+            } catch (error) {
+                showMessage("Error loading categories: " + error.message, "error");
             }
-            renderCategories();
-            updateCategorySelect();
         }
 
         async function loadCities() {
-            const docRef = doc(db, 'settings', 'cities');
-            const docSnap = await getDoc(docRef);
-            cities = docSnap.exists() ? docSnap.data().list : [];
-            if (cities.length === 0) {
-                cities = [
-                    { name: 'Nagpur', popular: true },
-                    { name: 'Mumbai', popular: true },
-                    { name: 'Pune', popular: true },
-                    { name: 'Delhi', popular: true },
-                    { name: 'Bangalore', popular: true }
-                ];
+            try {
+                const docRef = doc(db, 'settings', 'cities');
+                const docSnap = await getDoc(docRef);
+                cities = docSnap.exists() ? docSnap.data().list : [];
+                if (cities.length === 0) {
+                    cities = [
+                        { name: 'Nagpur', popular: true },
+                        { name: 'Mumbai', popular: true },
+                        { name: 'Pune', popular: true },
+                        { name: 'Delhi', popular: true },
+                        { name: 'Bangalore', popular: true }
+                    ];
+                    await saveCities(); // Save default cities
+                }
+                renderCities();
+                updateCitySelect();
+            } catch (error) {
+                showMessage("Error loading cities: " + error.message, "error");
             }
-            renderCities();
-            updateCitySelect();
         }
 
         function renderVendors() {
             const tbody = document.getElementById('vendorTable');
+            if (!tbody) return;
             tbody.innerHTML = vendors.map(v => `
                 <tr>
                     <td>${v.name || '-'}</td>
@@ -112,12 +139,13 @@
                         <button class="btn-edit" onclick="editVendor('${v.id}')">Edit</button>
                         <button class="btn-delete" onclick="deleteVendor('${v.id}')">Del</button>
                     </td>
-                 </tr>
+                </tr>
             `).join('');
         }
 
         function renderCategories() {
             const container = document.getElementById('categoriesList');
+            if (!container) return;
             container.innerHTML = categories.map(c => `
                 <div class="list-item">
                     <span>${c.icon || '🏷️'} ${c.name}</span>
@@ -131,6 +159,7 @@
 
         function renderCities() {
             const container = document.getElementById('citiesList');
+            if (!container) return;
             container.innerHTML = cities.map((c, index) => `
                 <div class="list-item">
                     <span>📍 ${c.name} ${c.popular ? '<span class="popular-badge">Popular</span>' : ''}</span>
@@ -271,22 +300,26 @@
             const id = name.toLowerCase().replace(/ /g, '');
             const cat = { id, name, icon: document.getElementById('categoryIcon').value || '🏷️' };
             
-            if (editingCatId) {
-                const index = categories.findIndex(c => c.id === editingCatId);
-                if (index !== -1) categories[index] = cat;
-                await setDoc(doc(db, 'categories', id), cat);
-                showMessage('Category updated!', 'success');
-            } else {
-                if (!categories.find(c => c.id === id)) categories.push(cat);
-                await setDoc(doc(db, 'categories', id), cat);
-                showMessage('Category added!', 'success');
+            try {
+                if (editingCatId) {
+                    const index = categories.findIndex(c => c.id === editingCatId);
+                    if (index !== -1) categories[index] = cat;
+                    await setDoc(doc(db, 'categories', id), cat);
+                    showMessage('Category updated!', 'success');
+                } else {
+                    if (!categories.find(c => c.id === id)) categories.push(cat);
+                    await setDoc(doc(db, 'categories', id), cat);
+                    showMessage('Category added!', 'success');
+                }
+                renderCategories();
+                updateCategorySelect();
+                closeModal('categoryModal');
+            } catch (error) {
+                showMessage('Error: ' + error.message, 'error');
             }
-            renderCategories();
-            updateCategorySelect();
-            closeModal('categoryModal');
         };
 
-        // ========== CITIES WITH POPULAR OPTION ==========
+        // ========== CITIES ==========
         window.openAddCity = () => {
             editingCity = null;
             document.getElementById('cityName').value = '';
@@ -320,23 +353,27 @@
             
             const cityData = { name: name, popular: popular };
             
-            if (editingCity !== null) {
-                cities[editingCity] = cityData;
-                showMessage('City updated!', 'success');
-            } else {
-                if (!cities.find(c => c.name === name)) {
-                    cities.push(cityData);
-                    showMessage('City added!', 'success');
+            try {
+                if (editingCity !== null) {
+                    cities[editingCity] = cityData;
+                    showMessage('City updated!', 'success');
                 } else {
-                    showMessage('City already exists!', 'error');
-                    return;
+                    if (!cities.find(c => c.name === name)) {
+                        cities.push(cityData);
+                        showMessage('City added successfully!', 'success');
+                    } else {
+                        showMessage('City already exists!', 'error');
+                        return;
+                    }
                 }
+                await saveCities();
+                renderCities();
+                updateCitySelect();
+                closeModal('cityModal');
+                editingCity = null;
+            } catch (error) {
+                showMessage('Error: ' + error.message, 'error');
             }
-            await saveCities();
-            renderCities();
-            updateCitySelect();
-            closeModal('cityModal');
-            editingCity = null;
         };
 
         async function saveCities() {
@@ -377,9 +414,11 @@
         }
 
         // Initialize
-        loadVendors();
-        loadCategories();
-        loadCities();
+        testFirebaseConnection().then(() => {
+            loadVendors();
+            loadCategories();
+            loadCities();
+        });
     </script>
 </head>
 <body>
@@ -412,10 +451,10 @@
     <div class="card">
         <button onclick="openAddVendor()">+ Add Vendor</button>
         <div style="overflow-x: auto;">
-            <table>
-                <thead><tr><th>Name</th><th>Category</th><th>City</th><th>Price</th><th>Rating</th><th>Actions</th></tr></thead>
+             <table>
+                <thead> <tr><th>Name</th><th>Category</th><th>City</th><th>Price</th><th>Rating</th><th>Actions</th></tr> </thead>
                 <tbody id="vendorTable"><tr><td colspan="6">Loading...</td></tr></tbody>
-            </table>
+             </table>
         </div>
     </div>
 </div>
@@ -465,15 +504,15 @@
     </div>
 </div>
 
-<!-- City Modal with Popular Option -->
+<!-- City Modal -->
 <div id="cityModal" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeModal('cityModal')">&times;</span>
         <h3>Add/Edit City</h3>
-        <input type="text" id="cityName" placeholder="City Name" style="margin-bottom: 5px;">
+        <input type="text" id="cityName" placeholder="City Name">
         <div class="checkbox-group">
             <input type="checkbox" id="cityPopular">
-            <label for="cityPopular">✨ Show in Popular Cities (Home Page)</label>
+            <label for="cityPopular">⭐ Show in Popular Cities (Home Page)</label>
         </div>
         <button onclick="saveCity()" style="background:#28a745; width:100%; margin-top:10px;">Save City</button>
     </div>
