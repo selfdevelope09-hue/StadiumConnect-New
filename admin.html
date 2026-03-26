@@ -1,4 +1,4 @@
-       <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -27,25 +27,24 @@
         .btn-edit { background: #ffc107; }
         .btn-delete { background: #dc3545; color: white; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; }
-        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; }
-        .modal input, .modal select, .modal textarea { width: 100%; padding: 8px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; }
+        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 550px; max-height: 80vh; overflow-y: auto; }
+        .modal input, .modal select, .modal textarea { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; }
         .close { float: right; font-size: 24px; cursor: pointer; }
         .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; }
-        .add-section { display: flex; gap: 10px; margin-top: 15px; }
-        .add-section input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; }
+        .form-row { display: flex; gap: 10px; flex-wrap: wrap; }
+        .form-row > div { flex: 1; }
+        .location-note { font-size: 11px; color: #666; margin-top: -5px; margin-bottom: 10px; }
     </style>
     
-    <!-- Admin Check -->
     <script>
         if (localStorage.getItem('admin') !== 'true') {
             window.location.href = 'admin-login.html';
         }
     </script>
 
-    <!-- Firebase -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, addDoc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, doc, addDoc, updateDoc, deleteDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
@@ -59,19 +58,13 @@
         const db = getFirestore(app);
 
         let vendors = [];
-        let categories = [
-            { id: 'decorator', name: 'Decorators', icon: '🎨' },
-            { id: 'photographer', name: 'Photographers', icon: '📸' },
-            { id: 'caterer', name: 'Caterers', icon: '🍽️' },
-            { id: 'bandbaja', name: 'Band Baja', icon: '🎵' },
-            { id: 'stadium', name: 'Stadiums', icon: '🏟️' }
-        ];
-        let cities = ['Nagpur', 'Mumbai', 'Pune', 'Delhi', 'Bangalore', 'Hyderabad'];
+        let categories = [];
+        let cities = [];
         let editingVendorId = null;
         let editingCategoryId = null;
         let editingCity = null;
 
-        // Load all data
+        // Load data
         async function loadVendors() {
             const snap = await getDocs(collection(db, "vendors"));
             vendors = [];
@@ -82,20 +75,32 @@
 
         async function loadCategories() {
             const snap = await getDocs(collection(db, "categories"));
-            if (!snap.empty) {
-                categories = [];
-                snap.forEach(doc => categories.push({ id: doc.id, ...doc.data() }));
+            categories = [];
+            snap.forEach(doc => { if (!doc.data().deleted) categories.push({ id: doc.id, ...doc.data() }); });
+            if (categories.length === 0) {
+                categories = [
+                    { id: 'decorator', name: 'Decorators', icon: '🎨' },
+                    { id: 'photographer', name: 'Photographers', icon: '📸' },
+                    { id: 'caterer', name: 'Caterers', icon: '🍽️' },
+                    { id: 'bandbaja', name: 'Band Baja', icon: '🎵' },
+                    { id: 'stadium', name: 'Stadiums', icon: '🏟️' }
+                ];
             }
             renderCategoriesList();
+            updateCategorySelect();
         }
 
         async function loadCities() {
             const docRef = doc(db, 'settings', 'cities');
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
-                cities = docSnap.data().list;
+                cities = docSnap.data().list || [];
+            }
+            if (cities.length === 0) {
+                cities = ['Nagpur', 'Mumbai', 'Pune', 'Delhi', 'Bangalore', 'Hyderabad'];
             }
             renderCitiesList();
+            updateCitySelect();
         }
 
         function updateStats() {
@@ -107,21 +112,35 @@
             document.getElementById('stadiumCount').innerText = vendors.filter(v => v.category === 'stadium').length;
         }
 
+        function updateCategorySelect() {
+            const select = document.getElementById('vendorCategory');
+            if (select) {
+                select.innerHTML = categories.map(c => `<option value="${c.id}">${c.icon || '🏷️'} ${c.name}</option>`).join('');
+            }
+        }
+
+        function updateCitySelect() {
+            const select = document.getElementById('vendorCity');
+            if (select) {
+                select.innerHTML = cities.map(c => `<option value="${c}">${c}</option>`).join('');
+            }
+        }
+
         // ========= VENDORS =========
         function renderVendorsTable() {
             const tbody = document.getElementById('vendorTable');
             tbody.innerHTML = vendors.map(v => `
                 <tr>
-                    <td>${v.name || '-'} \\
-                    <td>${v.category || '-'} \\
-                    <td>${v.city || '-'} \\
-                    <td>${v.priceRange || '-'} \\
-                    <td>${v.rating || '-'} \\
+                    <td>${v.name || '-'}</td>
+                    <td>${v.category || '-'}</td>
+                    <td>${v.city || '-'}</td>
+                    <td>${v.priceRange || '-'}</td>
+                    <td>${v.rating || '-'}</td>
                     <td>
                         <button class="btn-edit" onclick="openEditVendor('${v.id}')">Edit</button>
                         <button class="btn-delete" onclick="deleteVendor('${v.id}')">Del</button>
                     </td>
-                 </tr>
+                </tr>
             `).join('');
         }
 
@@ -130,6 +149,8 @@
             document.getElementById('vendorModalTitle').innerText = 'Add Vendor';
             document.getElementById('vendorForm').reset();
             document.getElementById('vendorCapacityGroup').style.display = 'none';
+            document.getElementById('vendorLat').value = '';
+            document.getElementById('vendorLng').value = '';
             document.getElementById('vendorModal').style.display = 'flex';
         };
 
@@ -147,6 +168,8 @@
             document.getElementById('vendorPhone').value = v.phone || '';
             document.getElementById('vendorDescription').value = v.description || '';
             document.getElementById('vendorCapacity').value = v.capacity || '';
+            document.getElementById('vendorLat').value = v.lat || '';
+            document.getElementById('vendorLng').value = v.lng || '';
             document.getElementById('vendorCapacityGroup').style.display = v.category === 'stadium' ? 'block' : 'none';
             document.getElementById('vendorModal').style.display = 'flex';
         };
@@ -159,18 +182,21 @@
         };
 
         window.saveVendor = async () => {
+            const category = document.getElementById('vendorCategory').value;
             const data = {
                 name: document.getElementById('vendorName').value,
-                category: document.getElementById('vendorCategory').value,
+                category: category,
                 city: document.getElementById('vendorCity').value,
                 location: document.getElementById('vendorLocation').value,
                 priceRange: document.getElementById('vendorPrice').value,
                 rating: parseFloat(document.getElementById('vendorRating').value) || 4.0,
                 phone: document.getElementById('vendorPhone').value,
                 description: document.getElementById('vendorDescription').value,
+                lat: parseFloat(document.getElementById('vendorLat').value) || null,
+                lng: parseFloat(document.getElementById('vendorLng').value) || null,
                 updatedAt: new Date().toISOString()
             };
-            if (data.category === 'stadium') data.capacity = document.getElementById('vendorCapacity').value;
+            if (category === 'stadium') data.capacity = document.getElementById('vendorCapacity').value;
             
             if (editingVendorId) {
                 await updateDoc(doc(db, 'vendors', editingVendorId), data);
@@ -224,6 +250,7 @@
                 categories = categories.filter(c => c.id !== id);
                 await setDoc(doc(db, 'categories', id), { deleted: true });
                 renderCategoriesList();
+                updateCategorySelect();
             }
         };
 
@@ -242,6 +269,7 @@
             }
             await setDoc(doc(db, 'categories', id), cat);
             renderCategoriesList();
+            updateCategorySelect();
             closeModal('categoryModal');
             alert('Category saved!');
         };
@@ -277,6 +305,7 @@
                 cities = cities.filter(c => c !== city);
                 saveCities();
                 renderCitiesList();
+                updateCitySelect();
             }
         };
 
@@ -291,6 +320,7 @@
             }
             await saveCities();
             renderCitiesList();
+            updateCitySelect();
             closeModal('cityModal');
             alert('City saved!');
         };
@@ -381,22 +411,21 @@
     <div class="modal-content">
         <span class="close" onclick="closeModal('vendorModal')">&times;</span>
         <h3 id="vendorModalTitle">Add Vendor</h3>
-        <input type="text" id="vendorName" placeholder="Name">
-        <select id="vendorCategory" onchange="onVendorCategoryChange()">
-            <option value="decorator">Decorator</option>
-            <option value="photographer">Photographer</option>
-            <option value="caterer">Caterer</option>
-            <option value="bandbaja">Band Baja</option>
-            <option value="stadium">Stadium</option>
-        </select>
-        <input type="text" id="vendorCity" placeholder="City">
-        <input type="text" id="vendorLocation" placeholder="Location">
+        <input type="text" id="vendorName" placeholder="Vendor Name *">
+        <select id="vendorCategory" onchange="onVendorCategoryChange()"></select>
+        <select id="vendorCity"></select>
+        <input type="text" id="vendorLocation" placeholder="Location (Area)">
         <input type="text" id="vendorPrice" placeholder="Price Range">
-        <input type="text" id="vendorRating" placeholder="Rating">
-        <input type="text" id="vendorPhone" placeholder="Phone">
+        <input type="text" id="vendorRating" placeholder="Rating (1-5)">
+        <input type="text" id="vendorPhone" placeholder="Phone Number">
         <div id="vendorCapacityGroup" style="display:none"><input type="text" id="vendorCapacity" placeholder="Capacity (seats)"></div>
+        <div class="form-row">
+            <div><input type="text" id="vendorLat" placeholder="Latitude (for location)"></div>
+            <div><input type="text" id="vendorLng" placeholder="Longitude (for location)"></div>
+        </div>
+        <div class="location-note">📍 Lat/Lng for 250km radius search. Get from Google Maps.</div>
         <textarea id="vendorDescription" rows="2" placeholder="Description"></textarea>
-        <button onclick="saveVendor()" style="background:#ff6b35; color:white; padding:10px; width:100%; margin-top:10px;">Save</button>
+        <button onclick="saveVendor()" style="background:#ff6b35; color:white; padding:10px; width:100%; margin-top:10px;">Save Vendor</button>
     </div>
 </div>
 
