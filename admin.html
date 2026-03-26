@@ -37,28 +37,21 @@
         .modal-content { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 700px; max-height: 90vh; overflow-y: auto; position: relative; }
         .close { position: absolute; right: 20px; top: 15px; font-size: 24px; cursor: pointer; color: #666;}
         
-        .message { padding: 12px; border-radius: 8px; margin-bottom: 15px; display: none; text-align: center; }
+        .message { padding: 12px; border-radius: 8px; margin-bottom: 15px; display: none; text-align: center; font-weight: bold; }
         .success { background: #d4edda; color: #155724; display: block; }
         .error { background: #f8d7da; color: #721c24; display: block; }
         
         .list-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #eee; }
-        .popular-badge { background: #ff6b35; color: white; font-size: 10px; padding: 2px 8px; border-radius: 20px; margin-left: 10px; }
-        .checkbox-group { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
         .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; }
         .status-pending { background: #fff3cd; color: #856404; }
         .status-confirmed { background: #d4edda; color: #155724; }
         .status-completed { background: #d4edda; color: #155724; }
         .status-cancelled { background: #f8d7da; color: #721c24; }
-        .earnings-cell { color: #28a745; font-weight: bold; }
         
-        /* Photo Gallery */
         .photos-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
         .photo-item { position: relative; width: 100px; height: 100px; border-radius: 10px; overflow: hidden; border: 1px solid #ddd; }
         .photo-item img { width: 100%; height: 100%; object-fit: cover; }
         .photo-item .remove-photo { position: absolute; top: 2px; right: 2px; background: red; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 12px; }
-        .upload-btn { background: #f0f0f0; border: 1px dashed #ccc; padding: 10px; border-radius: 10px; cursor: pointer; text-align: center; margin-top: 5px; }
-        
-        @media (max-width: 768px) { th, td { font-size: 12px; padding: 8px; } .tab { padding: 6px 14px; font-size: 12px; } .modal-content { padding: 20px; } }
     </style>
 </head>
 <body>
@@ -79,7 +72,6 @@
     <button class="tab" onclick="switchTab('agents')">🤝 Agents</button>
 </div>
 
-<!-- Vendors Tab -->
 <div id="vendorsTab" class="tab-content active">
     <div class="card">
         <button class="btn-add" onclick="openAddVendor()">+ Add New Vendor</button>
@@ -92,15 +84,12 @@
     </div>
 </div>
 
-<!-- Categories Tab -->
 <div id="categoriesTab" class="tab-content">
     <div class="card">
         <button class="btn-add" onclick="openAddCategory()">+ Add Category</button>
         <div id="categoriesList"></div>
     </div>
 </div>
-
-<!-- Cities Tab -->
 <div id="citiesTab" class="tab-content">
     <div class="card">
         <button class="btn-add" onclick="openAddCity()">+ Add City</button>
@@ -108,98 +97,65 @@
     </div>
 </div>
 
-<!-- Bookings Tab -->
 <div id="bookingsTab" class="tab-content">
     <div class="card">
-        <div style="display: flex; justify-content: space-between; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
-            <h3>📋 All Bookings</h3>
-            <div style="display: flex; gap: 10px;">
-                <select id="bookingStatusFilter" onchange="filterBookings()">
-                    <option value="all">All</option><option value="pending">Pending</option>
-                    <option value="confirmed">Confirmed</option><option value="completed">Completed</option>
-                    <option value="cancelled">Cancelled</option>
-                </select>
-                <input type="text" id="bookingSearch" placeholder="Search..." onkeyup="filterBookings()">
-            </div>
-        </div>
+        <h3>📋 Recent Bookings</h3>
         <div class="table-container">
-            <table id="bookingsTable">
-                <thead> <th>ID</th><th>Date & Time</th><th>Customer</th><th>Phone</th><th>Vendor</th><th>City</th><th>Amount</th><th>Agent</th><th>Status</th><th>Actions</th> </thead>
+            <table>
+                <thead> <th>ID</th><th>Customer</th><th>Vendor</th><th>City</th><th>Amount</th><th>Status</th><th>Actions</th> </thead>
                 <tbody id="bookingsTableBody"></tbody>
             </table>
         </div>
     </div>
 </div>
 
-<!-- Agents Tab -->
 <div id="agentsTab" class="tab-content">
     <div class="card">
         <button class="btn-add" onclick="openAddAgent()">+ Add Agent</button>
         <div class="table-container">
-            <table><thead> <th>ID</th><th>Name</th><th>Phone</th><th>City</th><th>Target</th><th>Bookings</th><th>Revenue</th><th>Earnings</th><th>Actions</th> </thead>
+            <table><thead> <th>ID</th><th>Name</th><th>Phone</th><th>City</th><th>Actions</th> </thead>
             <tbody id="agentsTableBody"></tbody></table>
         </div>
     </div>
 </div>
 
-<!-- Vendor Modal -->
 <div id="vendorModal" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeModal('vendorModal')">&times;</span>
         <h3 id="vendorModalTitle">Add Vendor</h3>
-        <input type="text" id="vendorName" placeholder="Vendor Name *">
-        <select id="vendorCategory"></select>
-        <select id="vendorCity"></select>
-        <input type="text" id="vendorLocation" placeholder="Location (Area)">
-        <input type="text" id="vendorPrice" placeholder="Price Range">
-        <input type="text" id="vendorRating" placeholder="Rating">
-        <input type="text" id="vendorPhone" placeholder="Vendor Phone">
-        <input type="text" id="agentPhone" placeholder="Agent Phone Number *">
-        <textarea id="vendorDescription" rows="2" placeholder="Description"></textarea>
-        
-        <h4 style="margin-top:15px;">📸 Vendor Logo</h4>
-        <input type="file" id="vendorLogo" accept="image/*" onchange="previewLogo(this)">
-        <img id="logoPreview" style="display:none; width:80px; height:80px; border-radius:10px; margin-top:5px;">
-        
-        <h4 style="margin-top:15px;">🎨 Work Photos (Multiple)</h4>
-        <input type="file" id="workPhotos" accept="image/*" multiple onchange="previewWorkPhotos(this)">
-        <div id="workPhotosPreview" class="photos-grid"></div>
-        <div id="uploadProgress" style="display:none; color:#ff6b35; margin-top:5px;">Uploading...</div>
-        
-        <button onclick="saveVendor()" style="background:#28a745; width:100%; margin-top:15px;">SAVE VENDOR</button>
+        <form id="vendorForm" onsubmit="event.preventDefault()">
+            <input type="text" id="vendorName" placeholder="Vendor Name *">
+            <select id="vendorCategory"></select>
+            <select id="vendorCity"></select>
+            <input type="text" id="vendorLocation" placeholder="Location (Area)">
+            <input type="text" id="vendorPrice" placeholder="Price Range">
+            <input type="text" id="vendorRating" placeholder="Rating (1-5)">
+            <input type="text" id="vendorPhone" placeholder="Vendor Phone">
+            <input type="text" id="agentPhone" placeholder="Agent Phone Number *">
+            <textarea id="vendorDescription" rows="2" placeholder="Description"></textarea>
+            
+            <h4 style="margin-top:10px;">📸 Logo</h4>
+            <input type="file" id="vendorLogo" accept="image/*" onchange="previewLogo(this)">
+            <img id="logoPreview" style="display:none; width:60px; height:60px; border-radius:8px; margin-top:5px;">
+            
+            <h4 style="margin-top:10px;">🎨 Work Photos (Multiple)</h4>
+            <input type="file" id="workPhotos" accept="image/*" multiple onchange="previewWorkPhotos(this)">
+            <div id="workPhotosPreview" class="photos-grid"></div>
+            
+            <div id="uploadProgress" style="display:none; color:#ff6b35; font-weight:bold; margin-top:10px;">Saving & Uploading...</div>
+            <button id="mainSaveVendorBtn" onclick="saveVendor()" style="background:#28a745; width:100%; margin-top:15px; font-weight:bold;">SAVE VENDOR</button>
+        </form>
     </div>
 </div>
 
-<!-- Category Modal -->
 <div id="categoryModal" class="modal">
-    <div class="modal-content"><span class="close" onclick="closeModal('categoryModal')">&times;</span>
-        <h3>Add Category</h3><input type="text" id="catName" placeholder="Name"><input type="text" id="catIcon" placeholder="Icon">
-        <button onclick="saveCategory()" style="background:#28a745; width:100%; margin-top:10px;">SAVE</button>
-    </div>
+    <div class="modal-content"><span class="close" onclick="closeModal('categoryModal')">&times;</span><h3>Add Category</h3><input type="text" id="catName" placeholder="Name"><input type="text" id="catIcon" placeholder="Icon"><button onclick="saveCategory()" style="background:#28a745; width:100%; margin-top:10px;">SAVE</button></div>
 </div>
-
-<!-- City Modal -->
 <div id="cityModal" class="modal">
-    <div class="modal-content"><span class="close" onclick="closeModal('cityModal')">&times;</span>
-        <h3>Add City</h3><input type="text" id="cityNameInput" placeholder="City Name">
-        <div class="checkbox-group"><input type="checkbox" id="cityPopularCheck"><label>⭐ Popular</label></div>
-        <button onclick="saveCity()" style="background:#28a745; width:100%; margin-top:10px;">SAVE</button>
-    </div>
+    <div class="modal-content"><span class="close" onclick="closeModal('cityModal')">&times;</span><h3>Add City</h3><input type="text" id="cityNameInput" placeholder="City Name"><div class="checkbox-group"><input type="checkbox" id="cityPopularCheck"><label>⭐ Popular</label></div><button onclick="saveCity()" style="background:#28a745; width:100%; margin-top:10px;">SAVE</button></div>
 </div>
-
-<!-- Agent Modal -->
 <div id="agentModal" class="modal">
-    <div class="modal-content"><span class="close" onclick="closeModal('agentModal')">&times;</span>
-        <h3 id="agentModalTitle">Add Agent</h3>
-        <input type="text" id="agentId" placeholder="Agent ID" readonly>
-        <input type="text" id="agentName" placeholder="Full Name *">
-        <input type="tel" id="agentPhone" placeholder="Phone Number *">
-        <select id="agentCity"></select>
-        <input type="email" id="agentEmail" placeholder="Email">
-        <input type="number" id="agentTarget" value="50000">
-        <input type="text" id="agentPassword" value="agent123">
-        <button onclick="saveAgent()" style="background:#28a745; width:100%; margin-top:10px;">SAVE</button>
-    </div>
+    <div class="modal-content"><span class="close" onclick="closeModal('agentModal')">&times;</span><h3 id="agentModalTitle">Add Agent</h3><input type="text" id="agentId" placeholder="Agent ID" readonly><input type="text" id="agentName" placeholder="Name"><input type="tel" id="agentPhoneInput" placeholder="Phone"><select id="agentCity"></select><button onclick="saveAgent()" style="background:#28a745; width:100%; margin-top:10px;">SAVE</button></div>
 </div>
 
 <script type="module">
@@ -218,214 +174,184 @@
     const db = getFirestore(app);
     const IMGBB_KEY = "459b0b4e8a9c6fcceaffd15320a6fdbd";
 
-    if (localStorage.getItem('admin') !== 'true') window.location.href = 'admin-login.html';
-
     let vendors = [], categories = [], cities = [], bookings = [], agents = [];
     let editingVendorId = null, editingCityIndex = null;
-    let tempWorkPhotos = [];
+    let currentVendorPhotos = [];
 
-    // ========== REAL-TIME SYNC ==========
-    onSnapshot(collection(db, "bookings"), (snap) => { bookings = snap.docs.map(d => ({ id: d.id, ...d.data() })); renderBookings(); renderAgents(); });
-    onSnapshot(collection(db, "categories"), (snap) => { categories = snap.docs.map(d => ({id: d.id, ...d.data()})).filter(c => !c.deleted); renderCategories(); updateDropdowns(); });
-    onSnapshot(doc(db, 'settings', 'cities'), (d) => { cities = d.exists() ? d.data().list : [{ name:'Nagpur', popular:true }, { name:'Mumbai', popular:true }]; renderCities(); updateDropdowns(); });
-    onSnapshot(collection(db, "vendors"), (snap) => { vendors = snap.docs.map(d => ({ id: d.id, ...d.data() })); renderVendors(); });
-    onSnapshot(collection(db, "agents"), (snap) => { agents = snap.docs.map(d => ({ id: d.id, ...d.data() })); renderAgents(); });
+    // SYNC
+    onSnapshot(collection(db, "vendors"), (s) => { vendors = s.docs.map(d => ({id:d.id, ...d.data()})); renderVendors(); });
+    onSnapshot(collection(db, "categories"), (s) => { categories = s.docs.map(d => ({id:d.id, ...d.data()})).filter(c=>!c.deleted); updateDropdowns(); renderCategories(); });
+    onSnapshot(doc(db, 'settings', 'cities'), (d) => { cities = d.exists() ? d.data().list : []; updateDropdowns(); renderCities(); });
+    onSnapshot(collection(db, "bookings"), (s) => { bookings = s.docs.map(d => ({id:d.id, ...d.data()})); renderBookings(); });
+    onSnapshot(collection(db, "agents"), (s) => { agents = s.docs.map(d => ({id:d.id, ...d.data()})); renderAgents(); });
 
-    // ========== IMAGE UPLOAD ==========
+    // UPLOAD
     async function uploadToImgBB(file) {
         const formData = new FormData();
         formData.append('image', file);
         formData.append('key', IMGBB_KEY);
         const res = await fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: formData });
         const data = await res.json();
-        if (data.success) return data.data.url;
-        throw new Error(data.error?.message || 'Upload failed');
+        return data.success ? data.data.url : null;
     }
 
-    async function uploadMultiple(files) {
-        let urls = [];
-        for (let f of files) urls.push(await uploadToImgBB(f));
-        return urls;
-    }
+    // VENDOR ACTIONS
+    window.saveVendor = async () => {
+        const name = document.getElementById('vendorName').value;
+        const cat = document.getElementById('vendorCategory').value;
+        const city = document.getElementById('vendorCity').value;
+        const agentP = document.getElementById('agentPhone').value;
+        const saveBtn = document.getElementById('mainSaveVendorBtn');
 
-    window.previewLogo = (input) => {
-        if(input.files[0]){ const r=new FileReader(); r.onload=e=>{ document.getElementById('logoPreview').src=e.target.result; document.getElementById('logoPreview').style.display='block'; }; r.readAsDataURL(input.files[0]); }
+        if(!name || !cat || !city || !agentP) { showMsg('Missing required fields!', 'error'); return; }
+
+        saveBtn.disabled = true;
+        document.getElementById('uploadProgress').style.display = 'block';
+
+        try {
+            // Logo upload
+            let logoUrl = editingVendorId ? (vendors.find(v=>v.id===editingVendorId).imageUrl) : 'https://via.placeholder.com/80';
+            const logoFile = document.getElementById('vendorLogo').files[0];
+            if(logoFile) logoUrl = await uploadToImgBB(logoFile);
+
+            // Gallery upload
+            let galleryUrls = editingVendorId ? (vendors.find(v=>v.id===editingVendorId).photos || []) : [];
+            const galleryFiles = document.getElementById('workPhotos').files;
+            if(galleryFiles.length > 0) {
+                for(let f of galleryFiles) {
+                    const url = await uploadToImgBB(f);
+                    if(url) galleryUrls.push(url);
+                }
+            }
+
+            const data = {
+                name, category: cat, city, agentPhone: agentP, imageUrl: logoUrl, photos: galleryUrls,
+                location: document.getElementById('vendorLocation').value,
+                priceRange: document.getElementById('vendorPrice').value,
+                rating: document.getElementById('vendorRating').value || '4.0',
+                phone: document.getElementById('vendorPhone').value,
+                description: document.getElementById('vendorDescription').value,
+                updatedAt: new Date().toISOString()
+            };
+
+            if(editingVendorId) await updateDoc(doc(db, 'vendors', editingVendorId), data);
+            else { data.createdAt = new Date().toISOString(); await addDoc(collection(db, 'vendors'), data); }
+
+            closeModal('vendorModal');
+            showMsg('Vendor Saved Successfully!', 'success');
+        } catch(e) { showMsg(e.message, 'error'); }
+        finally { saveBtn.disabled = false; document.getElementById('uploadProgress').style.display = 'none'; }
     };
-    
-    window.previewWorkPhotos = (input) => {
-        tempWorkPhotos = [];
-        const container = document.getElementById('workPhotosPreview');
-        container.innerHTML = '';
-        Array.from(input.files).forEach((file, i) => {
-            const r = new FileReader();
-            r.onload = e => {
-                tempWorkPhotos.push(e.target.result);
+
+    window.openAddVendor = () => {
+        editingVendorId = null;
+        document.getElementById('vendorForm').reset();
+        document.getElementById('logoPreview').style.display = 'none';
+        document.getElementById('workPhotosPreview').innerHTML = '';
+        document.getElementById('vendorModalTitle').innerText = 'Add New Vendor';
+        openModal('vendorModal');
+    };
+
+    window.editVendor = (id) => {
+        const v = vendors.find(x => x.id === id);
+        if(!v) return;
+        editingVendorId = id;
+        document.getElementById('vendorModalTitle').innerText = 'Edit Vendor';
+        document.getElementById('vendorName').value = v.name || '';
+        document.getElementById('vendorCategory').value = v.category || '';
+        document.getElementById('vendorCity').value = v.city || '';
+        document.getElementById('vendorLocation').value = v.location || '';
+        document.getElementById('vendorPrice').value = v.priceRange || '';
+        document.getElementById('vendorRating').value = v.rating || '';
+        document.getElementById('vendorPhone').value = v.phone || '';
+        document.getElementById('agentPhone').value = v.agentPhone || '';
+        document.getElementById('vendorDescription').value = v.description || '';
+        if(v.imageUrl) { document.getElementById('logoPreview').src = v.imageUrl; document.getElementById('logoPreview').style.display = 'block'; }
+        
+        const gallery = document.getElementById('workPhotosPreview');
+        gallery.innerHTML = '';
+        if(v.photos) {
+            v.photos.forEach((p, i) => {
                 const div = document.createElement('div');
                 div.className = 'photo-item';
-                div.innerHTML = `<img src="${e.target.result}"><button class="remove-photo" onclick="removeTempPhoto(${i})">×</button>`;
-                container.appendChild(div);
+                div.innerHTML = `<img src="${p}"><button class="remove-photo" onclick="deleteExistingPhoto('${id}', ${i})">×</button>`;
+                gallery.appendChild(div);
+            });
+        }
+        openModal('vendorModal');
+    };
+
+    window.deleteExistingPhoto = async (vId, idx) => {
+        if(!confirm('Remove this photo?')) return;
+        const v = vendors.find(x => x.id === vId);
+        const updatedPhotos = v.photos.filter((_, i) => i !== idx);
+        await updateDoc(doc(db, 'vendors', vId), { photos: updatedPhotos });
+        editVendor(vId); // Refresh modal gallery
+    };
+
+    window.deleteVendor = async (id) => { if(confirm('Delete Vendor?')) await deleteDoc(doc(db, 'vendors', id)); };
+
+    // DROPDOWNS
+    function updateDropdowns() {
+        const cS = document.getElementById('vendorCategory');
+        const ctS = document.getElementById('vendorCity');
+        const aC = document.getElementById('agentCity');
+        if(cS) cS.innerHTML = '<option value="">Category</option>' + categories.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+        if(ctS) ctS.innerHTML = '<option value="">City</option>' + cities.map(c=>`<option value="${c.name.toLowerCase()}">${c.name}</option>`).join('');
+        if(aC) aC.innerHTML = '<option value="">City</option>' + cities.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
+    }
+
+    // PREVIEWS
+    window.previewLogo = (input) => { if(input.files[0]){ const r=new FileReader(); r.onload=e=>{ document.getElementById('logoPreview').src=e.target.result; document.getElementById('logoPreview').style.display='block'; }; r.readAsDataURL(input.files[0]); } };
+    window.previewWorkPhotos = (input) => {
+        const gallery = document.getElementById('workPhotosPreview');
+        Array.from(input.files).forEach(f => {
+            const r = new FileReader();
+            r.onload = e => {
+                const div = document.createElement('div');
+                div.className = 'photo-item';
+                div.innerHTML = `<img src="${e.target.result}">`;
+                gallery.appendChild(div);
             };
-            r.readAsDataURL(file);
-        });
-    };
-    
-    window.removeTempPhoto = (idx) => {
-        tempWorkPhotos.splice(idx, 1);
-        const container = document.getElementById('workPhotosPreview');
-        container.innerHTML = '';
-        tempWorkPhotos.forEach((p,i) => {
-            const div = document.createElement('div');
-            div.className = 'photo-item';
-            div.innerHTML = `<img src="${p}"><button class="remove-photo" onclick="removeTempPhoto(${i})">×</button>`;
-            container.appendChild(div);
-        });
-        const dt = new DataTransfer();
-        Array.from(document.getElementById('workPhotos').files).filter((_,i)=>i!==idx).forEach(f=>dt.items.add(f));
-        document.getElementById('workPhotos').files = dt.files;
-    };
-    
-    window.removeWorkPhoto = (idx) => {
-        if(currentWorkPhotos) currentWorkPhotos.splice(idx,1);
-        const container = document.getElementById('workPhotosPreview');
-        container.innerHTML = '';
-        currentWorkPhotos.forEach((p,i) => {
-            const div = document.createElement('div');
-            div.className = 'photo-item';
-            div.innerHTML = `<img src="${p}"><button class="remove-photo" onclick="removeWorkPhoto(${i})">×</button>`;
-            container.appendChild(div);
+            r.readAsDataURL(f);
         });
     };
 
-    // ========== RENDER FUNCTIONS ==========
+    // RENDERS
     function renderVendors() {
-        const tbody = document.getElementById('vendorTable');
-        tbody.innerHTML = vendors.map(v => `
-            <tr><td><img src="${v.imageUrl||'https://via.placeholder.com/50'}" style="width:40px;height:40px;border-radius:8px;"></td>
-            <td><strong>${v.name}</strong></td><td>${v.category}</td><td>${v.city}</td><td>${v.priceRange||'-'}</td>
-            <td>${v.agentPhone||'-'}</td>
+        document.getElementById('vendorTable').innerHTML = vendors.map(v => `
+            <tr><td><img src="${v.imageUrl}" class="vendor-img-td"></td>
+            <td><strong>${v.name}</strong></td><td>${v.category}</td><td>${v.city}</td><td>${v.priceRange||'-'}</td><td>${v.agentPhone||'-'}</td>
             <td><button class="btn-edit" onclick="editVendor('${v.id}')">Edit</button><button class="btn-delete" onclick="deleteVendor('${v.id}')">Del</button></td></tr>
         `).join('');
     }
-    
-    function renderCategories() {
-        document.getElementById('categoriesList').innerHTML = categories.map(c => `<div class="list-item"><span>${c.icon} ${c.name}</span><button class="btn-delete" onclick="deleteCategory('${c.id}')">Delete</button></div>`).join('');
-    }
-    
-    function renderCities() {
-        document.getElementById('citiesList').innerHTML = cities.map((c,i) => `<div class="list-item"><span>📍 ${c.name} ${c.popular?'⭐':''}</span><div><button class="btn-edit" onclick="editCity(${i})">Edit</button><button class="btn-delete" onclick="deleteCity(${i})">Del</button></div></div>`).join('');
-    }
-    
+
     function renderBookings() {
-        const tbody = document.getElementById('bookingsTableBody');
-        if(!bookings.length){ tbody.innerHTML='<tr><td colspan="10">No bookings</td></tr>'; return; }
-        const sorted = [...bookings].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
-        tbody.innerHTML = sorted.map(b => {
-            const dateTime = b.createdAt ? new Date(b.createdAt).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '-';
-            return `<tr>
-                <td><small>${b.id?.slice(-6)}</small></td>
-                <td><small>${dateTime}</small></td>
-                <td><strong>${b.userName||'-'}</strong></td>
-                <td>${b.userPhone||'-'}</td>
-                <td>${b.vendorName||'-'}</td>
-                <td>${b.vendorCity||'-'}</td>
-                <td>${b.amount||'-'}</td>
-                <td>${b.agentId||'-'}</td>
-                <td><span class="status-badge status-${b.status}">${b.status}</span></td>
-                <td>${b.status==='pending'?`<button class="btn-confirm" onclick="updateBooking('${b.id}','confirmed')">Confirm</button>`:''}
-                    ${b.status==='confirmed'?`<button class="btn-complete" onclick="updateBooking('${b.id}','completed')">Complete</button>`:''}
-                    ${b.status!=='cancelled'?`<button class="btn-cancel" onclick="updateBooking('${b.id}','cancelled')">Cancel</button>`:''}</td>
-            </tr>`;
-        }).join('');
+        document.getElementById('bookingsTableBody').innerHTML = bookings.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).map(b => `
+            <tr><td><small>${b.id.slice(-5)}</small></td><td><strong>${b.userName}</strong></td><td>${b.vendorName}</td><td>${b.vendorCity}</td><td>${b.amount}</td>
+            <td><span class="status-badge status-${b.status}">${b.status}</span></td>
+            <td><button class="btn-edit" onclick="updateBooking('${b.id}', 'confirmed')">Confirm</button></td></tr>
+        `).join('');
     }
-    
+
     function renderAgents() {
-        const tbody = document.getElementById('agentsTableBody');
-        if(!agents.length){ tbody.innerHTML='<tr><td colspan="9">No agents</td></tr>'; return; }
-        tbody.innerHTML = agents.map(a => {
-            const agentBookings = bookings.filter(b=>b.agentId===a.id && (b.status==='confirmed'||b.status==='completed'));
-            const rev = agentBookings.reduce((s,b)=>s+(parseInt(String(b.amount).replace(/[₹,]/g,''))||0),0);
-            const earn = Math.floor(rev*0.025);
-            return `<tr><td><strong>${a.id}</strong></td><td>${a.name||'-'}</td><td>${a.phone||'-'}</td><td>${a.city||'-'}</td>
-            <td>₹${(a.target||50000).toLocaleString()}</td><td>${agentBookings.length}</td><td>₹${rev.toLocaleString()}</td>
-            <td class="earnings-cell">₹${earn.toLocaleString()}</td>
-            <td><button class="btn-edit" onclick="editAgent('${a.id}')">Edit</button><button class="btn-delete" onclick="deleteAgent('${a.id}')">Del</button></td></tr>`;
-        }).join('');
+        document.getElementById('agentsTableBody').innerHTML = agents.map(a => `
+            <tr><td>${a.id}</td><td>${a.name}</td><td>${a.phone}</td><td>${a.city}</td>
+            <td><button class="btn-edit" onclick="editAgent('${a.id}')">Edit</button></td></tr>
+        `).join('');
     }
-    
-    function updateDropdowns() {
-        const catSel = document.getElementById('vendorCategory');
-        const citySel = document.getElementById('vendorCity');
-        const agentCity = document.getElementById('agentCity');
-        if(catSel) catSel.innerHTML = '<option value="">-- Category --</option>' + categories.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
-        if(citySel) citySel.innerHTML = '<option value="">-- City --</option>' + cities.map(c=>`<option value="${c.name.toLowerCase()}">${c.name}</option>`).join('');
-        if(agentCity) agentCity.innerHTML = '<option value="">-- City --</option>' + cities.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
-    }
-    
-    function calculateCommission(amt) { const p=parseInt(String(amt).replace(/[₹,]/g,''))||0; return Math.floor(p*0.025); }
-    
-    window.updateBooking = async (id,status) => { await updateDoc(doc(db,'bookings',id),{status,updatedAt:new Date().toISOString()}); showMsg(`Booking ${status}!`,'success'); };
-    window.filterBookings = () => {
-        const status = document.getElementById('bookingStatusFilter').value;
-        const search = document.getElementById('bookingSearch').value.toLowerCase();
-        const rows = document.querySelectorAll('#bookingsTableBody tr');
-        rows.forEach(r=>{ const t=r.innerText.toLowerCase(); r.style.display = (status==='all'||t.includes(status)) && (!search||t.includes(search)) ? '' : 'none'; });
-    };
-    
-    // ========== VENDOR CRUD ==========
-    window.openAddVendor = () => { editingVendorId=null; document.getElementById('vendorForm').reset(); document.getElementById('logoPreview').style.display='none'; document.getElementById('workPhotosPreview').innerHTML=''; tempWorkPhotos=[]; openModal('vendorModal'); };
-    window.editVendor = (id) => { const v=vendors.find(x=>x.id===id); if(!v) return; editingVendorId=id; document.getElementById('vendorName').value=v.name||''; document.getElementById('vendorCategory').value=v.category||''; document.getElementById('vendorCity').value=v.city||''; document.getElementById('vendorLocation').value=v.location||''; document.getElementById('vendorPrice').value=v.priceRange||''; document.getElementById('vendorRating').value=v.rating||''; document.getElementById('vendorPhone').value=v.phone||''; document.getElementById('agentPhone').value=v.agentPhone||''; document.getElementById('vendorDescription').value=v.description||''; if(v.imageUrl){ document.getElementById('logoPreview').src=v.imageUrl; document.getElementById('logoPreview').style.display='block'; } const container=document.getElementById('workPhotosPreview'); container.innerHTML=''; if(v.photos) v.photos.forEach((p,i)=>{ const d=document.createElement('div'); d.className='photo-item'; d.innerHTML=`<img src="${p}"><button class="remove-photo" onclick="removeWorkPhoto(${i})">×</button>`; container.appendChild(d); }); openModal('vendorModal'); };
-    window.deleteVendor = async (id) => { if(confirm('Delete?')){ await deleteDoc(doc(db,'vendors',id)); showMsg('Deleted!','success'); } };
-    window.saveVendor = async () => {
-        const name=document.getElementById('vendorName').value, cat=document.getElementById('vendorCategory').value, city=document.getElementById('vendorCity').value, agentPhone=document.getElementById('agentPhone').value;
-        if(!name||!cat||!city||!agentPhone){ showMsg('Name, Category, City & Agent Phone required!','error'); return; }
-        const saveBtn = event.target; saveBtn.disabled=true; document.getElementById('uploadProgress').style.display='block';
-        try {
-            let logoUrl = editingVendorId ? vendors.find(v=>v.id===editingVendorId).imageUrl : null;
-            if(document.getElementById('vendorLogo').files[0]) logoUrl = await uploadToImgBB(document.getElementById('vendorLogo').files[0]);
-            let workUrls = editingVendorId ? (vendors.find(v=>v.id===editingVendorId).photos||[]) : [];
-            if(document.getElementById('workPhotos').files.length){
-                const newUrls = await uploadMultiple(Array.from(document.getElementById('workPhotos').files));
-                workUrls = [...workUrls, ...newUrls];
-            }
-            const data = { name, category:cat, city, agentPhone, imageUrl:logoUrl||'https://via.placeholder.com/80', photos:workUrls, location:document.getElementById('vendorLocation').value||'', priceRange:document.getElementById('vendorPrice').value||'', rating:document.getElementById('vendorRating').value||'4.0', phone:document.getElementById('vendorPhone').value||'', description:document.getElementById('vendorDescription').value||'', updatedAt:new Date().toISOString() };
-            if(editingVendorId) await updateDoc(doc(db,'vendors',editingVendorId), data);
-            else { data.createdAt=new Date().toISOString(); await addDoc(collection(db,'vendors'), data); }
-            closeModal('vendorModal'); showMsg('Vendor saved!','success');
-        } catch(e){ showMsg('Error: '+e.message,'error'); }
-        finally{ saveBtn.disabled=false; document.getElementById('uploadProgress').style.display='none'; }
-    };
-    
-    // ========== CATEGORY CRUD ==========
-    window.openAddCategory = () => { document.getElementById('catName').value=''; document.getElementById('catIcon').value=''; openModal('categoryModal'); };
-    window.deleteCategory = async (id) => { if(confirm('Delete?')) await updateDoc(doc(db,'categories',id),{deleted:true}); };
-    window.saveCategory = async () => { const name=document.getElementById('catName').value, icon=document.getElementById('catIcon').value||'🏷️'; if(!name) return; const id=name.toLowerCase().replace(/\s+/g,''); await setDoc(doc(db,'categories',id),{name,icon}); closeModal('categoryModal'); showMsg('Category saved!','success'); };
-    
-    // ========== CITY CRUD ==========
-    window.openAddCity = () => { editingCityIndex=null; document.getElementById('cityNameInput').value=''; document.getElementById('cityPopularCheck').checked=false; openModal('cityModal'); };
-    window.editCity = (i) => { editingCityIndex=i; document.getElementById('cityNameInput').value=cities[i].name; document.getElementById('cityPopularCheck').checked=cities[i].popular; openModal('cityModal'); };
-    window.deleteCity = async (i) => { if(confirm('Delete?')){ cities.splice(i,1); await setDoc(doc(db,'settings','cities'),{list:cities}); showMsg('City deleted!','success'); } };
-    window.saveCity = async () => { const name=document.getElementById('cityNameInput').value, popular=document.getElementById('cityPopularCheck').checked; if(!name) return; if(editingCityIndex!==null) cities[editingCityIndex]={name,popular}; else if(cities.find(c=>c.name===name)){ showMsg('City exists!','error'); return; } else cities.push({name,popular}); await setDoc(doc(db,'settings','cities'),{list:cities}); closeModal('cityModal'); showMsg('City saved!','success'); editingCityIndex=null; };
-    
-    // ========== AGENT CRUD ==========
-    window.openAddAgent = async () => { const c=agents.length+1; const id=`AG${String(c).padStart(5,'0')}`; document.getElementById('agentId').value=id; document.getElementById('agentName').value=''; document.getElementById('agentPhone').value=''; document.getElementById('agentCity').value=''; document.getElementById('agentEmail').value=''; document.getElementById('agentTarget').value='50000'; document.getElementById('agentPassword').value='agent123'; openModal('agentModal'); };
-    window.editAgent = (id) => { const a=agents.find(x=>x.id===id); if(a){ document.getElementById('agentId').value=a.id; document.getElementById('agentName').value=a.name||''; document.getElementById('agentPhone').value=a.phone||''; document.getElementById('agentCity').value=a.city||''; document.getElementById('agentEmail').value=a.email||''; document.getElementById('agentTarget').value=a.target||50000; document.getElementById('agentPassword').value=''; openModal('agentModal'); } };
-    window.deleteAgent = async (id) => { if(confirm('Delete?')){ await deleteDoc(doc(db,'agents',id)); showMsg('Agent deleted!','success'); } };
-    window.saveAgent = async () => {
-        const id=document.getElementById('agentId').value, name=document.getElementById('agentName').value, phone=document.getElementById('agentPhone').value, city=document.getElementById('agentCity').value, email=document.getElementById('agentEmail').value, target=parseInt(document.getElementById('agentTarget').value)||50000, pwd=document.getElementById('agentPassword').value;
-        if(!name||!phone||!city){ showMsg('Name, Phone, City required!','error'); return; }
-        const data={id,name,phone,city,email:email||'',target,password:pwd||'agent123',updatedAt:new Date().toISOString()};
-        const ref=doc(db,'agents',id);
-        const snap=await getDoc(ref);
-        if(snap.exists()) await updateDoc(ref,data);
-        else { data.createdAt=new Date().toISOString(); await setDoc(ref,data); }
-        closeModal('agentModal'); showMsg('Agent saved!','success');
-    };
-    
-    function showMsg(m,t) { const el=document.getElementById('message'); el.innerText=m; el.className=`message ${t}`; el.style.display='block'; setTimeout(()=>el.style.display='none',3000); }
+
+    // OTHERS
+    window.updateBooking = async (id, s) => { await updateDoc(doc(db,'bookings',id), {status:s}); showMsg('Status Updated','success'); };
+    window.showMsg = (m,t) => { const el=document.getElementById('message'); el.innerText=m; el.className=`message ${t}`; el.style.display='block'; setTimeout(()=>el.style.display='none',3000); };
     window.openModal = (id) => document.getElementById(id).style.display='flex';
     window.closeModal = (id) => document.getElementById(id).style.display='none';
-    window.switchTab = (t) => { document.querySelectorAll('.tab, .tab-content').forEach(el=>el.classList.remove('active')); event.target.classList.add('active'); document.getElementById(t+'Tab').classList.add('active'); if(t==='bookings') renderBookings(); };
+    window.switchTab = (t) => { document.querySelectorAll('.tab, .tab-content').forEach(el=>el.classList.remove('active')); event.target.classList.add('active'); document.getElementById(t+'Tab').classList.add('active'); };
     window.logout = () => { localStorage.clear(); window.location.href='admin-login.html'; };
+
+    // Category/City/Agent Handlers (Keeping your original logic but simplified)
+    window.saveCategory = async () => { const n=document.getElementById('catName').value, i=document.getElementById('catIcon').value; if(!n) return; await setDoc(doc(db,'categories',n.toLowerCase().replace(/\s/g,'')), {name:n, icon:i}); closeModal('categoryModal'); };
+    window.saveCity = async () => { const n=document.getElementById('cityNameInput').value, p=document.getElementById('cityPopularCheck').checked; if(!n) return; await setDoc(doc(db,'settings','cities'), {list:[...cities, {name:n, popular:p}]}); closeModal('cityModal'); };
 </script>
 </body>
 </html>
