@@ -2,50 +2,31 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Admin Panel - StadiumConnect</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: #f5f5f5; color: #1a1a1a; }
-        .header { background: #fff; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e0e0e0; }
-        .logo { font-size: 20px; font-weight: 800; }
-        .logo span { color: #ff6b35; }
-        .logout-btn { background: #ff6b35; color: white; border: none; padding: 8px 20px; border-radius: 30px; cursor: pointer; }
-        .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
-        .tabs { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
-        .tab { background: white; border: none; padding: 12px 24px; border-radius: 40px; font-weight: 600; cursor: pointer; }
-        .tab.active { background: #ff6b35; color: white; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-bottom: 24px; }
-        .stat-card { background: white; border-radius: 20px; padding: 20px; text-align: center; }
-        .stat-number { font-size: 32px; font-weight: 800; color: #ff6b35; }
-        .form-card { background: white; border-radius: 24px; padding: 24px; margin-bottom: 24px; }
-        .form-title { font-size: 20px; font-weight: 700; margin-bottom: 20px; }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 20px; }
-        .form-group { display: flex; flex-direction: column; gap: 8px; }
-        .form-group label { font-weight: 600; font-size: 14px; }
-        .form-group input, .form-group select, .form-group textarea { padding: 12px; border: 1px solid #e0e0e0; border-radius: 12px; font-family: inherit; }
-        .btn-primary { background: #ff6b35; color: white; border: none; padding: 12px 24px; border-radius: 40px; font-weight: 600; cursor: pointer; }
-        .btn-danger { background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 30px; cursor: pointer; font-size: 12px; }
-        .btn-edit { background: #ffc107; color: #000; border: none; padding: 8px 16px; border-radius: 30px; cursor: pointer; font-size: 12px; margin-right: 8px; }
-        .table-container { background: white; border-radius: 24px; overflow-x: auto; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui; }
+        body { background: #f5f5f5; padding: 20px; }
+        .header { background: white; padding: 15px 20px; border-radius: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; }
+        .logout-btn { background: #dc3545; color: white; border: none; padding: 8px 20px; border-radius: 8px; cursor: pointer; }
+        .card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; }
+        h2 { margin-bottom: 20px; color: #ff6b35; }
+        .stats { display: flex; gap: 15px; flex-wrap: wrap; }
+        .stat { background: white; padding: 20px; border-radius: 15px; text-align: center; flex: 1; min-width: 100px; }
+        .stat-num { font-size: 28px; font-weight: bold; color: #ff6b35; }
         table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 16px; text-align: left; border-bottom: 1px solid #f0f0f0; }
-        th { background: #fafafa; font-weight: 600; }
-        .photo-grid { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
-        .photo-preview { width: 80px; height: 80px; background: #f5f5f5; border-radius: 12px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
-        .photo-preview img { width: 100%; height: 100%; object-fit: cover; }
-        .photo-preview .remove-photo { position: absolute; top: 4px; right: 4px; background: red; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 12px; }
-        .upload-btn { background: #f0f0f0; border: 1px dashed #ccc; padding: 12px 20px; border-radius: 12px; cursor: pointer; text-align: center; }
-        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
-        .modal-content { background: white; border-radius: 24px; padding: 24px; width: 90%; max-width: 700px; max-height: 85vh; overflow-y: auto; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .close-modal { font-size: 24px; cursor: pointer; }
-        @media (max-width: 768px) { .form-grid { grid-template-columns: 1fr; } }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #f8f8f8; }
+        button { padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; }
+        .btn-add { background: #28a745; color: white; margin-bottom: 15px; padding: 10px 20px; }
+        .btn-edit { background: #ffc107; }
+        .btn-delete { background: #dc3545; color: white; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
+        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 500px; }
+        .modal input, .modal select, .modal textarea { width: 100%; padding: 8px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; }
+        .close { float: right; font-size: 24px; cursor: pointer; }
     </style>
-
+    
     <!-- Admin Check -->
     <script>
         if (localStorage.getItem('admin') !== 'true') {
@@ -53,10 +34,10 @@
         }
     </script>
 
-    <!-- Firebase SDK -->
+    <!-- Firebase -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, addDoc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, doc, addDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
@@ -66,179 +47,81 @@
             messagingSenderId: "458108198578",
             appId: "1:458108198578:web:83d83646f0e24e718b73ab"
         };
-
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
         let vendors = [];
-        let categories = [
-            { id: 'decorator', name: 'Decorators', icon: '🎨' },
-            { id: 'photographer', name: 'Photographers', icon: '📸' },
-            { id: 'caterer', name: 'Caterers', icon: '🍽️' },
-            { id: 'bandbaja', name: 'Band Baja', icon: '🎵' },
-            { id: 'stadium', name: 'Stadiums', icon: '🏟️' }
-        ];
-        let cities = ['Nagpur', 'Mumbai', 'Pune', 'Delhi', 'Bangalore'];
-        let tempPhotos = [];
-        let editingVendorId = null;
-
-        async function loadAllData() {
-            await loadVendors();
-            updateStats();
-            renderVendorsTable();
-            renderCategoriesList();
-            renderCitiesList();
-        }
+        let editingId = null;
 
         async function loadVendors() {
-            const querySnapshot = await getDocs(collection(db, "vendors"));
+            const snap = await getDocs(collection(db, "vendors"));
             vendors = [];
-            querySnapshot.forEach((doc) => {
-                vendors.push({ id: doc.id, ...doc.data() });
-            });
+            snap.forEach(doc => vendors.push({ id: doc.id, ...doc.data() }));
+            renderTable();
+            updateStats();
         }
 
         function updateStats() {
-            document.getElementById('stats').innerHTML = `
-                <div class="stat-card"><div class="stat-number">${vendors.length}</div><div>Total Vendors</div></div>
-                <div class="stat-card"><div class="stat-number">${vendors.filter(v=>v.category==='decorator').length}</div><div>🎨 Decorators</div></div>
-                <div class="stat-card"><div class="stat-number">${vendors.filter(v=>v.category==='photographer').length}</div><div>📸 Photographers</div></div>
-                <div class="stat-card"><div class="stat-number">${vendors.filter(v=>v.category==='caterer').length}</div><div>🍽️ Caterers</div></div>
-                <div class="stat-card"><div class="stat-number">${vendors.filter(v=>v.category==='bandbaja').length}</div><div>🎵 Band Baja</div></div>
-                <div class="stat-card"><div class="stat-number">${vendors.filter(v=>v.category==='stadium').length}</div><div>🏟️ Stadiums</div></div>
-            `;
+            document.getElementById('total').innerText = vendors.length;
+            document.getElementById('decoratorCount').innerText = vendors.filter(v => v.category === 'decorator').length;
+            document.getElementById('photographerCount').innerText = vendors.filter(v => v.category === 'photographer').length;
+            document.getElementById('catererCount').innerText = vendors.filter(v => v.category === 'caterer').length;
+            document.getElementById('bandCount').innerText = vendors.filter(v => v.category === 'bandbaja').length;
+            document.getElementById('stadiumCount').innerText = vendors.filter(v => v.category === 'stadium').length;
         }
 
-        function renderVendorsTable() {
-            const tbody = document.getElementById('vendorsTableBody');
+        function renderTable() {
+            const tbody = document.getElementById('vendorTable');
             tbody.innerHTML = vendors.map(v => `
                 <tr>
                     <td>${v.name || '-'}</td>
                     <td>${v.category || '-'}</td>
                     <td>${v.city || '-'}</td>
-                    <td>${v.location || '-'}</td>
                     <td>${v.priceRange || '-'}</td>
                     <td>${v.rating || '-'}</td>
-                    <td>${v.capacity ? v.capacity + ' seats' : '-'}</td>
                     <td>
                         <button class="btn-edit" onclick="editVendor('${v.id}')">Edit</button>
-                        <button class="btn-danger" onclick="deleteVendor('${v.id}')">Delete</button>
+                        <button class="btn-delete" onclick="deleteVendor('${v.id}')">Del</button>
                     </td>
                 </tr>
             `).join('');
         }
 
-        function renderCategoriesList() {
-            const container = document.getElementById('categoriesList');
-            container.innerHTML = categories.map(cat => `
-                <div class="list-item">
-                    <span>${cat.icon || '🏷️'} ${cat.name}</span>
-                    <div>
-                        <button class="btn-edit" onclick="editCategory('${cat.id}')">Edit</button>
-                        <button class="btn-danger" onclick="deleteCategory('${cat.id}')">Delete</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function renderCitiesList() {
-            const container = document.getElementById('citiesList');
-            container.innerHTML = cities.map(city => `
-                <div class="list-item">
-                    <span>📍 ${city}</span>
-                    <div>
-                        <button class="btn-edit" onclick="editCity('${city}')">Edit</button>
-                        <button class="btn-danger" onclick="deleteCity('${city}')">Delete</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        window.openAddVendorModal = function() {
-            editingVendorId = null;
-            tempPhotos = [];
-            document.getElementById('vendorModalTitle').innerText = 'Add Vendor';
+        window.openAdd = () => {
+            editingId = null;
+            document.getElementById('modalTitle').innerText = 'Add Vendor';
             document.getElementById('vendorForm').reset();
             document.getElementById('capacityGroup').style.display = 'none';
             document.getElementById('vendorModal').style.display = 'flex';
         };
 
-        window.editVendor = function(id) {
-            const vendor = vendors.find(v => v.id === id);
-            if (!vendor) return;
-            editingVendorId = id;
-            tempPhotos = vendor.photos || [];
-            document.getElementById('vendorModalTitle').innerText = 'Edit Vendor';
-            document.getElementById('vendorId').value = vendor.id;
-            document.getElementById('vendorName').value = vendor.name || '';
-            document.getElementById('vendorCategory').value = vendor.category || '';
-            document.getElementById('vendorCity').value = vendor.city || '';
-            document.getElementById('vendorLocation').value = vendor.location || '';
-            document.getElementById('vendorPrice').value = vendor.priceRange || '';
-            document.getElementById('vendorRating').value = vendor.rating || '';
-            document.getElementById('vendorPhone').value = vendor.phone || '';
-            document.getElementById('vendorDescription').value = vendor.description || '';
-            document.getElementById('vendorCapacity').value = vendor.capacity || '';
-            document.getElementById('capacityGroup').style.display = vendor.category === 'stadium' ? 'block' : 'none';
-            renderPhotoPreview();
+        window.editVendor = (id) => {
+            const v = vendors.find(x => x.id === id);
+            if (!v) return;
+            editingId = id;
+            document.getElementById('modalTitle').innerText = 'Edit Vendor';
+            document.getElementById('vendorName').value = v.name || '';
+            document.getElementById('vendorCategory').value = v.category || '';
+            document.getElementById('vendorCity').value = v.city || '';
+            document.getElementById('vendorLocation').value = v.location || '';
+            document.getElementById('vendorPrice').value = v.priceRange || '';
+            document.getElementById('vendorRating').value = v.rating || '';
+            document.getElementById('vendorPhone').value = v.phone || '';
+            document.getElementById('vendorDescription').value = v.description || '';
+            document.getElementById('vendorCapacity').value = v.capacity || '';
+            document.getElementById('capacityGroup').style.display = v.category === 'stadium' ? 'block' : 'none';
             document.getElementById('vendorModal').style.display = 'flex';
         };
 
-        window.deleteVendor = async function(id) {
+        window.deleteVendor = async (id) => {
             if (confirm('Delete this vendor?')) {
                 await deleteDoc(doc(db, 'vendors', id));
                 await loadVendors();
-                renderVendorsTable();
-                updateStats();
-                alert('Vendor deleted');
             }
         };
 
-        function renderPhotoPreview() {
-            const container = document.getElementById('photoPreview');
-            if (tempPhotos.length === 0) {
-                container.innerHTML = '<div class="upload-btn" onclick="uploadPhoto()">+ Click to Upload Photos</div>';
-                return;
-            }
-            container.innerHTML = `
-                <div class="photo-grid">
-                    ${tempPhotos.map((photo, i) => `
-                        <div class="photo-preview">
-                            <img src="${photo}">
-                            <button class="remove-photo" onclick="removePhoto(${i})">×</button>
-                        </div>
-                    `).join('')}
-                    <div class="upload-btn" onclick="uploadPhoto()">+ Add More</div>
-                </div>
-            `;
-        }
-
-        window.uploadPhoto = function() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            input.multiple = true;
-            input.onchange = (e) => {
-                const files = Array.from(e.target.files);
-                files.forEach(file => {
-                    const reader = new FileReader();
-                    reader.onload = (ev) => {
-                        tempPhotos.push(ev.target.result);
-                        renderPhotoPreview();
-                    };
-                    reader.readAsDataURL(file);
-                });
-            };
-            input.click();
-        };
-
-        window.removePhoto = function(index) {
-            tempPhotos.splice(index, 1);
-            renderPhotoPreview();
-        };
-
-        window.saveVendor = async function() {
-            const vendorData = {
+        window.saveVendor = async () => {
+            const data = {
                 name: document.getElementById('vendorName').value,
                 category: document.getElementById('vendorCategory').value,
                 city: document.getElementById('vendorCity').value,
@@ -247,128 +130,88 @@
                 rating: parseFloat(document.getElementById('vendorRating').value) || 4.0,
                 phone: document.getElementById('vendorPhone').value,
                 description: document.getElementById('vendorDescription').value,
-                photos: tempPhotos,
                 updatedAt: new Date().toISOString()
             };
-            if (vendorData.category === 'stadium') {
-                vendorData.capacity = document.getElementById('vendorCapacity').value;
-            }
-            if (editingVendorId) {
-                await updateDoc(doc(db, 'vendors', editingVendorId), vendorData);
-                alert('Vendor updated!');
+            if (data.category === 'stadium') data.capacity = document.getElementById('vendorCapacity').value;
+            
+            if (editingId) {
+                await updateDoc(doc(db, 'vendors', editingId), data);
+                alert('Updated!');
             } else {
-                vendorData.createdAt = new Date().toISOString();
-                await addDoc(collection(db, 'vendors'), vendorData);
-                alert('Vendor added!');
+                data.createdAt = new Date().toISOString();
+                await addDoc(collection(db, 'vendors'), data);
+                alert('Added!');
             }
-            closeModal('vendorModal');
+            closeModal();
             await loadVendors();
-            renderVendorsTable();
-            updateStats();
         };
 
-        window.onCategoryChange = function() {
+        window.onCategoryChange = () => {
             const val = document.getElementById('vendorCategory').value;
             document.getElementById('capacityGroup').style.display = val === 'stadium' ? 'block' : 'none';
         };
 
-        window.closeModal = function(id) {
-            document.getElementById(id).style.display = 'none';
+        window.closeModal = () => {
+            document.getElementById('vendorModal').style.display = 'none';
         };
 
-        window.switchTab = function(tab) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
-            document.querySelectorAll('.tab-panel').forEach(p => p.style.display = 'none');
-            document.getElementById(`${tab}Panel`).style.display = 'block';
-        };
-
-        window.logout = function() {
+        window.logout = () => {
             localStorage.removeItem('admin');
-            window.location.href = 'index.html';
+            window.location.href = 'admin-login.html';
         };
 
-        // Load data on page load
-        loadAllData();
+        loadVendors();
     </script>
 </head>
 <body>
 
-<header class="header">
-    <div class="logo">ADMIN<span>PANEL</span></div>
+<div class="header">
+    <h2>⚡ Admin Panel</h2>
     <button class="logout-btn" onclick="logout()">Logout</button>
-</header>
+</div>
 
-<div class="container">
-    <div class="stats-grid" id="stats"></div>
+<div class="stats">
+    <div class="stat"><div class="stat-num" id="total">0</div><div>Total</div></div>
+    <div class="stat"><div class="stat-num" id="decoratorCount">0</div><div>🎨 Decorators</div></div>
+    <div class="stat"><div class="stat-num" id="photographerCount">0</div><div>📸 Photographers</div></div>
+    <div class="stat"><div class="stat-num" id="catererCount">0</div><div>🍽️ Caterers</div></div>
+    <div class="stat"><div class="stat-num" id="bandCount">0</div><div>🎵 Band Baja</div></div>
+    <div class="stat"><div class="stat-num" id="stadiumCount">0</div><div>🏟️ Stadiums</div></div>
+</div>
 
-    <div class="tabs">
-        <button class="tab active" onclick="switchTab('vendors')">Vendors</button>
-        <button class="tab" onclick="switchTab('categories')">Categories</button>
-        <button class="tab" onclick="switchTab('cities')">Cities</button>
-    </div>
-
-    <!-- Vendors Panel -->
-    <div id="vendorsPanel" class="tab-panel">
-        <div class="form-card">
-            <div class="form-title">Manage Vendors</div>
-            <button class="btn-primary" onclick="openAddVendorModal()">+ Add New Vendor</button>
-        </div>
-        <div class="table-container">
-            <table>
-                <thead><tr><th>Name</th><th>Category</th><th>City</th><th>Location</th><th>Price</th><th>Rating</th><th>Capacity</th><th>Actions</th></tr></thead>
-                <tbody id="vendorsTableBody"></tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Categories Panel -->
-    <div id="categoriesPanel" class="tab-panel" style="display:none">
-        <div class="form-card">
-            <div class="form-title">Categories</div>
-            <div id="categoriesList"></div>
-        </div>
-    </div>
-
-    <!-- Cities Panel -->
-    <div id="citiesPanel" class="tab-panel" style="display:none">
-        <div class="form-card">
-            <div class="form-title">Cities</div>
-            <div id="citiesList"></div>
-        </div>
+<div class="card">
+    <button class="btn-add" onclick="openAdd()">+ Add Vendor</button>
+    <div style="overflow-x: auto;">
+        <table>
+            <thead><tr><th>Name</th><th>Category</th><th>City</th><th>Price</th><th>Rating</th><th>Actions</th></thead>
+            <tbody id="vendorTable"><tr><td colspan="6">Loading...</td></tr></tbody>
+        </table>
     </div>
 </div>
 
-<!-- Vendor Modal -->
 <div id="vendorModal" class="modal">
     <div class="modal-content">
-        <div class="modal-header"><h3 id="vendorModalTitle">Add Vendor</h3><span class="close-modal" onclick="closeModal('vendorModal')">&times;</span></div>
-        <input type="hidden" id="vendorId">
-        <div class="form-grid">
-            <div class="form-group"><label>Name *</label><input type="text" id="vendorName" required></div>
-            <div class="form-group"><label>Category *</label>
-                <select id="vendorCategory" onchange="onCategoryChange()">
-                    <option value="decorator">Decorator</option>
-                    <option value="photographer">Photographer</option>
-                    <option value="caterer">Caterer</option>
-                    <option value="bandbaja">Band Baja</option>
-                    <option value="stadium">Stadium</option>
-                </select>
-            </div>
-            <div class="form-group"><label>City *</label><input type="text" id="vendorCity" placeholder="Nagpur"></div>
-            <div class="form-group"><label>Location</label><input type="text" id="vendorLocation" placeholder="Area, City"></div>
-            <div class="form-group"><label>Price Range</label><input type="text" id="vendorPrice" placeholder="₹10,000 - ₹50,000"></div>
-            <div class="form-group"><label>Rating</label><input type="text" id="vendorRating" placeholder="4.5"></div>
-            <div class="form-group"><label>Phone</label><input type="text" id="vendorPhone" placeholder="9423281086"></div>
-            <div class="form-group" id="capacityGroup" style="display:none"><label>Capacity (seats)</label><input type="text" id="vendorCapacity" placeholder="45000"></div>
-        </div>
-        <div class="form-group"><label>Description</label><textarea id="vendorDescription" rows="3"></textarea></div>
-        <div class="form-group"><label>Photos</label><div id="photoPreview"></div></div>
-        <button class="btn-primary" onclick="saveVendor()" style="width:100%; margin-top:16px;">Save Vendor</button>
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h3 id="modalTitle">Add Vendor</h3>
+        <input type="text" id="vendorName" placeholder="Name">
+        <select id="vendorCategory" onchange="onCategoryChange()">
+            <option value="decorator">Decorator</option>
+            <option value="photographer">Photographer</option>
+            <option value="caterer">Caterer</option>
+            <option value="bandbaja">Band Baja</option>
+            <option value="stadium">Stadium</option>
+        </select>
+        <input type="text" id="vendorCity" placeholder="City">
+        <input type="text" id="vendorLocation" placeholder="Location">
+        <input type="text" id="vendorPrice" placeholder="Price Range">
+        <input type="text" id="vendorRating" placeholder="Rating">
+        <input type="text" id="vendorPhone" placeholder="Phone">
+        <div id="capacityGroup" style="display:none"><input type="text" id="vendorCapacity" placeholder="Capacity (seats)"></div>
+        <textarea id="vendorDescription" rows="2" placeholder="Description"></textarea>
+        <button onclick="saveVendor()" style="background:#ff6b35; color:white; padding:10px; width:100%; margin-top:10px;">Save</button>
     </div>
 </div>
 
 </body>
 </html>
-
 
