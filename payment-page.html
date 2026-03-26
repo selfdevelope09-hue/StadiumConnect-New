@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment - StadiumConnect</title>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: #f5f7fb; padding: 40px 20px; }
+        .container { max-width: 500px; margin: 0 auto; }
+        .card { background: white; border-radius: 28px; padding: 32px; }
+        .installment-option { border: 2px solid #e0e0e0; border-radius: 16px; padding: 16px; margin: 12px 0; cursor: pointer; transition: 0.2s; }
+        .installment-option.selected { border-color: #ff6b35; background: #fff5f0; }
+        .amount { font-size: 28px; font-weight: 800; color: #ff6b35; }
+        .pay-btn { width: 100%; background: #ff6b35; color: white; border: none; padding: 16px; border-radius: 50px; font-size: 18px; font-weight: 700; cursor: pointer; margin-top: 24px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="card">
+        <h2>💰 Make Payment</h2>
+        <div id="bookingInfo"></div>
+        <div id="installmentOptions"></div>
+        <button id="payBtn" class="pay-btn" onclick="initiatePayment()">Pay Now →</button>
+    </div>
+</div>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
+        authDomain: "stadiumconnect-8fecb.firebaseapp.com",
+        projectId: "stadiumconnect-8fecb",
+        storageBucket: "stadiumconnect-8fecb.firebasestorage.app",
+        messagingSenderId: "458108198578",
+        appId: "1:458108198578:web:83d83646f0e24e718b73ab"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const bookingId = urlParams.get('id');
+    let booking = null;
+    let selectedInstallment = 1;
+
+    async function loadBooking() {
+        const docSnap = await getDoc(doc(db, 'bookings', bookingId));
+        booking = { id: docSnap.id, ...docSnap.data() };
+        const amount = booking.amount;
+        const isDecorator = booking.vendorCategory === 'decorator';
+        
+        document.getElementById('bookingInfo').innerHTML = `
+            <div style="background:#f8f9fa; padding:16px; border-radius:16px; margin:20px 0;">
+                <strong>${booking.vendorName}</strong><br>
+                📅 ${booking.eventDate} | 📍 ${booking.eventLocation}<br>
+                Total: ₹${amount.toLocaleString()}
+            </div>
+        `;
+        
+        if (isDecorator) {
+            const inst1 = Math.round(amount * 0.3);
+            const inst2 = Math.round(amount * 0.3);
+            const inst3 = Math.round(amount * 0.4);
+            document.getElementById('installmentOptions').innerHTML = `
+                <div class="installment-option selected" onclick="selectInstallment(1, ${inst1})">
+                    <strong>1st Installment (30%)</strong><br>Pay now: <span class="amount">₹${inst1.toLocaleString()}</span>
+                </div>
+                <div class="installment-option" onclick="selectInstallment(2, ${inst2})">
+                    <strong>2nd Installment (30%)</strong><br>Pay now: <span class="amount">₹${inst2.toLocaleString()}</span>
+                </div>
+                <div class="installment-option" onclick="selectInstallment(3, ${inst3})">
+                    <strong>Final Installment (40%)</strong><br>Pay now: <span class="amount">₹${inst3.toLocaleString()}</span>
+                </div>
+            `;
+            window.selectedAmount = inst1;
+        } else {
+            document.getElementById('installmentOptions').innerHTML = `
+                <div class="installment-option selected">
+                    <strong>Full Payment</strong><br>Pay now: <span class="amount">₹${amount.toLocaleString()}</span>
+                </div>
+            `;
+            window.selectedAmount = amount;
+        }
+    }
+
+    window.selectInstallment = (num, amt) => {
+        selectedInstallment = num;
+        window.selectedAmount = amt;
+        document.querySelectorAll('.installment-option').forEach((el, i) => {
+            el.classList.toggle('selected', i === num-1);
+        });
+    };
+
+    window.initiatePayment = async () => {
+        const user = auth.currentUser;
+        if (!user) { alert('Please login'); window.location.href = 'login.html'; return; }
+        
+        const options = {
+            key: "rzp_test_XXXXXXXX", // Replace with your Razorpay key
+            amount: window.selectedAmount * 100,
+            currency: "INR",
+            name: "StadiumConnect",
+            description: `Booking: ${booking.vendorName} - Installment ${selectedInstallment}`,
+            handler: async (response) => {
+                await updateDoc(doc(db, 'bookings', bookingId), {
+                    [`installment_${selectedInstallment}`]: {
+                        paid: true,
+                        paymentId: response.razorpay_payment_id,
+                        paidAt: new Date().toISOString(),
+                        amount: window.selectedAmount
+                    },
+                    status: selectedInstallment === 3 ? 'confirmed' : 'partial',
+                    lastPayment: new Date().toISOString()
+                });
+                alert('✅ Payment successful!');
+                window.location.href = 'dashboard.html';
+            },
+            prefill: { name: user.displayName, email: user.email },
+            theme: { color: "#ff6b35" }
+        };
+        const rzp = new Razorpay(options);
+        rzp.open();
+    };
+
+    loadBooking();
+</script>
+</body>
+</html>
