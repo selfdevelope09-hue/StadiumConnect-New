@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Login - StadiumConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .login-card { background: white; border-radius: 32px; padding: 40px; width: 100%; max-width: 400px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+        .logo { text-align: center; font-size: 24px; font-weight: 800; margin-bottom: 30px; color: #1a1a1a; }
+        .logo span { color: #ff6b35; }
+        h2 { margin-bottom: 8px; color: #333; }
+        .subtitle { color: #666; margin-bottom: 30px; font-size: 14px; }
+        .input-group { margin-bottom: 20px; }
+        .input-group input { width: 100%; padding: 14px 16px; border: 1px solid #e0e0e0; border-radius: 16px; font-size: 15px; }
+        .input-group input:focus { outline: none; border-color: #ff6b35; }
+        button { width: 100%; background: #ff6b35; color: white; border: none; padding: 14px; border-radius: 30px; font-size: 16px; font-weight: 600; cursor: pointer; }
+        .error { color: red; margin-top: 15px; text-align: center; display: none; }
+        .note { font-size: 12px; color: #999; text-align: center; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="logo">STADIUM<span>CONNECT</span></div>
+        <h2>Agent Login</h2>
+        <div class="subtitle">Enter your credentials</div>
+        <div id="error" class="error"></div>
+        <div class="input-group"><input type="text" id="agentId" placeholder="Agent ID (e.g., AG00001)" autocomplete="off"></div>
+        <div class="input-group"><input type="password" id="password" placeholder="Password"></div>
+        <button onclick="login()">Login →</button>
+        <div class="note">Contact admin if you don't have credentials</div>
+    </div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
+            authDomain: "stadiumconnect-8fecb.firebaseapp.com",
+            projectId: "stadiumconnect-8fecb",
+            storageBucket: "stadiumconnect-8fecb.firebasestorage.app",
+            messagingSenderId: "458108198578",
+            appId: "1:458108198578:web:83d83646f0e24e718b73ab"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.login = async () => {
+            const agentId = document.getElementById('agentId').value.trim().toUpperCase();
+            const password = document.getElementById('password').value;
+            if (!agentId || !password) { showError('Enter Agent ID and Password'); return; }
+            
+            const agentDoc = await getDoc(doc(db, 'agents', agentId));
+            if (agentDoc.exists() && agentDoc.data().password === password) {
+                localStorage.setItem('agent', JSON.stringify({ id: agentId, ...agentDoc.data() }));
+                window.location.href = 'agent-dashboard.html';
+            } else {
+                showError('Invalid Agent ID or Password');
+            }
+        };
+        function showError(msg) { const e = document.getElementById('error'); e.innerText = msg; e.style.display = 'block'; setTimeout(() => e.style.display = 'none', 3000); }
+    </script>
+</body>
+</html>
