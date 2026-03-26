@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StadiumConnect - Book Stadiums & Vendors</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #fff;
+            color: #1c1c1c;
+        }
+
+        /* Header */
+        .header {
+            position: sticky;
+            top: 0;
+            background: #fff;
+            z-index: 100;
+            padding: 16px 80px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .logo span {
+            color: #ff6b35;
+        }
+
+        .nav {
+            display: flex;
+            gap: 32px;
+            align-items: center;
+        }
+
+        .nav a {
+            text-decoration: none;
+            color: #4a4a4a;
+            font-weight: 500;
+            font-size: 15px;
+        }
+
+        .nav a:hover {
+            color: #ff6b35;
+        }
+
+        .location-chip {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #f8f8f8;
+            padding: 8px 16px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #e0e0e0;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-outline:hover {
+            border-color: #ff6b35;
+            color: #ff6b35;
+        }
+
+        .btn-primary {
+            background: #ff6b35;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 14px;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #e55a2b;
+        }
+
+        /* Hero */
+        .hero {
+            text-align: center;
+            padding: 80px 20px 60px;
+            background: linear-gradient(to bottom, #fff, #fef9f5);
+        }
+
+        .hero h1 {
+            font-size: 56px;
+            font-weight: 700;
+            letter-spacing: -1px;
+            max-width: 800px;
+            margin: 0 auto 20px;
+        }
+
+        .hero h1 span {
+            color: #ff6b35;
+        }
+
+        .hero p {
+            font-size: 18px;
+            color: #5e5e5e;
+            max-width: 600px;
+            margin: 0 auto 32px;
+        }
+
+        .search-bar {
+            max-width: 720px;
+            margin: 0 auto;
+            display: flex;
+            background: white;
+            border: 1px solid #e8e8e8;
+            border-radius: 50px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            overflow: hidden;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 16px 24px;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            font-family: inherit;
+        }
+
+        .search-bar button {
+            background: #ff6b35;
+            border: none;
+            padding: 0 32px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        /* Categories */
+        .categories {
+            padding: 60px 80px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 32px;
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 24px;
+        }
+
+        .category-card {
+            text-align: center;
+            padding: 24px 16px;
+            background: #fff;
+            border: 1px solid #f0f0f0;
+            border-radius: 24px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .category-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            border-color: #ffebe3;
+        }
+
+        .category-icon {
+            font-size: 40px;
+            margin-bottom: 12px;
+        }
+
+        .category-card h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .category-card p {
+            font-size: 13px;
+            color: #8a8a8a;
+        }
+
+        /* Cities */
+        .cities {
+            padding: 40px 80px 60px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .city-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .city-chip {
+            background: #f8f8f8;
+            padding: 10px 24px;
+            border-radius: 40px;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .city-chip:hover {
+            background: #ff6b35;
+            color: white;
+        }
+
+        /* AI Stadium Section */
+        .ai-section {
+            background: #fef9f5;
+            padding: 60px 80px;
+            margin: 20px 0;
+        }
+
+        .ai-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .ai-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .ai-header h2 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .stadium-row {
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .stadium-card {
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            width: 280px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .stadium-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+        }
+
+        .stadium-icon {
+            font-size: 44px;
+            margin-bottom: 12px;
+        }
+
+        .stadium-name {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .stadium-price {
+            font-size: 20px;
+            font-weight: 700;
+            color: #ff6b35;
+            margin: 12px 0;
+        }
+
+        .ai-badge {
+            background: #fff0e8;
+            color: #ff6b35;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 30px;
+            display: inline-block;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-card {
+            background: white;
+            max-width: 500px;
+            width: 90%;
+            border-radius: 32px;
+            padding: 28px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close {
+            font-size: 28px;
+            cursor: pointer;
+        }
+
+        .portion-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .portion {
+            background: #f5f5f5;
+            padding: 12px;
+            text-align: center;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .portion.selected {
+            background: #ff6b35;
+            color: white;
+        }
+
+        .price-box {
+            background: #f8f8f8;
+            padding: 20px;
+            border-radius: 24px;
+            margin: 20px 0;
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .ai-price {
+            font-size: 24px;
+            font-weight: 700;
+            color: #ff6b35;
+        }
+
+        .book-btn {
+            width: 100%;
+            background: #ff6b35;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            color: #8a8a8a;
+            border-top: 1px solid #f0f0f0;
+            font-size: 14px;
+        }
+
+        @media (max-width: 1000px) {
+            .header {
+                padding: 16px 24px;
+                flex-wrap: wrap;
+            }
+            .categories, .cities, .ai-section {
+                padding: 40px 24px;
+            }
+            .category-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 16px;
+            }
+            .hero h1 {
+                font-size: 36px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="logo">STADIUM<span>CONNECT</span></div>
+    <div class="nav">
+        <div class="location-chip" id="locationBtn">
+            <i class="fas fa-map-marker-alt"></i> <span id="locationText">Detect Location</span>
+        </div>
+        <a href="#">Home</a>
+        <a href="#">Events</a>
+        <a href="#">Contact</a>
+        <button class="btn-outline" onclick="window.location.href='vendor-login.html'">Vendor</button>
+        <button class="btn-outline" onclick="window.location.href='agent-login.html'">Agent</button>
+        <button class="btn-outline" onclick="window.location.href='login.html'">Login</button>
+        <button class="btn-primary" onclick="window.location.href='register.html'">Register</button>
+    </div>
+</header>
+
+<section class="hero">
+    <h1>Book the perfect <span>venue & vendors</span></h1>
+    <p>Find stadiums, decorators, caterers & more with AI-powered recommendations</p>
+    <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Search for stadiums, vendors or events...">
+        <button onclick="search()">Search</button>
+    </div>
+</section>
+
+<section class="categories">
+    <div class="section-title">Explore services</div>
+    <div class="category-grid">
+        <div class="category-card" onclick="goToCategory('decorator')">
+            <div class="category-icon">🎨</div>
+            <h3>Decorators</h3>
+            <p>200+ vendors</p>
+        </div>
+        <div class="category-card" onclick="goToCategory('photographer')">
+            <div class="category-icon">📸</div>
+            <h3>Photographers</h3>
+            <p>150+ vendors</p>
+        </div>
+        <div class="category-card" onclick="goToCategory('caterer')">
+            <div class="category-icon">🍽️</div>
+            <h3>Caterers</h3>
+            <p>300+ vendors</p>
+        </div>
+        <div class="category-card" onclick="goToCategory('bandbaja')">
+            <div class="category-icon">🎵</div>
+            <h3>Band Baja</h3>
+            <p>100+ vendors</p>
+        </div>
+        <div class="category-card" onclick="window.location.href='stadium-booking.html'">
+            <div class="category-icon">🏟️</div>
+            <h3>Stadiums</h3>
+            <p>50+ venues</p>
+        </div>
+    </div>
+</section>
+
+<section class="cities">
+    <div class="section-title">Popular cities</div>
+    <div class="city-grid">
+        <div class="city-chip" onclick="filterCity('nagpur')">Nagpur</div>
+        <div class="city-chip" onclick="filterCity('mumbai')">Mumbai</div>
+        <div class="city-chip" onclick="filterCity('pune')">Pune</div>
+        <div class="city-chip" onclick="filterCity('delhi')">Delhi</div>
+        <div class="city-chip" onclick="filterCity('bangalore')">Bangalore</div>
+        <div class="city-chip" onclick="filterCity('hyderabad')">Hyderabad</div>
+    </div>
+</section>
+
+<section class="ai-section">
+    <div class="ai-container">
+        <div class="ai-header">
+            <h2>🤖 AI-Powered Stadium Booking</h2>
+            <p>Select your portion, AI calculates the price</p>
+        </div>
+        <div class="stadium-row">
+            <div class="stadium-card" onclick="openStadium('Vidarbha Stadium', 50000)">
+                <div class="stadium-icon">🏟️</div>
+                <div class="stadium-name">Vidarbha Stadium</div>
+                <div>Nagpur | 45,000 seats</div>
+                <div class="stadium-price">₹50,000/day</div>
+                <span class="ai-badge">AI Available</span>
+            </div>
+            <div class="stadium-card" onclick="openStadium('Yavatmal Complex', 20000)">
+                <div class="stadium-icon">⚽</div>
+                <div class="stadium-name">Yavatmal Complex</div>
+                <div>Yavatmal | 15,000 seats</div>
+                <div class="stadium-price">₹20,000/day</div>
+                <span class="ai-badge">AI Available</span>
+            </div>
+            <div class="stadium-card" onclick="openStadium('Adilabad Stadium', 15000)">
+                <div class="stadium-icon">🏃</div>
+                <div class="stadium-name">Adilabad Stadium</div>
+                <div>Adilabad | 10,000 seats</div>
+                <div class="stadium-price">₹15,000/day</div>
+                <span class="ai-badge">AI Available</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer>
+    © 2025 StadiumConnect. All rights reserved.
+</footer>
+
+<div id="stadiumModal" class="modal">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h2 id="modalTitle">Select Portion</h2>
+            <span class="close" onclick="closeModal()">&times;</span>
+        </div>
+        <div class="portion-grid" id="portionGrid"></div>
+        <div class="price-box">
+            <div class="price-row"><span>Base Price</span><span id="basePrice">₹0</span></div>
+            <div class="price-row"><span>Sections selected</span><span id="sectionCount">0</span></div>
+            <div class="price-row"><span>AI Multiplier</span><span id="multiplier">1.0x</span></div>
+            <div class="price-row"><strong>AI Price</strong><strong id="finalPrice" class="ai-price">₹0</strong></div>
+        </div>
+        <button class="book-btn" onclick="bookNow()">Book with AI →</button>
+    </div>
+</div>
+
+<script>
+    let currentStadium = { name: '', price: 0 };
+    let selectedPortions = [];
+
+    function goToCategory(cat) {
+        window.location.href = `directory.html?category=${cat}`;
+    }
+    function filterCity(city) {
+        window.location.href = `directory.html?city=${city}`;
+    }
+    function search() {
+        const q = document.getElementById('searchInput').value;
+        if(q) window.location.href = `directory.html?search=${encodeURIComponent(q)}`;
+    }
+
+    // Location
+    document.getElementById('locationBtn').onclick = () => {
+        if(navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(pos => {
+                document.getElementById('locationText').innerHTML = '📍 Location on';
+                setTimeout(() => {
+                    if(confirm('Show vendors near you?')) {
+                        window.location.href = `directory.html?lat=${pos.coords.latitude}&lng=${pos.coords.longitude}`;
+                    }
+                }, 500);
+            }, () => alert('Allow location access'));
+        } else alert('Geolocation not supported');
+    };
+
+    // AI Stadium
+    function openStadium(name, price) {
+        currentStadium = { name, price };
+        selectedPortions = [];
+        document.getElementById('modalTitle').innerHTML = `${name} - AI Booking`;
+        document.getElementById('basePrice').innerHTML = `₹${price.toLocaleString()}`;
+        const portions = ['North Stand', 'South Stand', 'East Gallery', 'West Gallery', 'VIP Box', 'Premium Lounge'];
+        const grid = document.getElementById('portionGrid');
+        grid.innerHTML = portions.map(p => `<div class="portion" onclick="togglePortion(this, '${p}')">${p}</div>`).join('');
+        updateAIPrice();
+        document.getElementById('stadiumModal').style.display = 'flex';
+    }
+
+    function togglePortion(el, portion) {
+        if(selectedPortions.includes(portion)) {
+            selectedPortions = selectedPortions.filter(p => p !== portion);
+            el.classList.remove('selected');
+        } else {
+            selectedPortions.push(portion);
+            el.classList.add('selected');
+        }
+        updateAIPrice();
+    }
+
+    function updateAIPrice() {
+        const count = selectedPortions.length;
+        const multiplier = 1 + (count * 0.18);
+        const final = currentStadium.price * multiplier;
+        document.getElementById('sectionCount').innerHTML = count;
+        document.getElementById('multiplier').innerHTML = multiplier.toFixed(1) + 'x';
+        document.getElementById('finalPrice').innerHTML = `₹${Math.round(final).toLocaleString()}`;
+    }
+
+    function bookNow() {
+        if(selectedPortions.length === 0) return alert('Select at least one portion');
+        alert(`✅ Booking sent!\n${currentStadium.name}\nSections: ${selectedPortions.join(', ')}\nPrice: ${document.getElementById('finalPrice').innerHTML}\nVendor will contact you.`);
+        closeModal();
+    }
+
+    function closeModal() {
+        document.getElementById('stadiumModal').style.display = 'none';
+    }
+</script>
+</body>
+</html>
