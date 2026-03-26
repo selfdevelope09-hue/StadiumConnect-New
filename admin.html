@@ -6,7 +6,7 @@
     <title>StadiumConnect Admin Panel</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background: #f0f2f5; padding: 20px; color: #333; }
+        body { background: #f0f2f5; padding: 20px; }
         .card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         h2 { color: #ff6b35; margin-bottom: 15px; }
         
@@ -14,7 +14,8 @@
         button:hover { opacity: 0.8; transform: translateY(-1px); }
         .btn-delete { background: #ff4757; }
         .btn-edit { background: #ffa502; }
-        .btn-save { background: #2ed573; width: 100%; margin-top: 15px; font-size: 16px; font-weight: bold;}
+        .btn-confirm { background: #2ed573; }
+        .btn-reject { background: #ff4757; }
         
         .table-container { overflow-x: auto; margin-top: 15px; }
         table { width: 100%; border-collapse: collapse; background: white; }
@@ -24,7 +25,6 @@
         
         input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 14px; }
         input:focus, select:focus { border-color: #ff6b35; }
-        .file-input-label { display: block; margin-top: 8px; font-weight: 600; color: #666; font-size: 14px; }
         
         .tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
         .tab { background: #fff; color: #666; border: 1px solid #ddd; padding: 10px 20px; border-radius: 30px; cursor: pointer; }
@@ -33,15 +33,21 @@
         .tab-content.active { display: block; }
         
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 1000; }
-        .modal-content { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; position: relative; }
+        .modal-content { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; position: relative; }
         .close { position: absolute; right: 20px; top: 15px; font-size: 24px; cursor: pointer; color: #666;}
         
-        .img-preview { width: 80px; height: 80px; border-radius: 10px; object-fit: cover; margin: 5px; border: 2px solid #ddd; }
-        .work-photos-grid { display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0; }
-        .work-photo-item { position: relative; width: 80px; height: 80px; border-radius: 10px; overflow: hidden; border: 2px solid #ddd; }
-        .work-photo-item img { width: 100%; height: 100%; object-fit: cover; }
-        .remove-work-photo { position: absolute; top: 2px; right: 2px; background: red; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 12px; }
-        .upload-progress { display: none; margin-top: 10px; color: #ff6b35; font-weight: bold; font-size: 14px;}
+        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-partial { background: #cce5ff; color: #004085; }
+        .status-confirmed { background: #d4edda; color: #155724; }
+        .status-cancelled { background: #f8d7da; color: #721c24; }
+        
+        .filter-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .filter-bar input, .filter-bar select { width: auto; min-width: 150px; margin: 0; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: white; border-radius: 15px; padding: 15px; text-align: center; }
+        .stat-number { font-size: 28px; font-weight: bold; color: #ff6b35; }
+        
         .message { padding: 12px; border-radius: 8px; margin-bottom: 15px; display: none; text-align: center; }
         .success { background: #d4edda; color: #155724; display: block; }
         .error { background: #f8d7da; color: #721c24; display: block; }
@@ -49,25 +55,40 @@
         .popular-badge { background: #ff6b35; color: white; font-size: 10px; padding: 2px 8px; border-radius: 20px; margin-left: 10px; }
         .checkbox-group { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
         .agent-field { background: #fff5f0; border-left: 3px solid #ff6b35; padding: 5px 10px; margin: 8px 0; border-radius: 8px; }
-        .agent-field label { color: #ff6b35; font-weight: bold; }
+        
+        @media (max-width: 768px) {
+            .filter-bar { flex-direction: column; }
+            .filter-bar input, .filter-bar select { width: 100%; }
+            th, td { font-size: 12px; padding: 8px; }
+        }
     </style>
 </head>
 <body>
 
 <div class="card">
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-        <h2>⚡ StadiumConnect Admin</h2>
+        <h2>⚡ StadiumConnect Admin Panel</h2>
         <button onclick="logout()" style="background:#666;">Logout</button>
     </div>
     <div id="message" class="message"></div>
+</div>
+
+<!-- Stats Summary -->
+<div class="stats-grid" id="statsGrid">
+    <div class="stat-card"><div class="stat-number" id="totalBookings">0</div><div>Total Bookings</div></div>
+    <div class="stat-card"><div class="stat-number" id="pendingBookings">0</div><div>Pending</div></div>
+    <div class="stat-card"><div class="stat-number" id="confirmedBookings">0</div><div>Confirmed</div></div>
+    <div class="stat-card"><div class="stat-number" id="totalRevenue">₹0</div><div>Total Revenue</div></div>
 </div>
 
 <div class="tabs">
     <button class="tab active" onclick="switchTab('vendors')">📦 Vendors</button>
     <button class="tab" onclick="switchTab('categories')">🏷️ Categories</button>
     <button class="tab" onclick="switchTab('cities')">📍 Cities</button>
+    <button class="tab" onclick="switchTab('bookings')">📋 Bookings</button>
 </div>
 
+<!-- Vendors Tab -->
 <div id="vendorsTab" class="tab-content active">
     <div class="card">
         <button onclick="openAddVendor()">+ Add New Vendor</button>
@@ -80,12 +101,44 @@
     </div>
 </div>
 
+<!-- Categories Tab -->
 <div id="categoriesTab" class="tab-content">
     <div class="card"><button onclick="openAddCategory()">+ Add Category</button><div id="categoriesList"></div></div>
 </div>
 
+<!-- Cities Tab -->
 <div id="citiesTab" class="tab-content">
     <div class="card"><button onclick="openAddCity()">+ Add City</button><div id="citiesList"></div></div>
+</div>
+
+<!-- Bookings Tab -->
+<div id="bookingsTab" class="tab-content">
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+            <h3>📋 All Booking Requests</h3>
+            <div class="filter-bar" style="margin-bottom: 0;">
+                <select id="bookingStatusFilter" onchange="filterBookings()">
+                    <option value="all">All Status</option>
+                    <option value="pending">⏳ Pending</option>
+                    <option value="partial">💰 Partial Paid</option>
+                    <option value="confirmed">✅ Confirmed</option>
+                    <option value="cancelled">❌ Cancelled</option>
+                </select>
+                <input type="text" id="bookingSearch" placeholder="🔍 Search vendor/city/agent..." onkeyup="filterBookings()">
+            </div>
+        </div>
+        <div class="table-container">
+            <table style="width:100%">
+                <thead>
+                    <tr>
+                        <th>ID</th><th>Customer</th><th>Phone</th><th>Vendor</th><th>City</th><th>Event Date</th>
+                        <th>Amount</th><th>Paid</th><th>Agent ID</th><th>Status</th><th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="bookingsTableBody"><tr><td colspan="11">Loading bookings...</td></tr></tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 <!-- Vendor Modal -->
@@ -94,60 +147,38 @@
         <span class="close" onclick="closeModal('vendorModal')">&times;</span>
         <h3 id="vendorModalTitle">Add Vendor</h3>
         <input type="text" id="vendorName" placeholder="Vendor Name *">
-        <select id="vendorCategory"><option value="">-- Loading --</option></select>
-        <select id="vendorCity"><option value="">-- Loading --</option></select>
+        <select id="vendorCategory"></select>
+        <select id="vendorCity"></select>
         <input type="text" id="vendorLocation" placeholder="Location (Area Name)">
         <input type="text" id="vendorPrice" placeholder="Price Range (e.g. ₹20,000)">
         <input type="text" id="vendorRating" placeholder="Rating (1-5)">
-        <input type="text" id="vendorPhone" placeholder="Vendor Phone (optional)">
-        
-        <!-- Agent Phone Field - Booking ke liye -->
-        <div class="agent-field">
-            <label>📞 AGENT PHONE NUMBER (Booking Call)</label>
-            <input type="tel" id="agentPhone" placeholder="Agent Phone Number * (e.g., 9876543210)" style="border-color:#ff6b35;">
-            <small style="color:#666;">यह नंबर "Book Now" बटन पर दिखेगा और इसी पर कॉल जाएगी</small>
-        </div>
-        
+        <input type="text" id="vendorPhone" placeholder="Vendor Phone">
+        <div class="agent-field"><label>📞 Agent Phone Number (Booking Call)</label><input type="tel" id="agentPhone" placeholder="Agent Phone Number *"></div>
         <textarea id="vendorDescription" rows="3" placeholder="Description"></textarea>
-        
-        <label class="file-input-label">📸 Vendor Logo / Profile Photo</label>
-        <input type="file" id="vendorLogo" accept="image/*" onchange="previewLogo(this)">
-        <img id="logoPreview" class="img-preview" style="display:none;">
-        
-        <label class="file-input-label" style="margin-top: 15px;">🎨 Work Photos / Portfolio (Multiple)</label>
-        <input type="file" id="workPhotos" accept="image/*" multiple onchange="previewWorkPhotos(this)">
-        <div id="workPhotosPreview" class="work-photos-grid"></div>
-        <div id="uploadProgress" class="upload-progress">Uploading...</div>
-        
-        <button class="btn-save" id="btnSaveVendor" onclick="saveVendor()">SAVE VENDOR</button>
+        <label class="file-input-label">📸 Vendor Logo</label><input type="file" id="vendorLogo" accept="image/*" onchange="previewLogo(this)">
+        <img id="logoPreview" class="img-preview" style="display:none; width:80px; height:80px; border-radius:10px; margin:5px;">
+        <button class="btn-save" id="btnSaveVendor" onclick="saveVendor()" style="background:#2ed573; width:100%; margin-top:15px;">SAVE VENDOR</button>
     </div>
 </div>
 
 <!-- Category Modal -->
 <div id="categoryModal" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="closeModal('categoryModal')">&times;</span>
-        <h3>Add Category</h3>
-        <input type="text" id="catName" placeholder="Category Name">
-        <input type="text" id="catIcon" placeholder="Icon Emoji">
-        <button class="btn-save" onclick="saveCategory()">SAVE CATEGORY</button>
-    </div>
+    <div class="modal-content"><span class="close" onclick="closeModal('categoryModal')">&times;</span><h3>Add Category</h3>
+    <input type="text" id="catName" placeholder="Category Name"><input type="text" id="catIcon" placeholder="Icon Emoji">
+    <button onclick="saveCategory()" style="background:#2ed573; width:100%; margin-top:10px;">SAVE</button></div>
 </div>
 
 <!-- City Modal -->
 <div id="cityModal" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="closeModal('cityModal')">&times;</span>
-        <h3>Add City</h3>
-        <input type="text" id="cityNameInput" placeholder="City Name">
-        <div class="checkbox-group"><input type="checkbox" id="cityPopularCheck"><label>⭐ Show in Popular Cities</label></div>
-        <button class="btn-save" onclick="saveCity()">SAVE CITY</button>
-    </div>
+    <div class="modal-content"><span class="close" onclick="closeModal('cityModal')">&times;</span><h3>Add City</h3>
+    <input type="text" id="cityNameInput" placeholder="City Name">
+    <div class="checkbox-group"><input type="checkbox" id="cityPopularCheck"><label>⭐ Show in Popular Cities</label></div>
+    <button onclick="saveCity()" style="background:#2ed573; width:100%; margin-top:10px;">SAVE</button></div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
@@ -161,13 +192,13 @@
     const db = getFirestore(app);
     const IMGBB_API_KEY = "459b0b4e8a9c6fcceaffd15320a6fdbd";
 
-    let vendors = [], categories = [], cities = [];
+    let vendors = [], categories = [], cities = [], bookings = [];
     let editingVendorId = null, editingCityIndex = null;
     let currentLogoUrl = null, currentWorkPhotos = [], tempWorkPhotosData = [];
 
+    // ========== REAL-TIME SYNC ==========
     onSnapshot(collection(db, "categories"), (snap) => {
-        categories = [];
-        snap.forEach(d => { if(!d.data().deleted) categories.push({ id: d.id, ...d.data() }); });
+        categories = []; snap.forEach(d => { if(!d.data().deleted) categories.push({ id: d.id, ...d.data() }); });
         renderCategories(); updateCategoryDropdown();
     });
     onSnapshot(doc(db, 'settings', 'cities'), (d) => {
@@ -175,144 +206,123 @@
         renderCities(); updateCityDropdown();
     });
     onSnapshot(collection(db, "vendors"), (snap) => {
-        vendors = [];
-        snap.forEach(d => vendors.push({ id: d.id, ...d.data() }));
+        vendors = []; snap.forEach(d => vendors.push({ id: d.id, ...d.data() }));
         renderVendors();
+    });
+    onSnapshot(collection(db, "bookings"), (snap) => {
+        bookings = []; snap.forEach(d => bookings.push({ id: d.id, ...d.data() }));
+        renderBookings();
+        updateStats();
     });
 
     async function uploadToImgBB(file) {
-        const formData = new FormData();
-        formData.append('image', file);
-        formData.append('key', IMGBB_API_KEY);
+        const formData = new FormData(); formData.append('image', file); formData.append('key', IMGBB_API_KEY);
         const res = await fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: formData });
         const data = await res.json();
         if (data.success) return data.data.url;
         else throw new Error(data.error?.message || 'Upload failed');
     }
-    async function uploadMultiplePhotos(files) { let urls = []; for (let f of files) urls.push(await uploadToImgBB(f)); return urls; }
 
-    window.previewLogo = (input) => {
-        if(input.files[0]){ const r=new FileReader(); r.onload=e=>{ document.getElementById('logoPreview').src=e.target.result; document.getElementById('logoPreview').style.display='block'; }; r.readAsDataURL(input.files[0]); }
-    };
-    window.previewWorkPhotos = (input) => {
-        tempWorkPhotosData = [];
-        const container = document.getElementById('workPhotosPreview');
-        container.innerHTML = '';
-        Array.from(input.files).forEach((file, idx) => {
-            const r = new FileReader();
-            r.onload = e => {
-                tempWorkPhotosData.push(e.target.result);
-                const div = document.createElement('div');
-                div.className = 'work-photo-item';
-                div.innerHTML = `<img src="${e.target.result}"><button class="remove-work-photo" onclick="removeTempWorkPhoto(${idx})">×</button>`;
-                container.appendChild(div);
-            };
-            r.readAsDataURL(file);
-        });
-    };
-    window.removeTempWorkPhoto = (idx) => {
-        tempWorkPhotosData.splice(idx, 1);
-        const container = document.getElementById('workPhotosPreview');
-        container.innerHTML = '';
-        tempWorkPhotosData.forEach((p,i) => { const d=document.createElement('div'); d.className='work-photo-item'; d.innerHTML=`<img src="${p}"><button class="remove-work-photo" onclick="removeTempWorkPhoto(${i})">×</button>`; container.appendChild(d); });
-        const dt=new DataTransfer();
-        Array.from(document.getElementById('workPhotos').files).filter((_,i)=>i!==idx).forEach(f=>dt.items.add(f));
-        document.getElementById('workPhotos').files=dt.files;
-    };
-    window.removeExistingWorkPhoto = (idx) => {
-        currentWorkPhotos.splice(idx,1);
-        const container = document.getElementById('workPhotosPreview');
-        container.innerHTML = '';
-        currentWorkPhotos.forEach((p,i) => { const d=document.createElement('div'); d.className='work-photo-item'; d.innerHTML=`<img src="${p}"><button class="remove-work-photo" onclick="removeExistingWorkPhoto(${i})">×</button>`; container.appendChild(d); });
-    };
-
+    // ========== RENDER FUNCTIONS ==========
     function renderVendors() {
         const tbody = document.getElementById('vendorTable');
         if(!vendors.length){ tbody.innerHTML='<tr><td colspan="8">No vendors</td></tr>'; return; }
         tbody.innerHTML = vendors.map(v => `
-            <tr><td><img src="${v.imageUrl||'https://via.placeholder.com/50'}" class="vendor-img-td" onerror="this.src='https://via.placeholder.com/50'"></td>
+            <tr><td><img src="${v.imageUrl||'https://via.placeholder.com/50'}" style="width:50px;height:50px;border-radius:8px;"></td>
             <td><strong>${v.name||'-'}</strong></td><td>${v.category||'-'}</td><td>${v.city||'-'}</td>
             <td>${v.priceRange||'-'}</td><td>⭐ ${v.rating||'-'}</td>
             <td>📞 ${v.agentPhone || '-'}</td>
             <td><button class="btn-edit" onclick="editVendor('${v.id}')">Edit</button><button class="btn-delete" onclick="deleteVendor('${v.id}')">Del</button></td></tr>
         `).join('');
     }
+    
     function renderCategories() { document.getElementById('categoriesList').innerHTML = categories.map(c=>`<div class="list-item"><span>${c.icon||'🏷️'} ${c.name}</span><div><button class="btn-edit" onclick="editCategory('${c.id}')">Edit</button><button class="btn-delete" onclick="deleteCategory('${c.id}')">Del</button></div></div>`).join(''); }
     function renderCities() { document.getElementById('citiesList').innerHTML = cities.map((c,i)=>`<div class="list-item"><span>📍 ${c.name} ${c.popular?'<span class="popular-badge">Popular</span>':''}</span><div><button class="btn-edit" onclick="editCity(${i})">Edit</button><button class="btn-delete" onclick="deleteCity(${i})">Del</button></div></div>`).join(''); }
-    function updateCategoryDropdown() { const sel=document.getElementById('vendorCategory'); if(sel) sel.innerHTML='<option value="">-- Select Category --</option>'+categories.map(c=>`<option value="${c.id}">${c.icon||'🏷️'} ${c.name}</option>`).join(''); }
-    function updateCityDropdown() { const sel=document.getElementById('vendorCity'); if(sel) sel.innerHTML='<option value="">-- Select City --</option>'+cities.map(c=>`<option value="${c.name.toLowerCase()}">${c.name}</option>`).join(''); }
-
-    window.openAddVendor = () => {
-        editingVendorId = null; currentLogoUrl = null; currentWorkPhotos = []; tempWorkPhotosData = [];
-        document.getElementById('vendorForm')?.reset(); document.getElementById('logoPreview').style.display='none'; document.getElementById('workPhotosPreview').innerHTML='';
-        document.getElementById('vendorModalTitle').innerText='Add Vendor';
-        openModal('vendorModal');
+    
+    function renderBookings() {
+        const tbody = document.getElementById('bookingsTableBody');
+        if(!bookings.length){ tbody.innerHTML='<tr><td colspan="11">No bookings yet</td></tr>'; return; }
+        tbody.innerHTML = bookings.map(b => {
+            const paidAmount = b.installment_1?.amount + b.installment_2?.amount + b.installment_3?.amount || b.paymentAmount || 0;
+            return `<tr>
+                <td>${b.id.slice(-6)}</td><td>${b.userName || '-'}</td><td>${b.userPhone || '-'}</td>
+                <td><strong>${b.vendorName}</strong></td><td>${b.eventLocation?.split(',').pop() || '-'}</td>
+                <td>${b.eventDate || '-'}</td>
+                <td>₹${(b.amount || 0).toLocaleString()}</td>
+                <td>₹${paidAmount.toLocaleString()}</td>
+                <td>${b.agentId || '-'}</td>
+                <td><span class="status-badge status-${b.status}">${b.status}</span></td>
+                <td><button class="btn-confirm" onclick="updateBookingStatus('${b.id}', 'confirmed')">✅ Confirm</button>
+                <button class="btn-reject" onclick="updateBookingStatus('${b.id}', 'cancelled')">❌ Cancel</button></td>
+            </tr>`;
+        }).join('');
+    }
+    
+    function updateStats() {
+        const total = bookings.length;
+        const pending = bookings.filter(b => b.status === 'pending').length;
+        const confirmed = bookings.filter(b => b.status === 'confirmed').length;
+        const totalRevenue = bookings.filter(b => b.status === 'confirmed').reduce((s,b) => s + (b.amount || 0), 0);
+        document.getElementById('totalBookings').innerText = total;
+        document.getElementById('pendingBookings').innerText = pending;
+        document.getElementById('confirmedBookings').innerText = confirmed;
+        document.getElementById('totalRevenue').innerHTML = `₹${totalRevenue.toLocaleString()}`;
+    }
+    
+    window.filterBookings = () => {
+        const status = document.getElementById('bookingStatusFilter').value;
+        const search = document.getElementById('bookingSearch').value.toLowerCase();
+        const rows = document.querySelectorAll('#bookingsTableBody tr');
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            const statusMatch = status === 'all' || text.includes(status);
+            const searchMatch = !search || text.includes(search);
+            row.style.display = statusMatch && searchMatch ? '' : 'none';
+        });
     };
-    window.editVendor = (id) => {
-        const v = vendors.find(x=>x.id===id);
-        if(!v) return;
-        editingVendorId = id; currentLogoUrl = v.imageUrl; currentWorkPhotos = v.photos || [];
-        document.getElementById('vendorName').value = v.name||''; document.getElementById('vendorCategory').value = v.category||''; document.getElementById('vendorCity').value = v.city||'';
-        document.getElementById('vendorLocation').value = v.location||''; document.getElementById('vendorPrice').value = v.priceRange||''; document.getElementById('vendorRating').value = v.rating||'';
-        document.getElementById('vendorPhone').value = v.phone||''; document.getElementById('agentPhone').value = v.agentPhone||'';
-        document.getElementById('vendorDescription').value = v.description||'';
-        if(v.imageUrl){ document.getElementById('logoPreview').src=v.imageUrl; document.getElementById('logoPreview').style.display='block'; }
-        else document.getElementById('logoPreview').style.display='none';
-        const container = document.getElementById('workPhotosPreview'); container.innerHTML='';
-        if(v.photos && v.photos.length) v.photos.forEach((p,i)=>{ const d=document.createElement('div'); d.className='work-photo-item'; d.innerHTML=`<img src="${p}"><button class="remove-work-photo" onclick="removeExistingWorkPhoto(${i})">×</button>`; container.appendChild(d); });
-        document.getElementById('vendorModalTitle').innerText='Edit Vendor';
-        openModal('vendorModal');
+    
+    window.updateBookingStatus = async (id, newStatus) => {
+        await updateDoc(doc(db, 'bookings', id), { status: newStatus, updatedAt: new Date().toISOString() });
+        showMsg(`Booking ${newStatus}!`, 'success');
     };
+    
+    // ========== VENDOR CRUD ==========
+    window.openAddVendor = () => { editingVendorId = null; document.getElementById('vendorForm').reset(); document.getElementById('vendorModalTitle').innerText='Add Vendor'; openModal('vendorModal'); };
+    window.editVendor = (id) => { const v = vendors.find(x=>x.id===id); if(!v) return; editingVendorId=id; document.getElementById('vendorName').value=v.name||''; document.getElementById('vendorCategory').value=v.category||''; document.getElementById('vendorCity').value=v.city||''; document.getElementById('vendorLocation').value=v.location||''; document.getElementById('vendorPrice').value=v.priceRange||''; document.getElementById('vendorRating').value=v.rating||''; document.getElementById('vendorPhone').value=v.phone||''; document.getElementById('agentPhone').value=v.agentPhone||''; document.getElementById('vendorDescription').value=v.description||''; document.getElementById('vendorModalTitle').innerText='Edit Vendor'; openModal('vendorModal'); };
     window.deleteVendor = async (id) => { if(confirm('Delete?')){ await deleteDoc(doc(db,'vendors',id)); showMsg('Deleted!','success'); } };
     window.saveVendor = async () => {
-        const name = document.getElementById('vendorName').value;
-        const category = document.getElementById('vendorCategory').value;
-        const city = document.getElementById('vendorCity').value;
-        const agentPhone = document.getElementById('agentPhone').value;
-        if(!name || !category || !city){ showMsg('Name, Category & City required!','error'); return; }
-        if(!agentPhone){ showMsg('Agent Phone Number is required for bookings!','error'); return; }
-        const saveBtn = document.getElementById('btnSaveVendor'); const progress = document.getElementById('uploadProgress');
-        saveBtn.disabled = true; progress.style.display='block';
-        try {
-            let logoUrl = currentLogoUrl;
-            if(document.getElementById('vendorLogo').files[0]){ progress.innerText='Uploading logo...'; logoUrl = await uploadToImgBB(document.getElementById('vendorLogo').files[0]); }
-            let newWorkUrls = [];
-            if(document.getElementById('workPhotos').files.length){ progress.innerText='Uploading work photos...'; newWorkUrls = await uploadMultiplePhotos(Array.from(document.getElementById('workPhotos').files)); }
-            const allWorkPhotos = [...currentWorkPhotos, ...newWorkUrls];
-            const vendorData = {
-                name, category, city, agentPhone,
-                imageUrl: logoUrl || 'https://via.placeholder.com/80',
-                photos: allWorkPhotos,
-                location: document.getElementById('vendorLocation').value || '',
-                priceRange: document.getElementById('vendorPrice').value || '',
-                rating: document.getElementById('vendorRating').value || '4.0',
-                phone: document.getElementById('vendorPhone').value || '',
-                description: document.getElementById('vendorDescription').value || '',
-                updatedAt: new Date().toISOString()
-            };
-            if(editingVendorId) { await updateDoc(doc(db,'vendors',editingVendorId), vendorData); showMsg('Updated!','success'); }
-            else { vendorData.createdAt = new Date().toISOString(); await addDoc(collection(db,'vendors'), vendorData); showMsg('Added!','success'); }
-            closeModal('vendorModal');
-        } catch(e) { showMsg('Error: '+e.message,'error'); }
-        finally { saveBtn.disabled=false; progress.style.display='none'; }
+        const name = document.getElementById('vendorName').value, category = document.getElementById('vendorCategory').value, city = document.getElementById('vendorCity').value, agentPhone = document.getElementById('agentPhone').value;
+        if(!name || !category || !city || !agentPhone){ showMsg('Name, Category, City & Agent Phone required!','error'); return; }
+        const vendorData = { name, category, city, agentPhone, location: document.getElementById('vendorLocation').value||'', priceRange: document.getElementById('vendorPrice').value||'', rating: document.getElementById('vendorRating').value||'4.0', phone: document.getElementById('vendorPhone').value||'', description: document.getElementById('vendorDescription').value||'', updatedAt: new Date().toISOString(), imageUrl: 'https://via.placeholder.com/80' };
+        if(editingVendorId) await updateDoc(doc(db,'vendors',editingVendorId), vendorData);
+        else { vendorData.createdAt = new Date().toISOString(); await addDoc(collection(db,'vendors'), vendorData); }
+        closeModal('vendorModal'); showMsg('Vendor saved!','success');
     };
-
+    
+    // ========== CATEGORY CRUD ==========
     window.openAddCategory = () => { document.getElementById('catName').value=''; document.getElementById('catIcon').value=''; openModal('categoryModal'); };
-    window.editCategory = (id) => { const c=categories.find(x=>x.id===id); if(c){ document.getElementById('catName').value=c.name; document.getElementById('catIcon').value=c.icon||''; openModal('categoryModal'); window.editingCatId=id; } };
+    window.editCategory = (id) => { const c=categories.find(x=>x.id===id); if(c){ document.getElementById('catName').value=c.name; document.getElementById('catIcon').value=c.icon||''; openModal('categoryModal'); } };
     window.deleteCategory = async (id) => { if(confirm('Delete?')){ await setDoc(doc(db,'categories',id),{deleted:true}); showMsg('Deleted!','success'); } };
     window.saveCategory = async () => { const name=document.getElementById('catName').value; if(!name){ showMsg('Enter name','error'); return; } const id=name.toLowerCase().replace(/ /g,''); const icon=document.getElementById('catIcon').value||'🏷️'; await setDoc(doc(db,'categories',id),{id,name,icon}); showMsg('Saved!','success'); closeModal('categoryModal'); };
-
+    
+    // ========== CITY CRUD ==========
     window.openAddCity = () => { editingCityIndex=null; document.getElementById('cityNameInput').value=''; document.getElementById('cityPopularCheck').checked=false; openModal('cityModal'); };
     window.editCity = (i) => { editingCityIndex=i; document.getElementById('cityNameInput').value=cities[i].name; document.getElementById('cityPopularCheck').checked=cities[i].popular||false; openModal('cityModal'); };
     window.deleteCity = async (i) => { if(confirm('Delete?')){ cities.splice(i,1); await setDoc(doc(db,'settings','cities'),{list:cities}); showMsg('Deleted!','success'); } };
     window.saveCity = async () => { const name=document.getElementById('cityNameInput').value; if(!name){ showMsg('Enter name','error'); return; } const popular=document.getElementById('cityPopularCheck').checked; if(editingCityIndex!==null) cities[editingCityIndex]={name,popular}; else if(cities.find(c=>c.name===name)){ showMsg('City exists!','error'); return; } else cities.push({name,popular}); await setDoc(doc(db,'settings','cities'),{list:cities}); showMsg('Saved!','success'); closeModal('cityModal'); editingCityIndex=null; };
-
+    
+    function updateCategoryDropdown() { const sel=document.getElementById('vendorCategory'); if(sel) sel.innerHTML='<option value="">-- Select --</option>'+categories.map(c=>`<option value="${c.id}">${c.icon||'🏷️'} ${c.name}</option>`).join(''); }
+    function updateCityDropdown() { const sel=document.getElementById('vendorCity'); if(sel) sel.innerHTML='<option value="">-- Select --</option>'+cities.map(c=>`<option value="${c.name.toLowerCase()}">${c.name}</option>`).join(''); }
+    window.previewLogo = (input) => { if(input.files[0]){ const r=new FileReader(); r.onload=e=>{ document.getElementById('logoPreview').src=e.target.result; document.getElementById('logoPreview').style.display='block'; }; r.readAsDataURL(input.files[0]); } };
+    
     function showMsg(msg,type) { const m=document.getElementById('message'); m.className=`message ${type}`; m.innerText=msg; m.style.display='block'; setTimeout(()=>m.style.display='none',3000); }
     window.openModal = (id) => document.getElementById(id).style.display='flex';
     window.closeModal = (id) => document.getElementById(id).style.display='none';
-    window.switchTab = (tab) => { document.querySelectorAll('.tab, .tab-content').forEach(el=>el.classList.remove('active')); event.target.classList.add('active'); document.getElementById(`${tab}Tab`).classList.add('active'); };
+    window.switchTab = (tab) => { document.querySelectorAll('.tab, .tab-content').forEach(el=>el.classList.remove('active')); event.target.classList.add('active'); document.getElementById(`${tab}Tab`).classList.add('active'); if(tab==='bookings') renderBookings(); };
     window.logout = () => { localStorage.removeItem('admin'); window.location.href='admin-login.html'; };
+    
     if(localStorage.getItem('admin')!=='true') window.location.href='admin-login.html';
+    updateCategoryDropdown(); updateCityDropdown();
 </script>
 </body>
 </html>
