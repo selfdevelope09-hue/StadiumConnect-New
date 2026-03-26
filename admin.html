@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+       <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -7,24 +7,32 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui; }
         body { background: #f5f5f5; padding: 20px; }
-        .header { background: white; padding: 15px 20px; border-radius: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; }
+        .header { background: white; padding: 15px 20px; border-radius: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
         .logout-btn { background: #dc3545; color: white; border: none; padding: 8px 20px; border-radius: 8px; cursor: pointer; }
         .card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; }
         h2 { margin-bottom: 20px; color: #ff6b35; }
-        .stats { display: flex; gap: 15px; flex-wrap: wrap; }
+        .stats { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 20px; }
         .stat { background: white; padding: 20px; border-radius: 15px; text-align: center; flex: 1; min-width: 100px; }
         .stat-num { font-size: 28px; font-weight: bold; color: #ff6b35; }
-        table { width: 100%; border-collapse: collapse; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .tab { padding: 10px 25px; background: white; border: none; border-radius: 30px; cursor: pointer; font-weight: 500; }
+        .tab.active { background: #ff6b35; color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 15px; overflow: hidden; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
         th { background: #f8f8f8; }
         button { padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; }
-        .btn-add { background: #28a745; color: white; margin-bottom: 15px; padding: 10px 20px; }
+        .btn-add { background: #28a745; color: white; padding: 10px 20px; margin-bottom: 15px; }
         .btn-edit { background: #ffc107; }
         .btn-delete { background: #dc3545; color: white; }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
-        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 500px; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; }
+        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; }
         .modal input, .modal select, .modal textarea { width: 100%; padding: 8px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; }
         .close { float: right; font-size: 24px; cursor: pointer; }
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; }
+        .add-section { display: flex; gap: 10px; margin-top: 15px; }
+        .add-section input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; }
     </style>
     
     <!-- Admin Check -->
@@ -37,7 +45,7 @@
     <!-- Firebase -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, addDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, doc, addDoc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
@@ -51,14 +59,43 @@
         const db = getFirestore(app);
 
         let vendors = [];
-        let editingId = null;
+        let categories = [
+            { id: 'decorator', name: 'Decorators', icon: '🎨' },
+            { id: 'photographer', name: 'Photographers', icon: '📸' },
+            { id: 'caterer', name: 'Caterers', icon: '🍽️' },
+            { id: 'bandbaja', name: 'Band Baja', icon: '🎵' },
+            { id: 'stadium', name: 'Stadiums', icon: '🏟️' }
+        ];
+        let cities = ['Nagpur', 'Mumbai', 'Pune', 'Delhi', 'Bangalore', 'Hyderabad'];
+        let editingVendorId = null;
+        let editingCategoryId = null;
+        let editingCity = null;
 
+        // Load all data
         async function loadVendors() {
             const snap = await getDocs(collection(db, "vendors"));
             vendors = [];
             snap.forEach(doc => vendors.push({ id: doc.id, ...doc.data() }));
-            renderTable();
+            renderVendorsTable();
             updateStats();
+        }
+
+        async function loadCategories() {
+            const snap = await getDocs(collection(db, "categories"));
+            if (!snap.empty) {
+                categories = [];
+                snap.forEach(doc => categories.push({ id: doc.id, ...doc.data() }));
+            }
+            renderCategoriesList();
+        }
+
+        async function loadCities() {
+            const docRef = doc(db, 'settings', 'cities');
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                cities = docSnap.data().list;
+            }
+            renderCitiesList();
         }
 
         function updateStats() {
@@ -70,36 +107,37 @@
             document.getElementById('stadiumCount').innerText = vendors.filter(v => v.category === 'stadium').length;
         }
 
-        function renderTable() {
+        // ========= VENDORS =========
+        function renderVendorsTable() {
             const tbody = document.getElementById('vendorTable');
             tbody.innerHTML = vendors.map(v => `
                 <tr>
-                    <td>${v.name || '-'}</td>
-                    <td>${v.category || '-'}</td>
-                    <td>${v.city || '-'}</td>
-                    <td>${v.priceRange || '-'}</td>
-                    <td>${v.rating || '-'}</td>
+                    <td>${v.name || '-'} \\
+                    <td>${v.category || '-'} \\
+                    <td>${v.city || '-'} \\
+                    <td>${v.priceRange || '-'} \\
+                    <td>${v.rating || '-'} \\
                     <td>
-                        <button class="btn-edit" onclick="editVendor('${v.id}')">Edit</button>
+                        <button class="btn-edit" onclick="openEditVendor('${v.id}')">Edit</button>
                         <button class="btn-delete" onclick="deleteVendor('${v.id}')">Del</button>
                     </td>
-                </tr>
+                 </tr>
             `).join('');
         }
 
-        window.openAdd = () => {
-            editingId = null;
-            document.getElementById('modalTitle').innerText = 'Add Vendor';
+        window.openAddVendor = () => {
+            editingVendorId = null;
+            document.getElementById('vendorModalTitle').innerText = 'Add Vendor';
             document.getElementById('vendorForm').reset();
-            document.getElementById('capacityGroup').style.display = 'none';
+            document.getElementById('vendorCapacityGroup').style.display = 'none';
             document.getElementById('vendorModal').style.display = 'flex';
         };
 
-        window.editVendor = (id) => {
+        window.openEditVendor = (id) => {
             const v = vendors.find(x => x.id === id);
             if (!v) return;
-            editingId = id;
-            document.getElementById('modalTitle').innerText = 'Edit Vendor';
+            editingVendorId = id;
+            document.getElementById('vendorModalTitle').innerText = 'Edit Vendor';
             document.getElementById('vendorName').value = v.name || '';
             document.getElementById('vendorCategory').value = v.category || '';
             document.getElementById('vendorCity').value = v.city || '';
@@ -109,7 +147,7 @@
             document.getElementById('vendorPhone').value = v.phone || '';
             document.getElementById('vendorDescription').value = v.description || '';
             document.getElementById('vendorCapacity').value = v.capacity || '';
-            document.getElementById('capacityGroup').style.display = v.category === 'stadium' ? 'block' : 'none';
+            document.getElementById('vendorCapacityGroup').style.display = v.category === 'stadium' ? 'block' : 'none';
             document.getElementById('vendorModal').style.display = 'flex';
         };
 
@@ -134,25 +172,146 @@
             };
             if (data.category === 'stadium') data.capacity = document.getElementById('vendorCapacity').value;
             
-            if (editingId) {
-                await updateDoc(doc(db, 'vendors', editingId), data);
+            if (editingVendorId) {
+                await updateDoc(doc(db, 'vendors', editingVendorId), data);
                 alert('Updated!');
             } else {
                 data.createdAt = new Date().toISOString();
                 await addDoc(collection(db, 'vendors'), data);
                 alert('Added!');
             }
-            closeModal();
+            closeModal('vendorModal');
             await loadVendors();
         };
 
-        window.onCategoryChange = () => {
+        window.onVendorCategoryChange = () => {
             const val = document.getElementById('vendorCategory').value;
-            document.getElementById('capacityGroup').style.display = val === 'stadium' ? 'block' : 'none';
+            document.getElementById('vendorCapacityGroup').style.display = val === 'stadium' ? 'block' : 'none';
         };
 
-        window.closeModal = () => {
-            document.getElementById('vendorModal').style.display = 'none';
+        // ========= CATEGORIES =========
+        function renderCategoriesList() {
+            const container = document.getElementById('categoriesList');
+            container.innerHTML = categories.map(c => `
+                <div class="list-item">
+                    <span>${c.icon || '🏷️'} ${c.name}</span>
+                    <div>
+                        <button class="btn-edit" onclick="openEditCategory('${c.id}')">Edit</button>
+                        <button class="btn-delete" onclick="deleteCategory('${c.id}')">Del</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.openAddCategory = () => {
+            editingCategoryId = null;
+            document.getElementById('categoryName').value = '';
+            document.getElementById('categoryIcon').value = '';
+            document.getElementById('categoryModal').style.display = 'flex';
+        };
+
+        window.openEditCategory = (id) => {
+            const c = categories.find(x => x.id === id);
+            if (!c) return;
+            editingCategoryId = id;
+            document.getElementById('categoryName').value = c.name;
+            document.getElementById('categoryIcon').value = c.icon || '';
+            document.getElementById('categoryModal').style.display = 'flex';
+        };
+
+        window.deleteCategory = async (id) => {
+            if (confirm('Delete this category?')) {
+                categories = categories.filter(c => c.id !== id);
+                await setDoc(doc(db, 'categories', id), { deleted: true });
+                renderCategoriesList();
+            }
+        };
+
+        window.saveCategory = async () => {
+            const name = document.getElementById('categoryName').value;
+            const icon = document.getElementById('categoryIcon').value;
+            if (!name) return;
+            const id = name.toLowerCase().replace(/ /g, '');
+            const cat = { id, name, icon: icon || '🏷️' };
+            
+            if (editingCategoryId) {
+                const index = categories.findIndex(c => c.id === editingCategoryId);
+                if (index !== -1) categories[index] = cat;
+            } else {
+                if (!categories.find(c => c.id === id)) categories.push(cat);
+            }
+            await setDoc(doc(db, 'categories', id), cat);
+            renderCategoriesList();
+            closeModal('categoryModal');
+            alert('Category saved!');
+        };
+
+        // ========= CITIES =========
+        function renderCitiesList() {
+            const container = document.getElementById('citiesList');
+            container.innerHTML = cities.map(c => `
+                <div class="list-item">
+                    <span>📍 ${c}</span>
+                    <div>
+                        <button class="btn-edit" onclick="openEditCity('${c}')">Edit</button>
+                        <button class="btn-delete" onclick="deleteCity('${c}')">Del</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.openAddCity = () => {
+            editingCity = null;
+            document.getElementById('cityName').value = '';
+            document.getElementById('cityModal').style.display = 'flex';
+        };
+
+        window.openEditCity = (city) => {
+            editingCity = city;
+            document.getElementById('cityName').value = city;
+            document.getElementById('cityModal').style.display = 'flex';
+        };
+
+        window.deleteCity = (city) => {
+            if (confirm(`Delete ${city}?`)) {
+                cities = cities.filter(c => c !== city);
+                saveCities();
+                renderCitiesList();
+            }
+        };
+
+        window.saveCity = async () => {
+            const name = document.getElementById('cityName').value;
+            if (!name) return;
+            if (editingCity) {
+                const index = cities.indexOf(editingCity);
+                if (index !== -1) cities[index] = name;
+            } else {
+                if (!cities.includes(name)) cities.push(name);
+            }
+            await saveCities();
+            renderCitiesList();
+            closeModal('cityModal');
+            alert('City saved!');
+        };
+
+        async function saveCities() {
+            await setDoc(doc(db, 'settings', 'cities'), { list: cities });
+        }
+
+        // ========= UTILITIES =========
+        window.closeModal = (id) => {
+            document.getElementById(id).style.display = 'none';
+        };
+
+        window.switchTab = (tab) => {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(`${tab}Tab`).classList.add('active');
+            if (tab === 'vendors') loadVendors();
+            if (tab === 'categories') loadCategories();
+            if (tab === 'cities') loadCities();
         };
 
         window.logout = () => {
@@ -160,7 +319,10 @@
             window.location.href = 'admin-login.html';
         };
 
+        // Initial load
         loadVendors();
+        loadCategories();
+        loadCities();
     </script>
 </head>
 <body>
@@ -179,22 +341,48 @@
     <div class="stat"><div class="stat-num" id="stadiumCount">0</div><div>🏟️ Stadiums</div></div>
 </div>
 
-<div class="card">
-    <button class="btn-add" onclick="openAdd()">+ Add Vendor</button>
-    <div style="overflow-x: auto;">
-        <table>
-            <thead><tr><th>Name</th><th>Category</th><th>City</th><th>Price</th><th>Rating</th><th>Actions</th></thead>
-            <tbody id="vendorTable"><tr><td colspan="6">Loading...</td></tr></tbody>
-        </table>
+<div class="tabs">
+    <button class="tab active" onclick="switchTab('vendors')">📦 Vendors</button>
+    <button class="tab" onclick="switchTab('categories')">🏷️ Categories</button>
+    <button class="tab" onclick="switchTab('cities')">📍 Cities</button>
+</div>
+
+<!-- Vendors Tab -->
+<div id="vendorsTab" class="tab-content active">
+    <div class="card">
+        <button class="btn-add" onclick="openAddVendor()">+ Add Vendor</button>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead><tr><th>Name</th><th>Category</th><th>City</th><th>Price</th><th>Rating</th><th>Actions</th></tr></thead>
+                <tbody id="vendorTable"><tr><td colspan="6">Loading...</td></tr></tbody>
+            </table>
+        </div>
     </div>
 </div>
 
+<!-- Categories Tab -->
+<div id="categoriesTab" class="tab-content">
+    <div class="card">
+        <button class="btn-add" onclick="openAddCategory()">+ Add Category</button>
+        <div id="categoriesList"></div>
+    </div>
+</div>
+
+<!-- Cities Tab -->
+<div id="citiesTab" class="tab-content">
+    <div class="card">
+        <button class="btn-add" onclick="openAddCity()">+ Add City</button>
+        <div id="citiesList"></div>
+    </div>
+</div>
+
+<!-- Vendor Modal -->
 <div id="vendorModal" class="modal">
     <div class="modal-content">
-        <span class="close" onclick="closeModal()">&times;</span>
-        <h3 id="modalTitle">Add Vendor</h3>
+        <span class="close" onclick="closeModal('vendorModal')">&times;</span>
+        <h3 id="vendorModalTitle">Add Vendor</h3>
         <input type="text" id="vendorName" placeholder="Name">
-        <select id="vendorCategory" onchange="onCategoryChange()">
+        <select id="vendorCategory" onchange="onVendorCategoryChange()">
             <option value="decorator">Decorator</option>
             <option value="photographer">Photographer</option>
             <option value="caterer">Caterer</option>
@@ -206,12 +394,32 @@
         <input type="text" id="vendorPrice" placeholder="Price Range">
         <input type="text" id="vendorRating" placeholder="Rating">
         <input type="text" id="vendorPhone" placeholder="Phone">
-        <div id="capacityGroup" style="display:none"><input type="text" id="vendorCapacity" placeholder="Capacity (seats)"></div>
+        <div id="vendorCapacityGroup" style="display:none"><input type="text" id="vendorCapacity" placeholder="Capacity (seats)"></div>
         <textarea id="vendorDescription" rows="2" placeholder="Description"></textarea>
         <button onclick="saveVendor()" style="background:#ff6b35; color:white; padding:10px; width:100%; margin-top:10px;">Save</button>
     </div>
 </div>
 
+<!-- Category Modal -->
+<div id="categoryModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('categoryModal')">&times;</span>
+        <h3>Add/Edit Category</h3>
+        <input type="text" id="categoryName" placeholder="Category Name">
+        <input type="text" id="categoryIcon" placeholder="Icon (emoji)">
+        <button onclick="saveCategory()" style="background:#ff6b35; color:white; padding:10px; width:100%; margin-top:10px;">Save</button>
+    </div>
+</div>
+
+<!-- City Modal -->
+<div id="cityModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('cityModal')">&times;</span>
+        <h3>Add/Edit City</h3>
+        <input type="text" id="cityName" placeholder="City Name">
+        <button onclick="saveCity()" style="background:#ff6b35; color:white; padding:10px; width:100%; margin-top:10px;">Save</button>
+    </div>
+</div>
+
 </body>
 </html>
-
