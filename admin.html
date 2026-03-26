@@ -28,13 +28,15 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; }
+        .popular-badge { background: #ff6b35; color: white; font-size: 10px; padding: 2px 8px; border-radius: 20px; margin-left: 10px; }
+        .checkbox-group { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
+        .checkbox-group label { margin: 0; cursor: pointer; }
     </style>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
         import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
             authDomain: "stadiumconnect-8fecb.firebaseapp.com",
@@ -54,48 +56,89 @@
         let editingCatId = null;
         let editingCity = null;
 
-        // ========== TEST CONNECTION ==========
-        async function testConnection() {
-            try {
-                const testRef = doc(db, "test", "connection");
-                await setDoc(testRef, { status: "connected", time: new Date().toISOString() });
-                console.log("✅ Firebase connected!");
-                showMessage("Firebase connected!", "success");
-            } catch (error) {
-                console.error("Firebase connection error:", error);
-                showMessage("❌ Firebase connection failed: " + error.message, "error");
-            }
+        // ========== LOAD DATA ==========
+        async function loadVendors() {
+            const snapshot = await getDocs(collection(db, "vendors"));
+            vendors = [];
+            snapshot.forEach(doc => vendors.push({ id: doc.id, ...doc.data() }));
+            renderVendors();
+            updateStats();
         }
 
-        // ========== VENDORS ==========
-        async function loadVendors() {
-            try {
-                const snapshot = await getDocs(collection(db, "vendors"));
-                vendors = [];
-                snapshot.forEach(doc => vendors.push({ id: doc.id, ...doc.data() }));
-                renderVendors();
-                updateStats();
-                console.log("Loaded", vendors.length, "vendors");
-            } catch (error) {
-                showMessage("Error loading vendors: " + error.message, "error");
+        async function loadCategories() {
+            const snapshot = await getDocs(collection(db, "categories"));
+            categories = [];
+            snapshot.forEach(doc => { if (!doc.data().deleted) categories.push({ id: doc.id, ...doc.data() }); });
+            if (categories.length === 0) {
+                categories = [
+                    { id: 'decorator', name: 'Decorators', icon: '🎨' },
+                    { id: 'photographer', name: 'Photographers', icon: '📸' },
+                    { id: 'caterer', name: 'Caterers', icon: '🍽️' },
+                    { id: 'bandbaja', name: 'Band Baja', icon: '🎵' },
+                    { id: 'stadium', name: 'Stadiums', icon: '🏟️' }
+                ];
             }
+            renderCategories();
+            updateCategorySelect();
+        }
+
+        async function loadCities() {
+            const docRef = doc(db, 'settings', 'cities');
+            const docSnap = await getDoc(docRef);
+            cities = docSnap.exists() ? docSnap.data().list : [];
+            if (cities.length === 0) {
+                cities = [
+                    { name: 'Nagpur', popular: true },
+                    { name: 'Mumbai', popular: true },
+                    { name: 'Pune', popular: true },
+                    { name: 'Delhi', popular: true },
+                    { name: 'Bangalore', popular: true }
+                ];
+            }
+            renderCities();
+            updateCitySelect();
         }
 
         function renderVendors() {
             const tbody = document.getElementById('vendorTable');
-            if (!tbody) return;
             tbody.innerHTML = vendors.map(v => `
                 <tr>
-                    <td>${v.name || '-'} \\
-                    <td>${v.category || '-'} \\
-                    <td>${v.city || '-'} \\
-                    <td>${v.priceRange || '-'} \\
-                    <td>${v.rating || '-'} \\
-                    <td style="white-space: nowrap;">
+                    <td>${v.name || '-'}</td>
+                    <td>${v.category || '-'}</td>
+                    <td>${v.city || '-'}</td>
+                    <td>${v.priceRange || '-'}</td>
+                    <td>${v.rating || '-'}</td>
+                    <td>
                         <button class="btn-edit" onclick="editVendor('${v.id}')">Edit</button>
                         <button class="btn-delete" onclick="deleteVendor('${v.id}')">Del</button>
                     </td>
-                </tr>
+                 </tr>
+            `).join('');
+        }
+
+        function renderCategories() {
+            const container = document.getElementById('categoriesList');
+            container.innerHTML = categories.map(c => `
+                <div class="list-item">
+                    <span>${c.icon || '🏷️'} ${c.name}</span>
+                    <div>
+                        <button class="btn-edit" onclick="editCategory('${c.id}')">Edit</button>
+                        <button class="btn-delete" onclick="deleteCategory('${c.id}')">Del</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderCities() {
+            const container = document.getElementById('citiesList');
+            container.innerHTML = cities.map((c, index) => `
+                <div class="list-item">
+                    <span>📍 ${c.name} ${c.popular ? '<span class="popular-badge">Popular</span>' : ''}</span>
+                    <div>
+                        <button class="btn-edit" onclick="editCity(${index})">Edit</button>
+                        <button class="btn-delete" onclick="deleteCity(${index})">Del</button>
+                    </div>
+                </div>
             `).join('');
         }
 
@@ -108,6 +151,21 @@
             document.getElementById('totalStadiums').innerText = vendors.filter(v => v.category === 'stadium').length;
         }
 
+        function updateCategorySelect() {
+            const select = document.getElementById('vendorCategory');
+            if (select) {
+                select.innerHTML = categories.map(c => `<option value="${c.id}">${c.icon || '🏷️'} ${c.name}</option>`).join('');
+            }
+        }
+
+        function updateCitySelect() {
+            const select = document.getElementById('vendorCity');
+            if (select) {
+                select.innerHTML = cities.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+            }
+        }
+
+        // ========== VENDORS ==========
         window.openAddVendor = () => {
             editingId = null;
             document.getElementById('vendorModalTitle').innerText = 'Add Vendor';
@@ -130,8 +188,6 @@
             document.getElementById('vendorPhone').value = v.phone || '';
             document.getElementById('vendorDescription').value = v.description || '';
             document.getElementById('vendorCapacity').value = v.capacity || '';
-            document.getElementById('vendorLat').value = v.lat || '';
-            document.getElementById('vendorLng').value = v.lng || '';
             document.getElementById('capacityGroup').style.display = v.category === 'stadium' ? 'block' : 'none';
             document.getElementById('vendorModal').style.display = 'flex';
         };
@@ -157,11 +213,8 @@
                 rating: parseFloat(document.getElementById('vendorRating').value) || 4.0,
                 phone: document.getElementById('vendorPhone').value,
                 description: document.getElementById('vendorDescription').value,
-                lat: parseFloat(document.getElementById('vendorLat').value) || null,
-                lng: parseFloat(document.getElementById('vendorLng').value) || null,
                 updatedAt: new Date().toISOString()
             };
-            
             if (data.category === 'stadium') data.capacity = document.getElementById('vendorCapacity').value;
             
             try {
@@ -186,48 +239,6 @@
         };
 
         // ========== CATEGORIES ==========
-        async function loadCategories() {
-            try {
-                const snapshot = await getDocs(collection(db, "categories"));
-                categories = [];
-                snapshot.forEach(doc => { if (!doc.data().deleted) categories.push({ id: doc.id, ...doc.data() }); });
-                if (categories.length === 0) {
-                    categories = [
-                        { id: 'decorator', name: 'Decorators', icon: '🎨' },
-                        { id: 'photographer', name: 'Photographers', icon: '📸' },
-                        { id: 'caterer', name: 'Caterers', icon: '🍽️' },
-                        { id: 'bandbaja', name: 'Band Baja', icon: '🎵' },
-                        { id: 'stadium', name: 'Stadiums', icon: '🏟️' }
-                    ];
-                }
-                renderCategories();
-                updateCategorySelect();
-            } catch (error) {
-                console.error("Error loading categories:", error);
-            }
-        }
-
-        function renderCategories() {
-            const container = document.getElementById('categoriesList');
-            if (!container) return;
-            container.innerHTML = categories.map(c => `
-                <div class="list-item">
-                    <span>${c.icon || '🏷️'} ${c.name}</span>
-                    <div>
-                        <button class="btn-edit" onclick="editCategory('${c.id}')">Edit</button>
-                        <button class="btn-delete" onclick="deleteCategory('${c.id}')">Del</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function updateCategorySelect() {
-            const select = document.getElementById('vendorCategory');
-            if (select) {
-                select.innerHTML = categories.map(c => `<option value="${c.id}">${c.icon || '🏷️'} ${c.name}</option>`).join('');
-            }
-        }
-
         window.openAddCategory = () => {
             editingCatId = null;
             document.getElementById('categoryName').value = '';
@@ -275,56 +286,26 @@
             closeModal('categoryModal');
         };
 
-        // ========== CITIES ==========
-        async function loadCities() {
-            try {
-                const docRef = doc(db, 'settings', 'cities');
-                const docSnap = await getDoc(docRef);
-                cities = docSnap.exists() ? docSnap.data().list : ['Nagpur', 'Mumbai', 'Pune', 'Delhi', 'Bangalore', 'Hyderabad'];
-                renderCities();
-                updateCitySelect();
-                console.log("Loaded", cities.length, "cities");
-            } catch (error) {
-                console.error("Error loading cities:", error);
-            }
-        }
-
-        function renderCities() {
-            const container = document.getElementById('citiesList');
-            if (!container) return;
-            container.innerHTML = cities.map(c => `
-                <div class="list-item">
-                    <span>📍 ${c}</span>
-                    <div>
-                        <button class="btn-edit" onclick="editCity('${c}')">Edit</button>
-                        <button class="btn-delete" onclick="deleteCity('${c}')">Del</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function updateCitySelect() {
-            const select = document.getElementById('vendorCity');
-            if (select) {
-                select.innerHTML = cities.map(c => `<option value="${c}">${c}</option>`).join('');
-            }
-        }
-
+        // ========== CITIES WITH POPULAR OPTION ==========
         window.openAddCity = () => {
             editingCity = null;
             document.getElementById('cityName').value = '';
+            document.getElementById('cityPopular').checked = false;
             document.getElementById('cityModal').style.display = 'flex';
         };
 
-        window.editCity = (city) => {
-            editingCity = city;
-            document.getElementById('cityName').value = city;
+        window.editCity = (index) => {
+            const city = cities[index];
+            if (!city) return;
+            editingCity = index;
+            document.getElementById('cityName').value = city.name;
+            document.getElementById('cityPopular').checked = city.popular || false;
             document.getElementById('cityModal').style.display = 'flex';
         };
 
-        window.deleteCity = (city) => {
-            if (confirm(`Delete ${city}?`)) {
-                cities = cities.filter(c => c !== city);
+        window.deleteCity = (index) => {
+            if (confirm('Delete this city?')) {
+                cities.splice(index, 1);
                 saveCities();
                 renderCities();
                 updateCitySelect();
@@ -334,19 +315,28 @@
 
         window.saveCity = async () => {
             const name = document.getElementById('cityName').value;
+            const popular = document.getElementById('cityPopular').checked;
             if (!name) { showMessage('Enter city name', 'error'); return; }
-            if (editingCity) {
-                const index = cities.indexOf(editingCity);
-                if (index !== -1) cities[index] = name;
+            
+            const cityData = { name: name, popular: popular };
+            
+            if (editingCity !== null) {
+                cities[editingCity] = cityData;
                 showMessage('City updated!', 'success');
             } else {
-                if (!cities.includes(name)) cities.push(name);
-                showMessage('City added!', 'success');
+                if (!cities.find(c => c.name === name)) {
+                    cities.push(cityData);
+                    showMessage('City added!', 'success');
+                } else {
+                    showMessage('City already exists!', 'error');
+                    return;
+                }
             }
             await saveCities();
             renderCities();
             updateCitySelect();
             closeModal('cityModal');
+            editingCity = null;
         };
 
         async function saveCities() {
@@ -356,7 +346,6 @@
         // ========== UTILITIES ==========
         function showMessage(msg, type) {
             const msgDiv = document.getElementById('message');
-            if (!msgDiv) return;
             msgDiv.className = `message ${type}`;
             msgDiv.innerText = msg;
             setTimeout(() => { msgDiv.style.display = 'none'; }, 3000);
@@ -364,6 +353,7 @@
 
         window.closeModal = (id) => {
             document.getElementById(id).style.display = 'none';
+            editingCity = null;
         };
 
         window.switchTab = (tab) => {
@@ -381,13 +371,12 @@
             window.location.href = 'admin-login.html';
         };
 
-        // Check admin
+        // Admin check
         if (localStorage.getItem('admin') !== 'true') {
             window.location.href = 'admin-login.html';
         }
 
         // Initialize
-        testConnection();
         loadVendors();
         loadCategories();
         loadCities();
@@ -418,18 +407,20 @@
     <button class="tab" onclick="switchTab('cities')">📍 Cities</button>
 </div>
 
+<!-- Vendors Tab -->
 <div id="vendorsTab" class="tab-content active">
     <div class="card">
         <button onclick="openAddVendor()">+ Add Vendor</button>
         <div style="overflow-x: auto;">
-             <table>
-                <thead> <tr><th>Name</th><th>Category</th><th>City</th><th>Price</th><th>Rating</th><th>Actions</th></tr> </thead>
+            <table>
+                <thead><tr><th>Name</th><th>Category</th><th>City</th><th>Price</th><th>Rating</th><th>Actions</th></tr></thead>
                 <tbody id="vendorTable"><tr><td colspan="6">Loading...</td></tr></tbody>
-             </table>
+            </table>
         </div>
     </div>
 </div>
 
+<!-- Categories Tab -->
 <div id="categoriesTab" class="tab-content">
     <div class="card">
         <button onclick="openAddCategory()">+ Add Category</button>
@@ -437,6 +428,7 @@
     </div>
 </div>
 
+<!-- Cities Tab -->
 <div id="citiesTab" class="tab-content">
     <div class="card">
         <button onclick="openAddCity()">+ Add City</button>
@@ -457,10 +449,6 @@
         <input type="text" id="vendorRating" placeholder="Rating">
         <input type="text" id="vendorPhone" placeholder="Phone">
         <div id="capacityGroup" style="display:none"><input type="text" id="vendorCapacity" placeholder="Capacity"></div>
-        <div style="display: flex; gap: 10px;">
-            <input type="text" id="vendorLat" placeholder="Latitude">
-            <input type="text" id="vendorLng" placeholder="Longitude">
-        </div>
         <textarea id="vendorDescription" rows="2" placeholder="Description"></textarea>
         <button onclick="saveVendor()" style="background:#28a745; width:100%; margin-top:10px;">Save Vendor</button>
     </div>
@@ -477,13 +465,17 @@
     </div>
 </div>
 
-<!-- City Modal -->
+<!-- City Modal with Popular Option -->
 <div id="cityModal" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeModal('cityModal')">&times;</span>
-        <h3>Add City</h3>
-        <input type="text" id="cityName" placeholder="City Name">
-        <button onclick="saveCity()" style="background:#28a745; width:100%; margin-top:10px;">Save</button>
+        <h3>Add/Edit City</h3>
+        <input type="text" id="cityName" placeholder="City Name" style="margin-bottom: 5px;">
+        <div class="checkbox-group">
+            <input type="checkbox" id="cityPopular">
+            <label for="cityPopular">✨ Show in Popular Cities (Home Page)</label>
+        </div>
+        <button onclick="saveCity()" style="background:#28a745; width:100%; margin-top:10px;">Save City</button>
     </div>
 </div>
 
