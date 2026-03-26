@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Vendors - StadiumConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #fff;
+            color: #1a1a1a;
+        }
+
+        /* Header */
+        .header {
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #f0f0f0;
+            background: #fff;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+        .logo span {
+            color: #ff6b35;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #ff6b35;
+        }
+
+        /* Filter Bar */
+        .filter-bar {
+            padding: 12px 20px;
+            background: #fff;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .filter-chip {
+            background: #f5f5f5;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .filter-chip.active {
+            background: #ff6b35;
+            color: white;
+        }
+
+        /* Vendors Grid */
+        .vendors-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding: 20px;
+        }
+
+        .vendor-card {
+            background: white;
+            border: 1px solid #f0f0f0;
+            border-radius: 20px;
+            padding: 16px;
+            display: flex;
+            gap: 16px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .vendor-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border-color: #ffebe3;
+        }
+
+        .vendor-icon {
+            width: 60px;
+            height: 60px;
+            background: #fff5f0;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+        }
+
+        .vendor-info {
+            flex: 1;
+        }
+
+        .vendor-name {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .vendor-rating {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 6px;
+        }
+
+        .stars {
+            color: #ffb347;
+            font-size: 12px;
+        }
+
+        .rating-value {
+            font-size: 12px;
+            font-weight: 500;
+            color: #666;
+        }
+
+        .vendor-location {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .vendor-price {
+            font-size: 14px;
+            font-weight: 600;
+            color: #ff6b35;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #ff6b35;
+        }
+
+        .no-vendors {
+            text-align: center;
+            padding: 60px;
+            color: #999;
+        }
+
+        footer {
+            text-align: center;
+            padding: 24px;
+            font-size: 12px;
+            color: #aaa;
+            border-top: 1px solid #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <button class="back-btn" onclick="window.location.href='home.html'">←</button>
+    <div class="logo">STADIUM<span>CONNECT</span></div>
+    <div style="width: 40px;"></div>
+</header>
+
+<div class="filter-bar" id="filterBar">
+    <div class="filter-chip active" data-filter="all">All</div>
+    <div class="filter-chip" data-filter="decorator">🎨 Decorators</div>
+    <div class="filter-chip" data-filter="photographer">📸 Photographers</div>
+    <div class="filter-chip" data-filter="caterer">🍽️ Caterers</div>
+    <div class="filter-chip" data-filter="bandbaja">🎵 Band Baja</div>
+    <div class="filter-chip" data-filter="stadium">🏟️ Stadiums</div>
+</div>
+
+<div id="vendorsContainer" class="vendors-grid">
+    <div class="loading"><span>🔄</span> Loading vendors...</div>
+</div>
+
+<footer>© 2025 StadiumConnect</footer>
+
+<script type="module">
+    import { auth, db, collection, getDocs, query, where, onAuthStateChanged } from './firebase-config.js';
+
+    // Get URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const categoryParam = urlParams.get('category');
+    const cityParam = urlParams.get('city');
+    const latParam = urlParams.get('lat');
+    const lngParam = urlParams.get('lng');
+
+    let allVendors = [];
+
+    // Load vendors from Firebase
+    async function loadVendors() {
+        const container = document.getElementById('vendorsContainer');
+        container.innerHTML = '<div class="loading"><span>🔄</span> Loading vendors...</div>';
+        
+        try {
+            // Get vendors from Firestore
+            const vendorsRef = collection(db, 'vendors');
+            let q = vendorsRef;
+            
+            // Apply category filter if present
+            if (categoryParam && categoryParam !== 'all') {
+                q = query(vendorsRef, where('category', '==', categoryParam));
+            }
+            
+            const querySnapshot = await getDocs(q);
+            allVendors = [];
+            querySnapshot.forEach((doc) => {
+                allVendors.push({ id: doc.id, ...doc.data() });
+            });
+            
+            // Apply city filter if present
+            let filteredVendors = allVendors;
+            if (cityParam) {
+                filteredVendors = allVendors.filter(v => v.city?.toLowerCase() === cityParam.toLowerCase());
+            }
+            
+            // Apply location filter (nearby)
+            if (latParam && lngParam) {
+                // Simple nearby filter - in real app, use geohash or distance calculation
+                filteredVendors = allVendors.slice(0, 6);
+                document.getElementById('filterBar').innerHTML += `<div class="filter-chip active">📍 Near You</div>`;
+            }
+            
+            // If no vendors found, show demo vendors
+            if (filteredVendors.length === 0 && allVendors.length === 0) {
+                showDemoVendors();
+            } else if (filteredVendors.length === 0) {
+                container.innerHTML = '<div class="no-vendors">😔 No vendors found in this category/city.<br>Check back soon!</div>';
+            } else {
+                renderVendors(filteredVendors);
+            }
+            
+        } catch (error) {
+            console.error('Error loading vendors:', error);
+            showDemoVendors();
+        }
+    }
+
+    function renderVendors(vendors) {
+        const container = document.getElementById('vendorsContainer');
+        
+        container.innerHTML = vendors.map(vendor => `
+            <div class="vendor-card" onclick="viewVendor('${vendor.id}')">
+                <div class="vendor-icon">${getCategoryIcon(vendor.category)}</div>
+                <div class="vendor-info">
+                    <div class="vendor-name">${vendor.name || 'Vendor Name'}</div>
+                    <div class="vendor-rating">
+                        <div class="stars">${getStars(vendor.rating || 4.5)}</div>
+                        <div class="rating-value">${vendor.rating || 4.5} (${vendor.reviews || 0} reviews)</div>
+                    </div>
+                    <div class="vendor-location">📍 ${vendor.location || vendor.city || 'Location not specified'}</div>
+                    <div class="vendor-price">💰 ${vendor.priceRange || 'Contact for price'}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function showDemoVendors() {
+        const demoVendors = [
+            { id: 'demo1', name: 'Royal Floral Decor', category: 'decorator', rating: 4.8, location: 'Dharampeth, Nagpur', priceRange: '₹25,000 - ₹1,50,000' },
+            { id: 'demo2', name: 'Shutter Stories', category: 'photographer', rating: 4.9, location: 'Sadar, Nagpur', priceRange: '₹15,000 - ₹80,000' },
+            { id: 'demo3', name: 'Orange City Caterers', category: 'caterer', rating: 4.7, location: 'Dharampeth, Nagpur', priceRange: '₹200 - ₹800/plate' },
+            { id: 'demo4', name: 'DJ Dhruv Entertainment', category: 'bandbaja', rating: 4.9, location: 'Dharampeth, Nagpur', priceRange: '₹15,000 - ₹1,00,000' },
+            { id: 'demo5', name: 'Vidarbha Stadium', category: 'stadium', rating: 4.8, location: 'Nagpur', priceRange: '₹50,000/day' }
+        ];
+        
+        let filtered = demoVendors;
+        if (categoryParam && categoryParam !== 'all') {
+            filtered = demoVendors.filter(v => v.category === categoryParam);
+        }
+        if (cityParam) {
+            filtered = filtered.filter(v => v.location?.toLowerCase().includes(cityParam.toLowerCase()));
+        }
+        
+        renderVendors(filtered);
+    }
+
+    function getCategoryIcon(category) {
+        const icons = {
+            decorator: '🎨',
+            photographer: '📸',
+            caterer: '🍽️',
+            bandbaja: '🎵',
+            stadium: '🏟️'
+        };
+        return icons[category] || '🏷️';
+    }
+
+    function getStars(rating) {
+        const full = Math.floor(rating);
+        const half = rating % 1 >= 0.5;
+        let stars = '';
+        for (let i = 0; i < full; i++) stars += '★';
+        if (half) stars += '½';
+        for (let i = stars.length; i < 5; i++) stars += '☆';
+        return stars;
+    }
+
+    // View vendor details
+    window.viewVendor = function(vendorId) {
+        window.location.href = `vendor-detail.html?id=${vendorId}`;
+    };
+
+    // Filter chips
+    document.querySelectorAll('.filter-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const filter = chip.dataset.filter;
+            document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            
+            if (filter === 'all') {
+                window.location.href = 'vendors.html';
+            } else {
+                window.location.href = `vendors.html?category=${filter}`;
+            }
+        });
+    });
+
+    // Highlight active category from URL
+    if (categoryParam) {
+        document.querySelectorAll('.filter-chip').forEach(chip => {
+            if (chip.dataset.filter === categoryParam) {
+                chip.classList.add('active');
+            } else if (chip.dataset.filter !== 'all') {
+                chip.classList.remove('active');
+            }
+        });
+    }
+
+    // Load vendors
+    loadVendors();
+</script>
+
+</body>
+</html>
