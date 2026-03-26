@@ -9,11 +9,23 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background: #f0f2f5; }
-        .header { background: white; padding: 16px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; }
+        
+        .header {
+            background: white;
+            padding: 16px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
         .logo { font-size: 22px; font-weight: 800; }
         .logo span { color: #ff6b35; }
         .badge { background: #ff6b35; color: white; font-size: 10px; padding: 2px 8px; border-radius: 20px; margin-left: 8px; }
+        .user-info { background: #fff5f0; padding: 8px 20px; border-radius: 40px; }
         .logout-btn { background: #ff6b35; color: white; border: none; padding: 8px 20px; border-radius: 30px; cursor: pointer; }
+        
         .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
         
         .card { background: white; border-radius: 24px; padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
@@ -23,10 +35,14 @@
         .btn-delete { background: #ff4757; color: white; border: none; padding: 6px 12px; border-radius: 20px; cursor: pointer; }
         .btn-copy { background: #2ed573; color: white; border: none; padding: 4px 10px; border-radius: 20px; cursor: pointer; font-size: 12px; }
         
+        .table-container { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 14px 12px; text-align: left; border-bottom: 1px solid #eee; }
-        th { color: #666; font-weight: 500; }
+        th { color: #666; font-weight: 500; font-size: 13px; text-transform: uppercase; }
         .agent-id { font-weight: 700; color: #ff6b35; }
+        .earnings-cell { color: #28a745; font-weight: bold; }
+        .progress-bar { width: 100px; background: #e0e0e0; border-radius: 10px; height: 6px; overflow: hidden; display: inline-block; margin-right: 5px; }
+        .progress-fill { background: #ff6b35; height: 100%; border-radius: 10px; }
         
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 1000; }
         .modal-content { background: white; border-radius: 28px; padding: 32px; width: 90%; max-width: 500px; position: relative; }
@@ -46,6 +62,7 @@
 
 <header class="header">
     <div class="logo">STADIUM<span>CONNECT</span><span class="badge">Agent Management</span></div>
+    <div class="user-info"><i class="fas fa-user-shield"></i> <span id="userName"></span></div>
     <button class="logout-btn" onclick="logout()">Logout</button>
 </header>
 
@@ -57,13 +74,26 @@
             <h2><i class="fas fa-users"></i> Agent Management</h2>
             <button class="btn-primary" onclick="openAddAgentModal()"><i class="fas fa-plus"></i> Add New Agent</button>
         </div>
-        <div style="overflow-x: auto;">
-             <table>
+        <div class="table-container">
+            <table>
                 <thead>
-                     <tr><th>Agent ID</th><th>Name</th><th>Phone</th><th>City</th><th>Target (₹)</th><th>Bookings</th><th>Earnings</th><th>Status</th><th>Actions</th></tr>
+                    <tr>
+                        <th>Agent ID</th>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>City</th>
+                        <th>Target (₹)</th>
+                        <th>Confirmed Bookings</th>
+                        <th>Total Revenue (₹)</th>
+                        <th>Earnings (2.5%)</th>
+                        <th>Progress</th>
+                        <th>Actions</th>
+                    </tr>
                 </thead>
-                <tbody id="agentsTableBody"><tr><td colspan="9" style="text-align:center;">Loading...</td></tr></tbody>
-             </table>
+                <tbody id="agentsTableBody">
+                    <tr><td colspan="10" style="text-align:center;">Loading...</td></tr>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
@@ -102,32 +132,64 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Check admin login
-    if (localStorage.getItem('admin') !== 'true' && localStorage.getItem('developer') === null) {
+    // Check login (Admin or Developer)
+    const adminLoggedIn = localStorage.getItem('admin');
+    const developerLoggedIn = localStorage.getItem('developer');
+    if (adminLoggedIn !== 'true' && !developerLoggedIn) {
         window.location.href = 'admin-login.html';
+    }
+    
+    // Display user name
+    const devData = JSON.parse(localStorage.getItem('developer'));
+    if (devData) {
+        document.getElementById('userName').innerText = devData.name || devData.id;
+    } else {
+        document.getElementById('userName').innerText = 'Admin';
     }
 
     let allAgents = [];
     let allBookings = [];
-    let citiesList = [];
+    let allCities = [];
 
+    // ========== LOAD CITIES ==========
     async function loadCities() {
         try {
             const docRef = doc(db, 'settings', 'cities');
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
-                citiesList = docSnap.data().list || [];
+                allCities = docSnap.data().list || [];
             } else {
-                citiesList = [{ name: 'Nagpur', popular: true }, { name: 'Mumbai', popular: true }, { name: 'Pune', popular: true }, { name: 'Delhi', popular: true }, { name: 'Bangalore', popular: true }];
+                allCities = [{ name: 'Nagpur', popular: true }, { name: 'Mumbai', popular: true }, { name: 'Pune', popular: true }, { name: 'Delhi', popular: true }, { name: 'Bangalore', popular: true }];
             }
             const citySelect = document.getElementById('agentCity');
             citySelect.innerHTML = '<option value="">Select City</option>' + 
-                citiesList.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+                allCities.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
         } catch (error) {
             console.error("Error loading cities:", error);
         }
     }
 
+    // ========== CALCULATE COMMISSION (2.5%) ==========
+    function calculateCommission(amount) {
+        if (!amount) return 0;
+        const price = parseInt(String(amount).replace(/[₹,]/g, '')) || 0;
+        return Math.floor(price * 0.025);
+    }
+
+    function getAgentStats(agentId) {
+        const agentBookings = allBookings.filter(b => 
+            b.agentId === agentId && 
+            (b.status === 'confirmed' || b.status === 'completed')
+        );
+        const totalRevenue = agentBookings.reduce((sum, b) => {
+            const price = parseInt(String(b.amount).replace(/[₹,]/g, '')) || 0;
+            return sum + price;
+        }, 0);
+        const earnings = calculateCommission(totalRevenue);
+        return { bookingsCount: agentBookings.length, totalRevenue, earnings };
+    }
+
+    // ========== LOAD AGENTS ==========
     async function loadAgents() {
         const agentsSnap = await getDocs(collection(db, "agents"));
         allAgents = [];
@@ -139,41 +201,48 @@
         renderAgents();
     }
 
-    function getAgentStats(agentId) {
-        const agentBookings = allBookings.filter(b => b.agentId === agentId && (b.status === 'confirmed' || b.status === 'completed'));
-        const totalAmount = agentBookings.reduce((sum, b) => sum + (parseInt(b.amount?.replace(/[^0-9]/g, '')) || 0), 0);
-        const earnings = Math.floor(totalAmount * 0.025);
-        return { bookings: agentBookings.length, totalAmount, earnings };
-    }
-
     function renderAgents() {
         const tbody = document.getElementById('agentsTableBody');
-        if (!allAgents.length) { tbody.innerHTML = '.<td colspan="9">No agents found</td>.'; return; }
+        if (!allAgents.length) {
+            tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;">No agents found</td></tr>';
+            return;
+        }
+        
         tbody.innerHTML = allAgents.map(agent => {
             const stats = getAgentStats(agent.id);
-            return `<tr>
-                <td class="agent-id">${agent.id}</td>
-                <td>${agent.name || '-'}</td>
-                <td>${agent.phone || '-'}</td>
-                <td>${agent.city || '-'}</td>
-                <td>₹${(agent.target || 50000).toLocaleString()}</td>
-                <td>${stats.bookings}</td>
-                <td>₹${stats.earnings.toLocaleString()}</td>
-                <td><span style="color:#28a745;">Active</span></td>
-                <td>
-                    <button class="btn-edit" onclick="editAgent('${agent.id}')">Edit</button>
-                    <button class="btn-delete" onclick="deleteAgent('${agent.id}')">Del</button>
-                    <button class="btn-copy" onclick="copyCredentials('${agent.id}', '${agent.password || 'agent123'}')">Copy Creds</button>
-                </td>
-            </tr>`;
+            const target = agent.target || 50000;
+            const progress = Math.min(100, (stats.totalRevenue / target) * 100);
+            return `
+                <tr>
+                    <td class="agent-id">${agent.id}</td>
+                    <td>${agent.name || '-'}</td>
+                    <td>${agent.phone || '-'}</td>
+                    <td>${agent.city || '-'}</td>
+                    <td>₹${target.toLocaleString()}</td>
+                    <td>${stats.bookingsCount}</td>
+                    <td>₹${stats.totalRevenue.toLocaleString()}</td>
+                    <td class="earnings-cell">₹${stats.earnings.toLocaleString()}</td>
+                    <td>
+                        <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div>
+                        ${Math.floor(progress)}%
+                    </td>
+                    <td>
+                        <button class="btn-edit" onclick="editAgent('${agent.id}')">Edit</button>
+                        <button class="btn-delete" onclick="deleteAgent('${agent.id}')">Del</button>
+                        <button class="btn-copy" onclick="copyCredentials('${agent.id}', '${agent.password || 'agent123'}')">Copy</button>
+                    </td>
+                </tr>
+            `;
         }).join('');
     }
 
+    // ========== GENERATE AGENT ID ==========
     async function generateAgentId() {
         const count = allAgents.length + 1;
         return `AG${String(count).padStart(5, '0')}`;
     }
 
+    // ========== AGENT CRUD ==========
     window.openAddAgentModal = async () => {
         document.getElementById('modalTitle').innerText = 'Add New Agent';
         document.getElementById('agentId').value = '';
@@ -280,7 +349,7 @@
         window.location.href = 'index.html';
     };
 
-    // Load everything
+    // Initialize
     loadCities();
     loadAgents();
 </script>
