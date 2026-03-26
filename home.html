@@ -18,7 +18,7 @@
         .location-btn { display: flex; align-items: center; gap: 8px; background: #f5f5f5; padding: 8px 16px; border-radius: 30px; cursor: pointer; }
         .categories { padding: 24px 20px; }
         .section-title { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
-        .category-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+        .category-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 12px; }
         .category-card { background: white; border: 1px solid #f0f0f0; border-radius: 16px; padding: 16px 8px; text-align: center; cursor: pointer; transition: 0.2s; }
         .category-card:hover { transform: translateY(-2px); border-color: #ffebe3; }
         .category-icon { font-size: 28px; margin-bottom: 8px; }
@@ -28,13 +28,13 @@
         .city-chip { background: white; border: 1px solid #e0e0e0; padding: 10px 20px; border-radius: 30px; font-size: 14px; cursor: pointer; transition: 0.2s; }
         .city-chip:hover { background: #ff6b35; color: white; border-color: #ff6b35; }
         footer { text-align: center; padding: 24px; font-size: 12px; color: #aaa; }
-        .loading-cities { text-align: center; padding: 20px; color: #999; }
-        @media (max-width: 600px) { .category-grid { grid-template-columns: repeat(3, 1fr); } }
+        .loading { text-align: center; padding: 20px; color: #999; }
+        @media (max-width: 600px) { .category-grid { grid-template-columns: repeat(2, 1fr); } }
     </style>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
         const firebaseConfig = {
@@ -50,9 +50,48 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
+        // ========== LOAD CATEGORIES FROM FIREBASE ==========
+        async function loadCategories() {
+            const container = document.getElementById('categoryGrid');
+            container.innerHTML = '<div class="loading">Loading categories...</div>';
+            
+            try {
+                const snapshot = await getDocs(collection(db, "categories"));
+                let categories = [];
+                snapshot.forEach(doc => {
+                    if (!doc.data().deleted) {
+                        categories.push({ id: doc.id, ...doc.data() });
+                    }
+                });
+                
+                // Default categories if none in Firebase
+                if (categories.length === 0) {
+                    categories = [
+                        { id: 'decorator', name: 'Decorators', icon: '🎨' },
+                        { id: 'photographer', name: 'Photographers', icon: '📸' },
+                        { id: 'caterer', name: 'Caterers', icon: '🍽️' },
+                        { id: 'bandbaja', name: 'Band Baja', icon: '🎵' },
+                        { id: 'stadium', name: 'Stadiums', icon: '🏟️' }
+                    ];
+                }
+                
+                container.innerHTML = categories.map(cat => `
+                    <div class="category-card" onclick="goToCategory('${cat.id}')">
+                        <div class="category-icon">${cat.icon || '🏷️'}</div>
+                        <h3>${cat.name}</h3>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error("Error loading categories:", error);
+                container.innerHTML = '<div class="loading">Error loading categories</div>';
+            }
+        }
+
+        // ========== LOAD POPULAR CITIES ==========
         async function loadPopularCities() {
             const container = document.getElementById('cityList');
-            container.innerHTML = '<div class="loading-cities">Loading cities...</div>';
+            container.innerHTML = '<div class="loading">Loading cities...</div>';
             
             try {
                 const docRef = doc(db, 'settings', 'cities');
@@ -63,11 +102,10 @@
                     cities = docSnap.data().list || [];
                 }
                 
-                // Filter only popular cities (where popular = true)
                 const popularCities = cities.filter(c => c.popular === true).map(c => c.name);
                 
                 if (popularCities.length === 0) {
-                    container.innerHTML = '<div class="loading-cities">No popular cities added. Add from admin panel.</div>';
+                    container.innerHTML = '<div class="loading">No popular cities yet</div>';
                     return;
                 }
                 
@@ -79,10 +117,11 @@
                 
             } catch (error) {
                 console.error("Error loading cities:", error);
-                container.innerHTML = '<div class="loading-cities">Error loading cities. Please refresh.</div>';
+                container.innerHTML = '<div class="loading">Error loading cities</div>';
             }
         }
 
+        // ========== NAVIGATION ==========
         window.goToCategory = (category) => {
             window.location.href = `vendors.html?category=${category}`;
         };
@@ -102,12 +141,15 @@
             }
         };
 
+        // ========== USER NAME ==========
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 document.getElementById('userName').innerText = user.displayName || user.email.split('@')[0];
             }
         });
 
+        // ========== INITIALIZE ==========
+        loadCategories();
         loadPopularCities();
     </script>
 </head>
@@ -131,19 +173,15 @@
 
 <div class="categories">
     <div class="section-title">Browse by category</div>
-    <div class="category-grid">
-        <div class="category-card" onclick="goToCategory('decorator')"><div class="category-icon">🎨</div><h3>Decorators</h3></div>
-        <div class="category-card" onclick="goToCategory('photographer')"><div class="category-icon">📸</div><h3>Photographers</h3></div>
-        <div class="category-card" onclick="goToCategory('caterer')"><div class="category-icon">🍽️</div><h3>Caterers</h3></div>
-        <div class="category-card" onclick="goToCategory('bandbaja')"><div class="category-icon">🎵</div><h3>Band Baja</h3></div>
-        <div class="category-card" onclick="goToCategory('stadium')"><div class="category-icon">🏟️</div><h3>Stadiums</h3></div>
+    <div class="category-grid" id="categoryGrid">
+        <div class="loading">Loading categories...</div>
     </div>
 </div>
 
 <div class="cities">
     <div class="section-title">Popular cities</div>
     <div class="city-list" id="cityList">
-        <div class="loading-cities">Loading...</div>
+        <div class="loading">Loading cities...</div>
     </div>
 </div>
 
