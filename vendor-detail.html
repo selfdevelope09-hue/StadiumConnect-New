@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background: #f5f7fb; padding-bottom: 80px; }
+        body { background: #f5f7fb; padding-bottom: 100px; }
 
         .header {
             background: white;
@@ -209,9 +209,10 @@
             .installment-steps { flex-direction: column; align-items: center; }
         }
     </style>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getFirestore, doc, getDoc, addDoc, collection } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
         const firebaseConfig = {
@@ -232,6 +233,23 @@
         let currentVendor = null;
         let currentPhotos = [];
         let currentPhotoIndex = 0;
+        let cityAgent = null;
+
+        // ========== CITY-WISE AGENT FINDER ==========
+        async function getAgentForCity(city) {
+            try {
+                const agentsSnap = await getDocs(collection(db, "agents"));
+                let agents = [];
+                agentsSnap.forEach(doc => agents.push({ id: doc.id, ...doc.data() }));
+                
+                // Find agent in same city
+                const cityAgentFound = agents.find(agent => agent.city?.toLowerCase() === city.toLowerCase());
+                return cityAgentFound;
+            } catch (error) {
+                console.error("Error finding agent:", error);
+                return null;
+            }
+        }
 
         async function loadVendor() {
             const vendorDoc = await getDoc(doc(db, 'vendors', vendorId));
@@ -239,8 +257,30 @@
                 currentVendor = { id: vendorDoc.id, ...vendorDoc.data() };
                 currentPhotos = currentVendor.photos || [];
                 if (currentPhotos.length === 0 && currentVendor.imageUrl) currentPhotos = [currentVendor.imageUrl];
+                
+                // Find agent for this vendor's city
+                if (currentVendor.city) {
+                    cityAgent = await getAgentForCity(currentVendor.city);
+                }
+                
                 renderVendor();
                 updatePaymentPlan();
+                setupCallButton();
+            }
+        }
+
+        function setupCallButton() {
+            const callBtn = document.getElementById('callBtn');
+            if (!callBtn) return;
+            
+            if (cityAgent && cityAgent.phone) {
+                callBtn.onclick = () => {
+                    window.location.href = `tel:${cityAgent.phone}`;
+                };
+                callBtn.innerHTML = `<i class="fas fa-phone-alt"></i> Call ${cityAgent.name || 'Agent'} (${cityAgent.city})`;
+                callBtn.style.display = 'flex';
+            } else {
+                callBtn.style.display = 'none';
             }
         }
 
@@ -308,21 +348,24 @@
             }
         }
 
-        window.callAgent = () => {
-            if (currentVendor?.agentPhone) window.location.href = `tel:${currentVendor.agentPhone}`;
-            else alert('Agent phone not available');
-        };
-
         window.submitBooking = async () => {
             const user = auth.currentUser;
             if (!user) { alert('Please login first'); window.location.href = 'login.html'; return; }
             
+            let agentId = document.getElementById('agentId').value;
+            
+            // If no agent ID entered, use city-based agent
+            if (!agentId && cityAgent) {
+                agentId = cityAgent.id;
+                document.getElementById('agentId').value = agentId;
+            }
+            
             const bookingData = {
                 vendorId: currentVendor.id,
                 vendorName: currentVendor.name,
-                vendorCategory: currentVendor.category,
+                vendorCity: currentVendor.city,
                 userId: user.uid,
-                userName: document.getElementById('userName').value || user.displayName || user.email,
+                userName: user.displayName || user.email,
                 userPhone: document.getElementById('userPhone').value,
                 eventName: document.getElementById('eventName').value,
                 eventDate: document.getElementById('eventDate').value,
@@ -331,7 +374,7 @@
                 eventLocation: document.getElementById('eventLocation').value,
                 eventType: document.getElementById('eventType').value,
                 specialRequests: document.getElementById('specialRequests').value,
-                agentId: document.getElementById('agentId').value || '',
+                agentId: agentId,
                 amount: currentVendor.priceRange || 'Contact for price',
                 status: 'pending',
                 createdAt: new Date().toISOString()
@@ -343,10 +386,11 @@
             }
             
             await addDoc(collection(db, 'bookings'), bookingData);
-            alert('✅ Booking request sent! Vendor will contact you for payment.');
+            alert('✅ Booking request sent! Agent will contact you.');
             window.location.href = 'dashboard.html';
         };
 
+        // Lightbox functions
         window.openLightbox = (index) => { currentPhotoIndex = index; updateLightbox(); document.getElementById('lightbox').classList.add('active'); };
         function updateLightbox() { document.getElementById('lightboxImage').src = currentPhotos[currentPhotoIndex]; }
         window.closeLightbox = () => document.getElementById('lightbox').classList.remove('active');
@@ -435,10 +479,11 @@
         <div class="agent-id-field">
             <label>Agent ID <span class="optional-badge">(if referred by an agent)</span></label>
             <input type="text" id="agentId" placeholder="Enter agent ID if any">
+            <div id="agentSuggestion" style="font-size:12px; color:#ff6b35; margin-top:5px;"></div>
         </div>
         
         <div class="action-buttons">
-            <button class="call-btn" onclick="callAgent()"><i class="fas fa-phone-alt"></i> Call Agent</button>
+            <button id="callBtn" class="call-btn" style="display:none;"><i class="fas fa-phone-alt"></i> Call Agent</button>
             <button class="book-btn" onclick="submitBooking()"><i class="fas fa-check-circle"></i> Book Now</button>
         </div>
     </div>
@@ -451,6 +496,16 @@
     <img id="lightboxImage" class="lightbox-image">
     <span class="lightbox-next" onclick="nextPhoto(event)">❯</span>
 </div>
+
+<script>
+    // Show agent suggestion in booking form
+    if (cityAgent) {
+        const suggestionDiv = document.getElementById('agentSuggestion');
+        if (suggestionDiv) {
+            suggestionDiv.innerHTML = `💡 Agent ${cityAgent.name || cityAgent.id} (${cityAgent.city}) will be assigned automatically if you don't enter an ID.`;
+        }
+    }
+</script>
 
 </body>
 </html>
