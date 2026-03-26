@@ -6,192 +6,89 @@
     <title>StadiumConnect</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #fff;
-            color: #1a1a1a;
-        }
-
-        /* Header */
-        .header {
-            padding: 16px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #f0f0f0;
-            background: #fff;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .logo {
-            font-size: 20px;
-            font-weight: 800;
-        }
-
-        .logo span {
-            color: #ff6b35;
-        }
-
-        .user-icon {
-            width: 40px;
-            height: 40px;
-            background: #ff6b35;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        /* Welcome Section */
-        .welcome {
-            padding: 24px 20px;
-            background: #fffaf5;
-        }
-
-        .welcome h2 {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .welcome p {
-            color: #666;
-            font-size: 14px;
-        }
-
-        /* Categories */
-        .categories {
-            padding: 24px 20px;
-        }
-
-        .section-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 16px;
-            color: #1a1a1a;
-        }
-
-        .category-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
-        }
-
-        .category-card {
-            background: white;
-            border: 1px solid #f0f0f0;
-            border-radius: 16px;
-            padding: 24px 16px;
-            text-align: center;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .category-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            border-color: #ffebe3;
-        }
-
-        .category-icon {
-            font-size: 40px;
-            margin-bottom: 12px;
-        }
-
-        .category-card h3 {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .category-card p {
-            font-size: 12px;
-            color: #ff6b35;
-            font-weight: 500;
-        }
-
-        /* Cities Section */
-        .cities {
-            padding: 24px 20px;
-            background: #fffaf5;
-        }
-
-        .city-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .city-chip {
-            background: white;
-            border: 1px solid #e0e0e0;
-            padding: 10px 20px;
-            border-radius: 30px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .city-chip:hover {
-            background: #ff6b35;
-            color: white;
-            border-color: #ff6b35;
-        }
-
-        /* Location Bar */
-        .location-bar {
-            padding: 12px 20px;
-            background: white;
-            border-bottom: 1px solid #f0f0f0;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .location-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: #f5f5f5;
-            padding: 8px 16px;
-            border-radius: 30px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-        }
-
-        .location-btn i {
-            color: #ff6b35;
-        }
-
-        footer {
-            text-align: center;
-            padding: 24px;
-            font-size: 12px;
-            color: #aaa;
-            border-top: 1px solid #f0f0f0;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: #fff; }
+        .header { padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0f0f0; position: sticky; top: 0; background: white; z-index: 100; }
+        .logo { font-size: 20px; font-weight: 800; }
+        .logo span { color: #ff6b35; }
+        .user-icon { width: 40px; height: 40px; background: #ff6b35; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; }
+        .welcome { padding: 24px 20px; background: #fffaf5; }
+        .welcome h2 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+        .location-bar { padding: 12px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #f0f0f0; }
+        .location-btn { display: flex; align-items: center; gap: 8px; background: #f5f5f5; padding: 8px 16px; border-radius: 30px; cursor: pointer; }
+        .categories { padding: 24px 20px; }
+        .section-title { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
+        .category-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+        .category-card { background: white; border: 1px solid #f0f0f0; border-radius: 16px; padding: 16px 8px; text-align: center; cursor: pointer; transition: 0.2s; }
+        .category-card:hover { transform: translateY(-2px); border-color: #ffebe3; }
+        .category-icon { font-size: 28px; margin-bottom: 8px; }
+        .category-card h3 { font-size: 12px; font-weight: 600; }
+        .cities { padding: 24px 20px; background: #fffaf5; }
+        .city-list { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+        .city-chip { background: white; border: 1px solid #e0e0e0; padding: 10px 20px; border-radius: 30px; font-size: 14px; cursor: pointer; transition: 0.2s; }
+        .city-chip:hover { background: #ff6b35; color: white; border-color: #ff6b35; }
+        footer { text-align: center; padding: 24px; font-size: 12px; color: #aaa; }
+        @media (max-width: 600px) { .category-grid { grid-template-columns: repeat(3, 1fr); } }
     </style>
+    <!-- Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
+            authDomain: "stadiumconnect-8fecb.firebaseapp.com",
+            projectId: "stadiumconnect-8fecb",
+            storageBucket: "stadiumconnect-8fecb.firebasestorage.app",
+            messagingSenderId: "458108198578",
+            appId: "1:458108198578:web:83d83646f0e24e718b73ab"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let cities = ['Nagpur', 'Mumbai', 'Pune', 'Delhi', 'Bangalore'];
+
+        async function loadCities() {
+            const docRef = doc(db, 'settings', 'cities');
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                cities = docSnap.data().list || cities;
+            }
+            renderCities();
+        }
+
+        function renderCities() {
+            const container = document.getElementById('cityList');
+            container.innerHTML = cities.map(city => `
+                <div class="city-chip" onclick="filterByCity('${city.toLowerCase()}')">${city}</div>
+            `).join('');
+        }
+
+        window.filterByCity = (city) => {
+            window.location.href = `vendors.html?city=${city}`;
+        };
+
+        window.goToCategory = (category) => {
+            window.location.href = `vendors.html?category=${category}`;
+        };
+
+        // User name from Firebase
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('userName').innerText = user.displayName || user.email.split('@')[0];
+            }
+        });
+
+        loadCities();
+    </script>
 </head>
 <body>
 
 <header class="header">
     <div class="logo">STADIUM<span>CONNECT</span></div>
-    <div class="user-icon" onclick="window.location.href='profile.html'">
-        <span>👤</span>
-    </div>
+    <div class="user-icon" onclick="window.location.href='profile.html'">👤</div>
 </header>
 
 <div class="welcome">
@@ -200,99 +97,47 @@
 </div>
 
 <div class="location-bar">
-    <div class="location-btn" id="locationBtn">
-        <i>📍</i>
-        <span id="locationText">Detect location</span>
+    <div class="location-btn" id="locationBtn" onclick="detectLocation()">
+        <span>📍</span> <span id="locationText">Detect location</span>
     </div>
 </div>
 
 <div class="categories">
     <div class="section-title">Browse by category</div>
     <div class="category-grid">
-        <div class="category-card" onclick="goToCategory('decorator')">
-            <div class="category-icon">🎨</div>
-            <h3>Decorators</h3>
-            <p>200+ vendors</p>
-        </div>
-        <div class="category-card" onclick="goToCategory('photographer')">
-            <div class="category-icon">📸</div>
-            <h3>Photographers</h3>
-            <p>150+ vendors</p>
-        </div>
-        <div class="category-card" onclick="goToCategory('caterer')">
-            <div class="category-icon">🍽️</div>
-            <h3>Caterers</h3>
-            <p>300+ vendors</p>
-        </div>
-        <div class="category-card" onclick="goToCategory('bandbaja')">
-            <div class="category-icon">🎵</div>
-            <h3>Band Baja</h3>
-            <p>100+ vendors</p>
-        </div>
-        <div class="category-card" onclick="goToCategory('stadium')">
-            <div class="category-icon">🏟️</div>
-            <h3>Stadiums</h3>
-            <p>50+ venues</p>
-        </div>
+        <div class="category-card" onclick="goToCategory('decorator')"><div class="category-icon">🎨</div><h3>Decorators</h3></div>
+        <div class="category-card" onclick="goToCategory('photographer')"><div class="category-icon">📸</div><h3>Photographers</h3></div>
+        <div class="category-card" onclick="goToCategory('caterer')"><div class="category-icon">🍽️</div><h3>Caterers</h3></div>
+        <div class="category-card" onclick="goToCategory('bandbaja')"><div class="category-icon">🎵</div><h3>Band Baja</h3></div>
+        <div class="category-card" onclick="goToCategory('stadium')"><div class="category-icon">🏟️</div><h3>Stadiums</h3></div>
     </div>
 </div>
 
 <div class="cities">
     <div class="section-title">Popular cities</div>
-    <div class="city-list">
-        <div class="city-chip" onclick="filterCity('nagpur')">Nagpur</div>
-        <div class="city-chip" onclick="filterCity('mumbai')">Mumbai</div>
-        <div class="city-chip" onclick="filterCity('pune')">Pune</div>
-        <div class="city-chip" onclick="filterCity('delhi')">Delhi</div>
-        <div class="city-chip" onclick="filterCity('bangalore')">Bangalore</div>
-        <div class="city-chip" onclick="filterCity('hyderabad')">Hyderabad</div>
-    </div>
+    <div class="city-list" id="cityList"></div>
 </div>
 
-<footer>
-    © 2025 StadiumConnect | Your Need, Our Network
-</footer>
+<footer>© 2025 StadiumConnect | Your Need, Our Network</footer>
 
 <script>
-    // Get user name from localStorage
-    const userName = localStorage.getItem('userName');
-    if(userName) {
-        document.getElementById('userName').innerText = userName;
-    }
-    
-    function goToCategory(category) {
-        window.location.href = `vendors.html?category=${category}`;
-    }
-    
-    function filterCity(city) {
-        window.location.href = `vendors.html?city=${city}`;
-    }
-    
-    // Location detection
-    const locationBtn = document.getElementById('locationBtn');
-    const locationText = document.getElementById('locationText');
-    
-    locationBtn.addEventListener('click', () => {
-        if(navigator.geolocation) {
-            locationText.innerHTML = '📍 Detecting...';
+    function detectLocation() {
+        if (navigator.geolocation) {
+            document.getElementById('locationText').innerHTML = '📍 Detecting...';
             navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const lat = position.coords.latitude;
-                    const lng = position.coords.longitude;
-                    locationText.innerHTML = '📍 Location on';
-                    setTimeout(() => {
-                        window.location.href = `vendors.html?lat=${lat}&lng=${lng}`;
-                    }, 800);
+                (pos) => {
+                    window.location.href = `vendors.html?lat=${pos.coords.latitude}&lng=${pos.coords.longitude}`;
                 },
                 () => {
-                    locationText.innerHTML = '📍 Detect location';
-                    alert('Please allow location access to see nearby vendors');
+                    document.getElementById('locationText').innerHTML = '📍 Detect location';
+                    alert('Allow location to see nearby vendors');
                 }
             );
-        } else {
-            alert('Geolocation not supported');
         }
-    });
+    }
 </script>
+
+</body>
+</html>
 
   
