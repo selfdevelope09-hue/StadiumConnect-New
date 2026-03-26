@@ -37,6 +37,8 @@
         .error { background: #f8d7da; color: #721c24; }
         
         .list-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #eee; }
+        .popular-badge { background: #ff6b35; color: white; font-size: 10px; padding: 2px 8px; border-radius: 20px; margin-left: 10px; }
+        .checkbox-group { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
     </style>
 </head>
 <body>
@@ -69,24 +71,17 @@
 
 <div id="categoriesTab" class="tab-content">
     <div class="card">
-        <h3>Add New Category</h3>
-        <div style="display: flex; gap: 10px;">
-            <input type="text" id="catNameInput" placeholder="Category Name (e.g. Caterer)">
-            <input type="text" id="catIconInput" placeholder="Emoji (e.g. 🍽️)" style="width: 100px;">
-            <button onclick="saveCategory()">Add</button>
-        </div>
-        <div id="categoriesList" style="margin-top: 20px;"></div>
+        <h3>🏷️ Categories Management</h3>
+        <button onclick="openModal('categoryModal')">+ Add New Category</button>
+        <div id="categoriesList" style="margin-top: 10px;"></div>
     </div>
 </div>
 
 <div id="citiesTab" class="tab-content">
     <div class="card">
-        <h3>Add New City</h3>
-        <div style="display: flex; gap: 10px;">
-            <input type="text" id="cityNameInput" placeholder="City Name (e.g. Pune)">
-            <button onclick="saveCity()">Add City</button>
-        </div>
-        <div id="citiesList" style="margin-top: 20px;"></div>
+        <h3>📍 Cities Management</h3>
+        <button onclick="openModal('cityModal')">+ Add New City</button>
+        <div id="citiesList" style="margin-top: 10px;"></div>
     </div>
 </div>
 
@@ -96,29 +91,44 @@
         <h3 id="vendorModalTitle">Add Vendor</h3>
         <form id="vendorForm" onsubmit="event.preventDefault()">
             <input type="text" id="vendorName" placeholder="Vendor Name *">
-            
-            <label style="font-size: 12px; color: #666;">Select Category:</label>
             <select id="vendorCategory"></select>
-            
-            <label style="font-size: 12px; color: #666;">Select City:</label>
             <select id="vendorCity"></select>
-
-            <input type="text" id="vendorPrice" placeholder="Price (e.g. ₹25,000)">
+            <input type="text" id="vendorPrice" placeholder="Price (e.g. ₹20,000)">
             <input type="tel" id="agentPhone" placeholder="Agent Phone Number *">
-            <textarea id="vendorDescription" rows="3" placeholder="Short Description"></textarea>
-            
-            <label>Vendor Photo:</label>
+            <textarea id="vendorDescription" rows="3" placeholder="Description"></textarea>
             <input type="file" id="vendorLogo" accept="image/*" onchange="previewLogo(this)">
             <img id="logoPreview" style="display:none; width:100px; height:100px; border-radius:10px; margin-top:10px; object-fit: cover;">
-            
             <button id="saveBtn" onclick="saveVendor()" style="background:#2ed573; width:100%; margin-top:15px;">SAVE VENDOR</button>
         </form>
     </div>
 </div>
 
+<div id="categoryModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('categoryModal')">&times;</span>
+        <h3>Add Category</h3>
+        <input type="text" id="catName" placeholder="Category Name">
+        <input type="text" id="catIcon" placeholder="Icon Emoji (e.g. 📸)">
+        <button onclick="saveCategory()" style="background:#2ed573; width:100%; margin-top:10px;">SAVE CATEGORY</button>
+    </div>
+</div>
+
+<div id="cityModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('cityModal')">&times;</span>
+        <h3 id="cityModalTitle">Add City</h3>
+        <input type="text" id="cityNameInput" placeholder="City Name (e.g. Nagpur)">
+        <div class="checkbox-group">
+            <input type="checkbox" id="cityPopularCheck">
+            <label>⭐ Show in Popular Cities (Home Page)</label>
+        </div>
+        <button onclick="saveCity()" style="background:#2ed573; width:100%; margin-top:15px;">SAVE CITY</button>
+    </div>
+</div>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, setDoc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
@@ -133,57 +143,55 @@
     const db = getFirestore(app);
     const IMGBB_API_KEY = "459b0b4e8a9c6fcceaffd15320a6fdbd";
 
-    let vendors = [], categories = [], cities = [], editingVendorId = null;
+    let vendors = [], categories = [], cities = [], editingVendorId = null, editingCityIndex = null;
 
-    // --- LIVE SYNC ---
-
-    // Categories
+    // --- REALTIME SYNC ---
     onSnapshot(collection(db, "categories"), (snap) => {
         categories = snap.docs.map(d => ({id: d.id, ...d.data()})).filter(c => !c.deleted);
-        renderCategories();
-        updateDropdowns();
+        renderCategories(); updateDropdowns();
     });
 
-    // Cities
     onSnapshot(doc(db, 'settings', 'cities'), (d) => {
         if(d.exists()) {
             cities = d.data().list || [];
-            renderCities();
-            updateDropdowns();
+            renderCities(); updateDropdowns();
         }
     });
 
-    // Vendors
     onSnapshot(collection(db, "vendors"), (snap) => {
         vendors = snap.docs.map(d => ({id: d.id, ...d.data()}));
         renderVendors();
     });
 
-    // --- SAVE LOGIC ---
+    // --- CRUD FUNCTIONS ---
 
     window.saveCategory = async () => {
-        const name = document.getElementById('catNameInput').value;
-        const icon = document.getElementById('catIconInput').value || '🏷️';
+        const name = document.getElementById('catName').value;
+        const icon = document.getElementById('catIcon').value || '🏷️';
         if(!name) return;
-        
         const id = name.toLowerCase().replace(/\s+/g, '');
-        try {
-            await setDoc(doc(db, "categories", id), { name, icon });
-            document.getElementById('catNameInput').value = '';
-            document.getElementById('catIconInput').value = '';
-            showMsg("Category Added Successfully!", "success");
-        } catch (e) { showMsg(e.message, "error"); }
+        await setDoc(doc(db, "categories", id), { name, icon });
+        closeModal('categoryModal');
+        showMsg("Category Added Successfully!", "success");
     };
 
     window.saveCity = async () => {
         const name = document.getElementById('cityNameInput').value;
+        const popular = document.getElementById('cityPopularCheck').checked;
         if(!name) return;
-        
-        const newList = [...cities, { name, popular: false }];
+
+        let newList = [...cities];
+        if(editingCityIndex !== null) {
+            newList[editingCityIndex] = { name, popular };
+        } else {
+            newList.push({ name, popular });
+        }
+
         try {
             await setDoc(doc(db, 'settings', 'cities'), { list: newList });
-            document.getElementById('cityNameInput').value = '';
-            showMsg("City Added Successfully!", "success");
+            closeModal('cityModal');
+            showMsg(editingCityIndex !== null ? "City Updated!" : "City Added Successfully!", "success");
+            editingCityIndex = null;
         } catch (e) { showMsg(e.message, "error"); }
     };
 
@@ -193,7 +201,7 @@
         const city = document.getElementById('vendorCity').value;
         const btn = document.getElementById('saveBtn');
 
-        if(!name || !cat || !city) return showMsg("Please fill Name, Category & City!", "error");
+        if(!name || !cat || !city) return showMsg("Fill Name, Category & City!", "error");
 
         btn.innerText = "Processing..."; btn.disabled = true;
 
@@ -226,17 +234,11 @@
         finally { btn.innerText = "SAVE VENDOR"; btn.disabled = false; }
     };
 
-    // --- UI RENDERING ---
+    // --- RENDERERS ---
 
     function updateDropdowns() {
-        const catSel = document.getElementById('vendorCategory');
-        const citySel = document.getElementById('vendorCity');
-        
-        catSel.innerHTML = '<option value="">-- Select Category --</option>' + 
-            categories.map(c => `<option value="${c.id}">${c.icon} ${c.name}</option>`).join('');
-            
-        citySel.innerHTML = '<option value="">-- Select City --</option>' + 
-            cities.map(c => `<option value="${c.name.toLowerCase()}">${c.name}</option>`).join('');
+        document.getElementById('vendorCategory').innerHTML = '<option value="">-- Category --</option>' + categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        document.getElementById('vendorCity').innerHTML = '<option value="">-- City --</option>' + cities.map(c => `<option value="${c.name.toLowerCase()}">${c.name}</option>`).join('');
     }
 
     function renderVendors() {
@@ -246,7 +248,7 @@
                 <td><strong>${v.name}</strong></td>
                 <td>${v.category}</td>
                 <td>${v.city}</td>
-                <td><button class="btn-edit" onclick="editVendor('${v.id}')">Edit</button> <button onclick="deleteVendor('${v.id}')" style="background:red; padding: 5px 10px;">Del</button></td>
+                <td><button class="btn-edit" onclick="editVendor('${v.id}')">Edit</button> <button onclick="deleteVendor('${v.id}')" style="background:red; padding:5px 10px;">Del</button></td>
             </tr>
         `).join('');
     }
@@ -259,28 +261,59 @@
 
     function renderCities() {
         document.getElementById('citiesList').innerHTML = cities.map((c, i) => `
-            <div class="list-item"><span>📍 ${c.name}</span> <button onclick="deleteCity(${i})" style="background:red; font-size:12px;">Delete</button></div>
+            <div class="list-item">
+                <span>📍 ${c.name} ${c.popular ? '<span class="popular-badge">Popular</span>' : ''}</span>
+                <div>
+                    <button class="btn-edit" onclick="editCity(${i})">Edit</button>
+                    <button onclick="deleteCity(${i})" style="background:red; font-size:12px;">Delete</button>
+                </div>
+            </div>
         `).join('');
     }
 
-    // --- UTILS ---
+    // --- UI UTILS ---
     window.switchTab = (t) => {
         document.querySelectorAll('.tab, .tab-content').forEach(el => el.classList.remove('active'));
         event.target.classList.add('active');
         document.getElementById(t + 'Tab').classList.add('active');
+    };
+    window.openModal = (id) => {
+        if(id === 'cityModal' && editingCityIndex === null) document.getElementById('cityModalTitle').innerText = "Add City";
+        document.getElementById(id).style.display='flex';
+    };
+    window.closeModal = (id) => {
+        document.getElementById(id).style.display='none';
+        if(id === 'cityModal') { editingCityIndex = null; document.getElementById('cityNameInput').value = ''; }
     };
     window.showMsg = (m, t) => {
         const el = document.getElementById('message');
         el.innerText = m; el.className = `message ${t}`; el.style.display = 'block';
         setTimeout(() => el.style.display = 'none', 3000);
     };
-    window.openAddVendor = () => { editingVendorId = null; document.getElementById('vendorForm').reset(); document.getElementById('logoPreview').style.display='none'; document.getElementById('vendorModal').style.display='flex'; };
-    window.closeModal = (id) => document.getElementById(id).style.display='none';
+    window.editCity = (i) => {
+        editingCityIndex = i;
+        document.getElementById('cityModalTitle').innerText = "Edit City";
+        document.getElementById('cityNameInput').value = cities[i].name;
+        document.getElementById('cityPopularCheck').checked = cities[i].popular;
+        openModal('cityModal');
+    };
+    window.openAddVendor = () => { editingVendorId = null; document.getElementById('vendorForm').reset(); document.getElementById('logoPreview').style.display='none'; openModal('vendorModal'); };
+    window.editVendor = (id) => {
+        const v = vendors.find(x => x.id === id); editingVendorId = id;
+        document.getElementById('vendorName').value = v.name;
+        document.getElementById('vendorCategory').value = v.category;
+        document.getElementById('vendorCity').value = v.city;
+        document.getElementById('agentPhone').value = v.agentPhone || '';
+        document.getElementById('vendorPrice').value = v.priceRange || '';
+        document.getElementById('vendorDescription').value = v.description || '';
+        document.getElementById('logoPreview').src = v.imageUrl;
+        document.getElementById('logoPreview').style.display = 'block';
+        openModal('vendorModal');
+    };
     window.previewLogo = (i) => { if(i.files[0]){ const r=new FileReader(); r.onload=e=>{ document.getElementById('logoPreview').src=e.target.result; document.getElementById('logoPreview').style.display='block'; }; r.readAsDataURL(i.files[0]); } };
     window.deleteVendor = async (id) => { if(confirm('Delete?')) await deleteDoc(doc(db, 'vendors', id)); };
     window.deleteCategory = async (id) => { if(confirm('Delete?')) await updateDoc(doc(db, 'categories', id), {deleted: true}); };
-    window.deleteCity = async (i) => { if(confirm('Delete?')) { cities.splice(i, 1); await setDoc(doc(db, 'settings', 'cities'), { list: cities }); } };
-    
+    window.deleteCity = async (i) => { if(confirm('Delete?')) { let newList = [...cities]; newList.splice(i, 1); await setDoc(doc(db, 'settings', 'cities'), { list: newList }); } };
     window.logout = () => { localStorage.clear(); window.location.href='admin-login.html'; };
     if(localStorage.getItem('admin') !== 'true') window.location.href='admin-login.html';
 </script>
