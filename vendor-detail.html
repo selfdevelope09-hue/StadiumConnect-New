@@ -48,7 +48,7 @@
             color: #ff6b35;
         }
 
-        .placeholder-icon {
+        .placeholder {
             width: 40px;
         }
 
@@ -79,7 +79,7 @@
 
         /* Content */
         .content {
-            padding: 50px 20px 20px;
+            padding: 50px 20px 100px;
         }
 
         .vendor-name {
@@ -279,17 +279,213 @@
             cursor: pointer;
         }
     </style>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getFirestore, doc, getDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
+            authDomain: "stadiumconnect-8fecb.firebaseapp.com",
+            projectId: "stadiumconnect-8fecb",
+            storageBucket: "stadiumconnect-8fecb.firebasestorage.app",
+            messagingSenderId: "458108198578",
+            appId: "1:458108198578:web:83d83646f0e24e718b73ab",
+            measurementId: "G-X4S6Z1QPC1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // Get vendor ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const vendorId = urlParams.get('id');
+
+        let currentVendor = null;
+        let currentUser = null;
+
+        // Check auth state
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            if (vendorId) {
+                loadVendorDetails();
+            }
+        });
+
+        async function loadVendorDetails() {
+            const container = document.getElementById('vendorDetail');
+            
+            if (!vendorId) {
+                container.innerHTML = '<div class="loading">No vendor selected</div>';
+                document.getElementById('bookBtn').style.display = 'none';
+                return;
+            }
+            
+            try {
+                const vendorRef = doc(db, 'vendors', vendorId);
+                const vendorDoc = await getDoc(vendorRef);
+                
+                if (vendorDoc.exists()) {
+                    currentVendor = { id: vendorDoc.id, ...vendorDoc.data() };
+                    renderVendorDetails(currentVendor);
+                } else {
+                    container.innerHTML = '<div class="loading">Vendor not found</div>';
+                    document.getElementById('bookBtn').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error loading vendor:', error);
+                container.innerHTML = '<div class="loading">Error loading vendor details</div>';
+            }
+        }
+
+        function getCategoryIcon(category) {
+            const icons = {
+                decorator: '🎨',
+                photographer: '📸',
+                caterer: '🍽️',
+                bandbaja: '🎵',
+                stadium: '🏟️'
+            };
+            return icons[category] || '🏷️';
+        }
+
+        function getStars(rating) {
+            const num = parseFloat(rating);
+            if (isNaN(num)) return '☆☆☆☆☆';
+            const full = Math.floor(num);
+            let stars = '';
+            for (let i = 0; i < full; i++) stars += '★';
+            for (let i = stars.length; i < 5; i++) stars += '☆';
+            return stars;
+        }
+
+        function renderVendorDetails(vendor) {
+            const container = document.getElementById('vendorDetail');
+            const icon = getCategoryIcon(vendor.category);
+            
+            container.innerHTML = `
+                <div class="hero-banner">
+                    <div class="vendor-icon-large">${icon}</div>
+                </div>
+                <div class="vendor-name">${vendor.name || 'Vendor'}</div>
+                <div class="vendor-rating">
+                    <div class="stars">${getStars(vendor.rating)}</div>
+                    <div class="rating-value">${vendor.rating || '4.5'} (${vendor.reviews || 0} reviews)</div>
+                </div>
+                <div class="info-row"><i>📍</i> ${vendor.location || vendor.city || 'Location not specified'}</div>
+                <div class="info-row"><i>📞</i> ${vendor.phone || 'Contact not available'}</div>
+                <div class="info-row"><i>📅</i> ${vendor.experience || 'Experienced vendor'}</div>
+                <div class="price-box">
+                    <div class="price-label">Price Range</div>
+                    <div class="price-value">${vendor.priceRange || 'Contact for price'}</div>
+                </div>
+                <div class="section-title">About</div>
+                <div class="description">${vendor.description || 'Professional vendor with years of experience in the industry. Known for quality service and customer satisfaction.'}</div>
+                <div class="section-title">Work Portfolio</div>
+                <div class="photos-grid">
+                    <div class="photo-placeholder">📸</div>
+                    <div class="photo-placeholder">📸</div>
+                    <div class="photo-placeholder">📸</div>
+                </div>
+                <div class="section-title">Reviews (${vendor.reviews || 0})</div>
+                <div id="reviewsContainer"></div>
+            `;
+            
+            // Load demo reviews
+            loadReviews();
+        }
+
+        function loadReviews() {
+            const container = document.getElementById('reviewsContainer');
+            container.innerHTML = `
+                <div class="review-card">
+                    <div class="reviewer-name">Rahul Sharma</div>
+                    <div class="review-stars">★★★★★</div>
+                    <div class="review-text">Excellent service! Highly recommended. Very professional and punctual.</div>
+                </div>
+                <div class="review-card">
+                    <div class="reviewer-name">Priya Patel</div>
+                    <div class="review-stars">★★★★☆</div>
+                    <div class="review-text">Great work, on time delivery. Slightly expensive but worth the quality.</div>
+                </div>
+                <div class="review-card">
+                    <div class="reviewer-name">Amit Kumar</div>
+                    <div class="review-stars">★★★★★</div>
+                    <div class="review-text">Best in the business! Will definitely hire again.</div>
+                </div>
+            `;
+        }
+
+        // Booking functions
+        window.openBookingModal = function() {
+            if (!currentUser) {
+                alert('Please login to book this vendor');
+                window.location.href = 'login.html';
+                return;
+            }
+            if (!currentVendor) {
+                alert('Vendor not loaded');
+                return;
+            }
+            document.getElementById('bookingModal').style.display = 'flex';
+        };
+
+        window.closeBookingModal = function() {
+            document.getElementById('bookingModal').style.display = 'none';
+        };
+
+        window.submitBooking = async function() {
+            if (!currentUser || !currentVendor) return;
+            
+            const eventDate = document.getElementById('eventDate').value;
+            const eventType = document.getElementById('eventType').value;
+            const guestCount = document.getElementById('guestCount').value;
+            const specialRequests = document.getElementById('specialRequests').value;
+            
+            if (!eventDate) {
+                alert('Please select event date');
+                return;
+            }
+            
+            const booking = {
+                vendorId: currentVendor.id,
+                vendorName: currentVendor.name,
+                userId: currentUser.uid,
+                userName: currentUser.displayName || currentUser.email,
+                userEmail: currentUser.email,
+                eventDate: eventDate,
+                eventType: eventType,
+                guestCount: guestCount || null,
+                specialRequests: specialRequests || null,
+                status: 'pending',
+                createdAt: serverTimestamp()
+            };
+            
+            try {
+                await addDoc(collection(db, 'bookings'), booking);
+                alert('✅ Booking request sent! Vendor will contact you soon.');
+                closeBookingModal();
+            } catch (error) {
+                console.error('Error booking:', error);
+                alert('Booking failed. Please try again.');
+            }
+        };
+    </script>
 </head>
 <body>
 
 <header class="header">
     <button class="back-btn" onclick="window.location.href='vendors.html'">←</button>
     <div class="logo">STADIUM<span>CONNECT</span></div>
-    <div class="placeholder-icon"></div>
+    <div class="placeholder"></div>
 </header>
 
 <div id="vendorDetail" class="content">
-    <div class="loading">Loading vendor details...</div>
+    <div class="loading">🔄 Loading vendor details...</div>
 </div>
 
 <button class="book-btn" id="bookBtn" onclick="openBookingModal()">Book Now →</button>
@@ -312,196 +508,6 @@
         <button class="modal-btn" onclick="submitBooking()">Confirm Booking →</button>
     </div>
 </div>
-
-<script type="module">
-    import { auth, db, doc, getDoc, collection, addDoc, serverTimestamp, onAuthStateChanged } from './firebase-config.js';
-
-    let currentVendor = null;
-    let currentUser = null;
-
-    // Get vendor ID from URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const vendorId = urlParams.get('id');
-
-    // Check auth state
-    onAuthStateChanged(auth, (user) => {
-        currentUser = user;
-        if (!user && vendorId) {
-            // Still load vendor details, but booking will require login
-            loadVendorDetails();
-        } else if (vendorId) {
-            loadVendorDetails();
-        }
-    });
-
-    async function loadVendorDetails() {
-        const container = document.getElementById('vendorDetail');
-        
-        if (!vendorId) {
-            container.innerHTML = '<div class="loading">No vendor selected</div>';
-            document.getElementById('bookBtn').style.display = 'none';
-            return;
-        }
-        
-        try {
-            // Try to get from Firestore
-            const vendorRef = doc(db, 'vendors', vendorId);
-            const vendorDoc = await getDoc(vendorRef);
-            
-            if (vendorDoc.exists()) {
-                currentVendor = { id: vendorDoc.id, ...vendorDoc.data() };
-                renderVendorDetails(currentVendor);
-            } else {
-                // Demo data if not in Firestore
-                showDemoVendor();
-            }
-        } catch (error) {
-            console.error('Error loading vendor:', error);
-            showDemoVendor();
-        }
-    }
-
-    function renderVendorDetails(vendor) {
-        const container = document.getElementById('vendorDetail');
-        
-        const categoryIcons = {
-            decorator: '🎨',
-            photographer: '📸',
-            caterer: '🍽️',
-            bandbaja: '🎵',
-            stadium: '🏟️'
-        };
-        
-        const icon = categoryIcons[vendor.category] || '🏷️';
-        
-        container.innerHTML = `
-            <div class="hero-banner">
-                <div class="vendor-icon-large">${icon}</div>
-            </div>
-            <div class="vendor-name">${vendor.name}</div>
-            <div class="vendor-rating">
-                <div class="stars">${getStars(vendor.rating || 4.5)}</div>
-                <div class="rating-value">${vendor.rating || 4.5} (${vendor.reviews || 0} reviews)</div>
-            </div>
-            <div class="info-row"><i>📍</i> ${vendor.location || vendor.city || 'Location not specified'}</div>
-            <div class="info-row"><i>📞</i> ${vendor.phone || 'Contact not available'}</div>
-            <div class="info-row"><i>📅</i> ${vendor.experience || 'Experienced vendor'}</div>
-            <div class="price-box">
-                <div class="price-label">Price Range</div>
-                <div class="price-value">${vendor.priceRange || 'Contact for price'}</div>
-            </div>
-            <div class="section-title">About</div>
-            <div class="description">${vendor.description || 'Professional vendor with years of experience in the industry. Known for quality service and customer satisfaction.'}</div>
-            <div class="section-title">Work Portfolio</div>
-            <div class="photos-grid">
-                <div class="photo-placeholder">📸</div>
-                <div class="photo-placeholder">📸</div>
-                <div class="photo-placeholder">📸</div>
-            </div>
-            <div class="section-title">Reviews (${vendor.reviews || 0})</div>
-            <div id="reviewsContainer"></div>
-        `;
-        
-        // Load reviews
-        loadReviews(vendor.id);
-    }
-
-    function showDemoVendor() {
-        const demos = {
-            'decorator': { name: 'Royal Floral Decor', category: 'decorator', rating: 4.8, location: 'Dharampeth, Nagpur', priceRange: '₹25,000 - ₹1,50,000', phone: '9423281086', experience: '12 years', description: 'Best decorators in Nagpur for weddings and events. Specializing in floral arrangements, stage setup, and lighting.' },
-            'photographer': { name: 'Shutter Stories', category: 'photographer', rating: 4.9, location: 'Sadar, Nagpur', priceRange: '₹15,000 - ₹80,000', phone: '9423281086', experience: '10 years', description: 'Candid wedding photographers capturing your special moments.' },
-            'caterer': { name: 'Orange City Caterers', category: 'caterer', rating: 4.7, location: 'Dharampeth, Nagpur', priceRange: '₹200 - ₹800/plate', phone: '9423281086', experience: '15 years', description: 'Best food in Nagpur for all events. Specializing in North Indian, South Indian, and Chinese cuisine.' }
-        };
-        
-        let vendor = demos[categoryParam] || demos.decorator;
-        vendor.id = vendorId;
-        vendor.category = categoryParam || 'decorator';
-        currentVendor = vendor;
-        renderVendorDetails(vendor);
-    }
-
-    function getStars(rating) {
-        const full = Math.floor(rating);
-        let stars = '';
-        for (let i = 0; i < full; i++) stars += '★';
-        for (let i = stars.length; i < 5; i++) stars += '☆';
-        return stars;
-    }
-
-    async function loadReviews(vendorId) {
-        const container = document.getElementById('reviewsContainer');
-        // Demo reviews
-        container.innerHTML = `
-            <div class="review-card">
-                <div class="reviewer-name">Rahul Sharma</div>
-                <div class="review-stars">★★★★★</div>
-                <div class="review-text">Excellent service! Highly recommended.</div>
-            </div>
-            <div class="review-card">
-                <div class="reviewer-name">Priya Patel</div>
-                <div class="review-stars">★★★★☆</div>
-                <div class="review-text">Great work, on time delivery.</div>
-            </div>
-        `;
-    }
-
-    function openBookingModal() {
-        if (!currentUser) {
-            alert('Please login to book this vendor');
-            window.location.href = 'login.html';
-            return;
-        }
-        document.getElementById('bookingModal').style.display = 'flex';
-    }
-
-    function closeBookingModal() {
-        document.getElementById('bookingModal').style.display = 'none';
-    }
-
-    async function submitBooking() {
-        if (!currentUser || !currentVendor) return;
-        
-        const eventDate = document.getElementById('eventDate').value;
-        const eventType = document.getElementById('eventType').value;
-        const guestCount = document.getElementById('guestCount').value;
-        const specialRequests = document.getElementById('specialRequests').value;
-        
-        if (!eventDate) {
-            alert('Please select event date');
-            return;
-        }
-        
-        const booking = {
-            vendorId: currentVendor.id,
-            vendorName: currentVendor.name,
-            userId: currentUser.uid,
-            userName: currentUser.displayName || currentUser.email,
-            userEmail: currentUser.email,
-            eventDate: eventDate,
-            eventType: eventType,
-            guestCount: guestCount || null,
-            specialRequests: specialRequests || null,
-            status: 'pending',
-            createdAt: serverTimestamp()
-        };
-        
-        try {
-            await addDoc(collection(db, 'bookings'), booking);
-            alert('✅ Booking request sent! Vendor will contact you soon.');
-            closeBookingModal();
-        } catch (error) {
-            console.error('Error booking:', error);
-            alert('Booking failed. Please try again.');
-        }
-    }
-
-    window.openBookingModal = openBookingModal;
-    window.closeBookingModal = closeBookingModal;
-    window.submitBooking = submitBooking;
-    
-    // Get category from URL for demo
-    const categoryParam = urlParams.get('category');
-</script>
 
 </body>
 </html>
