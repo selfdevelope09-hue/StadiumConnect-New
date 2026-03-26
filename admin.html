@@ -33,10 +33,14 @@
         .tab-content.active { display: block; }
         
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 1000; }
-        .modal-content { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; position: relative; }
+        .modal-content { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; position: relative; }
         .close { position: absolute; right: 20px; top: 15px; font-size: 24px; cursor: pointer; color: #666;}
         
-        .img-preview { width: 100px; height: 100px; border-radius: 10px; object-fit: cover; margin-top: 10px; border: 2px solid #ddd; display: none; }
+        .img-preview { width: 80px; height: 80px; border-radius: 10px; object-fit: cover; margin: 5px; border: 2px solid #ddd; }
+        .work-photos-grid { display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0; }
+        .work-photo-item { position: relative; width: 80px; height: 80px; border-radius: 10px; overflow: hidden; border: 2px solid #ddd; }
+        .work-photo-item img { width: 100%; height: 100%; object-fit: cover; }
+        .remove-work-photo { position: absolute; top: 2px; right: 2px; background: red; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 12px; }
         .upload-progress { display: none; margin-top: 10px; color: #ff6b35; font-weight: bold; font-size: 14px;}
         .message { padding: 12px; border-radius: 8px; margin-bottom: 15px; display: none; text-align: center; }
         .success { background: #d4edda; color: #155724; display: block; }
@@ -66,12 +70,12 @@
     <div class="card">
         <button onclick="openAddVendor()">+ Add New Vendor</button>
         <div class="table-container">
-            <table>
+             <table>
                 <thead>
-                    <tr><th>Photo</th><th>Name</th><th>Category</th><th>City</th><th>Price</th><th>Rating</th><th>Actions</th></tr>
+                    <tr><th>Photo</th><th>Name</th><th>Category</th><th>City</th><th>Price</th><th>Rating</th><th>Actions</th> </>
                 </thead>
                 <tbody id="vendorTable"><tr><td colspan="7" style="text-align:center;">Loading...</td></tr></tbody>
-            </table>
+             </table>
         </div>
     </div>
 </div>
@@ -104,10 +108,16 @@
         <input type="text" id="vendorPhone" placeholder="Phone Number">
         <textarea id="vendorDescription" rows="3" placeholder="Description"></textarea>
         
-        <label class="file-input-label">Vendor Photo (ImgBB Upload)</label>
-        <input type="file" id="vendorPhoto" accept="image/*" onchange="previewImage(this)">
-        <img id="imgPreview" class="img-preview" alt="Preview">
-        <div id="uploadProgress" class="upload-progress">Uploading image to ImgBB...</div>
+        <!-- Vendor Logo/Profile Photo -->
+        <label class="file-input-label">📸 Vendor Logo / Profile Photo</label>
+        <input type="file" id="vendorLogo" accept="image/*" onchange="previewLogo(this)">
+        <img id="logoPreview" class="img-preview" style="display:none;">
+        
+        <!-- Work Photos (Multiple) -->
+        <label class="file-input-label" style="margin-top: 15px;">🎨 Work Photos / Portfolio (Multiple)</label>
+        <input type="file" id="workPhotos" accept="image/*" multiple onchange="previewWorkPhotos(this)">
+        <div id="workPhotosPreview" class="work-photos-grid"></div>
+        <div id="uploadProgress" class="upload-progress">Uploading...</div>
         
         <button class="btn-save" id="btnSaveVendor" onclick="saveVendor()">SAVE VENDOR</button>
     </div>
@@ -154,7 +164,6 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // ImgBB API Key
     const IMGBB_API_KEY = "459b0b4e8a9c6fcceaffd15320a6fdbd";
 
     let vendors = [];
@@ -162,7 +171,9 @@
     let cities = [];
     let editingVendorId = null;
     let editingCityIndex = null;
-    let currentImageUrl = null;
+    let currentLogoUrl = null;
+    let currentWorkPhotos = []; // Array of URLs
+    let tempWorkPhotos = []; // Base64 for preview
 
     // ========== REAL-TIME SYNC ==========
     onSnapshot(collection(db, "categories"), (snap) => {
@@ -204,43 +215,67 @@
         }
     }
 
-    async function uploadVendorImage() {
-        const fileInput = document.getElementById('vendorPhoto');
-        if (!fileInput.files.length) return currentImageUrl;
-        
-        const file = fileInput.files[0];
-        const progressEl = document.getElementById('uploadProgress');
-        const saveBtn = document.getElementById('btnSaveVendor');
-        
-        progressEl.style.display = 'block';
-        saveBtn.disabled = true;
-        
-        try {
-            const imageUrl = await uploadToImgBB(file);
-            console.log('Image uploaded to ImgBB:', imageUrl);
-            return imageUrl;
-        } catch (error) {
-            console.error('Upload failed:', error);
-            showMsg('Image upload failed: ' + error.message, 'error');
-            return null;
-        } finally {
-            progressEl.style.display = 'none';
-            saveBtn.disabled = false;
+    async function uploadMultiplePhotos(files) {
+        const urls = [];
+        for (const file of files) {
+            const url = await uploadToImgBB(file);
+            urls.push(url);
         }
+        return urls;
     }
 
-    // ========== PREVIEW IMAGE ==========
-    window.previewImage = (input) => {
+    // ========== PREVIEW FUNCTIONS ==========
+    window.previewLogo = (input) => {
         const file = input.files[0];
         if (file) {
             const reader = new FileReader();
             reader.onload = (e) => {
-                const el = document.getElementById('imgPreview');
-                el.src = e.target.result;
-                el.style.display = 'block';
+                const preview = document.getElementById('logoPreview');
+                preview.src = e.target.result;
+                preview.style.display = 'block';
             };
             reader.readAsDataURL(file);
         }
+    };
+
+    window.previewWorkPhotos = (input) => {
+        const files = Array.from(input.files);
+        tempWorkPhotos = [];
+        const container = document.getElementById('workPhotosPreview');
+        container.innerHTML = '';
+        
+        files.forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                tempWorkPhotos.push(e.target.result);
+                const div = document.createElement('div');
+                div.className = 'work-photo-item';
+                div.innerHTML = `
+                    <img src="${e.target.result}">
+                    <button class="remove-work-photo" onclick="removeTempWorkPhoto(${index})">×</button>
+                `;
+                container.appendChild(div);
+            };
+            reader.readAsDataURL(file);
+        });
+    };
+
+    window.removeTempWorkPhoto = (index) => {
+        tempWorkPhotos.splice(index, 1);
+        const container = document.getElementById('workPhotosPreview');
+        container.innerHTML = '';
+        tempWorkPhotos.forEach((photo, i) => {
+            const div = document.createElement('div');
+            div.className = 'work-photo-item';
+            div.innerHTML = `<img src="${photo}"><button class="remove-work-photo" onclick="removeTempWorkPhoto(${i})">×</button>`;
+            container.appendChild(div);
+        });
+        // Also remove from file input
+        const dt = new DataTransfer();
+        const files = document.getElementById('workPhotos').files;
+        const remainingFiles = Array.from(files).filter((_, i) => i !== index);
+        remainingFiles.forEach(f => dt.items.add(f));
+        document.getElementById('workPhotos').files = dt.files;
     };
 
     // ========== RENDER FUNCTIONS ==========
@@ -265,7 +300,6 @@
 
     function renderCategories() {
         const container = document.getElementById('categoriesList');
-        if (!container) return;
         container.innerHTML = categories.map(c => `
             <div class="list-item">
                 <span>${c.icon || '🏷️'} ${c.name}</span>
@@ -279,7 +313,6 @@
 
     function renderCities() {
         const container = document.getElementById('citiesList');
-        if (!container) return;
         container.innerHTML = cities.map((c, i) => `
             <div class="list-item">
                 <span>📍 ${c.name} ${c.popular ? '<span class="popular-badge">Popular</span>' : ''}</span>
@@ -308,9 +341,12 @@
     // ========== VENDOR CRUD ==========
     window.openAddVendor = () => {
         editingVendorId = null;
-        currentImageUrl = null;
+        currentLogoUrl = null;
+        currentWorkPhotos = [];
+        tempWorkPhotos = [];
         document.getElementById('vendorForm').reset();
-        document.getElementById('imgPreview').style.display = 'none';
+        document.getElementById('logoPreview').style.display = 'none';
+        document.getElementById('workPhotosPreview').innerHTML = '';
         document.getElementById('vendorModalTitle').innerText = 'Add Vendor';
         openModal('vendorModal');
     };
@@ -319,7 +355,8 @@
         const v = vendors.find(x => x.id === id);
         if (!v) return;
         editingVendorId = id;
-        currentImageUrl = v.imageUrl || null;
+        currentLogoUrl = v.imageUrl || null;
+        currentWorkPhotos = v.photos || [];
         
         document.getElementById('vendorName').value = v.name || '';
         document.getElementById('vendorCategory').value = v.category || '';
@@ -330,16 +367,41 @@
         document.getElementById('vendorPhone').value = v.phone || '';
         document.getElementById('vendorDescription').value = v.description || '';
         
-        const preview = document.getElementById('imgPreview');
+        // Preview existing logo
+        const logoPreview = document.getElementById('logoPreview');
         if (v.imageUrl) {
-            preview.src = v.imageUrl;
-            preview.style.display = 'block';
+            logoPreview.src = v.imageUrl;
+            logoPreview.style.display = 'block';
         } else {
-            preview.style.display = 'none';
+            logoPreview.style.display = 'none';
+        }
+        
+        // Preview existing work photos
+        const container = document.getElementById('workPhotosPreview');
+        container.innerHTML = '';
+        if (v.photos && v.photos.length) {
+            v.photos.forEach((photo, i) => {
+                const div = document.createElement('div');
+                div.className = 'work-photo-item';
+                div.innerHTML = `<img src="${photo}"><button class="remove-work-photo" onclick="removeExistingWorkPhoto(${i})">×</button>`;
+                container.appendChild(div);
+            });
         }
         
         document.getElementById('vendorModalTitle').innerText = 'Edit Vendor';
         openModal('vendorModal');
+    };
+
+    window.removeExistingWorkPhoto = (index) => {
+        currentWorkPhotos.splice(index, 1);
+        const container = document.getElementById('workPhotosPreview');
+        container.innerHTML = '';
+        currentWorkPhotos.forEach((photo, i) => {
+            const div = document.createElement('div');
+            div.className = 'work-photo-item';
+            div.innerHTML = `<img src="${photo}"><button class="remove-work-photo" onclick="removeExistingWorkPhoto(${i})">×</button>`;
+            container.appendChild(div);
+        });
     };
 
     window.deleteVendor = async (id) => {
@@ -359,23 +421,48 @@
             return;
         }
         
-        const imageUrl = await uploadVendorImage();
-        if (document.getElementById('vendorPhoto').files.length && !imageUrl) return;
+        const saveBtn = document.getElementById('btnSaveVendor');
+        const progress = document.getElementById('uploadProgress');
         
-        const vendorData = {
-            name: name,
-            category: category,
-            city: city,
-            imageUrl: imageUrl || currentImageUrl || 'https://via.placeholder.com/300?text=No+Image',
-            location: document.getElementById('vendorLocation').value || '',
-            priceRange: document.getElementById('vendorPrice').value || '',
-            rating: document.getElementById('vendorRating').value || '4.0',
-            phone: document.getElementById('vendorPhone').value || '',
-            description: document.getElementById('vendorDescription').value || '',
-            updatedAt: new Date().toISOString()
-        };
+        saveBtn.disabled = true;
+        progress.style.display = 'block';
+        progress.innerText = 'Uploading logo...';
         
         try {
+            // Upload logo if new file selected
+            const logoFile = document.getElementById('vendorLogo').files[0];
+            let logoUrl = currentLogoUrl;
+            if (logoFile) {
+                logoUrl = await uploadToImgBB(logoFile);
+            }
+            
+            // Upload new work photos
+            const newWorkFiles = document.getElementById('workPhotos').files;
+            let newWorkUrls = [];
+            if (newWorkFiles.length > 0) {
+                progress.innerText = `Uploading ${newWorkFiles.length} work photos...`;
+                newWorkUrls = await uploadMultiplePhotos(Array.from(newWorkFiles));
+            }
+            
+            // Combine existing work photos + new ones
+            const allWorkPhotos = [...currentWorkPhotos, ...newWorkUrls];
+            
+            progress.innerText = 'Saving to database...';
+            
+            const vendorData = {
+                name: name,
+                category: category,
+                city: city,
+                imageUrl: logoUrl || 'https://via.placeholder.com/80',
+                photos: allWorkPhotos,
+                location: document.getElementById('vendorLocation').value || '',
+                priceRange: document.getElementById('vendorPrice').value || '',
+                rating: document.getElementById('vendorRating').value || '4.0',
+                phone: document.getElementById('vendorPhone').value || '',
+                description: document.getElementById('vendorDescription').value || '',
+                updatedAt: new Date().toISOString()
+            };
+            
             if (editingVendorId) {
                 await updateDoc(doc(db, 'vendors', editingVendorId), vendorData);
                 showMsg('Vendor updated successfully!', 'success');
@@ -387,6 +474,9 @@
             closeModal('vendorModal');
         } catch (error) {
             showMsg('Error: ' + error.message, 'error');
+        } finally {
+            saveBtn.disabled = false;
+            progress.style.display = 'none';
         }
     };
 
