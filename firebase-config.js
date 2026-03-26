@@ -1,38 +1,21 @@
-// Firebase Configuration - REPLACE WITH YOUR CONFIG FROM FIREBASE CONSOLE
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+
+// Your web app's Firebase configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyB6h_xxxxxxxxxxxxxxxxxxxxxx",
-    authDomain: "stadiumconnect-xxxxx.firebaseapp.com",
-    projectId: "stadiumconnect-xxxxx",
-    storageBucket: "stadiumconnect-xxxxx.appspot.com",
-    messagingSenderId: "123456789012",
-    appId: "1:123456789012:web:abcdef123456"
+  apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
+  authDomain: "stadiumconnect-8fecb.firebaseapp.com",
+  projectId: "stadiumconnect-8fecb",
+  storageBucket: "stadiumconnect-8fecb.firebasestorage.app",
+  messagingSenderId: "458108198578",
+  appId: "1:458108198578:web:83d83646f0e24e718b73ab",
+  measurementId: "G-X4S6Z1QPC1"
 };
 
 // Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
-const googleProvider = new firebase.auth.GoogleAuthProvider();
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
 
-// User functions
-function getCurrentUser() {
-    return auth.currentUser;
-}
-
-function logout() {
-    auth.signOut();
-    localStorage.removeItem('user');
-    window.location.href = 'index.html';
-}
-
-// Check login status
-auth.onAuthStateChanged((user) => {
-    if (user) {
-        localStorage.setItem('user', JSON.stringify({
-            uid: user.uid,
-            name: user.displayName,
-            email: user.email,
-            photo: user.photoURL
-        }));
-    }
-});
+// Export for use in other files
+export { auth, googleProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, onAuthStateChanged, signOut };
