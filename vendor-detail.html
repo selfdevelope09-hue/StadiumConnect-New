@@ -155,7 +155,6 @@
             justify-content: center;
             gap: 10px;
         }
-        .call-btn:hover { background: #218838; }
         .book-btn {
             flex: 2;
             background: #ff6b35;
@@ -171,7 +170,6 @@
             justify-content: center;
             gap: 10px;
         }
-        .book-btn:hover { background: #e55a2b; }
         .agent-id-field { background: #fff8f0; border-left: 3px solid #ff6b35; padding: 12px; border-radius: 12px; margin-top: 8px; }
         .optional-badge { font-size: 12px; font-weight: normal; color: #999; margin-left: 8px; }
         
@@ -214,7 +212,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getFirestore, doc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
         const firebaseConfig = {
@@ -235,16 +233,18 @@
         let currentVendor = null;
         let currentPhotos = [];
         let currentPhotoIndex = 0;
-        let currentUser = null;
+        let cityAgent = null;
 
-        // Find agent for this vendor's city
+        // ========== CITY-WISE AGENT FINDER ==========
         async function getAgentForCity(city) {
             try {
                 const agentsSnap = await getDocs(collection(db, "agents"));
                 let agents = [];
                 agentsSnap.forEach(doc => agents.push({ id: doc.id, ...doc.data() }));
-                const cityAgent = agents.find(agent => agent.city?.toLowerCase() === city.toLowerCase());
-                return cityAgent;
+                
+                // Find agent in same city
+                const cityAgentFound = agents.find(agent => agent.city?.toLowerCase() === city.toLowerCase());
+                return cityAgentFound;
             } catch (error) {
                 console.error("Error finding agent:", error);
                 return null;
@@ -257,38 +257,31 @@
                 currentVendor = { id: vendorDoc.id, ...vendorDoc.data() };
                 currentPhotos = currentVendor.photos || [];
                 if (currentPhotos.length === 0 && currentVendor.imageUrl) currentPhotos = [currentVendor.imageUrl];
+                
+                // Find agent for this vendor's city
+                if (currentVendor.city) {
+                    cityAgent = await getAgentForCity(currentVendor.city);
+                }
+                
                 renderVendor();
                 updatePaymentPlan();
-                await setupCallButton();
+                setupCallButton();
             }
         }
 
-        async function setupCallButton() {
+        function setupCallButton() {
             const callBtn = document.getElementById('callBtn');
             if (!callBtn) return;
             
-            // First check if vendor has direct agent phone
-            if (currentVendor && currentVendor.agentPhone) {
-                callBtn.onclick = () => { window.location.href = `tel:${currentVendor.agentPhone}`; };
-                callBtn.innerHTML = `<i class="fas fa-phone-alt"></i> Call Agent (${currentVendor.agentPhone})`;
+            if (cityAgent && cityAgent.phone) {
+                callBtn.onclick = () => {
+                    window.location.href = `tel:${cityAgent.phone}`;
+                };
+                callBtn.innerHTML = `<i class="fas fa-phone-alt"></i> Call ${cityAgent.name || 'Agent'} (${cityAgent.city})`;
                 callBtn.style.display = 'flex';
-                callBtn.style.background = '#28a745';
-                return;
+            } else {
+                callBtn.style.display = 'none';
             }
-            
-            // If no direct agent phone, find city-based agent
-            if (currentVendor && currentVendor.city) {
-                const cityAgent = await getAgentForCity(currentVendor.city);
-                if (cityAgent && cityAgent.phone) {
-                    callBtn.onclick = () => { window.location.href = `tel:${cityAgent.phone}`; };
-                    callBtn.innerHTML = `<i class="fas fa-phone-alt"></i> Call ${cityAgent.name || 'Agent'} (${cityAgent.city})`;
-                    callBtn.style.display = 'flex';
-                    callBtn.style.background = '#28a745';
-                    return;
-                }
-            }
-            
-            callBtn.style.display = 'none';
         }
 
         function getStars(rating) {
@@ -356,51 +349,45 @@
         }
 
         window.submitBooking = async () => {
-            if (!currentUser) {
-                alert('Please login first');
-                window.location.href = 'login.html';
-                return;
-            }
+            const user = auth.currentUser;
+            if (!user) { alert('Please login first'); window.location.href = 'login.html'; return; }
             
-            const userName = document.getElementById('userName').value;
-            const userPhone = document.getElementById('userPhone').value;
-            const eventDate = document.getElementById('eventDate').value;
-            const eventLocation = document.getElementById('eventLocation').value;
+            let agentId = document.getElementById('agentId').value;
             
-            if (!userName || !userPhone || !eventDate || !eventLocation) {
-                alert('Please fill Name, Phone Number, Event Date and Event Location');
-                return;
+            // If no agent ID entered, use city-based agent
+            if (!agentId && cityAgent) {
+                agentId = cityAgent.id;
+                document.getElementById('agentId').value = agentId;
             }
             
             const bookingData = {
                 vendorId: currentVendor.id,
                 vendorName: currentVendor.name,
                 vendorCity: currentVendor.city,
-                userId: currentUser.uid,
-                userName: userName,
-                userEmail: currentUser.email,
-                userPhone: userPhone,
-                eventName: document.getElementById('eventName').value || 'Event',
-                eventDate: eventDate,
+                userId: user.uid,
+                userName: user.displayName || user.email,
+                userPhone: document.getElementById('userPhone').value,
+                eventName: document.getElementById('eventName').value,
+                eventDate: document.getElementById('eventDate').value,
                 eventTime: document.getElementById('eventTime').value,
-                guestCount: document.getElementById('guestCount').value || 0,
-                eventLocation: eventLocation,
+                guestCount: document.getElementById('guestCount').value,
+                eventLocation: document.getElementById('eventLocation').value,
                 eventType: document.getElementById('eventType').value,
-                specialRequests: document.getElementById('specialRequests').value || '',
-                agentId: document.getElementById('agentId').value || '',
+                specialRequests: document.getElementById('specialRequests').value,
+                agentId: agentId,
                 amount: currentVendor.priceRange || 'Contact for price',
                 status: 'pending',
                 createdAt: new Date().toISOString()
             };
             
-            try {
-                await addDoc(collection(db, 'bookings'), bookingData);
-                alert('✅ Booking request sent successfully! Vendor will contact you soon.');
-                window.location.href = 'dashboard.html';
-            } catch (error) {
-                console.error('Error saving booking:', error);
-                alert('❌ Failed to send booking. Error: ' + error.message);
+            if (!bookingData.userPhone || !bookingData.eventDate || !bookingData.eventLocation) {
+                alert('Please fill all required fields (Phone, Event Date, Event Location)');
+                return;
             }
+            
+            await addDoc(collection(db, 'bookings'), bookingData);
+            alert('✅ Booking request sent! Agent will contact you.');
+            window.location.href = 'dashboard.html';
         };
 
         // Lightbox functions
@@ -409,14 +396,6 @@
         window.closeLightbox = () => document.getElementById('lightbox').classList.remove('active');
         window.prevPhoto = (e) => { e.stopPropagation(); currentPhotoIndex = (currentPhotoIndex-1+currentPhotos.length)%currentPhotos.length; updateLightbox(); };
         window.nextPhoto = (e) => { e.stopPropagation(); currentPhotoIndex = (currentPhotoIndex+1)%currentPhotos.length; updateLightbox(); };
-
-        // Auth state
-        onAuthStateChanged(auth, (user) => {
-            currentUser = user;
-            if (user && !document.getElementById('userName').value) {
-                document.getElementById('userName').value = user.displayName || '';
-            }
-        });
 
         loadVendor();
     </script>
@@ -440,7 +419,7 @@
         
         <div class="form-group">
             <label>Your Full Name *</label>
-            <input type="text" id="userName" placeholder="Enter your full name" required>
+            <input type="text" id="userName" placeholder="Enter your full name">
         </div>
         
         <div class="form-group">
@@ -449,7 +428,7 @@
         </div>
         
         <div class="form-group">
-            <label>Event Name</label>
+            <label>Event Name *</label>
             <input type="text" id="eventName" placeholder="e.g., Wedding Reception, Birthday Party">
         </div>
         
@@ -499,23 +478,4 @@
         
         <div class="agent-id-field">
             <label>Agent ID <span class="optional-badge">(if referred by an agent)</span></label>
-            <input type="text" id="agentId" placeholder="Enter agent ID if any">
-        </div>
-        
-        <div class="action-buttons">
-            <button id="callBtn" class="call-btn" style="display:none;"><i class="fas fa-phone-alt"></i> Call Agent</button>
-            <button class="book-btn" onclick="submitBooking()"><i class="fas fa-check-circle"></i> Book Now</button>
-        </div>
-    </div>
-</div>
-
-<!-- Lightbox -->
-<div id="lightbox" class="lightbox" onclick="closeLightbox()">
-    <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
-    <span class="lightbox-prev" onclick="prevPhoto(event)">❮</span>
-    <img id="lightboxImage" class="lightbox-image">
-    <span class="lightbox-next" onclick="nextPhoto(event)">❯</span>
-</div>
-
-</body>
-</html>
+            <input type="text" id="agentId" placeholder="Enter agent ID if any
