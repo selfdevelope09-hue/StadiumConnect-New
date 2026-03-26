@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Management - StadiumConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: #f0f2f5; }
+        .header { background: white; padding: 16px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; }
+        .logo { font-size: 22px; font-weight: 800; }
+        .logo span { color: #ff6b35; }
+        .badge { background: #ff6b35; color: white; font-size: 10px; padding: 2px 8px; border-radius: 20px; margin-left: 8px; }
+        .logout-btn { background: #ff6b35; color: white; border: none; padding: 8px 20px; border-radius: 30px; cursor: pointer; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+        
+        .card { background: white; border-radius: 24px; padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+        .btn-primary { background: #ff6b35; color: white; border: none; padding: 10px 20px; border-radius: 30px; cursor: pointer; font-weight: 600; }
+        .btn-edit { background: #ffa502; color: white; border: none; padding: 6px 12px; border-radius: 20px; cursor: pointer; margin-right: 5px; }
+        .btn-delete { background: #ff4757; color: white; border: none; padding: 6px 12px; border-radius: 20px; cursor: pointer; }
+        .btn-copy { background: #2ed573; color: white; border: none; padding: 4px 10px; border-radius: 20px; cursor: pointer; font-size: 12px; }
+        
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 14px 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th { color: #666; font-weight: 500; }
+        .agent-id { font-weight: 700; color: #ff6b35; }
+        
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 1000; }
+        .modal-content { background: white; border-radius: 28px; padding: 32px; width: 90%; max-width: 500px; position: relative; }
+        .close-modal { position: absolute; right: 20px; top: 20px; font-size: 24px; cursor: pointer; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 8px; }
+        .form-group input, .form-group select { width: 100%; padding: 12px 16px; border: 1px solid #ddd; border-radius: 16px; }
+        .generated-id { background: #f8f9fa; padding: 12px; border-radius: 12px; text-align: center; margin: 10px 0; font-size: 18px; font-weight: 700; color: #ff6b35; }
+        .message { padding: 12px; border-radius: 12px; margin-bottom: 15px; display: none; text-align: center; }
+        .success { background: #d4edda; color: #155724; display: block; }
+        .error { background: #f8d7da; color: #721c24; display: block; }
+        
+        @media (max-width: 768px) { th, td { font-size: 12px; padding: 8px; } }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="logo">STADIUM<span>CONNECT</span><span class="badge">Agent Management</span></div>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+</header>
+
+<div class="container">
+    <div id="message" class="message"></div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h2><i class="fas fa-users"></i> Agent Management</h2>
+            <button class="btn-primary" onclick="openAddAgentModal()"><i class="fas fa-plus"></i> Add New Agent</button>
+        </div>
+        <div style="overflow-x: auto;">
+             <table>
+                <thead>
+                    <tr><th>Agent ID</th><th>Name</th><th>Phone</th><th>City</th><th>Target (₹)</th><th>Bookings</th><th>Earnings</th><th>Status</th><th>Actions</th>
+                </thead>
+                <tbody id="agentsTableBody">  <td colspan="9" style="text-align:center;">Loading...   </tbody>
+             </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Agent Modal -->
+<div id="agentModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal()">&times;</span>
+        <h3 id="modalTitle">Add New Agent</h3>
+        <div id="generatedIdDisplay" class="generated-id" style="display:none;"></div>
+        <form id="agentForm">
+            <input type="hidden" id="agentId">
+            <div class="form-group"><label>Full Name *</label><input type="text" id="agentName" placeholder="Enter full name" required></div>
+            <div class="form-group"><label>Phone Number *</label><input type="tel" id="agentPhone" placeholder="10 digit mobile number" required></div>
+            <div class="form-group"><label>City *</label>
+                <select id="agentCity" required>
+                    <option value="">Select City</option>
+                    <option value="Nagpur">Nagpur</option><option value="Mumbai">Mumbai</option><option value="Pune">Pune</option>
+                    <option value="Delhi">Delhi</option><option value="Bangalore">Bangalore</option><option value="Hyderabad">Hyderabad</option>
+                </select>
+            </div>
+            <div class="form-group"><label>Email (Optional)</label><input type="email" id="agentEmail" placeholder="Email address"></div>
+            <div class="form-group"><label>Monthly Target (₹)</label><input type="number" id="agentTarget" value="50000" placeholder="Monthly target amount"></div>
+            <div class="form-group"><label>Password *</label><input type="text" id="agentPassword" placeholder="Default: agent123" value="agent123"></div>
+            <button type="button" class="btn-primary" onclick="saveAgent()" style="width:100%;">Save Agent</button>
+        </form>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, setDoc, getDoc, query, where } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
+        authDomain: "stadiumconnect-8fecb.firebaseapp.com",
+        projectId: "stadiumconnect-8fecb",
+        storageBucket: "stadiumconnect-8fecb.firebasestorage.app",
+        messagingSenderId: "458108198578",
+        appId: "1:458108198578:web:83d83646f0e24e718b73ab"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    let allAgents = [];
+    let allBookings = [];
+    let editingAgentId = null;
+
+    async function loadAgents() {
+        const agentsSnap = await getDocs(collection(db, "agents"));
+        allAgents = [];
+        agentsSnap.forEach(doc => allAgents.push({ id: doc.id, ...doc.data() }));
+        
+        const bookingsSnap = await getDocs(collection(db, "bookings"));
+        allBookings = bookingsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        
+        renderAgents();
+    }
+
+    function getAgentStats(agentId) {
+        const agentBookings = allBookings.filter(b => b.agentId === agentId && (b.status === 'confirmed' || b.status === 'completed'));
+        const totalAmount = agentBookings.reduce((sum, b) => sum + (parseInt(b.amount?.replace(/[^0-9]/g, '')) || 0), 0);
+        const earnings = Math.floor(totalAmount * 0.025);
+        return { bookings: agentBookings.length, totalAmount, earnings };
+    }
+
+    function renderAgents() {
+        const tbody = document.getElementById('agentsTableBody');
+        if (!allAgents.length) { tbody.innerHTML = '<tr><td colspan="9">No agents found</td></tr>'; return; }
+        tbody.innerHTML = allAgents.map(agent => {
+            const stats = getAgentStats(agent.id);
+            return `
+                <tr>
+                    <td class="agent-id">${agent.id}</td>
+                    <td>${agent.name || '-'}</td>
+                    <td>${agent.phone || '-'}</td>
+                    <td>${agent.city || '-'}</td>
+                    <td>₹${(agent.target || 50000).toLocaleString()}</td>
+                    <td>${stats.bookings}</td>
+                    <td>₹${stats.earnings.toLocaleString()}</td>
+                    <td><span style="color:#28a745;">Active</span></td>
+                    <td>
+                        <button class="btn-edit" onclick="editAgent('${agent.id}')">Edit</button>
+                        <button class="btn-delete" onclick="deleteAgent('${agent.id}')">Del</button>
+                        <button class="btn-copy" onclick="copyCredentials('${agent.id}', '${agent.password || 'agent123'}')">Copy Creds</button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    async function generateAgentId() {
+        const count = allAgents.length + 1;
+        return `AG${String(count).padStart(5, '0')}`;
+    }
+
+    window.openAddAgentModal = async () => {
+        editingAgentId = null;
+        const newId = await generateAgentId();
+        document.getElementById('modalTitle').innerText = 'Add New Agent';
+        document.getElementById('agentId').value = '';
+        document.getElementById('generatedIdDisplay').innerHTML = `<i class="fas fa-id-card"></i> Agent ID: <strong>${newId}</strong>`;
+        document.getElementById('generatedIdDisplay').style.display = 'block';
+        document.getElementById('agentName').value = '';
+        document.getElementById('agentPhone').value = '';
+        document.getElementById('agentCity').value = '';
+        document.getElementById('agentEmail').value = '';
+        document.getElementById('agentTarget').value = '50000';
+        document.getElementById('agentPassword').value = 'agent123';
+        document.getElementById('agentModal').style.display = 'flex';
+    };
+
+    window.editAgent = async (id) => {
+        const agent = allAgents.find(a => a.id === id);
+        if (!agent) return;
+        editingAgentId = id;
+        document.getElementById('modalTitle').innerText = 'Edit Agent';
+        document.getElementById('agentId').value = agent.id;
+        document.getElementById('generatedIdDisplay').style.display = 'none';
+        document.getElementById('agentName').value = agent.name || '';
+        document.getElementById('agentPhone').value = agent.phone || '';
+        document.getElementById('agentCity').value = agent.city || '';
+        document.getElementById('agentEmail').value = agent.email || '';
+        document.getElementById('agentTarget').value = agent.target || 50000;
+        document.getElementById('agentPassword').value = '';
+        document.getElementById('agentModal').style.display = 'flex';
+    };
+
+    window.deleteAgent = async (id) => {
+        if (confirm(`Delete agent ${id}? This will not delete their bookings.`)) {
+            await deleteDoc(doc(db, 'agents', id));
+            showMessage('Agent deleted!', 'success');
+            loadAgents();
+        }
+    };
+
+    window.copyCredentials = (agentId, password) => {
+        const credentials = `Agent ID: ${agentId}\nPassword: ${password}\nLogin URL: https://selfdevelope09-hue.github.io/StadiumConnect-New/agent-login.html`;
+        navigator.clipboard.writeText(credentials);
+        showMessage('Credentials copied to clipboard!', 'success');
+    };
+
+    window.saveAgent = async () => {
+        const name = document.getElementById('agentName').value;
+        const phone = document.getElementById('agentPhone').value;
+        const city = document.getElementById('agentCity').value;
+        const email = document.getElementById('agentEmail').value;
+        const target = parseInt(document.getElementById('agentTarget').value) || 50000;
+        const password = document.getElementById('agentPassword').value;
+        
+        if (!name || !phone || !city) {
+            showMessage('Name, Phone and City are required!', 'error');
+            return;
+        }
+        
+        let agentId = document.getElementById('agentId').value;
+        if (!agentId) {
+            agentId = await generateAgentId();
+        }
+        
+        const agentData = {
+            id: agentId,
+            name: name,
+            phone: phone,
+            city: city,
+            email: email || '',
+            target: target,
+            password: password || 'agent123',
+            updatedAt: new Date().toISOString()
+        };
+        
+        const agentRef = doc(db, 'agents', agentId);
+        const agentDoc = await getDoc(agentRef);
+        
+        if (agentDoc.exists()) {
+            await updateDoc(agentRef, agentData);
+            showMessage('Agent updated!', 'success');
+        } else {
+            agentData.createdAt = new Date().toISOString();
+            await setDoc(agentRef, agentData);
+            showMessage(`Agent added! ID: ${agentId} | Password: ${agentData.password}`, 'success');
+        }
+        closeModal();
+        loadAgents();
+    };
+
+    function showMessage(msg, type) {
+        const msgDiv = document.getElementById('message');
+        msgDiv.className = `message ${type}`;
+        msgDiv.innerText = msg;
+        setTimeout(() => msgDiv.style.display = 'none', 3000);
+    }
+
+    window.closeModal = () => {
+        document.getElementById('agentModal').style.display = 'none';
+    };
+
+    window.logout = () => {
+        localStorage.removeItem('admin');
+        localStorage.removeItem('developer');
+        window.location.href = 'index.html';
+    };
+
+    loadAgents();
+</script>
+</body>
+</html>
