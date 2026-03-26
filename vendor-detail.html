@@ -155,6 +155,7 @@
             justify-content: center;
             gap: 10px;
         }
+        .call-btn:hover { background: #218838; }
         .book-btn {
             flex: 2;
             background: #ff6b35;
@@ -170,6 +171,7 @@
             justify-content: center;
             gap: 10px;
         }
+        .book-btn:hover { background: #e55a2b; }
         .agent-id-field { background: #fff8f0; border-left: 3px solid #ff6b35; padding: 12px; border-radius: 12px; margin-top: 8px; }
         .optional-badge { font-size: 12px; font-weight: normal; color: #999; margin-left: 8px; }
         
@@ -235,6 +237,20 @@
         let currentPhotoIndex = 0;
         let currentUser = null;
 
+        // Find agent for this vendor's city
+        async function getAgentForCity(city) {
+            try {
+                const agentsSnap = await getDocs(collection(db, "agents"));
+                let agents = [];
+                agentsSnap.forEach(doc => agents.push({ id: doc.id, ...doc.data() }));
+                const cityAgent = agents.find(agent => agent.city?.toLowerCase() === city.toLowerCase());
+                return cityAgent;
+            } catch (error) {
+                console.error("Error finding agent:", error);
+                return null;
+            }
+        }
+
         async function loadVendor() {
             const vendorDoc = await getDoc(doc(db, 'vendors', vendorId));
             if (vendorDoc.exists()) {
@@ -243,20 +259,36 @@
                 if (currentPhotos.length === 0 && currentVendor.imageUrl) currentPhotos = [currentVendor.imageUrl];
                 renderVendor();
                 updatePaymentPlan();
-                setupCallButton();
+                await setupCallButton();
             }
         }
 
-        function setupCallButton() {
+        async function setupCallButton() {
             const callBtn = document.getElementById('callBtn');
             if (!callBtn) return;
+            
+            // First check if vendor has direct agent phone
             if (currentVendor && currentVendor.agentPhone) {
                 callBtn.onclick = () => { window.location.href = `tel:${currentVendor.agentPhone}`; };
-                callBtn.style.display = 'flex';
                 callBtn.innerHTML = `<i class="fas fa-phone-alt"></i> Call Agent (${currentVendor.agentPhone})`;
-            } else {
-                callBtn.style.display = 'none';
+                callBtn.style.display = 'flex';
+                callBtn.style.background = '#28a745';
+                return;
             }
+            
+            // If no direct agent phone, find city-based agent
+            if (currentVendor && currentVendor.city) {
+                const cityAgent = await getAgentForCity(currentVendor.city);
+                if (cityAgent && cityAgent.phone) {
+                    callBtn.onclick = () => { window.location.href = `tel:${cityAgent.phone}`; };
+                    callBtn.innerHTML = `<i class="fas fa-phone-alt"></i> Call ${cityAgent.name || 'Agent'} (${cityAgent.city})`;
+                    callBtn.style.display = 'flex';
+                    callBtn.style.background = '#28a745';
+                    return;
+                }
+            }
+            
+            callBtn.style.display = 'none';
         }
 
         function getStars(rating) {
@@ -351,7 +383,7 @@
                 eventName: document.getElementById('eventName').value || 'Event',
                 eventDate: eventDate,
                 eventTime: document.getElementById('eventTime').value,
-                guestCount: document.getElementById('guestCount').value,
+                guestCount: document.getElementById('guestCount').value || 0,
                 eventLocation: eventLocation,
                 eventType: document.getElementById('eventType').value,
                 specialRequests: document.getElementById('specialRequests').value || '',
@@ -367,7 +399,7 @@
                 window.location.href = 'dashboard.html';
             } catch (error) {
                 console.error('Error saving booking:', error);
-                alert('❌ Failed to send booking. Please try again.');
+                alert('❌ Failed to send booking. Error: ' + error.message);
             }
         };
 
