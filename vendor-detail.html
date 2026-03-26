@@ -18,7 +18,6 @@
             color: #1a1a1a;
         }
 
-        /* Header */
         .header {
             padding: 16px 20px;
             display: flex;
@@ -52,7 +51,6 @@
             width: 40px;
         }
 
-        /* Hero Banner */
         .hero-banner {
             height: 200px;
             background: linear-gradient(135deg, #ff6b35, #ff9068);
@@ -77,7 +75,6 @@
             left: 20px;
         }
 
-        /* Content */
         .content {
             padding: 50px 20px 100px;
         }
@@ -153,24 +150,97 @@
             font-size: 14px;
         }
 
-        /* Photos */
-        .photos-grid {
+        /* Photo Gallery */
+        .photos-gallery {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
+            gap: 10px;
             margin: 12px 0;
         }
 
-        .photo-placeholder {
-            background: #f5f5f5;
+        .photo-item {
+            position: relative;
             aspect-ratio: 1;
-            border-radius: 12px;
+            border-radius: 16px;
+            overflow: hidden;
+            cursor: pointer;
+            background: #f5f5f5;
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-placeholder {
+            width: 100%;
+            height: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 32px;
+            background: #f5f5f5;
             color: #ccc;
         }
+
+        .view-all-btn {
+            text-align: center;
+            margin-top: 10px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            color: #ff6b35;
+        }
+
+        /* Lightbox Modal for Full Screen Photos */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .lightbox img {
+            max-width: 90%;
+            max-height: 80%;
+            object-fit: contain;
+            border-radius: 12px;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 40px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .lightbox-prev, .lightbox-next {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 40px;
+            color: white;
+            cursor: pointer;
+            background: rgba(0,0,0,0.5);
+            padding: 15px;
+            border-radius: 50%;
+        }
+
+        .lightbox-prev { left: 20px; }
+        .lightbox-next { right: 20px; }
 
         /* Reviews */
         .review-card {
@@ -198,7 +268,6 @@
             line-height: 1.5;
         }
 
-        /* Book Button */
         .book-btn {
             position: fixed;
             bottom: 0;
@@ -211,12 +280,7 @@
             font-size: 16px;
             font-weight: 700;
             cursor: pointer;
-            transition: 0.2s;
             z-index: 100;
-        }
-
-        .book-btn:hover {
-            background: #e55a2b;
         }
 
         .loading {
@@ -225,7 +289,6 @@
             color: #ff6b35;
         }
 
-        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -280,13 +343,11 @@
         }
     </style>
 
-    <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
         import { getFirestore, doc, getDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
-        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
             authDomain: "stadiumconnect-8fecb.firebaseapp.com",
@@ -301,24 +362,21 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // Get vendor ID from URL
         const urlParams = new URLSearchParams(window.location.search);
         const vendorId = urlParams.get('id');
 
         let currentVendor = null;
         let currentUser = null;
+        let currentPhotos = [];
+        let currentPhotoIndex = 0;
 
-        // Check auth state
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
-            if (vendorId) {
-                loadVendorDetails();
-            }
+            if (vendorId) loadVendorDetails();
         });
 
         async function loadVendorDetails() {
             const container = document.getElementById('vendorDetail');
-            
             if (!vendorId) {
                 container.innerHTML = '<div class="loading">No vendor selected</div>';
                 document.getElementById('bookBtn').style.display = 'none';
@@ -331,36 +389,54 @@
                 
                 if (vendorDoc.exists()) {
                     currentVendor = { id: vendorDoc.id, ...vendorDoc.data() };
+                    currentPhotos = currentVendor.photos || [];
                     renderVendorDetails(currentVendor);
                 } else {
                     container.innerHTML = '<div class="loading">Vendor not found</div>';
-                    document.getElementById('bookBtn').style.display = 'none';
                 }
             } catch (error) {
-                console.error('Error loading vendor:', error);
-                container.innerHTML = '<div class="loading">Error loading vendor details</div>';
+                console.error('Error:', error);
+                container.innerHTML = '<div class="loading">Error loading vendor</div>';
             }
         }
 
         function getCategoryIcon(category) {
-            const icons = {
-                decorator: '🎨',
-                photographer: '📸',
-                caterer: '🍽️',
-                bandbaja: '🎵',
-                stadium: '🏟️'
-            };
+            const icons = { decorator: '🎨', photographer: '📸', caterer: '🍽️', bandbaja: '🎵', stadium: '🏟️' };
             return icons[category] || '🏷️';
         }
 
         function getStars(rating) {
             const num = parseFloat(rating);
             if (isNaN(num)) return '☆☆☆☆☆';
-            const full = Math.floor(num);
             let stars = '';
-            for (let i = 0; i < full; i++) stars += '★';
+            for (let i = 0; i < Math.floor(num); i++) stars += '★';
             for (let i = stars.length; i < 5; i++) stars += '☆';
             return stars;
+        }
+
+        function renderPhotos(photos) {
+            if (!photos || photos.length === 0) {
+                return `
+                    <div class="photos-gallery">
+                        <div class="photo-item"><div class="photo-placeholder">📸</div></div>
+                        <div class="photo-item"><div class="photo-placeholder">📸</div></div>
+                        <div class="photo-item"><div class="photo-placeholder">📸</div></div>
+                    </div>
+                    <div class="view-all-btn" onclick="alert('Photos coming soon!')">+ Upload Photos</div>
+                `;
+            }
+            
+            const displayPhotos = photos.slice(0, 6);
+            return `
+                <div class="photos-gallery">
+                    ${displayPhotos.map((photo, i) => `
+                        <div class="photo-item" onclick="openLightbox(${i})">
+                            <img src="${photo}" alt="Work sample">
+                        </div>
+                    `).join('')}
+                </div>
+                ${photos.length > 6 ? `<div class="view-all-btn" onclick="openLightbox(0)">View All ${photos.length} Photos →</div>` : ''}
+            `;
         }
 
         function renderVendorDetails(vendor) {
@@ -376,59 +452,65 @@
                     <div class="stars">${getStars(vendor.rating)}</div>
                     <div class="rating-value">${vendor.rating || '4.5'} (${vendor.reviews || 0} reviews)</div>
                 </div>
-                <div class="info-row"><i>📍</i> ${vendor.location || vendor.city || 'Location not specified'}</div>
+                <div class="info-row"><i>📍</i> ${vendor.location || vendor.city || 'Location'}</div>
                 <div class="info-row"><i>📞</i> ${vendor.phone || 'Contact not available'}</div>
-                <div class="info-row"><i>📅</i> ${vendor.experience || 'Experienced vendor'}</div>
                 <div class="price-box">
                     <div class="price-label">Price Range</div>
                     <div class="price-value">${vendor.priceRange || 'Contact for price'}</div>
                 </div>
                 <div class="section-title">About</div>
-                <div class="description">${vendor.description || 'Professional vendor with years of experience in the industry. Known for quality service and customer satisfaction.'}</div>
+                <div class="description">${vendor.description || 'Professional vendor with years of experience.'}</div>
                 <div class="section-title">Work Portfolio</div>
-                <div class="photos-grid">
-                    <div class="photo-placeholder">📸</div>
-                    <div class="photo-placeholder">📸</div>
-                    <div class="photo-placeholder">📸</div>
-                </div>
+                ${renderPhotos(currentPhotos)}
                 <div class="section-title">Reviews (${vendor.reviews || 0})</div>
                 <div id="reviewsContainer"></div>
             `;
             
-            // Load demo reviews
             loadReviews();
         }
 
         function loadReviews() {
             const container = document.getElementById('reviewsContainer');
             container.innerHTML = `
-                <div class="review-card">
-                    <div class="reviewer-name">Rahul Sharma</div>
-                    <div class="review-stars">★★★★★</div>
-                    <div class="review-text">Excellent service! Highly recommended. Very professional and punctual.</div>
-                </div>
-                <div class="review-card">
-                    <div class="reviewer-name">Priya Patel</div>
-                    <div class="review-stars">★★★★☆</div>
-                    <div class="review-text">Great work, on time delivery. Slightly expensive but worth the quality.</div>
-                </div>
-                <div class="review-card">
-                    <div class="reviewer-name">Amit Kumar</div>
-                    <div class="review-stars">★★★★★</div>
-                    <div class="review-text">Best in the business! Will definitely hire again.</div>
-                </div>
+                <div class="review-card"><div class="reviewer-name">Rahul Sharma</div><div class="review-stars">★★★★★</div><div class="review-text">Excellent service! Highly recommended.</div></div>
+                <div class="review-card"><div class="reviewer-name">Priya Patel</div><div class="review-stars">★★★★☆</div><div class="review-text">Great work, on time delivery.</div></div>
+                <div class="review-card"><div class="reviewer-name">Amit Kumar</div><div class="review-stars">★★★★★</div><div class="review-text">Best in the business!</div></div>
             `;
         }
 
-        // Booking functions
-        window.openBookingModal = function() {
-            if (!currentUser) {
-                alert('Please login to book this vendor');
-                window.location.href = 'login.html';
+        // Lightbox functions
+        window.openLightbox = function(index) {
+            if (!currentPhotos || currentPhotos.length === 0) {
+                alert('No photos available yet');
                 return;
             }
-            if (!currentVendor) {
-                alert('Vendor not loaded');
+            currentPhotoIndex = index;
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.getElementById('lightboxImg');
+            lightboxImg.src = currentPhotos[currentPhotoIndex];
+            lightbox.style.display = 'flex';
+        };
+
+        window.closeLightbox = function() {
+            document.getElementById('lightbox').style.display = 'none';
+        };
+
+        window.prevPhoto = function() {
+            if (currentPhotos.length === 0) return;
+            currentPhotoIndex = (currentPhotoIndex - 1 + currentPhotos.length) % currentPhotos.length;
+            document.getElementById('lightboxImg').src = currentPhotos[currentPhotoIndex];
+        };
+
+        window.nextPhoto = function() {
+            if (currentPhotos.length === 0) return;
+            currentPhotoIndex = (currentPhotoIndex + 1) % currentPhotos.length;
+            document.getElementById('lightboxImg').src = currentPhotos[currentPhotoIndex];
+        };
+
+        window.openBookingModal = function() {
+            if (!currentUser) {
+                alert('Please login to book');
+                window.location.href = 'login.html';
                 return;
             }
             document.getElementById('bookingModal').style.display = 'flex';
@@ -442,10 +524,6 @@
             if (!currentUser || !currentVendor) return;
             
             const eventDate = document.getElementById('eventDate').value;
-            const eventType = document.getElementById('eventType').value;
-            const guestCount = document.getElementById('guestCount').value;
-            const specialRequests = document.getElementById('specialRequests').value;
-            
             if (!eventDate) {
                 alert('Please select event date');
                 return;
@@ -456,22 +534,20 @@
                 vendorName: currentVendor.name,
                 userId: currentUser.uid,
                 userName: currentUser.displayName || currentUser.email,
-                userEmail: currentUser.email,
                 eventDate: eventDate,
-                eventType: eventType,
-                guestCount: guestCount || null,
-                specialRequests: specialRequests || null,
+                eventType: document.getElementById('eventType').value,
+                guestCount: document.getElementById('guestCount').value,
+                specialRequests: document.getElementById('specialRequests').value,
                 status: 'pending',
                 createdAt: serverTimestamp()
             };
             
             try {
                 await addDoc(collection(db, 'bookings'), booking);
-                alert('✅ Booking request sent! Vendor will contact you soon.');
+                alert('✅ Booking sent! Vendor will contact you.');
                 closeBookingModal();
             } catch (error) {
-                console.error('Error booking:', error);
-                alert('Booking failed. Please try again.');
+                alert('Booking failed');
             }
         };
     </script>
@@ -485,27 +561,31 @@
 </header>
 
 <div id="vendorDetail" class="content">
-    <div class="loading">🔄 Loading vendor details...</div>
+    <div class="loading">🔄 Loading...</div>
 </div>
 
-<button class="book-btn" id="bookBtn" onclick="openBookingModal()">Book Now →</button>
+<button class="book-btn" onclick="openBookingModal()">Book Now →</button>
+
+<!-- Lightbox Modal -->
+<div id="lightbox" class="lightbox" onclick="closeLightbox()">
+    <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
+    <span class="lightbox-prev" onclick="event.stopPropagation(); prevPhoto()">❮</span>
+    <img id="lightboxImg" src="">
+    <span class="lightbox-next" onclick="event.stopPropagation(); nextPhoto()">❯</span>
+</div>
 
 <!-- Booking Modal -->
 <div id="bookingModal" class="modal">
     <div class="modal-content">
         <span class="close-modal" onclick="closeBookingModal()">&times;</span>
         <div class="modal-header">Book this vendor</div>
-        <input type="date" id="eventDate" class="modal-input" placeholder="Event date">
+        <input type="date" id="eventDate" class="modal-input">
         <select id="eventType" class="modal-input">
-            <option value="Wedding">Wedding</option>
-            <option value="Corporate Event">Corporate Event</option>
-            <option value="Birthday Party">Birthday Party</option>
-            <option value="Concert">Concert</option>
-            <option value="Sports Event">Sports Event</option>
+            <option>Wedding</option><option>Corporate</option><option>Birthday</option><option>Concert</option>
         </select>
-        <input type="number" id="guestCount" class="modal-input" placeholder="Number of guests">
-        <textarea id="specialRequests" class="modal-input" rows="3" placeholder="Special requests"></textarea>
-        <button class="modal-btn" onclick="submitBooking()">Confirm Booking →</button>
+        <input type="number" id="guestCount" class="modal-input" placeholder="Guests">
+        <textarea id="specialRequests" class="modal-input" rows="2" placeholder="Special requests"></textarea>
+        <button class="modal-btn" onclick="submitBooking()">Confirm →</button>
     </div>
 </div>
 
