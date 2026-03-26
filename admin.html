@@ -17,7 +17,7 @@
         th { background: #f8f8f8; }
         input, select, textarea { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; }
-        .modal-content { background: white; padding: 24px; border-radius: 24px; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; }
+        .modal-content { background: white; padding: 24px; border-radius: 24px; width: 90%; max-width: 500px; }
         .close { float: right; font-size: 24px; cursor: pointer; }
         .message { padding: 12px; border-radius: 12px; margin-bottom: 15px; display: none; }
         .success { background: #d4edda; color: #155724; display: block; }
@@ -30,7 +30,6 @@
         .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; }
         .popular-badge { background: #ff6b35; color: white; font-size: 10px; padding: 2px 8px; border-radius: 20px; margin-left: 10px; }
         .checkbox-group { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
-        .checkbox-group label { margin: 0; cursor: pointer; }
     </style>
 
     <script type="module">
@@ -53,32 +52,185 @@
         let categories = [];
         let cities = [];
         let editingId = null;
-        let editingCatId = null;
-        let editingCity = null;
 
-        // Test connection first
-        async function testFirebaseConnection() {
+        // ========== TEST CONNECTION ==========
+        async function testConnection() {
             try {
                 const testRef = doc(db, "test", "connection");
                 await setDoc(testRef, { status: "ok", time: new Date().toISOString() });
-                showMessage("✅ Firebase connected!", "success");
+                console.log("✅ Firebase connected");
+                showMessage("Firebase connected!", "success");
                 return true;
             } catch (error) {
-                showMessage("❌ Firebase Error: " + error.message, "error");
                 console.error("Firebase error:", error);
+                showMessage("❌ Firebase error: " + error.message, "error");
                 return false;
             }
         }
 
+        // ========== LOAD VENDORS ==========
         async function loadVendors() {
             try {
                 const snapshot = await getDocs(collection(db, "vendors"));
                 vendors = [];
-                snapshot.forEach(doc => vendors.push({ id: doc.id, ...doc.data() }));
+                snapshot.forEach(doc => {
+                    vendors.push({ id: doc.id, ...doc.data() });
+                });
+                console.log("Loaded", vendors.length, "vendors");
                 renderVendors();
                 updateStats();
             } catch (error) {
                 showMessage("Error loading vendors: " + error.message, "error");
+            }
+        }
+
+        // ========== ADD VENDOR ==========
+        window.addVendor = async () => {
+            const name = document.getElementById('vendorName').value;
+            if (!name) {
+                showMessage("Please enter vendor name", "error");
+                return;
+            }
+            
+            const vendorData = {
+                name: name,
+                category: document.getElementById('vendorCategory').value,
+                city: document.getElementById('vendorCity').value,
+                location: document.getElementById('vendorLocation').value || "",
+                priceRange: document.getElementById('vendorPrice').value || "",
+                rating: parseFloat(document.getElementById('vendorRating').value) || 4.0,
+                phone: document.getElementById('vendorPhone').value || "",
+                description: document.getElementById('vendorDescription').value || "",
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            
+            try {
+                const docRef = await addDoc(collection(db, "vendors"), vendorData);
+                console.log("Vendor added with ID:", docRef.id);
+                showMessage("✅ Vendor added successfully!", "success");
+                closeModal('vendorModal');
+                document.getElementById('vendorForm').reset();
+                await loadVendors();
+            } catch (error) {
+                console.error("Error adding vendor:", error);
+                showMessage("❌ Error: " + error.message, "error");
+            }
+        };
+
+        // ========== DELETE VENDOR ==========
+        window.deleteVendor = async (id) => {
+            if (confirm("Delete this vendor?")) {
+                try {
+                    await deleteDoc(doc(db, "vendors", id));
+                    showMessage("Vendor deleted!", "success");
+                    await loadVendors();
+                } catch (error) {
+                    showMessage("Error: " + error.message, "error");
+                }
+            }
+        };
+
+        // ========== EDIT VENDOR ==========
+        window.editVendor = (id) => {
+            const vendor = vendors.find(v => v.id === id);
+            if (!vendor) return;
+            
+            editingId = id;
+            document.getElementById('vendorModalTitle').innerText = "Edit Vendor";
+            document.getElementById('vendorName').value = vendor.name || "";
+            document.getElementById('vendorCategory').value = vendor.category || "";
+            document.getElementById('vendorCity').value = vendor.city || "";
+            document.getElementById('vendorLocation').value = vendor.location || "";
+            document.getElementById('vendorPrice').value = vendor.priceRange || "";
+            document.getElementById('vendorRating').value = vendor.rating || "";
+            document.getElementById('vendorPhone').value = vendor.phone || "";
+            document.getElementById('vendorDescription').value = vendor.description || "";
+            document.getElementById('vendorModal').style.display = "flex";
+        };
+
+        window.updateVendor = async () => {
+            const name = document.getElementById('vendorName').value;
+            if (!name) {
+                showMessage("Please enter vendor name", "error");
+                return;
+            }
+            
+            const vendorData = {
+                name: name,
+                category: document.getElementById('vendorCategory').value,
+                city: document.getElementById('vendorCity').value,
+                location: document.getElementById('vendorLocation').value || "",
+                priceRange: document.getElementById('vendorPrice').value || "",
+                rating: parseFloat(document.getElementById('vendorRating').value) || 4.0,
+                phone: document.getElementById('vendorPhone').value || "",
+                description: document.getElementById('vendorDescription').value || "",
+                updatedAt: new Date().toISOString()
+            };
+            
+            try {
+                await updateDoc(doc(db, "vendors", editingId), vendorData);
+                showMessage("✅ Vendor updated!", "success");
+                closeModal('vendorModal');
+                await loadVendors();
+            } catch (error) {
+                showMessage("Error: " + error.message, "error");
+            }
+        };
+
+        window.openAddVendorModal = () => {
+            editingId = null;
+            document.getElementById('vendorModalTitle').innerText = "Add Vendor";
+            document.getElementById('vendorForm').reset();
+            document.getElementById('vendorModal').style.display = "flex";
+        };
+
+        function renderVendors() {
+            const tbody = document.getElementById('vendorTable');
+            if (!tbody) return;
+            tbody.innerHTML = vendors.map(v => `
+                <tr>
+                    <td>${v.name || '-'}</td>
+                    <td>${v.category || '-'}</td>
+                    <td>${v.city || '-'}</td>
+                    <td>${v.priceRange || '-'}</td>
+                    <td>${v.rating || '-'}</td>
+                    <td>
+                        <button class="btn-edit" onclick="editVendor('${v.id}')">Edit</button>
+                        <button class="btn-delete" onclick="deleteVendor('${v.id}')">Del</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updateStats() {
+            document.getElementById('totalVendors').innerText = vendors.length;
+            document.getElementById('totalDecorators').innerText = vendors.filter(v => v.category === 'decorator').length;
+            document.getElementById('totalPhotographers').innerText = vendors.filter(v => v.category === 'photographer').length;
+            document.getElementById('totalCaterers').innerText = vendors.filter(v => v.category === 'caterer').length;
+            document.getElementById('totalBand').innerText = vendors.filter(v => v.category === 'bandbaja').length;
+            document.getElementById('totalStadiums').innerText = vendors.filter(v => v.category === 'stadium').length;
+        }
+
+        // ========== LOAD CITIES & CATEGORIES ==========
+        async function loadCities() {
+            try {
+                const docRef = doc(db, 'settings', 'cities');
+                const docSnap = await getDoc(docRef);
+                cities = docSnap.exists() ? docSnap.data().list : [];
+                if (cities.length === 0) {
+                    cities = [
+                        { name: 'Nagpur', popular: true },
+                        { name: 'Mumbai', popular: true },
+                        { name: 'Pune', popular: true },
+                        { name: 'Delhi', popular: true },
+                        { name: 'Bangalore', popular: true }
+                    ];
+                }
+                renderCities();
+                updateCitySelect();
+            } catch (error) {
+                console.error("Error loading cities:", error);
             }
         }
 
@@ -99,48 +251,8 @@
                 renderCategories();
                 updateCategorySelect();
             } catch (error) {
-                showMessage("Error loading categories: " + error.message, "error");
+                console.error("Error loading categories:", error);
             }
-        }
-
-        async function loadCities() {
-            try {
-                const docRef = doc(db, 'settings', 'cities');
-                const docSnap = await getDoc(docRef);
-                cities = docSnap.exists() ? docSnap.data().list : [];
-                if (cities.length === 0) {
-                    cities = [
-                        { name: 'Nagpur', popular: true },
-                        { name: 'Mumbai', popular: true },
-                        { name: 'Pune', popular: true },
-                        { name: 'Delhi', popular: true },
-                        { name: 'Bangalore', popular: true }
-                    ];
-                    await saveCities(); // Save default cities
-                }
-                renderCities();
-                updateCitySelect();
-            } catch (error) {
-                showMessage("Error loading cities: " + error.message, "error");
-            }
-        }
-
-        function renderVendors() {
-            const tbody = document.getElementById('vendorTable');
-            if (!tbody) return;
-            tbody.innerHTML = vendors.map(v => `
-                <tr>
-                    <td>${v.name || '-'}</td>
-                    <td>${v.category || '-'}</td>
-                    <td>${v.city || '-'}</td>
-                    <td>${v.priceRange || '-'}</td>
-                    <td>${v.rating || '-'}</td>
-                    <td>
-                        <button class="btn-edit" onclick="editVendor('${v.id}')">Edit</button>
-                        <button class="btn-delete" onclick="deleteVendor('${v.id}')">Del</button>
-                    </td>
-                </tr>
-            `).join('');
         }
 
         function renderCategories() {
@@ -171,15 +283,6 @@
             `).join('');
         }
 
-        function updateStats() {
-            document.getElementById('totalVendors').innerText = vendors.length;
-            document.getElementById('totalDecorators').innerText = vendors.filter(v => v.category === 'decorator').length;
-            document.getElementById('totalPhotographers').innerText = vendors.filter(v => v.category === 'photographer').length;
-            document.getElementById('totalCaterers').innerText = vendors.filter(v => v.category === 'caterer').length;
-            document.getElementById('totalBand').innerText = vendors.filter(v => v.category === 'bandbaja').length;
-            document.getElementById('totalStadiums').innerText = vendors.filter(v => v.category === 'stadium').length;
-        }
-
         function updateCategorySelect() {
             const select = document.getElementById('vendorCategory');
             if (select) {
@@ -194,143 +297,18 @@
             }
         }
 
-        // ========== VENDORS ==========
-        window.openAddVendor = () => {
-            editingId = null;
-            document.getElementById('vendorModalTitle').innerText = 'Add Vendor';
-            document.getElementById('vendorForm').reset();
-            document.getElementById('capacityGroup').style.display = 'none';
-            document.getElementById('vendorModal').style.display = 'flex';
-        };
-
-        window.editVendor = (id) => {
-            const v = vendors.find(x => x.id === id);
-            if (!v) return;
-            editingId = id;
-            document.getElementById('vendorModalTitle').innerText = 'Edit Vendor';
-            document.getElementById('vendorName').value = v.name || '';
-            document.getElementById('vendorCategory').value = v.category || '';
-            document.getElementById('vendorCity').value = v.city || '';
-            document.getElementById('vendorLocation').value = v.location || '';
-            document.getElementById('vendorPrice').value = v.priceRange || '';
-            document.getElementById('vendorRating').value = v.rating || '';
-            document.getElementById('vendorPhone').value = v.phone || '';
-            document.getElementById('vendorDescription').value = v.description || '';
-            document.getElementById('vendorCapacity').value = v.capacity || '';
-            document.getElementById('capacityGroup').style.display = v.category === 'stadium' ? 'block' : 'none';
-            document.getElementById('vendorModal').style.display = 'flex';
-        };
-
-        window.deleteVendor = async (id) => {
-            if (confirm('Delete this vendor?')) {
-                await deleteDoc(doc(db, 'vendors', id));
-                await loadVendors();
-                showMessage('Vendor deleted!', 'success');
-            }
-        };
-
-        window.saveVendor = async () => {
-            const name = document.getElementById('vendorName').value;
-            if (!name) { showMessage('Please enter vendor name', 'error'); return; }
-            
-            const data = {
-                name: name,
-                category: document.getElementById('vendorCategory').value,
-                city: document.getElementById('vendorCity').value,
-                location: document.getElementById('vendorLocation').value,
-                priceRange: document.getElementById('vendorPrice').value,
-                rating: parseFloat(document.getElementById('vendorRating').value) || 4.0,
-                phone: document.getElementById('vendorPhone').value,
-                description: document.getElementById('vendorDescription').value,
-                updatedAt: new Date().toISOString()
-            };
-            if (data.category === 'stadium') data.capacity = document.getElementById('vendorCapacity').value;
-            
-            try {
-                if (editingId) {
-                    await updateDoc(doc(db, 'vendors', editingId), data);
-                    showMessage('Vendor updated!', 'success');
-                } else {
-                    data.createdAt = new Date().toISOString();
-                    await addDoc(collection(db, 'vendors'), data);
-                    showMessage('Vendor added successfully!', 'success');
-                }
-                closeModal('vendorModal');
-                await loadVendors();
-            } catch (error) {
-                showMessage('Error: ' + error.message, 'error');
-            }
-        };
-
-        window.onCategoryChange = () => {
-            const val = document.getElementById('vendorCategory').value;
-            document.getElementById('capacityGroup').style.display = val === 'stadium' ? 'block' : 'none';
-        };
-
-        // ========== CATEGORIES ==========
-        window.openAddCategory = () => {
-            editingCatId = null;
-            document.getElementById('categoryName').value = '';
-            document.getElementById('categoryIcon').value = '';
-            document.getElementById('categoryModal').style.display = 'flex';
-        };
-
-        window.editCategory = (id) => {
-            const c = categories.find(x => x.id === id);
-            if (!c) return;
-            editingCatId = id;
-            document.getElementById('categoryName').value = c.name;
-            document.getElementById('categoryIcon').value = c.icon || '';
-            document.getElementById('categoryModal').style.display = 'flex';
-        };
-
-        window.deleteCategory = async (id) => {
-            if (confirm('Delete this category?')) {
-                categories = categories.filter(c => c.id !== id);
-                await setDoc(doc(db, 'categories', id), { deleted: true });
-                renderCategories();
-                updateCategorySelect();
-                showMessage('Category deleted!', 'success');
-            }
-        };
-
-        window.saveCategory = async () => {
-            const name = document.getElementById('categoryName').value;
-            if (!name) { showMessage('Enter category name', 'error'); return; }
-            const id = name.toLowerCase().replace(/ /g, '');
-            const cat = { id, name, icon: document.getElementById('categoryIcon').value || '🏷️' };
-            
-            try {
-                if (editingCatId) {
-                    const index = categories.findIndex(c => c.id === editingCatId);
-                    if (index !== -1) categories[index] = cat;
-                    await setDoc(doc(db, 'categories', id), cat);
-                    showMessage('Category updated!', 'success');
-                } else {
-                    if (!categories.find(c => c.id === id)) categories.push(cat);
-                    await setDoc(doc(db, 'categories', id), cat);
-                    showMessage('Category added!', 'success');
-                }
-                renderCategories();
-                updateCategorySelect();
-                closeModal('categoryModal');
-            } catch (error) {
-                showMessage('Error: ' + error.message, 'error');
-            }
-        };
-
-        // ========== CITIES ==========
+        // ========== CITY FUNCTIONS ==========
         window.openAddCity = () => {
-            editingCity = null;
             document.getElementById('cityName').value = '';
             document.getElementById('cityPopular').checked = false;
             document.getElementById('cityModal').style.display = 'flex';
+            window.editingCityIndex = null;
         };
 
         window.editCity = (index) => {
             const city = cities[index];
             if (!city) return;
-            editingCity = index;
+            window.editingCityIndex = index;
             document.getElementById('cityName').value = city.name;
             document.getElementById('cityPopular').checked = city.popular || false;
             document.getElementById('cityModal').style.display = 'flex';
@@ -353,32 +331,80 @@
             
             const cityData = { name: name, popular: popular };
             
-            try {
-                if (editingCity !== null) {
-                    cities[editingCity] = cityData;
-                    showMessage('City updated!', 'success');
-                } else {
-                    if (!cities.find(c => c.name === name)) {
-                        cities.push(cityData);
-                        showMessage('City added successfully!', 'success');
-                    } else {
-                        showMessage('City already exists!', 'error');
-                        return;
-                    }
+            if (window.editingCityIndex !== null) {
+                cities[window.editingCityIndex] = cityData;
+                showMessage('City updated!', 'success');
+            } else {
+                if (cities.find(c => c.name === name)) {
+                    showMessage('City already exists!', 'error');
+                    return;
                 }
-                await saveCities();
-                renderCities();
-                updateCitySelect();
-                closeModal('cityModal');
-                editingCity = null;
-            } catch (error) {
-                showMessage('Error: ' + error.message, 'error');
+                cities.push(cityData);
+                showMessage('City added!', 'success');
             }
+            await saveCities();
+            renderCities();
+            updateCitySelect();
+            closeModal('cityModal');
+            window.editingCityIndex = null;
         };
 
         async function saveCities() {
             await setDoc(doc(db, 'settings', 'cities'), { list: cities });
         }
+
+        // ========== CATEGORY FUNCTIONS ==========
+        window.openAddCategory = () => {
+            document.getElementById('categoryName').value = '';
+            document.getElementById('categoryIcon').value = '';
+            document.getElementById('categoryModal').style.display = 'flex';
+            window.editingCategoryId = null;
+        };
+
+        window.editCategory = (id) => {
+            const c = categories.find(x => x.id === id);
+            if (!c) return;
+            window.editingCategoryId = id;
+            document.getElementById('categoryName').value = c.name;
+            document.getElementById('categoryIcon').value = c.icon || '';
+            document.getElementById('categoryModal').style.display = 'flex';
+        };
+
+        window.deleteCategory = async (id) => {
+            if (confirm('Delete this category?')) {
+                categories = categories.filter(c => c.id !== id);
+                await setDoc(doc(db, 'categories', id), { deleted: true });
+                renderCategories();
+                updateCategorySelect();
+                showMessage('Category deleted!', 'success');
+            }
+        };
+
+        window.saveCategory = async () => {
+            const name = document.getElementById('categoryName').value;
+            if (!name) { showMessage('Enter category name', 'error'); return; }
+            const id = name.toLowerCase().replace(/ /g, '');
+            const cat = { id, name, icon: document.getElementById('categoryIcon').value || '🏷️' };
+            
+            if (window.editingCategoryId) {
+                const index = categories.findIndex(c => c.id === window.editingCategoryId);
+                if (index !== -1) categories[index] = cat;
+                await setDoc(doc(db, 'categories', id), cat);
+                showMessage('Category updated!', 'success');
+            } else {
+                if (categories.find(c => c.id === id)) {
+                    showMessage('Category already exists!', 'error');
+                    return;
+                }
+                categories.push(cat);
+                await setDoc(doc(db, 'categories', id), cat);
+                showMessage('Category added!', 'success');
+            }
+            renderCategories();
+            updateCategorySelect();
+            closeModal('categoryModal');
+            window.editingCategoryId = null;
+        };
 
         // ========== UTILITIES ==========
         function showMessage(msg, type) {
@@ -390,7 +416,6 @@
 
         window.closeModal = (id) => {
             document.getElementById(id).style.display = 'none';
-            editingCity = null;
         };
 
         window.switchTab = (tab) => {
@@ -408,13 +433,11 @@
             window.location.href = 'admin-login.html';
         };
 
-        // Admin check
         if (localStorage.getItem('admin') !== 'true') {
             window.location.href = 'admin-login.html';
         }
 
-        // Initialize
-        testFirebaseConnection().then(() => {
+        testConnection().then(() => {
             loadVendors();
             loadCategories();
             loadCities();
@@ -449,12 +472,12 @@
 <!-- Vendors Tab -->
 <div id="vendorsTab" class="tab-content active">
     <div class="card">
-        <button onclick="openAddVendor()">+ Add Vendor</button>
+        <button onclick="openAddVendorModal()">+ Add Vendor</button>
         <div style="overflow-x: auto;">
-             <table>
-                <thead> <tr><th>Name</th><th>Category</th><th>City</th><th>Price</th><th>Rating</th><th>Actions</th></tr> </thead>
-                <tbody id="vendorTable"><tr><td colspan="6">Loading...</td></tr></tbody>
-             </table>
+            <table>
+                <thead><tr><th>Name</th><th>Category</th><th>City</th><th>Price</th><th>Rating</th><th>Actions</th> </thead>
+                <tbody id="vendorTable">\(<td colspan="6">Loading...</td>\)</tbody>
+            </table>
         </div>
     </div>
 </div>
@@ -481,15 +504,14 @@
         <span class="close" onclick="closeModal('vendorModal')">&times;</span>
         <h3 id="vendorModalTitle">Add Vendor</h3>
         <input type="text" id="vendorName" placeholder="Vendor Name *">
-        <select id="vendorCategory" onchange="onCategoryChange()"></select>
+        <select id="vendorCategory"></select>
         <select id="vendorCity"></select>
         <input type="text" id="vendorLocation" placeholder="Location">
         <input type="text" id="vendorPrice" placeholder="Price Range">
-        <input type="text" id="vendorRating" placeholder="Rating">
-        <input type="text" id="vendorPhone" placeholder="Phone">
-        <div id="capacityGroup" style="display:none"><input type="text" id="vendorCapacity" placeholder="Capacity"></div>
+        <input type="text" id="vendorRating" placeholder="Rating (1-5)">
+        <input type="text" id="vendorPhone" placeholder="Phone Number">
         <textarea id="vendorDescription" rows="2" placeholder="Description"></textarea>
-        <button onclick="saveVendor()" style="background:#28a745; width:100%; margin-top:10px;">Save Vendor</button>
+        <button onclick="editingId ? updateVendor() : addVendor()" style="background:#28a745; width:100%; margin-top:10px;">Save Vendor</button>
     </div>
 </div>
 
@@ -508,13 +530,13 @@
 <div id="cityModal" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeModal('cityModal')">&times;</span>
-        <h3>Add/Edit City</h3>
+        <h3>Add City</h3>
         <input type="text" id="cityName" placeholder="City Name">
         <div class="checkbox-group">
             <input type="checkbox" id="cityPopular">
-            <label for="cityPopular">⭐ Show in Popular Cities (Home Page)</label>
+            <label>⭐ Show in Popular Cities</label>
         </div>
-        <button onclick="saveCity()" style="background:#28a745; width:100%; margin-top:10px;">Save City</button>
+        <button onclick="saveCity()" style="background:#28a745; width:100%; margin-top:10px;">Save</button>
     </div>
 </div>
 
