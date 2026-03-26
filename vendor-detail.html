@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Vendor Details - StadiumConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #fff;
+            color: #1a1a1a;
+        }
+
+        /* Header */
+        .header {
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #f0f0f0;
+            background: #fff;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #ff6b35;
+        }
+
+        .logo {
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .logo span {
+            color: #ff6b35;
+        }
+
+        .placeholder-icon {
+            width: 40px;
+        }
+
+        /* Hero Banner */
+        .hero-banner {
+            height: 200px;
+            background: linear-gradient(135deg, #ff6b35, #ff9068);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .vendor-icon-large {
+            width: 100px;
+            height: 100px;
+            background: white;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            position: absolute;
+            bottom: -30px;
+            left: 20px;
+        }
+
+        /* Content */
+        .content {
+            padding: 50px 20px 20px;
+        }
+
+        .vendor-name {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .vendor-rating {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .stars {
+            color: #ffb347;
+            font-size: 14px;
+        }
+
+        .rating-value {
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+        }
+
+        .info-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .info-row i {
+            width: 20px;
+            color: #ff6b35;
+        }
+
+        .price-box {
+            background: #fff5f0;
+            padding: 16px;
+            border-radius: 16px;
+            margin: 20px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .price-label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .price-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #ff6b35;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 24px 0 12px;
+        }
+
+        .description {
+            color: #666;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        /* Photos */
+        .photos-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin: 12px 0;
+        }
+
+        .photo-placeholder {
+            background: #f5f5f5;
+            aspect-ratio: 1;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #ccc;
+        }
+
+        /* Reviews */
+        .review-card {
+            background: #f8f8f8;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .reviewer-name {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .review-stars {
+            font-size: 12px;
+            color: #ffb347;
+            margin-bottom: 8px;
+        }
+
+        .review-text {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        /* Book Button */
+        .book-btn {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #ff6b35;
+            color: white;
+            border: none;
+            padding: 18px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            z-index: 100;
+        }
+
+        .book-btn:hover {
+            background: #e55a2b;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #ff6b35;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .modal-header {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            font-family: inherit;
+        }
+
+        .modal-btn {
+            width: 100%;
+            background: #ff6b35;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .close-modal {
+            float: right;
+            font-size: 24px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <button class="back-btn" onclick="window.location.href='vendors.html'">←</button>
+    <div class="logo">STADIUM<span>CONNECT</span></div>
+    <div class="placeholder-icon"></div>
+</header>
+
+<div id="vendorDetail" class="content">
+    <div class="loading">Loading vendor details...</div>
+</div>
+
+<button class="book-btn" id="bookBtn" onclick="openBookingModal()">Book Now →</button>
+
+<!-- Booking Modal -->
+<div id="bookingModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeBookingModal()">&times;</span>
+        <div class="modal-header">Book this vendor</div>
+        <input type="date" id="eventDate" class="modal-input" placeholder="Event date">
+        <select id="eventType" class="modal-input">
+            <option value="Wedding">Wedding</option>
+            <option value="Corporate Event">Corporate Event</option>
+            <option value="Birthday Party">Birthday Party</option>
+            <option value="Concert">Concert</option>
+            <option value="Sports Event">Sports Event</option>
+        </select>
+        <input type="number" id="guestCount" class="modal-input" placeholder="Number of guests">
+        <textarea id="specialRequests" class="modal-input" rows="3" placeholder="Special requests"></textarea>
+        <button class="modal-btn" onclick="submitBooking()">Confirm Booking →</button>
+    </div>
+</div>
+
+<script type="module">
+    import { auth, db, doc, getDoc, collection, addDoc, serverTimestamp, onAuthStateChanged } from './firebase-config.js';
+
+    let currentVendor = null;
+    let currentUser = null;
+
+    // Get vendor ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const vendorId = urlParams.get('id');
+
+    // Check auth state
+    onAuthStateChanged(auth, (user) => {
+        currentUser = user;
+        if (!user && vendorId) {
+            // Still load vendor details, but booking will require login
+            loadVendorDetails();
+        } else if (vendorId) {
+            loadVendorDetails();
+        }
+    });
+
+    async function loadVendorDetails() {
+        const container = document.getElementById('vendorDetail');
+        
+        if (!vendorId) {
+            container.innerHTML = '<div class="loading">No vendor selected</div>';
+            document.getElementById('bookBtn').style.display = 'none';
+            return;
+        }
+        
+        try {
+            // Try to get from Firestore
+            const vendorRef = doc(db, 'vendors', vendorId);
+            const vendorDoc = await getDoc(vendorRef);
+            
+            if (vendorDoc.exists()) {
+                currentVendor = { id: vendorDoc.id, ...vendorDoc.data() };
+                renderVendorDetails(currentVendor);
+            } else {
+                // Demo data if not in Firestore
+                showDemoVendor();
+            }
+        } catch (error) {
+            console.error('Error loading vendor:', error);
+            showDemoVendor();
+        }
+    }
+
+    function renderVendorDetails(vendor) {
+        const container = document.getElementById('vendorDetail');
+        
+        const categoryIcons = {
+            decorator: '🎨',
+            photographer: '📸',
+            caterer: '🍽️',
+            bandbaja: '🎵',
+            stadium: '🏟️'
+        };
+        
+        const icon = categoryIcons[vendor.category] || '🏷️';
+        
+        container.innerHTML = `
+            <div class="hero-banner">
+                <div class="vendor-icon-large">${icon}</div>
+            </div>
+            <div class="vendor-name">${vendor.name}</div>
+            <div class="vendor-rating">
+                <div class="stars">${getStars(vendor.rating || 4.5)}</div>
+                <div class="rating-value">${vendor.rating || 4.5} (${vendor.reviews || 0} reviews)</div>
+            </div>
+            <div class="info-row"><i>📍</i> ${vendor.location || vendor.city || 'Location not specified'}</div>
+            <div class="info-row"><i>📞</i> ${vendor.phone || 'Contact not available'}</div>
+            <div class="info-row"><i>📅</i> ${vendor.experience || 'Experienced vendor'}</div>
+            <div class="price-box">
+                <div class="price-label">Price Range</div>
+                <div class="price-value">${vendor.priceRange || 'Contact for price'}</div>
+            </div>
+            <div class="section-title">About</div>
+            <div class="description">${vendor.description || 'Professional vendor with years of experience in the industry. Known for quality service and customer satisfaction.'}</div>
+            <div class="section-title">Work Portfolio</div>
+            <div class="photos-grid">
+                <div class="photo-placeholder">📸</div>
+                <div class="photo-placeholder">📸</div>
+                <div class="photo-placeholder">📸</div>
+            </div>
+            <div class="section-title">Reviews (${vendor.reviews || 0})</div>
+            <div id="reviewsContainer"></div>
+        `;
+        
+        // Load reviews
+        loadReviews(vendor.id);
+    }
+
+    function showDemoVendor() {
+        const demos = {
+            'decorator': { name: 'Royal Floral Decor', category: 'decorator', rating: 4.8, location: 'Dharampeth, Nagpur', priceRange: '₹25,000 - ₹1,50,000', phone: '9423281086', experience: '12 years', description: 'Best decorators in Nagpur for weddings and events. Specializing in floral arrangements, stage setup, and lighting.' },
+            'photographer': { name: 'Shutter Stories', category: 'photographer', rating: 4.9, location: 'Sadar, Nagpur', priceRange: '₹15,000 - ₹80,000', phone: '9423281086', experience: '10 years', description: 'Candid wedding photographers capturing your special moments.' },
+            'caterer': { name: 'Orange City Caterers', category: 'caterer', rating: 4.7, location: 'Dharampeth, Nagpur', priceRange: '₹200 - ₹800/plate', phone: '9423281086', experience: '15 years', description: 'Best food in Nagpur for all events. Specializing in North Indian, South Indian, and Chinese cuisine.' }
+        };
+        
+        let vendor = demos[categoryParam] || demos.decorator;
+        vendor.id = vendorId;
+        vendor.category = categoryParam || 'decorator';
+        currentVendor = vendor;
+        renderVendorDetails(vendor);
+    }
+
+    function getStars(rating) {
+        const full = Math.floor(rating);
+        let stars = '';
+        for (let i = 0; i < full; i++) stars += '★';
+        for (let i = stars.length; i < 5; i++) stars += '☆';
+        return stars;
+    }
+
+    async function loadReviews(vendorId) {
+        const container = document.getElementById('reviewsContainer');
+        // Demo reviews
+        container.innerHTML = `
+            <div class="review-card">
+                <div class="reviewer-name">Rahul Sharma</div>
+                <div class="review-stars">★★★★★</div>
+                <div class="review-text">Excellent service! Highly recommended.</div>
+            </div>
+            <div class="review-card">
+                <div class="reviewer-name">Priya Patel</div>
+                <div class="review-stars">★★★★☆</div>
+                <div class="review-text">Great work, on time delivery.</div>
+            </div>
+        `;
+    }
+
+    function openBookingModal() {
+        if (!currentUser) {
+            alert('Please login to book this vendor');
+            window.location.href = 'login.html';
+            return;
+        }
+        document.getElementById('bookingModal').style.display = 'flex';
+    }
+
+    function closeBookingModal() {
+        document.getElementById('bookingModal').style.display = 'none';
+    }
+
+    async function submitBooking() {
+        if (!currentUser || !currentVendor) return;
+        
+        const eventDate = document.getElementById('eventDate').value;
+        const eventType = document.getElementById('eventType').value;
+        const guestCount = document.getElementById('guestCount').value;
+        const specialRequests = document.getElementById('specialRequests').value;
+        
+        if (!eventDate) {
+            alert('Please select event date');
+            return;
+        }
+        
+        const booking = {
+            vendorId: currentVendor.id,
+            vendorName: currentVendor.name,
+            userId: currentUser.uid,
+            userName: currentUser.displayName || currentUser.email,
+            userEmail: currentUser.email,
+            eventDate: eventDate,
+            eventType: eventType,
+            guestCount: guestCount || null,
+            specialRequests: specialRequests || null,
+            status: 'pending',
+            createdAt: serverTimestamp()
+        };
+        
+        try {
+            await addDoc(collection(db, 'bookings'), booking);
+            alert('✅ Booking request sent! Vendor will contact you soon.');
+            closeBookingModal();
+        } catch (error) {
+            console.error('Error booking:', error);
+            alert('Booking failed. Please try again.');
+        }
+    }
+
+    window.openBookingModal = openBookingModal;
+    window.closeBookingModal = closeBookingModal;
+    window.submitBooking = submitBooking;
+    
+    // Get category from URL for demo
+    const categoryParam = urlParams.get('category');
+</script>
+
+</body>
+</html>
