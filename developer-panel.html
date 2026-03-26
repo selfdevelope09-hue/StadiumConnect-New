@@ -6,7 +6,6 @@
     <title>Developer Panel - StadiumConnect</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background: #f0f2f5; }
@@ -144,10 +143,10 @@
     <div class="agents-card">
         <div class="section-title"><i class="fas fa-trophy"></i> Top Agents by Revenue</div>
         <div style="overflow-x: auto;">
-             能
-                <thead> 像<th>Rank</th><th>Agent ID</th><th>Agent Name</th><th>City</th><th>Target</th><th>Achieved</th><th>Progress</th><th>Revenue</th><th>Commission</th><th>Action</th> </thead>
-                <tbody id="topAgentsTable">  <td colspan="10" class="loading">Loading...   </tbody>
-             </>
+            <table>
+                <thead>  <th>Rank</th><th>Agent ID</th><th>Agent Name</th><th>City</th><th>Target</th><th>Achieved</th><th>Progress</th><th>Revenue</th><th>Commission</th><th>Action</th> </thead>
+                <tbody id="topAgentsTable"><tr><td colspan="10" class="loading">Loading...</td></tr></tbody>
+            </table>
         </div>
     </div>
 
@@ -155,10 +154,10 @@
     <div class="agents-card">
         <div class="section-title"><i class="fas fa-users"></i> All Agents</div>
         <div style="overflow-x: auto;">
-             能
-                <thead> 像<th>Agent ID</th><th>Name</th><th>City</th><th>Phone</th><th>Target</th><th>Bookings</th><th>Revenue</th><th>Earnings</th><th>Action</th> </thead>
-                <tbody id="allAgentsTable">  <td colspan="9" class="loading">Loading...   </tbody>
-             </>
+            <table>
+                <thead>  <th>Agent ID</th><th>Name</th><th>City</th><th>Phone</th><th>Target</th><th>Bookings</th><th>Revenue</th><th>Earnings</th><th>Action</th> </thead>
+                <tbody id="allAgentsTable"><tr><td colspan="9" class="loading">Loading...</td></tr></tbody>
+            </table>
         </div>
     </div>
 </div>
@@ -186,13 +185,21 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    // Developer login check
     const devData = JSON.parse(localStorage.getItem('developer'));
-    if (!devData) window.location.href = 'developer-login.html';
-
+    if (!devData) {
+        window.location.href = 'developer-login.html';
+    }
     document.getElementById('devName').innerText = devData.name || devData.id;
     document.getElementById('devId').innerText = devData.id;
 
     let allAgents = [], allBookings = [], allCities = new Set();
+
+    // Calculate commission (2.5%)
+    function calculateCommission(amount) {
+        const price = parseInt(amount?.replace(/[^0-9]/g, '')) || 0;
+        return Math.floor(price * 0.025);
+    }
 
     async function loadData() {
         try {
@@ -200,38 +207,36 @@
             const agentsSnap = await getDocs(collection(db, "agents"));
             allAgents = agentsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
             
-            // Load bookings (confirmed/completed only for revenue)
+            // Load bookings (all for stats)
             const bookingsSnap = await getDocs(collection(db, "bookings"));
             allBookings = bookingsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
             
-            // Update cities set
+            // Collect cities for autocomplete
             allAgents.forEach(a => { if(a.city) allCities.add(a.city.toLowerCase()); });
             
-            // Update stats
+            // Update UI
             updateStats();
             renderTopAgents();
             renderAllAgents();
             setupAutocomplete();
         } catch (error) {
             console.error("Error loading data:", error);
-            document.getElementById('statsGrid').innerHTML = '<div class="stat-card"><div>Error loading data</div></div>';
+            document.getElementById('topAgentsTable').innerHTML = '<tr><td colspan="10">Error loading data</td></tr>';
         }
     }
 
     function getAgentStats(agentId) {
-        // Only confirmed and completed bookings count for revenue
         const agentBookings = allBookings.filter(b => b.agentId === agentId && (b.status === 'confirmed' || b.status === 'completed'));
         const totalAmount = agentBookings.reduce((sum, b) => sum + (parseInt(b.amount?.replace(/[^0-9]/g, '')) || 0), 0);
-        const commission = Math.floor(totalAmount * 0.025); // 2.5% commission
+        const commission = calculateCommission(totalAmount);
         return { bookings: agentBookings.length, totalAmount, commission };
     }
 
     function updateStats() {
-        // Total revenue from confirmed/completed bookings only
         const totalRevenue = allBookings
             .filter(b => b.status === 'confirmed' || b.status === 'completed')
             .reduce((s, b) => s + (parseInt(b.amount?.replace(/[^0-9]/g, '')) || 0), 0);
-        const totalCommission = Math.floor(totalRevenue * 0.025);
+        const totalCommission = calculateCommission(totalRevenue);
         
         document.getElementById('totalAgents').innerText = allAgents.length;
         document.getElementById('totalBookings').innerText = allBookings.length;
@@ -245,7 +250,7 @@
         
         const tbody = document.getElementById('topAgentsTable');
         if (topAgents.length === 0) {
-            tbody.innerHTML = '.<td colspan="10" class="loading">No agents found</td>.'; 
+            tbody.innerHTML = '<tr><td colspan="10" class="loading">No agents found</td></tr>';
             return;
         }
         
@@ -273,7 +278,7 @@
     function renderAllAgents() {
         const tbody = document.getElementById('allAgentsTable');
         if (allAgents.length === 0) {
-            tbody.innerHTML = '.<td colspan="9" class="loading">No agents found</td>.'; 
+            tbody.innerHTML = '<tr><td colspan="9" class="loading">No agents found</td></tr>';
             return;
         }
         
@@ -326,7 +331,7 @@
                 <div class="detail-card"><div>Commission (2.5%)</div><div class="detail-value">₹${stats.commission.toLocaleString()}</div></div>
             </div>
             <h3>📋 Recent Bookings</h3>
-            <div style="overflow-x:auto;"><table style="width:100%"><thead> <th>ID</th><th>Customer</th><th>Vendor</th><th>Date</th><th>Amount</th><th>Commission</th><th>Status</th> </thead><tbody>
+            <div style="overflow-x:auto;"><table style="width:100%"><thead><tr><th>ID</th><th>Customer</th><th>Vendor</th><th>Date</th><th>Amount</th><th>Commission</th><th>Status</th></tr></thead><tbody>
                 ${agentBookings.slice(0,10).map(b => {
                     const amt = parseInt(b.amount?.replace(/[^0-9]/g, '')) || 0;
                     const comm = Math.floor(amt * 0.025);
@@ -339,16 +344,21 @@
     };
 
     function setupAutocomplete() {
-        const input = document.getElementById('citySearch'), drop = document.getElementById('cityAutocomplete');
+        const input = document.getElementById('citySearch');
+        const drop = document.getElementById('cityAutocomplete');
+        
         input.oninput = () => {
-            const v = input.value.toLowerCase();
-            if (!v) { drop.style.display = 'none'; document.getElementById('cityAgentsResult').style.display = 'none'; return; }
-            const sug = Array.from(allCities).filter(c => c.includes(v)).slice(0,8);
-            if (!sug.length) { drop.style.display = 'none'; return; }
-            drop.innerHTML = sug.map(c => `<div class="autocomplete-item" onclick="selectCity('${c}')">📍 ${c.charAt(0).toUpperCase() + c.slice(1)}</div>`).join('');
+            const val = input.value.toLowerCase();
+            if (!val) { drop.style.display = 'none'; document.getElementById('cityAgentsResult').style.display = 'none'; return; }
+            const suggestions = Array.from(allCities).filter(c => c.includes(val)).slice(0,8);
+            if (!suggestions.length) { drop.style.display = 'none'; return; }
+            drop.innerHTML = suggestions.map(c => `<div class="autocomplete-item" onclick="selectCity('${c}')">📍 ${c.charAt(0).toUpperCase() + c.slice(1)}</div>`).join('');
             drop.style.display = 'block';
         };
-        document.addEventListener('click', (e) => { if (!input.contains(e.target) && !drop.contains(e.target)) drop.style.display = 'none'; });
+        
+        document.addEventListener('click', (e) => {
+            if (!input.contains(e.target) && !drop.contains(e.target)) drop.style.display = 'none';
+        });
     }
 
     window.selectCity = (city) => {
@@ -357,14 +367,28 @@
         const cityLower = city.toLowerCase();
         const cityAgents = allAgents.filter(a => a.city?.toLowerCase() === cityLower);
         const resultDiv = document.getElementById('cityAgentsResult');
-        if (!cityAgents.length) resultDiv.innerHTML = '<div style="background:#f8f9fa; padding:20px; border-radius:16px; text-align:center;">No agents in this city</div>';
-        else resultDiv.innerHTML = `<h4>📍 ${city.toUpperCase()} (${cityAgents.length} agents)</h4><div style="display:grid; gap:10px;">${cityAgents.map(a => { const s = getAgentStats(a.id); return `<div style="background:#f8f9fa; padding:15px; border-radius:16px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;"><div><strong>${a.id}</strong><br><span class="agent-name" onclick="showAgentDetail('${a.id}')">${a.name || a.id}</span></div><div>📞 ${a.phone || '-'}</div><div>🎯 ${(a.target || 50000).toLocaleString()}</div><div>📊 ${s.bookings} bookings</div><div>💰 ₹${s.totalAmount.toLocaleString()}</div><div>💸 ₹${s.commission.toLocaleString()}</div></div>`; }).join('')}</div>`;
+        if (!cityAgents.length) {
+            resultDiv.innerHTML = '<div style="background:#f8f9fa; padding:20px; border-radius:16px; text-align:center;">No agents in this city</div>';
+        } else {
+            resultDiv.innerHTML = `<h4>📍 ${city.toUpperCase()} (${cityAgents.length} agents)</h4><div style="display:grid; gap:10px;">${cityAgents.map(a => { 
+                const s = getAgentStats(a.id); 
+                return `<div style="background:#f8f9fa; padding:15px; border-radius:16px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+                    <div><strong>${a.id}</strong><br><span class="agent-name" onclick="showAgentDetail('${a.id}')">${a.name || a.id}</span></div>
+                    <div>📞 ${a.phone || '-'}</div>
+                    <div>🎯 ${(a.target || 50000).toLocaleString()}</div>
+                    <div>📊 ${s.bookings} bookings</div>
+                    <div>💰 ₹${s.totalAmount.toLocaleString()}</div>
+                    <div>💸 ₹${s.commission.toLocaleString()}</div>
+                </div>`;
+            }).join('')}</div>`;
+        }
         resultDiv.style.display = 'block';
     };
 
     window.closeModal = () => document.getElementById('agentModal').style.display = 'none';
     window.logout = () => { localStorage.removeItem('developer'); window.location.href = 'developer-login.html'; };
     
+    // Load data
     loadData();
 </script>
 </body>
