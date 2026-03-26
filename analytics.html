@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Dashboard - StadiumConnect</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: #f5f7fb; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header { background: white; padding: 20px 30px; border-radius: 24px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; border-radius: 24px; padding: 24px; }
+        .stat-value { font-size: 32px; font-weight: 800; color: #ff6b35; }
+        .charts-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-bottom: 30px; }
+        .chart-card { background: white; border-radius: 24px; padding: 24px; }
+        .chart-container { height: 300px; }
+        .table-card { background: white; border-radius: 24px; padding: 24px; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        .status-confirmed { color: #28a745; font-weight: 600; }
+        .status-pending { color: #ffc107; }
+        @media (max-width: 900px) { .charts-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h2>📊 StadiumConnect Analytics</h2>
+        <div id="dateRange">Last 30 Days</div>
+    </div>
+
+    <div class="stats-grid" id="statsGrid"></div>
+
+    <div class="charts-grid">
+        <div class="chart-card"><h3>📈 Revenue Trend</h3><div class="chart-container"><canvas id="revenueChart"></canvas></div></div>
+        <div class="chart-card"><h3>📊 Bookings by Category</h3><div class="chart-container"><canvas id="categoryChart"></canvas></div></div>
+    </div>
+
+    <div class="table-card">
+        <h3>📋 Recent Transactions</h3>
+        <div id="transactionsTable"></div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
+        authDomain: "stadiumconnect-8fecb.firebaseapp.com",
+        projectId: "stadiumconnect-8fecb",
+        storageBucket: "stadiumconnect-8fecb.firebasestorage.app",
+        messagingSenderId: "458108198578",
+        appId: "1:458108198578:web:83d83646f0e24e718b73ab"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    let allBookings = [], allVendors = [];
+
+    async function loadData() {
+        const [bookingsSnap, vendorsSnap] = await Promise.all([
+            getDocs(collection(db, "bookings")),
+            getDocs(collection(db, "vendors"))
+        ]);
+        allBookings = bookingsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        allVendors = vendorsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        
+        updateStats();
+        renderCharts();
+        renderTransactions();
+    }
+
+    function updateStats() {
+        const totalBookings = allBookings.length;
+        const confirmed = allBookings.filter(b => b.status === 'confirmed').length;
+        const totalRevenue = allBookings.filter(b => b.status === 'confirmed').reduce((s,b) => s + (b.amount || 0), 0);
+        const pendingAmount = allBookings.filter(b => b.status === 'pending').reduce((s,b) => s + (b.amount || 0), 0);
+        
+        document.getElementById('statsGrid').innerHTML = `
+            <div class="stat-card"><div class="stat-value">${totalBookings}</div><div>Total Bookings</div></div>
+            <div class="stat-card"><div class="stat-value">${confirmed}</div><div>Confirmed</div></div>
+            <div class="stat-card"><div class="stat-value">₹${totalRevenue.toLocaleString()}</div><div>Total Revenue</div></div>
+            <div class="stat-card"><div class="stat-value">₹${pendingAmount.toLocaleString()}</div><div>Pending Amount</div></div>
+        `;
+    }
+
+    function renderCharts() {
+        // Revenue by month
+        const monthlyRevenue = {};
+        allBookings.filter(b => b.status === 'confirmed').forEach(b => {
+            if (b.createdAt) {
+                const month = new Date(b.createdAt).toLocaleString('default', { month: 'short' });
+                monthlyRevenue[month] = (monthlyRevenue[month] || 0) + (b.amount || 0);
+            }
+        });
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const revenueData = months.map(m => monthlyRevenue[m] || 0);
+        
+        new Chart(document.getElementById('revenueChart'), {
+            type: 'line',
+            data: { labels: months, datasets: [{ label: 'Revenue (₹)', data: revenueData, borderColor: '#ff6b35', fill: true, backgroundColor: 'rgba(255,107,53,0.1)' }] }
+        });
+        
+        // Category distribution
+        const catCount = {};
+        allBookings.forEach(b => {
+            const vendor = allVendors.find(v => v.id === b.vendorId);
+            const cat = vendor?.category || 'other';
+            catCount[cat] = (catCount[cat] || 0) + 1;
+        });
+        new Chart(document.getElementById('categoryChart'), {
+            type: 'doughnut',
+            data: { labels: Object.keys(catCount), datasets: [{ data: Object.values(catCount), backgroundColor: ['#ff6b35', '#ffa502', '#2ed573', '#1e90ff', '#ff4757'] }] }
+        });
+    }
+
+    function renderTransactions() {
+        const recent = [...allBookings].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 10);
+        document.getElementById('transactionsTable').innerHTML = `
+            <table><thead><tr><th>ID</th><th>Vendor</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead><tbody>
+            ${recent.map(b => `
+                <tr><td>${b.id.slice(-6)}</td><td>${b.vendorName}</td><td>₹${b.amount || 0}</td><td class="status-${b.status}">${b.status}</td><td>${new Date(b.createdAt).toLocaleDateString()}</td></tr>
+            `).join('')}</tbody></table>
+        `;
+    }
+
+    loadData();
+</script>
+</body>
+</html>
