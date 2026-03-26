@@ -25,10 +25,10 @@
         .logo { font-size: 22px; font-weight: 800; }
         .logo span { color: #ff6b35; }
         .date-badge { background: #f0f2f5; padding: 8px 16px; border-radius: 30px; font-size: 14px; }
+        .logout-btn { background: #ff6b35; color: white; border: none; padding: 8px 20px; border-radius: 30px; cursor: pointer; font-weight: 500; }
         
         .container { max-width: 1400px; margin: 0 auto; padding: 30px; }
         
-        /* Stats Cards */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -46,9 +46,7 @@
         .stat-icon { font-size: 32px; margin-bottom: 12px; }
         .stat-value { font-size: 32px; font-weight: 800; color: #1a1a1a; margin-bottom: 4px; }
         .stat-label { color: #666; font-size: 14px; }
-        .stat-trend { font-size: 12px; margin-top: 8px; color: #28a745; }
         
-        /* Search Section */
         .search-section {
             background: white;
             border-radius: 24px;
@@ -93,7 +91,6 @@
         }
         .autocomplete-item:hover { background: #fff5f0; }
         
-        /* Charts Grid */
         .charts-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -109,7 +106,6 @@
         .chart-title { font-size: 16px; font-weight: 600; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
         .chart-container { position: relative; height: 250px; }
         
-        /* Top Vendors Table */
         .top-vendors-card {
             background: white;
             border-radius: 24px;
@@ -141,7 +137,10 @@
 
 <header class="header">
     <div class="logo">STADIUM<span>CONNECT</span></div>
-    <div class="date-badge"><i class="far fa-calendar-alt"></i> <span id="currentDate"></span></div>
+    <div style="display: flex; gap: 15px; align-items: center;">
+        <div class="date-badge"><i class="far fa-calendar-alt"></i> <span id="currentDate"></span></div>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
 </header>
 
 <div class="container">
@@ -198,6 +197,11 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
     import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
+    // ========== ADMIN AUTH CHECK ==========
+    if (localStorage.getItem('admin') !== 'true') {
+        window.location.href = 'admin-login.html';
+    }
+
     const firebaseConfig = {
         apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
         authDomain: "stadiumconnect-8fecb.firebaseapp.com",
@@ -217,6 +221,11 @@
 
     document.getElementById('currentDate').innerText = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
 
+    window.logout = () => {
+        localStorage.removeItem('admin');
+        window.location.href = 'admin-login.html';
+    };
+
     async function loadData() {
         try {
             const [bookingsSnap, vendorsSnap] = await Promise.all([
@@ -230,7 +239,6 @@
             allVendors = [];
             vendorsSnap.forEach(doc => allVendors.push({ id: doc.id, ...doc.data() }));
             
-            // Update global stats
             const totalRevenue = allBookings.reduce((sum, b) => sum + (parseFloat(b.amount) || 0), 0);
             const uniqueCities = new Set(allVendors.map(v => v.city?.toLowerCase()).filter(Boolean));
             
@@ -239,9 +247,7 @@
             document.getElementById('totalCities').innerText = uniqueCities.size;
             document.getElementById('totalVendors').innerText = allVendors.length;
             
-            // Build cities list for autocomplete
             allCities = new Set(allVendors.map(v => v.city?.toLowerCase()).filter(Boolean));
-            
             setupAutocomplete();
         } catch (error) {
             console.error("Error loading data:", error);
@@ -363,3 +369,5 @@
 
 </body>
 </html>
+
+
