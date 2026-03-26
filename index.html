@@ -2,70 +2,129 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StadiumConnect - Royal Event Platform</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="firebase-config.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>StadiumConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #fff;
+            color: #1a1a1a;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .logo h1 {
+            font-size: 36px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: #1a1a1a;
+        }
+
+        .logo span {
+            color: #ff6b35;
+        }
+
+        .tagline {
+            text-align: center;
+            font-size: 16px;
+            color: #ff6b35;
+            font-weight: 500;
+            margin-bottom: 16px;
+        }
+
+        .description {
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 48px;
+            padding: 0 20px;
+        }
+
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .btn {
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+            text-decoration: none;
+            display: block;
+        }
+
+        .btn-login {
+            background: white;
+            border: 1.5px solid #ff6b35;
+            color: #ff6b35;
+        }
+
+        .btn-login:hover {
+            background: #fff5f0;
+        }
+
+        .btn-register {
+            background: #ff6b35;
+            border: none;
+            color: white;
+        }
+
+        .btn-register:hover {
+            background: #e55a2b;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 12px;
+            color: #aaa;
+            margin-top: 40px;
+        }
+    </style>
 </head>
 <body>
 
-<header class="header">
-    <div class="logo" onclick="window.location.href='index.html'">STADIUM<span>CONNECT</span></div>
-    <div class="nav-buttons" id="navButtons"></div>
-</header>
-
-<section class="hero">
-    <h1>Where Dreams<br>Become Events</h1>
-    <p style="margin-top: 20px; color: #7a5a44;">India's most prestigious event platform</p>
-</section>
-
-<section class="categories">
-    <div class="section-title">Our Royal Services</div>
-    <div class="category-grid">
-        <div class="category-card" onclick="window.location.href='vendors.html?category=decorator'">
-            <div class="category-icon">🎨</div>
-            <h3>Decorators</h3>
-        </div>
-        <div class="category-card" onclick="window.location.href='vendors.html?category=photographer'">
-            <div class="category-icon">📸</div>
-            <h3>Photographers</h3>
-        </div>
-        <div class="category-card" onclick="window.location.href='vendors.html?category=caterer'">
-            <div class="category-icon">🍽️</div>
-            <h3>Caterers</h3>
-        </div>
-        <div class="category-card" onclick="window.location.href='vendors.html?category=bandbaja'">
-            <div class="category-icon">🎵</div>
-            <h3>Band Baja</h3>
-        </div>
-        <div class="category-card" onclick="window.location.href='stadium-booking.html'">
-            <div class="category-icon">🏟️</div>
-            <h3>Stadiums</h3>
-        </div>
+<div class="container">
+    <div class="logo">
+        <h1>STADIUM<span>CONNECT</span></h1>
     </div>
-</section>
-
-<footer>© 2025 STADIUMCONNECT | Royal Event Infrastructure</footer>
-
-<script>
-    auth.onAuthStateChanged((user) => {
-        const nav = document.getElementById('navButtons');
-        if (user) {
-            nav.innerHTML = `
-                <span style="color:#b87c4f;">👑 ${user.displayName || user.email.split('@')[0]}</span>
-                <a href="dashboard.html">Dashboard</a>
-                <a href="#" onclick="logout()">Logout</a>
-            `;
-        } else {
-            nav.innerHTML = `<a href="login.html">Sign In</a><a href="register.html">Join Royal Club</a>`;
-        }
-    });
-</script>
+    <div class="tagline">your need, our network</div>
+    <div class="description">
+        India's premier event platform. Book stadiums, decorators, caterers, photographers & bands for your dream event.
+    </div>
+    <div class="buttons">
+        <a href="login.html" class="btn btn-login">Login</a>
+        <a href="register.html" class="btn btn-register">Create an account</a>
+    </div>
+    <footer>© 2025 StadiumConnect</footer>
+</div>
 
 </body>
 </html>
