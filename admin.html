@@ -1,299 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
-    <script type="module">
-    // Check admin login
-    const isAdmin = localStorage.getItem('adminLoggedIn');
-    if (!isAdmin || isAdmin !== 'true') {
-        window.location.href = 'admin-login.html';
-    }
-    
-    // Rest of your admin code...
-</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Admin Panel - StadiumConnect</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #f5f5f5;
-            color: #1a1a1a;
-        }
-
-        /* Header */
-        .header {
-            background: #fff;
-            padding: 16px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #e0e0e0;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .logo {
-            font-size: 20px;
-            font-weight: 800;
-        }
-
-        .logo span {
-            color: #ff6b35;
-        }
-
-        .logout-btn {
-            background: #ff6b35;
-            color: white;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 30px;
-            cursor: pointer;
-        }
-
-        /* Container */
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 24px;
-        }
-
-        /* Tabs */
-        .tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 24px;
-            flex-wrap: wrap;
-        }
-
-        .tab {
-            background: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 40px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .tab.active {
-            background: #ff6b35;
-            color: white;
-        }
-
-        /* Stats */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-
-        .stat-card {
-            background: white;
-            border-radius: 20px;
-            padding: 20px;
-            text-align: center;
-        }
-
-        .stat-number {
-            font-size: 32px;
-            font-weight: 800;
-            color: #ff6b35;
-        }
-
-        /* Forms */
-        .form-card {
-            background: white;
-            border-radius: 24px;
-            padding: 24px;
-            margin-bottom: 24px;
-        }
-
-        .form-title {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 20px;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 16px;
-            margin-bottom: 20px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .form-group label {
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .form-group input, .form-group select, .form-group textarea {
-            padding: 12px;
-            border: 1px solid #e0e0e0;
-            border-radius: 12px;
-            font-family: inherit;
-        }
-
-        .btn-primary {
-            background: #ff6b35;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 40px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .btn-danger {
-            background: #dc3545;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 30px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-
-        .btn-edit {
-            background: #ffc107;
-            color: #000;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 30px;
-            cursor: pointer;
-            font-size: 12px;
-            margin-right: 8px;
-        }
-
-        /* Table */
-        .table-container {
-            background: white;
-            border-radius: 24px;
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            padding: 16px;
-            text-align: left;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        th {
-            background: #fafafa;
-            font-weight: 600;
-        }
-
-        /* Photo Upload */
-        .photo-grid {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-top: 12px;
-        }
-
-        .photo-preview {
-            width: 80px;
-            height: 80px;
-            background: #f5f5f5;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .photo-preview img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .photo-preview .remove-photo {
-            position: absolute;
-            top: 4px;
-            right: 4px;
-            background: red;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-
-        .upload-btn {
-            background: #f0f0f0;
-            border: 1px dashed #ccc;
-            padding: 12px 20px;
-            border-radius: 12px;
-            cursor: pointer;
-            text-align: center;
-        }
-
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 24px;
-            padding: 24px;
-            width: 90%;
-            max-width: 600px;
-            max-height: 85vh;
-            overflow-y: auto;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .close-modal {
-            font-size: 24px;
-            cursor: pointer;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f5f5f5; color: #1a1a1a; }
+        .header { background: #fff; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e0e0e0; position: sticky; top: 0; z-index: 100; }
+        .logo { font-size: 20px; font-weight: 800; }
+        .logo span { color: #ff6b35; }
+        .logout-btn { background: #ff6b35; color: white; border: none; padding: 8px 20px; border-radius: 30px; cursor: pointer; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+        .tabs { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+        .tab { background: white; border: none; padding: 12px 24px; border-radius: 40px; font-weight: 600; cursor: pointer; }
+        .tab.active { background: #ff6b35; color: white; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: white; border-radius: 20px; padding: 20px; text-align: center; }
+        .stat-number { font-size: 32px; font-weight: 800; color: #ff6b35; }
+        .form-card { background: white; border-radius: 24px; padding: 24px; margin-bottom: 24px; }
+        .form-title { font-size: 20px; font-weight: 700; margin-bottom: 20px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 20px; }
+        .form-group { display: flex; flex-direction: column; gap: 8px; }
+        .form-group label { font-weight: 600; font-size: 14px; }
+        .form-group input, .form-group select, .form-group textarea { padding: 12px; border: 1px solid #e0e0e0; border-radius: 12px; font-family: inherit; }
+        .btn-primary { background: #ff6b35; color: white; border: none; padding: 12px 24px; border-radius: 40px; font-weight: 600; cursor: pointer; }
+        .btn-danger { background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 30px; cursor: pointer; font-size: 12px; }
+        .btn-edit { background: #ffc107; color: #000; border: none; padding: 8px 16px; border-radius: 30px; cursor: pointer; font-size: 12px; margin-right: 8px; }
+        .btn-success { background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 30px; cursor: pointer; font-size: 12px; }
+        .table-container { background: white; border-radius: 24px; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 16px; text-align: left; border-bottom: 1px solid #f0f0f0; }
+        th { background: #fafafa; font-weight: 600; }
+        .photo-grid { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+        .photo-preview { width: 80px; height: 80px; background: #f5f5f5; border-radius: 12px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+        .photo-preview img { width: 100%; height: 100%; object-fit: cover; }
+        .photo-preview .remove-photo { position: absolute; top: 4px; right: 4px; background: red; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 12px; }
+        .upload-btn { background: #f0f0f0; border: 1px dashed #ccc; padding: 12px 20px; border-radius: 12px; cursor: pointer; text-align: center; }
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; }
+        .add-section { display: flex; gap: 12px; margin-top: 20px; }
+        .add-section input { flex: 1; padding: 12px; border: 1px solid #e0e0e0; border-radius: 12px; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+        .modal-content { background: white; border-radius: 24px; padding: 24px; width: 90%; max-width: 700px; max-height: 85vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .close-modal { font-size: 24px; cursor: pointer; }
+        @media (max-width: 768px) { .form-grid { grid-template-columns: 1fr; } }
     </style>
 
-    <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, doc, addDoc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
         import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
         const firebaseConfig = {
@@ -309,29 +67,41 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        let currentUser = null;
         let vendors = [];
+        let categories = [
+            { id: 'decorator', name: 'Decorators', icon: '🎨' },
+            { id: 'photographer', name: 'Photographers', icon: '📸' },
+            { id: 'caterer', name: 'Caterers', icon: '🍽️' },
+            { id: 'bandbaja', name: 'Band Baja', icon: '🎵' },
+            { id: 'stadium', name: 'Stadiums', icon: '🏟️' }
+        ];
+        let cities = ['Nagpur', 'Mumbai', 'Pune', 'Delhi', 'Bangalore', 'Hyderabad', 'Chennai', 'Kolkata'];
         let tempPhotos = [];
+        let editingVendorId = null;
 
-        // Check admin
+        // Check admin login
+        const isAdmin = localStorage.getItem('adminLoggedIn');
+        if (!isAdmin || isAdmin !== 'true') {
+            window.location.href = 'admin-login.html';
+        }
+
         onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                window.location.href = 'login.html';
+            if (!user || user.email !== 'atharvadarshanwar09@gmail.com') {
+                localStorage.removeItem('adminLoggedIn');
+                window.location.href = 'admin-login.html';
                 return;
             }
-            currentUser = user;
-            if (user.email !== 'atharvadarshanwar09@gmail.com') {
-                alert('Access denied. Admin only.');
-                window.location.href = 'home.html';
-                return;
-            }
-            loadAllData();
+            await loadAllData();
         });
 
         async function loadAllData() {
             await loadVendors();
+            await loadCategoriesFromFirestore();
+            await loadCitiesFromFirestore();
             updateStats();
             renderVendorsTable();
+            renderCategoriesList();
+            renderCitiesList();
         }
 
         async function loadVendors() {
@@ -340,6 +110,34 @@
             querySnapshot.forEach((doc) => {
                 vendors.push({ id: doc.id, ...doc.data() });
             });
+        }
+
+        async function loadCategoriesFromFirestore() {
+            const docRef = doc(db, 'settings', 'categories');
+            const docSnap = await getDocs(collection(db, 'categories'));
+            if (!docSnap.empty) {
+                const saved = [];
+                docSnap.forEach(d => saved.push({ id: d.id, ...d.data() }));
+                if (saved.length) categories = saved;
+            }
+        }
+
+        async function loadCitiesFromFirestore() {
+            const docRef = doc(db, 'settings', 'cities');
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                cities = docSnap.data().list || cities;
+            }
+        }
+
+        async function saveCategoriesToFirestore() {
+            for (const cat of categories) {
+                await setDoc(doc(db, 'categories', cat.id), cat);
+            }
+        }
+
+        async function saveCitiesToFirestore() {
+            await setDoc(doc(db, 'settings', 'cities'), { list: cities });
         }
 
         function updateStats() {
@@ -351,12 +149,12 @@
                 stadium: vendors.filter(v => v.category === 'stadium').length
             };
             document.getElementById('stats').innerHTML = `
-                <div class="stat-card"><div class="stat-number">${vendors.length}</div><div>Total Vendors</div></div>
-                <div class="stat-card"><div class="stat-number">${stats.decorator}</div><div>Decorators</div></div>
-                <div class="stat-card"><div class="stat-number">${stats.photographer}</div><div>Photographers</div></div>
-                <div class="stat-card"><div class="stat-number">${stats.caterer}</div><div>Caterers</div></div>
-                <div class="stat-card"><div class="stat-number">${stats.bandbaja}</div><div>Band Baja</div></div>
-                <div class="stat-card"><div class="stat-number">${stats.stadium}</div><div>Stadiums</div></div>
+                <div class="stat-card"><div class="stat-number">${vendors.length}</div><div>Total</div></div>
+                <div class="stat-card"><div class="stat-number">${stats.decorator}</div><div>🎨 Decorators</div></div>
+                <div class="stat-card"><div class="stat-number">${stats.photographer}</div><div>📸 Photographers</div></div>
+                <div class="stat-card"><div class="stat-number">${stats.caterer}</div><div>🍽️ Caterers</div></div>
+                <div class="stat-card"><div class="stat-number">${stats.bandbaja}</div><div>🎵 Band Baja</div></div>
+                <div class="stat-card"><div class="stat-number">${stats.stadium}</div><div>🏟️ Stadiums</div></div>
             `;
         }
 
@@ -370,6 +168,7 @@
                     <td>${v.location || '-'}</td>
                     <td>${v.priceRange || '-'}</td>
                     <td>${v.rating || '-'}</td>
+                    <td>${v.capacity ? v.capacity + ' seats' : '-'}</td>
                     <td>
                         <button class="btn-edit" onclick="editVendor('${v.id}')">Edit</button>
                         <button class="btn-danger" onclick="deleteVendor('${v.id}')">Delete</button>
@@ -378,18 +177,148 @@
             `).join('');
         }
 
+        function renderCategoriesList() {
+            const container = document.getElementById('categoriesList');
+            container.innerHTML = categories.map(cat => `
+                <div class="list-item">
+                    <span>${cat.icon || '🏷️'} ${cat.name}</span>
+                    <div>
+                        <button class="btn-edit" onclick="editCategory('${cat.id}')">Edit</button>
+                        <button class="btn-danger" onclick="deleteCategory('${cat.id}')">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderCitiesList() {
+            const container = document.getElementById('citiesList');
+            container.innerHTML = cities.map(city => `
+                <div class="list-item">
+                    <span>📍 ${city}</span>
+                    <div>
+                        <button class="btn-edit" onclick="editCity('${city}')">Edit</button>
+                        <button class="btn-danger" onclick="deleteCity('${city}')">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Category Functions
+        window.openAddCategoryModal = function() {
+            document.getElementById('categoryModalTitle').innerText = 'Add Category';
+            document.getElementById('categoryId').value = '';
+            document.getElementById('categoryName').value = '';
+            document.getElementById('categoryIcon').value = '';
+            document.getElementById('categoryModal').style.display = 'flex';
+        };
+
+        window.editCategory = function(id) {
+            const cat = categories.find(c => c.id === id);
+            if (!cat) return;
+            document.getElementById('categoryModalTitle').innerText = 'Edit Category';
+            document.getElementById('categoryId').value = cat.id;
+            document.getElementById('categoryName').value = cat.name;
+            document.getElementById('categoryIcon').value = cat.icon || '';
+            document.getElementById('categoryModal').style.display = 'flex';
+        };
+
+        window.saveCategory = async function() {
+            const id = document.getElementById('categoryId').value;
+            const name = document.getElementById('categoryName').value;
+            const icon = document.getElementById('categoryIcon').value;
+            if (!name) return;
+            
+            const newId = id || name.toLowerCase().replace(/ /g, '');
+            const category = { id: newId, name, icon: icon || '🏷️' };
+            
+            if (id) {
+                const index = categories.findIndex(c => c.id === id);
+                if (index !== -1) categories[index] = category;
+            } else {
+                categories.push(category);
+            }
+            
+            await saveCategoriesToFirestore();
+            renderCategoriesList();
+            closeModal('categoryModal');
+            alert('Category saved!');
+        };
+
+        window.deleteCategory = async function(id) {
+            if (confirm('Delete this category? Vendors in this category will remain but category will be removed from list.')) {
+                categories = categories.filter(c => c.id !== id);
+                await saveCategoriesToFirestore();
+                renderCategoriesList();
+                alert('Category deleted');
+            }
+        };
+
+        // City Functions
+        window.openAddCityModal = function() {
+            document.getElementById('cityName').value = '';
+            document.getElementById('cityModal').style.display = 'flex';
+        };
+
+        window.editCity = function(city) {
+            document.getElementById('cityName').value = city;
+            document.getElementById('cityOriginal').value = city;
+            document.getElementById('cityModal').style.display = 'flex';
+        };
+
+        window.saveCity = async function() {
+            const name = document.getElementById('cityName').value;
+            const original = document.getElementById('cityOriginal')?.value;
+            if (!name) return;
+            
+            if (original) {
+                const index = cities.indexOf(original);
+                if (index !== -1) cities[index] = name;
+            } else {
+                if (!cities.includes(name)) cities.push(name);
+            }
+            
+            await saveCitiesToFirestore();
+            renderCitiesList();
+            closeModal('cityModal');
+            alert('City saved!');
+        };
+
+        window.deleteCity = async function(city) {
+            if (confirm(`Delete ${city}?`)) {
+                cities = cities.filter(c => c !== city);
+                await saveCitiesToFirestore();
+                renderCitiesList();
+                alert('City deleted');
+            }
+        };
+
+        // Vendor Functions
         window.openAddVendorModal = function() {
+            editingVendorId = null;
             tempPhotos = [];
             document.getElementById('vendorModalTitle').innerText = 'Add New Vendor';
             document.getElementById('vendorForm').reset();
             document.getElementById('vendorId').value = '';
-            document.getElementById('photoPreview').innerHTML = '';
+            document.getElementById('capacityGroup').style.display = 'none';
+            
+            // Populate category dropdown
+            const catSelect = document.getElementById('vendorCategory');
+            catSelect.innerHTML = categories.map(c => `<option value="${c.id}">${c.icon || '🏷️'} ${c.name}</option>`).join('');
+            
+            // Populate city dropdown
+            const citySelect = document.getElementById('vendorCity');
+            citySelect.innerHTML = cities.map(c => `<option value="${c}">${c}</option>`).join('');
+            
+            document.getElementById('photoPreview').innerHTML = '<div class="upload-btn" onclick="uploadPhoto()">+ Click to Upload Photos</div>';
             document.getElementById('vendorModal').style.display = 'flex';
         };
 
         window.editVendor = async function(id) {
             const vendor = vendors.find(v => v.id === id);
             if (!vendor) return;
+            
+            editingVendorId = id;
+            tempPhotos = vendor.photos || [];
             
             document.getElementById('vendorModalTitle').innerText = 'Edit Vendor';
             document.getElementById('vendorId').value = vendor.id;
@@ -401,8 +330,14 @@
             document.getElementById('vendorRating').value = vendor.rating || '';
             document.getElementById('vendorPhone').value = vendor.phone || '';
             document.getElementById('vendorDescription').value = vendor.description || '';
+            document.getElementById('vendorCapacity').value = vendor.capacity || '';
             
-            tempPhotos = vendor.photos || [];
+            if (vendor.category === 'stadium') {
+                document.getElementById('capacityGroup').style.display = 'block';
+            } else {
+                document.getElementById('capacityGroup').style.display = 'none';
+            }
+            
             renderPhotoPreview();
             document.getElementById('vendorModal').style.display = 'flex';
         };
@@ -420,7 +355,7 @@
         function renderPhotoPreview() {
             const container = document.getElementById('photoPreview');
             if (tempPhotos.length === 0) {
-                container.innerHTML = '<div class="upload-btn" onclick="uploadPhoto()">+ Add Photos</div>';
+                container.innerHTML = '<div class="upload-btn" onclick="uploadPhoto()">+ Click to Upload Photos</div>';
                 return;
             }
             container.innerHTML = `
@@ -440,17 +375,17 @@
             const input = document.createElement('input');
             input.type = 'file';
             input.accept = 'image/*';
+            input.multiple = true;
             input.onchange = async (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                
-                // Convert to base64 for demo (in production, upload to cloud storage)
-                const reader = new FileReader();
-                reader.onload = (ev) => {
-                    tempPhotos.push(ev.target.result);
-                    renderPhotoPreview();
-                };
-                reader.readAsDataURL(file);
+                const files = Array.from(e.target.files);
+                for (const file of files) {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        tempPhotos.push(ev.target.result);
+                        renderPhotoPreview();
+                    };
+                    reader.readAsDataURL(file);
+                }
             };
             input.click();
         };
@@ -460,11 +395,20 @@
             renderPhotoPreview();
         };
 
+        window.onCategoryChange = function() {
+            const category = document.getElementById('vendorCategory').value;
+            if (category === 'stadium') {
+                document.getElementById('capacityGroup').style.display = 'block';
+            } else {
+                document.getElementById('capacityGroup').style.display = 'none';
+            }
+        };
+
         window.saveVendor = async function() {
-            const id = document.getElementById('vendorId').value;
+            const category = document.getElementById('vendorCategory').value;
             const vendorData = {
                 name: document.getElementById('vendorName').value,
-                category: document.getElementById('vendorCategory').value,
+                category: category,
                 city: document.getElementById('vendorCity').value,
                 location: document.getElementById('vendorLocation').value,
                 priceRange: document.getElementById('vendorPrice').value,
@@ -475,8 +419,12 @@
                 updatedAt: new Date().toISOString()
             };
             
-            if (id) {
-                await updateDoc(doc(db, 'vendors', id), vendorData);
+            if (category === 'stadium') {
+                vendorData.capacity = document.getElementById('vendorCapacity').value;
+            }
+            
+            if (editingVendorId) {
+                await updateDoc(doc(db, 'vendors', editingVendorId), vendorData);
                 alert('Vendor updated!');
             } else {
                 vendorData.createdAt = new Date().toISOString();
@@ -495,6 +443,7 @@
         };
 
         window.logout = async function() {
+            localStorage.removeItem('adminLoggedIn');
             await signOut(auth);
             window.location.href = 'index.html';
         };
@@ -505,6 +454,8 @@
             document.querySelectorAll('.tab-panel').forEach(p => p.style.display = 'none');
             document.getElementById(`${tab}Panel`).style.display = 'block';
             if (tab === 'vendors') renderVendorsTable();
+            if (tab === 'categories') renderCategoriesList();
+            if (tab === 'cities') renderCitiesList();
         };
     </script>
 </head>
@@ -533,7 +484,7 @@
         <div class="table-container">
             <table>
                 <thead>
-                    <tr><th>Name</th><th>Category</th><th>City</th><th>Location</th><th>Price</th><th>Rating</th><th>Actions</th></tr>
+                    <tr><th>Name</th><th>Category</th><th>City</th><th>Location</th><th>Price</th><th>Rating</th><th>Capacity</th><th>Actions</th></tr>
                 </thead>
                 <tbody id="vendorsTableBody"></tbody>
             </table>
@@ -543,28 +494,18 @@
     <!-- Categories Panel -->
     <div id="categoriesPanel" class="tab-panel" style="display:none">
         <div class="form-card">
-            <div class="form-title">Categories</div>
-            <div class="category-list" id="categoryList">
-                <div>🎨 Decorators</div>
-                <div>📸 Photographers</div>
-                <div>🍽️ Caterers</div>
-                <div>🎵 Band Baja</div>
-                <div>🏟️ Stadiums</div>
-            </div>
+            <div class="form-title">Manage Categories</div>
+            <button class="btn-primary" onclick="openAddCategoryModal()">+ Add New Category</button>
+            <div id="categoriesList" style="margin-top: 20px;"></div>
         </div>
     </div>
 
     <!-- Cities Panel -->
     <div id="citiesPanel" class="tab-panel" style="display:none">
         <div class="form-card">
-            <div class="form-title">Cities</div>
-            <div class="city-list" id="cityList">
-                <div>Nagpur</div>
-                <div>Mumbai</div>
-                <div>Pune</div>
-                <div>Delhi</div>
-                <div>Bangalore</div>
-            </div>
+            <div class="form-title">Manage Cities</div>
+            <button class="btn-primary" onclick="openAddCityModal()">+ Add New City</button>
+            <div id="citiesList" style="margin-top: 20px;"></div>
         </div>
     </div>
 </div>
@@ -581,19 +522,16 @@
             <div class="form-grid">
                 <div class="form-group"><label>Name *</label><input type="text" id="vendorName" required></div>
                 <div class="form-group"><label>Category *</label>
-                    <select id="vendorCategory" required>
-                        <option value="decorator">Decorator</option>
-                        <option value="photographer">Photographer</option>
-                        <option value="caterer">Caterer</option>
-                        <option value="bandbaja">Band Baja</option>
-                        <option value="stadium">Stadium</option>
-                    </select>
+                    <select id="vendorCategory" onchange="onCategoryChange()" required></select>
                 </div>
-                <div class="form-group"><label>City *</label><input type="text" id="vendorCity" placeholder="Nagpur"></div>
+                <div class="form-group"><label>City *</label>
+                    <select id="vendorCity" required></select>
+                </div>
                 <div class="form-group"><label>Location</label><input type="text" id="vendorLocation" placeholder="Area, City"></div>
                 <div class="form-group"><label>Price Range</label><input type="text" id="vendorPrice" placeholder="₹10,000 - ₹50,000"></div>
                 <div class="form-group"><label>Rating</label><input type="text" id="vendorRating" placeholder="4.5"></div>
                 <div class="form-group"><label>Phone</label><input type="text" id="vendorPhone" placeholder="9423281086"></div>
+                <div class="form-group" id="capacityGroup" style="display:none"><label>Capacity (seats)</label><input type="text" id="vendorCapacity" placeholder="45000"></div>
             </div>
             <div class="form-group"><label>Description</label><textarea id="vendorDescription" rows="3"></textarea></div>
             <div class="form-group"><label>Photos</label><div id="photoPreview"></div></div>
@@ -602,5 +540,34 @@
     </div>
 </div>
 
+<!-- Category Modal -->
+<div id="categoryModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="categoryModalTitle">Add Category</h3>
+            <span class="close-modal" onclick="closeModal('categoryModal')">&times;</span>
+        </div>
+        <input type="hidden" id="categoryId">
+        <div class="form-group"><label>Category Name</label><input type="text" id="categoryName" placeholder="e.g., Mehndi Artist" style="width:100%; padding:12px;"></div>
+        <div class="form-group" style="margin-top:12px;"><label>Icon (emoji)</label><input type="text" id="categoryIcon" placeholder="🎨" style="width:100%; padding:12px;"></div>
+        <button class="btn-primary" onclick="saveCategory()" style="width:100%; margin-top:20px;">Save Category</button>
+    </div>
+</div>
+
+<!-- City Modal -->
+<div id="cityModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Add/Edit City</h3>
+            <span class="close-modal" onclick="closeModal('cityModal')">&times;</span>
+        </div>
+        <input type="hidden" id="cityOriginal">
+        <div class="form-group"><label>City Name</label><input type="text" id="cityName" placeholder="e.g., Jaipur" style="width:100%; padding:12px;"></div>
+        <button class="btn-primary" onclick="saveCity()" style="width:100%; margin-top:20px;">Save City</button>
+    </div>
+</div>
+
 </body>
 </html>
+
+
