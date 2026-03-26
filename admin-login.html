@@ -1,123 +1,75 @@
-   <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login - StadiumConnect</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Admin Login</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Inter', sans-serif;
-            background: #fff;
+            font-family: system-ui, sans-serif;
+            background: #f5f5f5;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
         }
-        .container {
-            max-width: 400px;
-            width: 100%;
+        .card {
             background: white;
-            border-radius: 24px;
             padding: 32px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-            border: 1px solid #f0f0f0;
-        }
-        .logo {
+            border-radius: 24px;
+            width: 350px;
             text-align: center;
-            font-size: 24px;
-            font-weight: 800;
-            margin-bottom: 32px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-        .logo span { color: #ff6b35; }
-        h2 { margin-bottom: 8px; }
-        .subtitle { color: #666; margin-bottom: 32px; }
-        .input-group { margin-bottom: 20px; }
-        .input-group input {
+        h1 { margin-bottom: 24px; color: #ff6b35; }
+        input {
             width: 100%;
-            padding: 14px;
-            border: 1px solid #e0e0e0;
+            padding: 12px;
+            margin-bottom: 16px;
+            border: 1px solid #ddd;
             border-radius: 12px;
-            font-size: 15px;
-            font-family: inherit;
+            font-size: 16px;
         }
-        .login-btn {
+        button {
             width: 100%;
+            padding: 12px;
             background: #ff6b35;
             color: white;
             border: none;
-            padding: 14px;
             border-radius: 12px;
-            font-weight: 600;
+            font-size: 16px;
             cursor: pointer;
         }
         .error {
-            background: #ffe5e5;
-            color: #d32f2f;
-            padding: 12px;
-            border-radius: 12px;
-            margin-bottom: 20px;
+            color: red;
+            margin-top: 12px;
             display: none;
-        }
-        .back-link {
-            text-align: center;
-            margin-top: 24px;
-        }
-        .back-link a {
-            color: #ff6b35;
-            text-decoration: none;
         }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <div class="logo">STADIUM<span>CONNECT</span></div>
-    <h2>Admin Access</h2>
-    <div class="subtitle">Enter your credentials</div>
-    
-    <div id="error" class="error"></div>
-    
-    <div class="input-group">
-        <input type="email" id="email" placeholder="Admin Email" value="atharvadarshanwar09@gmail.com">
-    </div>
-    <div class="input-group">
+    <div class="card">
+        <h1>🔐 Admin Login</h1>
+        <input type="text" id="email" placeholder="Email" value="atharvadarshanwar09@gmail.com">
         <input type="password" id="password" placeholder="Password">
+        <button onclick="login()">Login</button>
+        <div id="error" class="error"></div>
     </div>
-    
-    <button class="login-btn" onclick="login()">Login →</button>
-    
-    <div class="back-link">
-        <a href="index.html">← Back to Home</a>
-    </div>
-</div>
 
-<script>
-    const ADMIN_EMAIL = "atharvadarshanwar09@gmail.com";
-    const ADMIN_PASSWORD = "Stadium@2025";
-    
-    // Check if already logged in
-    if (localStorage.getItem('adminLoggedIn') === 'true') {
-        window.location.href = 'admin.html';
-    }
-    
-    async function login() {
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        
-        if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-            localStorage.setItem('adminLoggedIn', 'true');
-            localStorage.setItem('adminEmail', email);
-            localStorage.setItem('adminLoginTime', new Date().toISOString());
-            window.location.href = 'admin.html';
-        } else {
-            document.getElementById('error').innerText = 'Invalid credentials';
-            document.getElementById('error').style.display = 'block';
+    <script>
+        function login() {
+            const email = document.getElementById('email').value;
+            const pwd = document.getElementById('password').value;
+            
+            if (email === 'atharvadarshanwar09@gmail.com' && pwd === 'Stadium@2025') {
+                localStorage.setItem('admin', 'true');
+                window.location.href = 'admin.html';
+            } else {
+                document.getElementById('error').innerText = 'Wrong email or password';
+                document.getElementById('error').style.display = 'block';
+            }
         }
-    }
-</script>
-
+    </script>
 </body>
 </html>
