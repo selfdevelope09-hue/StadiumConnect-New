@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StadiumConnect - Find Vendors</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #fff;
+            color: #1a1a1a;
+        }
+
+        /* Header */
+        .header {
+            position: sticky;
+            top: 0;
+            background: #fff;
+            padding: 16px 80px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #f0f0f0;
+            z-index: 100;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .logo span {
+            color: #ff6b35;
+        }
+
+        .location-chip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f5f5f5;
+            padding: 8px 18px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+
+        .location-chip:hover {
+            background: #e8e8e8;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .nav-buttons a {
+            text-decoration: none;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+
+        .nav-buttons a:first-child {
+            background: transparent;
+            border: 1px solid #e0e0e0;
+            color: #333;
+        }
+
+        .nav-buttons a:last-child {
+            background: #ff6b35;
+            color: white;
+            border: none;
+        }
+
+        /* Hero */
+        .hero {
+            text-align: center;
+            padding: 60px 20px 40px;
+            background: linear-gradient(to bottom, #fff, #fefaf8);
+        }
+
+        .hero h1 {
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .hero h1 span {
+            color: #ff6b35;
+        }
+
+        .hero p {
+            color: #666;
+            font-size: 16px;
+            max-width: 550px;
+            margin: 0 auto;
+        }
+
+        /* Categories Grid */
+        .categories {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+
+        .section-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 24px;
+        }
+
+        .category-card {
+            background: #fff;
+            border: 1px solid #f0f0f0;
+            border-radius: 24px;
+            padding: 32px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .category-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+            border-color: #ffebe3;
+        }
+
+        .category-icon {
+            font-size: 52px;
+            margin-bottom: 16px;
+        }
+
+        .category-card h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .category-card p {
+            font-size: 13px;
+            color: #888;
+        }
+
+        /* Cities */
+        .cities {
+            background: #fefaf8;
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .cities h2 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 32px;
+        }
+
+        .city-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .city-chip {
+            background: #fff;
+            border: 1px solid #e8e8e8;
+            padding: 10px 24px;
+            border-radius: 40px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .city-chip:hover {
+            background: #ff6b35;
+            color: white;
+            border-color: #ff6b35;
+        }
+
+        footer {
+            text-align: center;
+            padding: 32px;
+            font-size: 13px;
+            color: #aaa;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        @media (max-width: 900px) {
+            .header {
+                padding: 16px 24px;
+            }
+            .category-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 16px;
+            }
+            .hero h1 {
+                font-size: 32px;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .category-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="logo" onclick="window.location.href='index.html'">STADIUM<span>CONNECT</span></div>
+    <div class="location-chip" id="locationBtn">
+        <i class="fas fa-map-marker-alt"></i>
+        <span id="locationText">Detect Location</span>
+    </div>
+    <div class="nav-buttons">
+        <a href="login.html">Login</a>
+        <a href="register.html">Register</a>
+    </div>
+</header>
+
+<section class="hero">
+    <h1>Find the perfect <span>vendors</span> for your event</h1>
+    <p>Choose from top-rated decorators, caterers, photographers, bands, and stadiums</p>
+</section>
+
+<section class="categories">
+    <div class="section-title">Browse by category</div>
+    <div class="category-grid">
+        <div class="category-card" onclick="goToCategory('decorator')">
+            <div class="category-icon">🎨</div>
+            <h3>Decorators</h3>
+            <p>200+ professionals</p>
+        </div>
+        <div class="category-card" onclick="goToCategory('photographer')">
+            <div class="category-icon">📸</div>
+            <h3>Photographers</h3>
+            <p>150+ professionals</p>
+        </div>
+        <div class="category-card" onclick="goToCategory('caterer')">
+            <div class="category-icon">🍽️</div>
+            <h3>Caterers</h3>
+            <p>300+ professionals</p>
+        </div>
+        <div class="category-card" onclick="goToCategory('bandbaja')">
+            <div class="category-icon">🎵</div>
+            <h3>Band Baja</h3>
+            <p>100+ professionals</p>
+        </div>
+        <div class="category-card" onclick="goToCategory('stadium')">
+            <div class="category-icon">🏟️</div>
+            <h3>Stadiums</h3>
+            <p>50+ venues</p>
+        </div>
+    </div>
+</section>
+
+<section class="cities">
+    <h2>Popular cities</h2>
+    <div class="city-list">
+        <div class="city-chip" onclick="filterByCity('nagpur')">Nagpur</div>
+        <div class="city-chip" onclick="filterByCity('mumbai')">Mumbai</div>
+        <div class="city-chip" onclick="filterByCity('pune')">Pune</div>
+        <div class="city-chip" onclick="filterByCity('delhi')">Delhi</div>
+        <div class="city-chip" onclick="filterByCity('bangalore')">Bangalore</div>
+        <div class="city-chip" onclick="filterByCity('hyderabad')">Hyderabad</div>
+    </div>
+</section>
+
+<footer>
+    © 2025 StadiumConnect. All rights reserved.
+</footer>
+
+<script>
+    // Redirect to category page
+    function goToCategory(category) {
+        window.location.href = `vendors.html?category=${category}`;
+    }
+
+    function filterByCity(city) {
+        window.location.href = `vendors.html?city=${city}`;
+    }
+
+    // Location Detection
+    const locationBtn = document.getElementById('locationBtn');
+    const locationText = document.getElementById('locationText');
+
+    locationBtn.addEventListener('click', () => {
+        if (navigator.geolocation) {
+            locationText.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Detecting...';
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    locationText.innerHTML = '<i class="fas fa-check-circle"></i> Location on';
+                    setTimeout(() => {
+                        window.location.href = `vendors.html?lat=${lat}&lng=${lng}`;
+                    }, 800);
+                },
+                (error) => {
+                    locationText.innerHTML = '<i class="fas fa-map-marker-alt"></i> Detect Location';
+                    alert('Please allow location access to see nearby vendors.');
+                }
+            );
+        } else {
+            alert('Geolocation is not supported by this browser.');
+        }
+    });
+</script>
+
+</body>
+</html>
