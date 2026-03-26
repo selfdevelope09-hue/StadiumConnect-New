@@ -1,561 +1,188 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Vendor Details - StadiumConnect</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background: #f5f7fb; padding-bottom: 100px; }
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getFirestore, doc, getDoc, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
-        .header {
-            background: white;
-            padding: 16px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #eee;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-        .logo { font-size: 20px; font-weight: 800; cursor: pointer; }
-        .logo span { color: #ff6b35; }
-        .back-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #ff6b35; }
+    const firebaseConfig = {
+        apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
+        authDomain: "stadiumconnect-8fecb.firebaseapp.com",
+        projectId: "stadiumconnect-8fecb",
+        storageBucket: "stadiumconnect-8fecb.firebasestorage.app",
+        messagingSenderId: "458108198578",
+        appId: "1:458108198578:web:83d83646f0e24e718b73ab"
+    };
 
-        .content { max-width: 800px; margin: 0 auto; padding: 20px; }
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
 
-        .vendor-card {
-            background: white;
-            border-radius: 24px;
-            overflow: hidden;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-        .vendor-header {
-            display: flex;
-            gap: 20px;
-            padding: 20px;
-            background: linear-gradient(135deg, #fffaf5, #fff);
-            border-bottom: 1px solid #f0f0f0;
-        }
-        .vendor-avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 40px;
-            object-fit: cover;
-            border: 3px solid #ff6b35;
-        }
-        .vendor-info h1 { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
-        .vendor-rating { display: flex; align-items: center; gap: 8px; }
-        .stars { color: #ffb347; font-size: 14px; letter-spacing: 2px; }
+    const urlParams = new URLSearchParams(window.location.search);
+    const vendorId = urlParams.get('id');
 
-        .info-section { padding: 0 20px; }
-        .info-row {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 14px 0;
-            border-bottom: 1px solid #f0f0f0;
-        }
-        .info-row i { width: 28px; color: #ff6b35; }
-        .price-box {
-            background: #fff5f0;
-            padding: 18px 20px;
-            margin: 20px;
-            border-radius: 20px;
-            display: flex;
-            justify-content: space-between;
-        }
-        .price-value { font-size: 24px; font-weight: 700; color: #ff6b35; }
+    // Inhe window object pe dala hai taaki HTML se access ho sake
+    window.currentVendor = null;
+    window.currentPhotos = [];
+    window.currentPhotoIndex = 0;
+    window.cityAgent = null;
 
-        .gallery-section { padding: 0 20px 20px; }
-        .gallery-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-top: 12px;
+    async function getAgentForCity(city) {
+        try {
+            const agentsSnap = await getDocs(collection(db, "agents"));
+            let agents = [];
+            agentsSnap.forEach(doc => agents.push({ id: doc.id, ...doc.data() }));
+            return agents.find(agent => agent.city?.toLowerCase() === city.toLowerCase());
+        } catch (error) {
+            console.error("Error finding agent:", error);
+            return null;
         }
-        .gallery-item {
-            aspect-ratio: 1;
-            border-radius: 16px;
-            overflow: hidden;
-            cursor: pointer;
-            background: #f5f5f5;
-        }
-        .gallery-item img { width: 100%; height: 100%; object-fit: cover; }
+    }
 
-        .booking-form-card {
-            background: white;
-            border-radius: 24px;
-            padding: 24px;
-            margin-top: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    async function loadVendor() {
+        if (!vendorId) {
+            document.getElementById('vendorDetail').innerHTML = '<div class="loading">Invalid Vendor ID</div>';
+            return;
         }
-        .form-title { font-size: 20px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
-        .form-group { margin-bottom: 18px; }
-        .form-group label { display: block; font-weight: 600; margin-bottom: 8px; color: #333; }
-        .form-group input, .form-group select, .form-group textarea {
-            width: 100%;
-            padding: 14px 16px;
-            border: 1px solid #e0e0e0;
-            border-radius: 16px;
-            font-size: 15px;
-            transition: 0.2s;
-        }
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-            outline: none;
-            border-color: #ff6b35;
-            box-shadow: 0 0 0 3px rgba(255,107,53,0.1);
-        }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        
-        .payment-plan {
-            background: #f8f9fa;
-            border-radius: 20px;
-            padding: 16px;
-            margin: 20px 0;
-            text-align: center;
-        }
-        .installment-steps {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 12px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .step {
-            background: white;
-            padding: 10px 15px;
-            border-radius: 30px;
-            font-weight: 600;
-            color: #ff6b35;
-            border: 1px solid #ff6b35;
-        }
-        
-        .action-buttons {
-            display: flex;
-            gap: 15px;
-            margin-top: 20px;
-        }
-        .call-btn {
-            flex: 1;
-            background: #28a745;
-            color: white;
-            border: none;
-            padding: 16px;
-            border-radius: 50px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-        .call-btn:hover { background: #218838; }
-        .book-btn {
-            flex: 2;
-            background: #ff6b35;
-            color: white;
-            border: none;
-            padding: 16px;
-            border-radius: 50px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-        .book-btn:hover { background: #e55a2b; }
-        .agent-id-field { background: #fff8f0; border-left: 3px solid #ff6b35; padding: 12px; border-radius: 12px; margin-top: 8px; }
-        .optional-badge { font-size: 12px; font-weight: normal; color: #999; margin-left: 8px; }
-        
-        .lightbox {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #000;
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-        }
-        .lightbox.active { display: flex; }
-        .lightbox-image { max-width: 90%; max-height: 80%; object-fit: contain; }
-        .lightbox-close { position: absolute; top: 20px; right: 30px; font-size: 40px; color: white; cursor: pointer; }
-        .lightbox-prev, .lightbox-next {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 48px;
-            color: white;
-            cursor: pointer;
-            background: rgba(0,0,0,0.5);
-            padding: 16px;
-            border-radius: 50%;
-        }
-        .lightbox-prev { left: 20px; }
-        .lightbox-next { right: 20px; }
 
-        @media (max-width: 600px) {
-            .vendor-header { flex-direction: column; text-align: center; }
-            .form-row { grid-template-columns: 1fr; }
-            .action-buttons { flex-direction: column; }
-            .installment-steps { flex-direction: column; align-items: center; }
-        }
-    </style>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getFirestore, doc, getDoc, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
-            authDomain: "stadiumconnect-8fecb.firebaseapp.com",
-            projectId: "stadiumconnect-8fecb",
-            storageBucket: "stadiumconnect-8fecb.firebasestorage.app",
-            messagingSenderId: "458108198578",
-            appId: "1:458108198578:web:83d83646f0e24e718b73ab"
-        };
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const vendorId = urlParams.get('id');
-
-        let currentVendor = null;
-        let currentPhotos = [];
-        let currentPhotoIndex = 0;
-        let cityAgent = null;
-
-        // ========== CITY-WISE AGENT FINDER ==========
-        async function getAgentForCity(city) {
-            try {
-                const agentsSnap = await getDocs(collection(db, "agents"));
-                let agents = [];
-                agentsSnap.forEach(doc => agents.push({ id: doc.id, ...doc.data() }));
-                
-                // Find agent in same city
-                const cityAgentFound = agents.find(agent => agent.city?.toLowerCase() === city.toLowerCase());
-                return cityAgentFound;
-            } catch (error) {
-                console.error("Error finding agent:", error);
-                return null;
+        const vendorDoc = await getDoc(doc(db, 'vendors', vendorId));
+        if (vendorDoc.exists()) {
+            window.currentVendor = { id: vendorDoc.id, ...vendorDoc.data() };
+            window.currentPhotos = window.currentVendor.photos || [];
+            if (window.currentPhotos.length === 0 && window.currentVendor.imageUrl) {
+                window.currentPhotos = [window.currentVendor.imageUrl];
             }
-        }
-
-        async function loadVendor() {
-            const vendorDoc = await getDoc(doc(db, 'vendors', vendorId));
-            if (vendorDoc.exists()) {
-                currentVendor = { id: vendorDoc.id, ...vendorDoc.data() };
-                currentPhotos = currentVendor.photos || [];
-                if (currentPhotos.length === 0 && currentVendor.imageUrl) currentPhotos = [currentVendor.imageUrl];
-                
-                // Find agent for this vendor's city
-                if (currentVendor.city) {
-                    cityAgent = await getAgentForCity(currentVendor.city);
-                    console.log("Agent found for city", currentVendor.city, cityAgent);
-                }
-                
-                renderVendor();
-                updatePaymentPlan();
-                setupCallButton();
-            } else {
-                document.getElementById('vendorDetail').innerHTML = '<div class="loading">Vendor not found</div>';
-            }
-        }
-
-        function setupCallButton() {
-            const callBtn = document.getElementById('callBtn');
-            if (!callBtn) return;
             
-            if (cityAgent && cityAgent.phone) {
-                callBtn.onclick = () => {
-                    window.location.href = `tel:${cityAgent.phone}`;
-                };
-                callBtn.innerHTML = `<i class="fas fa-phone-alt"></i> Call ${cityAgent.name || 'Agent'} (${cityAgent.city})`;
-                callBtn.style.display = 'flex';
-                callBtn.style.background = '#28a745';
-                console.log("Call button setup for agent:", cityAgent.name);
-            } else {
-                callBtn.style.display = 'none';
-                console.log("No agent found for city:", currentVendor?.city);
+            if (window.currentVendor.city) {
+                window.cityAgent = await getAgentForCity(window.currentVendor.city);
+                if (window.cityAgent) {
+                    const suggestionDiv = document.getElementById('agentSuggestion');
+                    if (suggestionDiv) {
+                        suggestionDiv.innerHTML = `💡 Agent ${window.cityAgent.name || window.cityAgent.id} (${window.cityAgent.city}) will be assigned automatically.`;
+                    }
+                }
             }
+            
+            renderVendor();
+            updatePaymentPlan();
+            setupCallButton();
+        } else {
+            document.getElementById('vendorDetail').innerHTML = '<div class="loading">Vendor not found</div>';
         }
+    }
 
-        function getStars(rating) {
-            let stars = '';
-            for (let i = 0; i < Math.floor(rating); i++) stars += '★';
-            for (let i = stars.length; i < 5; i++) stars += '☆';
-            return stars;
+    function setupCallButton() {
+        const callBtn = document.getElementById('callBtn');
+        if (!callBtn) return;
+        
+        if (window.cityAgent && window.cityAgent.phone) {
+            callBtn.onclick = () => { window.location.href = `tel:${window.cityAgent.phone}`; };
+            callBtn.innerHTML = `<i class="fas fa-phone-alt"></i> Call ${window.cityAgent.name || 'Agent'}`;
+            callBtn.style.display = 'flex';
+        } else {
+            callBtn.style.display = 'none';
         }
+    }
 
-        function renderGallery() {
-            if (!currentPhotos.length) return '<div class="gallery-grid"><div style="background:#f5f5f5;padding:40px;text-align:center;">No photos yet</div></div>';
-            return `<div class="gallery-grid">${currentPhotos.slice(0,6).map((p,i)=>`<div class="gallery-item" onclick="openLightbox(${i})"><img src="${p}"></div>`).join('')}</div>`;
-        }
-
-        function renderVendor() {
-            document.getElementById('vendorDetail').innerHTML = `
-                <div class="vendor-card">
-                    <div class="vendor-header">
-                        <img src="${currentVendor.imageUrl || 'https://via.placeholder.com/80'}" class="vendor-avatar" onerror="this.src='https://via.placeholder.com/80'">
-                        <div class="vendor-info">
-                            <h1>${currentVendor.name || 'Vendor'}</h1>
-                            <div class="vendor-rating"><div class="stars">${getStars(currentVendor.rating || 4.5)}</div><span>${currentVendor.rating || 4.5} (${currentVendor.reviewsCount || 0} reviews)</span></div>
+    // Lightbox and Render functions (Global exposure)
+    window.renderVendor = () => {
+        const v = window.currentVendor;
+        document.getElementById('vendorDetail').innerHTML = `
+            <div class="vendor-card">
+                <div class="vendor-header">
+                    <img src="${v.imageUrl || 'https://via.placeholder.com/80'}" class="vendor-avatar">
+                    <div class="vendor-info">
+                        <h1>${v.name || 'Vendor'}</h1>
+                        <div class="vendor-rating">
+                            <div class="stars">${'★'.repeat(Math.floor(v.rating || 4))}${'☆'.repeat(5-Math.floor(v.rating || 4))}</div>
+                            <span>${v.rating || 4.5} (${v.reviewsCount || 0} reviews)</span>
                         </div>
-                    </div>
-                    <div class="info-section">
-                        <div class="info-row"><i class="fas fa-map-marker-alt"></i> ${currentVendor.location || currentVendor.city || 'Location'}</div>
-                        <div class="info-row"><i class="fas fa-briefcase"></i> ${currentVendor.experience || 'Experienced vendor'}</div>
-                        <div class="info-row"><i class="fas fa-tag"></i> ${currentVendor.category || 'Category'}</div>
-                        <div class="price-box"><span>Price Range</span><span class="price-value">${currentVendor.priceRange || 'Contact for price'}</span></div>
-                    </div>
-                    <div class="gallery-section">
-                        <div style="font-weight:600; margin-bottom:12px;">📷 Work Portfolio</div>
-                        ${renderGallery()}
                     </div>
                 </div>
-            `;
+                <div class="info-section">
+                    <div class="info-row"><i class="fas fa-map-marker-alt"></i> ${v.location || v.city || 'Location'}</div>
+                    <div class="info-row"><i class="fas fa-tag"></i> ${v.category || 'Category'}</div>
+                    <div class="price-box"><span>Price Range</span><span class="price-value">${v.priceRange || 'Contact for price'}</span></div>
+                </div>
+                <div class="gallery-section">
+                    <div style="font-weight:600; margin-bottom:12px;">📷 Work Portfolio</div>
+                    <div class="gallery-grid">
+                        ${window.currentPhotos.slice(0,6).map((p,i)=>`<div class="gallery-item" onclick="openLightbox(${i})"><img src="${p}"></div>`).join('')}
+                    </div>
+                </div>
+            </div>`;
+    };
+
+    window.updatePaymentPlan = () => {
+        const isDecorator = window.currentVendor?.category?.toLowerCase() === 'decorator';
+        const planDiv = document.getElementById('paymentPlan');
+        planDiv.innerHTML = isDecorator ? `
+            <div class="payment-plan">
+                <strong>📅 Payment Plan (Decorator)</strong>
+                <div class="installment-steps">
+                    <span class="step">30% Adv.</span> <span class="step">30% Mid.</span> <span class="step">40% Final</span>
+                </div>
+            </div>` : `
+            <div class="payment-plan"><strong>💰 Full Payment at Booking</strong></div>`;
+    };
+
+    // --- MAIN FIX FOR BOOKING ---
+    window.submitBooking = async () => {
+        const user = auth.currentUser;
+        if (!user) { alert('Please login first'); window.location.href = 'login.html'; return; }
+
+        const name = document.getElementById('userName').value.trim();
+        const phone = document.getElementById('userPhone').value.trim();
+        const date = document.getElementById('eventDate').value;
+        const loc = document.getElementById('eventLocation').value.trim();
+
+        if (!name || !phone || !date || !loc) {
+            alert('Please fill all required fields (*)');
+            return;
         }
 
-        function updatePaymentPlan() {
-            const isDecorator = currentVendor.category === 'decorator';
-            const planDiv = document.getElementById('paymentPlan');
-            
-            if (isDecorator) {
-                planDiv.innerHTML = `
-                    <div class="payment-plan">
-                        <strong>📅 Payment Plan (Decorator)</strong>
-                        <div class="installment-steps">
-                            <span class="step">1st Payment - 30%</span>
-                            <span class="step">2nd Payment - 30%</span>
-                            <span class="step">Final Payment - 40%</span>
-                        </div>
-                        <p style="font-size: 12px; color: #666; margin-top: 10px;">Pay in 3 easy installments</p>
-                    </div>
-                `;
-            } else {
-                planDiv.innerHTML = `
-                    <div class="payment-plan">
-                        <strong>💰 Full Payment</strong>
-                        <div class="installment-steps">
-                            <span class="step">100% at Booking</span>
-                        </div>
-                    </div>
-                `;
-            }
-        }
+        const btn = document.querySelector('.book-btn');
+        btn.disabled = true;
+        btn.innerHTML = "Sending...";
 
-        window.submitBooking = async () => {
-            const user = auth.currentUser;
-            if (!user) { 
-                alert('Please login first'); 
-                window.location.href = 'login.html'; 
-                return; 
-            }
-            
-            const userName = document.getElementById('userName').value;
-            const userPhone = document.getElementById('userPhone').value;
-            const eventDate = document.getElementById('eventDate').value;
-            const eventLocation = document.getElementById('eventLocation').value;
-            
-            if (!userName || !userPhone || !eventDate || !eventLocation) {
-                alert('Please fill all required fields: Name, Phone, Event Date, Event Location');
-                return;
-            }
-            
-            let agentId = document.getElementById('agentId').value;
-            
-            // If no agent ID entered, use city-based agent
-            if (!agentId && cityAgent) {
-                agentId = cityAgent.id;
-                document.getElementById('agentId').value = agentId;
-            }
-            
+        try {
             const bookingData = {
-                vendorId: currentVendor.id,
-                vendorName: currentVendor.name,
-                vendorCity: currentVendor.city,
+                vendorId: vendorId,
+                vendorName: window.currentVendor?.name || 'Unknown',
                 userId: user.uid,
-                userName: userName,
-                userEmail: user.email,
-                userPhone: userPhone,
-                eventName: document.getElementById('eventName').value || 'Event',
-                eventDate: eventDate,
-                eventTime: document.getElementById('eventTime').value,
-                guestCount: parseInt(document.getElementById('guestCount').value) || 0,
-                eventLocation: eventLocation,
+                userName: name,
+                userPhone: phone,
+                eventDate: date,
+                eventLocation: loc,
                 eventType: document.getElementById('eventType').value,
-                specialRequests: document.getElementById('specialRequests').value || '',
-                agentId: agentId,
-                amount: currentVendor.priceRange || 'Contact for price',
+                agentId: document.getElementById('agentId').value || (window.cityAgent ? window.cityAgent.id : ''),
                 status: 'pending',
                 createdAt: new Date().toISOString()
             };
-            
-            try {
-                await addDoc(collection(db, 'bookings'), bookingData);
-                alert('✅ Booking request sent successfully! Vendor will contact you soon.');
-                window.location.href = 'dashboard.html';
-            } catch (error) {
-                console.error('Error saving booking:', error);
-                alert('❌ Failed to send booking. Error: ' + error.message);
-            }
-        };
 
-        // Lightbox functions
-        window.openLightbox = (index) => { 
-            currentPhotoIndex = index; 
-            updateLightbox(); 
-            document.getElementById('lightbox').classList.add('active'); 
-        };
-        function updateLightbox() { 
-            document.getElementById('lightboxImage').src = currentPhotos[currentPhotoIndex]; 
-            document.getElementById('lightboxCounter').innerText = `${currentPhotoIndex+1}/${currentPhotos.length}`;
+            await addDoc(collection(db, 'bookings'), bookingData);
+            alert('✅ Booking request sent successfully!');
+            window.location.href = 'dashboard.html';
+        } catch (error) {
+            console.error(error);
+            alert('❌ Error: ' + error.message);
+            btn.disabled = false;
+            btn.innerHTML = "Book Now";
         }
-        window.closeLightbox = () => { 
-            document.getElementById('lightbox').classList.remove('active'); 
-        };
-        window.prevPhoto = (e) => { 
-            e.stopPropagation(); 
-            if (currentPhotos.length === 0) return;
-            currentPhotoIndex = (currentPhotoIndex - 1 + currentPhotos.length) % currentPhotos.length; 
-            updateLightbox(); 
-        };
-        window.nextPhoto = (e) => { 
-            e.stopPropagation(); 
-            if (currentPhotos.length === 0) return;
-            currentPhotoIndex = (currentPhotoIndex + 1) % currentPhotos.length; 
-            updateLightbox(); 
-        };
+    };
 
-        // Auth state for auto-fill name
-        onAuthStateChanged(auth, (user) => {
-            if (user && !document.getElementById('userName').value) {
-                document.getElementById('userName').value = user.displayName || '';
-            }
-        });
-
-        loadVendor();
-    </script>
-</head>
-<body>
-
-<header class="header">
-    <button class="back-btn" onclick="window.location.href='vendors.html'">←</button>
-    <div class="logo" onclick="window.location.href='index.html'">STADIUM<span>CONNECT</span></div>
-    <div style="width: 40px;"></div>
-</header>
-
-<div class="content">
-    <div id="vendorDetail"></div>
-
-    <!-- Booking Form -->
-    <div class="booking-form-card">
-        <div class="form-title"><i class="fas fa-calendar-alt"></i> Book This Vendor</div>
-        
-        <div id="paymentPlan"></div>
-        
-        <div class="form-group">
-            <label>Your Full Name *</label>
-            <input type="text" id="userName" placeholder="Enter your full name" required>
-        </div>
-        
-        <div class="form-group">
-            <label>Your Phone Number *</label>
-            <input type="tel" id="userPhone" placeholder="Enter your phone number" required>
-        </div>
-        
-        <div class="form-group">
-            <label>Event Name</label>
-            <input type="text" id="eventName" placeholder="e.g., Wedding Reception, Birthday Party">
-        </div>
-        
-        <div class="form-row">
-            <div class="form-group">
-                <label>Event Date *</label>
-                <input type="date" id="eventDate" required>
-            </div>
-            <div class="form-group">
-                <label>Event Time</label>
-                <select id="eventTime">
-                    <option value="Morning (6am-12pm)">Morning (6am-12pm)</option>
-                    <option value="Afternoon (12pm-6pm)">Afternoon (12pm-6pm)</option>
-                    <option value="Evening (6pm-12am)">Evening (6pm-12am)</option>
-                    <option value="Full Day">Full Day</option>
-                </select>
-            </div>
-        </div>
-        
-        <div class="form-row">
-            <div class="form-group">
-                <label>Expected Guests</label>
-                <input type="number" id="guestCount" placeholder="Number of guests">
-            </div>
-            <div class="form-group">
-                <label>Event Type *</label>
-                <select id="eventType" required>
-                    <option value="Wedding">Wedding</option>
-                    <option value="Corporate Event">Corporate Event</option>
-                    <option value="Birthday Party">Birthday Party</option>
-                    <option value="Concert">Concert</option>
-                    <option value="Sports Event">Sports Event</option>
-                    <option value="Other">Other</option>
-                </select>
-            </div>
-        </div>
-        
-        <div class="form-group">
-            <label>Event Location *</label>
-            <input type="text" id="eventLocation" placeholder="Full address with city, pincode" required>
-        </div>
-        
-        <div class="form-group">
-            <label>Special Requests</label>
-            <textarea id="specialRequests" rows="2" placeholder="Any special requirements..."></textarea>
-        </div>
-        
-        <div class="agent-id-field">
-            <label>Agent ID <span class="optional-badge">(if referred by an agent)</span></label>
-            <input type="text" id="agentId" placeholder="Enter agent ID if any">
-            <div id="agentSuggestion" style="font-size:12px; color:#ff6b35; margin-top:5px;"></div>
-        </div>
-        
-        <div class="action-buttons">
-            <button id="callBtn" class="call-btn" style="display:none;"><i class="fas fa-phone-alt"></i> Call Agent</button>
-            <button class="book-btn" onclick="submitBooking()"><i class="fas fa-check-circle"></i> Book Now</button>
-        </div>
-    </div>
-</div>
-
-<!-- Lightbox -->
-<div id="lightbox" class="lightbox" onclick="closeLightbox()">
-    <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
-    <span class="lightbox-prev" onclick="prevPhoto(event)">❮</span>
-    <img id="lightboxImage" class="lightbox-image">
-    <span class="lightbox-next" onclick="nextPhoto(event)">❯</span>
-    <div id="lightboxCounter" style="position:absolute; bottom:30px; left:0; right:0; text-align:center; color:white; background:rgba(0,0,0,0.5); padding:8px; width:fit-content; margin:0 auto; border-radius:20px;">1/1</div>
-</div>
-
-<script>
-    // Show agent suggestion in booking form
-    if (cityAgent) {
-        const suggestionDiv = document.getElementById('agentSuggestion');
-        if (suggestionDiv) {
-            suggestionDiv.innerHTML = `💡 Agent ${cityAgent.name || cityAgent.id} (${cityAgent.city}) will be assigned automatically if you don't enter an ID.`;
-        }
+    // Lightbox Global Functions
+    window.openLightbox = (i) => { window.currentPhotoIndex = i; updateLightbox(); document.getElementById('lightbox').classList.add('active'); };
+    window.closeLightbox = () => { document.getElementById('lightbox').classList.remove('active'); };
+    window.nextPhoto = (e) => { e.stopPropagation(); window.currentPhotoIndex = (window.currentPhotoIndex + 1) % window.currentPhotos.length; updateLightbox(); };
+    window.prevPhoto = (e) => { e.stopPropagation(); window.currentPhotoIndex = (window.currentPhotoIndex - 1 + window.currentPhotos.length) % window.currentPhotos.length; updateLightbox(); };
+    function updateLightbox() { 
+        document.getElementById('lightboxImage').src = window.currentPhotos[window.currentPhotoIndex]; 
+        document.getElementById('lightboxCounter').innerText = `${window.currentPhotoIndex+1}/${window.currentPhotos.length}`;
     }
+
+    onAuthStateChanged(auth, (user) => {
+        if (user) document.getElementById('userName').value = user.displayName || '';
+    });
+
+    loadVendor();
 </script>
 
-</body>
-</html>
