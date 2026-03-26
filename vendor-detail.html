@@ -19,16 +19,16 @@
     const urlParams = new URLSearchParams(window.location.search);
     const vendorId = urlParams.get('id');
 
-    // Variables ko window pe attach kiya taaki functions unhe har jagah se access kar sakein
+    // Global variables taaki HTML buttons access kar sakein
     window.currentVendor = null;
     window.currentPhotos = [];
     window.currentPhotoIndex = 0;
     window.cityAgent = null;
 
-    // 1. Load Vendor Data
+    // --- 1. LOAD DATA ---
     async function loadVendor() {
         if (!vendorId) {
-            document.getElementById('vendorDetail').innerHTML = '<div>ID missing in URL</div>';
+            document.getElementById('vendorDetail').innerHTML = '<div style="padding:20px; text-align:center;">Vendor ID missing!</div>';
             return;
         }
 
@@ -41,48 +41,46 @@
                     window.currentPhotos = [window.currentVendor.imageUrl];
                 }
                 
-                // Agent find karein city ke basis pe
+                // Agent dhoondo city ke liye
                 if (window.currentVendor.city) {
                     const agentsSnap = await getDocs(collection(db, "agents"));
-                    agentsSnap.forEach(doc => {
-                        const data = doc.data();
-                        if (data.city && data.city.toLowerCase() === window.currentVendor.city.toLowerCase()) {
-                            window.cityAgent = { id: doc.id, ...data };
+                    agentsSnap.forEach(docSnap => {
+                        const agentData = docSnap.data();
+                        if (agentData.city && agentData.city.toLowerCase() === window.currentVendor.city.toLowerCase()) {
+                            window.cityAgent = { id: docSnap.id, ...agentData };
                         }
                     });
                 }
                 
-                renderVendorUI();
+                renderVendor();
                 updatePaymentPlan();
-                setupCallButton();
+                setupAgentUI();
             } else {
-                document.getElementById('vendorDetail').innerHTML = '<div>Vendor not found in database</div>';
+                document.getElementById('vendorDetail').innerHTML = '<div style="padding:20px; text-align:center;">Vendor Not Found!</div>';
             }
         } catch (err) {
-            console.error("Load error:", err);
-            document.getElementById('vendorDetail').innerHTML = '<div>Error loading data. Check console.</div>';
+            console.error("Error loading vendor:", err);
         }
     }
 
-    // 2. Render UI
-    function renderVendorUI() {
+    // --- 2. RENDER FUNCTIONS ---
+    function renderVendor() {
         const v = window.currentVendor;
-        const rating = v.rating || 4.5;
-        let stars = '★'.repeat(Math.floor(rating)) + '☆'.repeat(5 - Math.floor(rating));
-
+        const stars = '★'.repeat(Math.floor(v.rating || 4)) + '☆'.repeat(5 - Math.floor(v.rating || 4));
+        
         document.getElementById('vendorDetail').innerHTML = `
             <div class="vendor-card">
                 <div class="vendor-header">
                     <img src="${v.imageUrl || 'https://via.placeholder.com/80'}" class="vendor-avatar">
                     <div class="vendor-info">
                         <h1>${v.name || 'Vendor'}</h1>
-                        <div class="vendor-rating"><div class="stars">${stars}</div><span>${rating}</span></div>
+                        <div class="vendor-rating"><div class="stars">${stars}</div><span>${v.rating || 4.5}</span></div>
                     </div>
                 </div>
                 <div class="info-section">
-                    <div class="info-row"><i class="fas fa-map-marker-alt"></i> ${v.location || v.city || 'N/A'}</div>
+                    <div class="info-row"><i class="fas fa-map-marker-alt"></i> ${v.location || v.city || 'Location'}</div>
                     <div class="info-row"><i class="fas fa-tag"></i> ${v.category || 'Vendor'}</div>
-                    <div class="price-box"><span>Price</span><span class="price-value">${v.priceRange || 'Contact'}</span></div>
+                    <div class="price-box"><span>Price Range</span><span class="price-value">${v.priceRange || 'Contact'}</span></div>
                 </div>
                 <div class="gallery-section">
                     <div style="font-weight:600; margin-bottom:12px;">📷 Work Portfolio</div>
@@ -95,80 +93,82 @@
 
     function updatePaymentPlan() {
         const planDiv = document.getElementById('paymentPlan');
-        if (window.currentVendor.category === 'decorator') {
-            planDiv.innerHTML = `<div class="payment-plan"><strong>📅 3-Step Payment Plan Active</strong></div>`;
-        } else {
-            planDiv.innerHTML = `<div class="payment-plan"><strong>💰 Full Payment at Booking</strong></div>`;
-        }
+        const isDecorator = window.currentVendor?.category?.toLowerCase() === 'decorator';
+        planDiv.innerHTML = isDecorator ? 
+            `<div class="payment-plan"><strong>📅 3-Installment Plan (Decorator)</strong></div>` : 
+            `<div class="payment-plan"><strong>💰 Full Payment at Booking</strong></div>`;
     }
 
-    function setupCallButton() {
+    function setupAgentUI() {
         const callBtn = document.getElementById('callBtn');
-        if (window.cityAgent && window.cityAgent.phone) {
-            callBtn.style.display = 'flex';
-            callBtn.onclick = () => window.location.href = `tel:${window.cityAgent.phone}`;
-            callBtn.innerHTML = `<i class="fas fa-phone-alt"></i> Call Agent`;
-            
-            const sugg = document.getElementById('agentSuggestion');
-            if(sugg) sugg.innerHTML = `💡 Agent ${window.cityAgent.name} will handle your booking.`;
+        const sugg = document.getElementById('agentSuggestion');
+        if (window.cityAgent) {
+            if (callBtn) {
+                callBtn.style.display = 'flex';
+                callBtn.onclick = () => window.location.href = `tel:${window.cityAgent.phone}`;
+                callBtn.innerHTML = `<i class="fas fa-phone-alt"></i> Call Agent (${window.cityAgent.name})`;
+            }
+            if (sugg) sugg.innerHTML = `💡 Agent ${window.cityAgent.name} will be assigned automatically.`;
         }
     }
 
-    // 3. BOOKING FUNCTION (Most Important)
+    // --- 3. THE BOOKING FIX ---
     window.submitBooking = async () => {
         const user = auth.currentUser;
-        if (!user) { alert('Please login first'); return; }
+        if (!user) { alert('Please login to book!'); window.location.href='login.html'; return; }
 
-        const bookingBtn = document.querySelector('.book-btn');
-        const originalText = bookingBtn.innerHTML;
+        const name = document.getElementById('userName').value.trim();
+        const phone = document.getElementById('userPhone').value.trim();
+        const date = document.getElementById('eventDate').value;
+        const location = document.getElementById('eventLocation').value.trim();
 
-        // Form values
-        const data = {
-            vendorId: vendorId,
-            vendorName: window.currentVendor?.name || 'Unknown',
-            userId: user.uid,
-            userName: document.getElementById('userName').value,
-            userPhone: document.getElementById('userPhone').value,
-            eventDate: document.getElementById('eventDate').value,
-            eventLocation: document.getElementById('eventLocation').value,
-            eventType: document.getElementById('eventType').value,
-            agentId: document.getElementById('agentId').value || (window.cityAgent ? window.cityAgent.id : 'Direct'),
-            status: 'pending',
-            createdAt: new Date().toISOString()
-        };
-
-        if (!data.userName || !data.userPhone || !data.eventDate || !data.eventLocation) {
-            alert('Please fill all marked (*) fields');
+        if (!name || !phone || !date || !location) {
+            alert('Please fill all required fields (*)');
             return;
         }
 
+        const btn = document.querySelector('.book-btn');
+        const originalText = btn.innerHTML;
+        
         try {
-            bookingBtn.disabled = true;
-            bookingBtn.innerHTML = "Processing...";
-            await addDoc(collection(db, 'bookings'), data);
-            alert('✅ Booking Request Sent!');
+            btn.disabled = true;
+            btn.innerHTML = "Booking...";
+
+            const bookingData = {
+                vendorId: vendorId,
+                vendorName: window.currentVendor?.name || 'Unknown',
+                userId: user.uid,
+                userName: name,
+                userPhone: phone,
+                eventDate: date,
+                eventLocation: location,
+                eventType: document.getElementById('eventType').value,
+                agentId: document.getElementById('agentId').value || (window.cityAgent ? window.cityAgent.id : 'Direct'),
+                status: 'pending',
+                createdAt: new Date().toISOString()
+            };
+
+            await addDoc(collection(db, 'bookings'), bookingData);
+            alert('✅ Booking request sent! Check your dashboard.');
             window.location.href = 'dashboard.html';
-        } catch (err) {
-            alert('❌ Error: ' + err.message);
-            bookingBtn.disabled = false;
-            bookingBtn.innerHTML = originalText;
+        } catch (error) {
+            console.error(error);
+            alert('❌ Booking failed: ' + error.message);
+            btn.disabled = false;
+            btn.innerHTML = originalText;
         }
     };
 
-    // 4. Lightbox Functions
-    window.openLightbox = (index) => {
-        window.currentPhotoIndex = index;
-        document.getElementById('lightboxImage').src = window.currentPhotos[index];
-        document.getElementById('lightbox').classList.add('active');
-    };
-    window.closeLightbox = () => document.getElementById('lightbox').classList.remove('active');
-
-    // Auth state logic
+    // Lightbox & Helper functions
+    window.openLightbox = (i) => { window.currentPhotoIndex = i; document.getElementById('lightboxImage').src = window.currentPhotos[i]; document.getElementById('lightbox').classList.add('active'); };
+    window.closeLightbox = () => { document.getElementById('lightbox').classList.remove('active'); };
+    
     onAuthStateChanged(auth, (user) => {
-        if (user) document.getElementById('userName').value = user.displayName || '';
+        if (user && !document.getElementById('userName').value) {
+            document.getElementById('userName').value = user.displayName || '';
+        }
     });
 
-    // Start loading
     loadVendor();
 </script>
 
