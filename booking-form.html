@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Book Vendor - StadiumConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: #f5f7fb; padding: 20px; }
+        .container { max-width: 550px; margin: 0 auto; }
+        .card { background: white; border-radius: 28px; padding: 28px; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        h2 { font-size: 24px; margin-bottom: 8px; color: #1a1a1a; }
+        .subtitle { color: #666; margin-bottom: 24px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-weight: 600; margin-bottom: 8px; color: #333; }
+        input, select, textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 16px;
+            font-size: 15px;
+            transition: 0.2s;
+        }
+        input:focus, select:focus { outline: none; border-color: #ff6b35; box-shadow: 0 0 0 3px rgba(255,107,53,0.1); }
+        .optional-badge { font-size: 12px; font-weight: normal; color: #999; margin-left: 8px; }
+        .payment-plan {
+            background: #f8f9fa;
+            border-radius: 20px;
+            padding: 16px;
+            margin: 20px 0;
+        }
+        .installment-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .installment-amount { font-weight: 700; color: #ff6b35; }
+        .total-amount { font-size: 20px; font-weight: 800; color: #ff6b35; text-align: right; margin-top: 12px; }
+        .agent-id-field { background: #fff8f0; border-left: 3px solid #ff6b35; padding: 12px; border-radius: 12px; margin-top: 8px; }
+        .btn-submit {
+            width: 100%;
+            background: #ff6b35;
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .btn-submit:hover { background: #e55a2b; }
+        .call-agent-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 50px;
+            width: 100%;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        @media (max-width: 550px) { .container { padding: 0; } }
+    </style>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getFirestore, doc, getDoc, addDoc, collection, updateDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
+            authDomain: "stadiumconnect-8fecb.firebaseapp.com",
+            projectId: "stadiumconnect-8fecb",
+            storageBucket: "stadiumconnect-8fecb.firebasestorage.app",
+            messagingSenderId: "458108198578",
+            appId: "1:458108198578:web:83d83646f0e24e718b73ab"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const vendorId = urlParams.get('id');
+        let vendor = null;
+
+        async function loadVendor() {
+            const vendorDoc = await getDoc(doc(db, 'vendors', vendorId));
+            if (vendorDoc.exists()) vendor = { id: vendorDoc.id, ...vendorDoc.data() };
+            else alert('Vendor not found');
+            document.getElementById('vendorName').innerText = vendor?.name || 'Vendor';
+            document.getElementById('vendorCategory').innerText = vendor?.category || '-';
+            document.getElementById('vendorPhone').innerText = vendor?.phone || 'Not available';
+            document.getElementById('agentPhone').innerText = vendor?.agentPhone || 'Not assigned';
+            
+            const amount = vendor?.priceRange ? parseInt(vendor.priceRange.replace(/[^0-9]/g, '')) || 50000 : 50000;
+            const isDecorator = vendor?.category === 'decorator';
+            
+            if (isDecorator) {
+                const installment1 = Math.round(amount * 0.3);
+                const installment2 = Math.round(amount * 0.3);
+                const installment3 = Math.round(amount * 0.4);
+                document.getElementById('paymentPlan').innerHTML = `
+                    <div class="payment-plan">
+                        <strong>📅 Payment Plan (Decorator)</strong>
+                        <div class="installment-item"><span>1st Installment (30%)</span><span class="installment-amount">₹${installment1.toLocaleString()}</span></div>
+                        <div class="installment-item"><span>2nd Installment (30%)</span><span class="installment-amount">₹${installment2.toLocaleString()}</span></div>
+                        <div class="installment-item"><span>Final Installment (40%)</span><span class="installment-amount">₹${installment3.toLocaleString()}</span></div>
+                        <div class="total-amount">Total: ₹${amount.toLocaleString()}</div>
+                    </div>
+                `;
+                document.getElementById('paymentType').value = 'installment';
+            } else {
+                document.getElementById('paymentPlan').innerHTML = `
+                    <div class="payment-plan">
+                        <strong>💰 Full Payment</strong>
+                        <div class="installment-item"><span>Total Amount</span><span class="installment-amount">₹${amount.toLocaleString()}</span></div>
+                    </div>
+                `;
+                document.getElementById('paymentType').value = 'full';
+            }
+        }
+
+        window.callAgent = () => {
+            if (vendor?.agentPhone) window.location.href = `tel:${vendor.agentPhone}`;
+            else alert('Agent phone not available');
+        };
+
+        document.getElementById('bookingForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const user = auth.currentUser;
+            if (!user) { alert('Please login first'); window.location.href = 'login.html'; return; }
+            
+            const bookingData = {
+                vendorId: vendor.id,
+                vendorName: vendor.name,
+                vendorCategory: vendor.category,
+                userId: user.uid,
+                userName: user.displayName || user.email,
+                userPhone: document.getElementById('userPhone').value,
+                eventLocation: document.getElementById('eventLocation').value,
+                eventDate: document.getElementById('eventDate').value,
+                eventType: document.getElementById('eventType').value,
+                agentId: document.getElementById('agentId').value || '',
+                amount: vendor?.priceRange ? parseInt(vendor.priceRange.replace(/[^0-9]/g, '')) || 50000 : 50000,
+                paymentType: document.getElementById('paymentType').value,
+                status: 'pending',
+                createdAt: new Date().toISOString()
+            };
+            
+            const docRef = await addDoc(collection(db, 'bookings'), bookingData);
+            alert('✅ Booking created! Proceed to payment.');
+            window.location.href = `payment-page.html?id=${docRef.id}`;
+        });
+
+        loadVendor();
+    </script>
+</head>
+<body>
+<div class="container">
+    <div class="card">
+        <h2>📋 Book <span id="vendorName">Vendor</span></h2>
+        <div class="subtitle">Complete your booking details</div>
+        
+        <button class="call-agent-btn" onclick="callAgent()"><i class="fas fa-phone-alt"></i> Call Agent Now</button>
+        
+        <div class="info-row" style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid #eee;">
+            <span>Category:</span><strong id="vendorCategory">-</strong>
+        </div>
+        <div class="info-row" style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid #eee;">
+            <span>Vendor Phone:</span><strong id="vendorPhone">-</strong>
+        </div>
+        <div class="info-row" style="display:flex; justify-content:space-between; padding:12px 0;">
+            <span>Agent Phone:</span><strong id="agentPhone">-</strong>
+        </div>
+        
+        <div id="paymentPlan"></div>
+        
+        <form id="bookingForm">
+            <input type="hidden" id="paymentType" value="full">
+            <div class="form-group"><label>Your Phone Number *</label><input type="tel" id="userPhone" required placeholder="Enter your phone number"></div>
+            <div class="form-group"><label>Event Location *</label><input type="text" id="eventLocation" required placeholder="Full address with city"></div>
+            <div class="form-group"><label>Event Date *</label><input type="date" id="eventDate" required></div>
+            <div class="form-group"><label>Event Type *</label><select id="eventType" required><option>Wedding</option><option>Corporate</option><option>Birthday</option><option>Concert</option><option>Other</option></select></div>
+            <div class="agent-id-field"><label>Agent ID (Optional) <span class="optional-badge">if referred by agent</span></label><input type="text" id="agentId" placeholder="Enter agent ID if any"></div>
+            <button type="submit" class="btn-submit">Proceed to Payment →</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>
