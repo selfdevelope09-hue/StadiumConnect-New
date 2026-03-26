@@ -15,18 +15,21 @@
         button:hover { opacity: 0.8; transform: translateY(-1px); }
         .btn-delete { background: #ff4757; }
         .btn-edit { background: #ffa502; }
-        .btn-save { background: #2ed573; width: 100%; margin-top: 15px; font-size: 16px; }
+        .btn-save { background: #2ed573; width: 100%; margin-top: 15px; font-size: 16px; font-weight: bold;}
+        .btn-save:disabled { background: #a4b0be; cursor: not-allowed; }
 
         /* Table */
         .table-container { overflow-x: auto; margin-top: 15px; }
         table { width: 100%; border-collapse: collapse; background: white; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 14px; }
         th { background: #f8f9fa; color: #666; font-size: 13px; text-transform: uppercase; }
+        .vendor-img-td { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; }
 
         /* Form Elements */
-        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; outline: none; }
+        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 14px; }
         input:focus, select:focus { border-color: #ff6b35; }
-
+        .file-input-label { display: block; margin-top: 8px; font-weight: 600; color: #666; font-size: 14px; }
+        
         /* Tabs */
         .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
         .tab { background: #fff; color: #666; border: 1px solid #ddd; }
@@ -37,7 +40,11 @@
         /* Modal */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 1000; }
         .modal-content { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; position: relative; }
-        .close { position: absolute; right: 20px; top: 15px; font-size: 24px; cursor: pointer; }
+        .close { position: absolute; right: 20px; top: 15px; font-size: 24px; cursor: pointer; color: #666;}
+
+        /* Upload Progress */
+        #uploadProgress { display: none; margin-top: 10px; color: #ff6b35; font-weight: bold; font-size: 14px;}
+        .img-preview { width: 100px; height: 100px; border-radius: 10px; object-fit: cover; margin-top: 10px; border: 2px solid #ddd; display: none;}
 
         /* Helpers */
         .message { padding: 12px; border-radius: 8px; margin-bottom: 15px; display: none; text-align: center; }
@@ -68,10 +75,10 @@
         <div class="table-container">
             <table>
                 <thead>
-                    <tr><th>Name</th><th>Category</th><th>City</th><th>Price</th><th>Rating</th><th>Actions</th></tr>
+                    <tr><th>Photo</th><th>Name</th><th>Category</th><th>City</th><th>Price</th><th>Rating</th><th>Actions</th></tr>
                 </thead>
                 <tbody id="vendorTable">
-                    <tr><td colspan="6" style="text-align:center;">Loading Data...</td></tr>
+                    <tr><td colspan="7" style="text-align:center;">Loading Data...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -97,15 +104,22 @@
         <span class="close" onclick="closeModal('vendorModal')">&times;</span>
         <h3 id="vendorModalTitle">Add Vendor</h3>
         <form id="vendorForm" onsubmit="event.preventDefault()">
+            
             <input type="text" id="vendorName" placeholder="Vendor Name *">
-            <select id="vendorCategory"><option value="">Loading Categories...</option></select>
-            <select id="vendorCity"><option value="">Loading Cities...</option></select>
+            <select id="vendorCategory"><option value="">-- Loading --</option></select>
+            <select id="vendorCity"><option value="">-- Loading --</option></select>
             <input type="text" id="vendorLocation" placeholder="Location (Area Name)">
-            <input type="text" id="vendorPrice" placeholder="Price Range (e.g. 20k - 50k)">
+            <input type="text" id="vendorPrice" placeholder="Price Range (e.g. ₹20,000)">
             <input type="text" id="vendorRating" placeholder="Rating (1-5)">
             <input type="text" id="vendorPhone" placeholder="Phone Number">
             <textarea id="vendorDescription" rows="3" placeholder="Description"></textarea>
-            <button class="btn-save" onclick="saveVendor()">SAVE VENDOR</button>
+            
+            <label class="file-input-label">Vendor Portrait/Work Photo</label>
+            <input type="file" id="vendorPhoto" accept="image/*" onchange="previewImage(this)">
+            <img id="imgPreview" class="img-preview" alt="Preview">
+            <div id="uploadProgress">Uploading image...</div>
+
+            <button class="btn-save" id="btnSaveVendor" onclick="saveVendor()">SAVE VENDOR</button>
         </form>
     </div>
 </div>
@@ -114,8 +128,8 @@
     <div class="modal-content">
         <span class="close" onclick="closeModal('categoryModal')">&times;</span>
         <h3>Add Category</h3>
-        <input type="text" id="catName" placeholder="Category Name">
-        <input type="text" id="catIcon" placeholder="Icon Emoji">
+        <input type="text" id="catName" placeholder="Category Name (e.g. Decorator)">
+        <input type="text" id="catIcon" placeholder="Icon Emoji (e.g. 🎨)">
         <button class="btn-save" onclick="saveCategory()">SAVE CATEGORY</button>
     </div>
 </div>
@@ -133,28 +147,33 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
     import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js";
 
+    // StadiumConnect Config
     const firebaseConfig = {
         apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
         authDomain: "stadiumconnect-8fecb.firebaseapp.com",
         projectId: "stadiumconnect-8fecb",
-        storageBucket: "stadiumconnect-8fecb.firebasestorage.app",
+        storageBucket: "stadiumconnect-8fecb.firebasestorage.app", // Ensure this bucket exists in Firebase
         messagingSenderId: "458108198578",
         appId: "1:458108198578:web:83d83646f0e24e718b73ab"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const storage = getStorage(app); // Storage initialize (New)
 
     let vendors = [];
     let categories = [];
     let cities = [];
     let editingVendorId = null;
     let editingCityIndex = null;
+    let currentVendorImageUrl = null; // Purani image track karne ke liye (New)
 
-    // --- REAL TIME LISTENERS ---
+    // ==========================================
+    // REAL-TIME SYNC (Sab kuch live rahega)
+    // ==========================================
 
-    // 1. Categories Sync
     onSnapshot(collection(db, "categories"), (snap) => {
         categories = [];
         snap.forEach(d => { if(!d.data().deleted) categories.push({id: d.id, ...d.data()}); });
@@ -162,7 +181,6 @@
         updateCategoryDropdown();
     });
 
-    // 2. Cities Sync
     onSnapshot(doc(db, 'settings', 'cities'), (d) => {
         if(d.exists()) {
             cities = d.data().list || [];
@@ -171,21 +189,71 @@
         }
     });
 
-    // 3. Vendors Sync
     onSnapshot(collection(db, "vendors"), (snap) => {
         vendors = [];
         snap.forEach(d => vendors.push({id: d.id, ...d.data()}));
         renderVendors();
     });
 
-    // --- RENDER FUNCTIONS ---
+    // ==========================================
+    // IMAGE HANDLING LOGIC (NEW SECTION)
+    // ==========================================
+
+    window.previewImage = (input) => {
+        const file = input.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const el = document.getElementById('imgPreview');
+                el.src = e.target.result;
+                el.style.display = 'block';
+            }
+            reader.readAsDataURL(file);
+        }
+    };
+
+    async function uploadVendorImage(vendorId) {
+        const fileInput = document.getElementById('vendorPhoto');
+        if(!fileInput.files.length) return currentVendorImageUrl; // Agar file select nhi ki, purani wali use karo
+
+        const file = fileInput.files[0];
+        const progressEl = document.getElementById('uploadProgress');
+        const saveBtn = document.getElementById('btnSaveVendor');
+
+        progressEl.style.display = 'block';
+        saveBtn.disabled = true; // Button band taaki upload ke beech mein exit na ho
+
+        // Image path: vendors/vendorId_filename
+        const storageRef = ref(storage, `vendors/${vendorId}_${new Date().getTime()}_${file.name}`);
+        
+        try {
+            await uploadBytes(storageRef, file);
+            const downloadUrl = await getDownloadURL(storageRef);
+            console.log('Image uploaded:', downloadUrl);
+            return downloadUrl;
+        } catch (error) {
+            console.error('Upload fail:', error);
+            showMsg('Photo upload failed: ' + error.message, 'error');
+            return null;
+        } finally {
+            progressEl.style.display = 'none';
+            saveBtn.disabled = false;
+        }
+    }
+
+    // ==========================================
+    // RENDER & UI UPDATERS
+    // ==========================================
 
     function renderVendors() {
         const tbody = document.getElementById('vendorTable');
-        if(!vendors.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No data found</td></tr>'; return; }
+        if(!vendors.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No data found</td></tr>'; return; }
         tbody.innerHTML = vendors.map(v => `
             <tr>
-                <td><strong>${v.name || 'N/A'}</strong></td>
+                <td>
+                    <img src="${v.imageUrl || 'https://via.placeholder.com/50'}" alt="N/A" class="vendor-img-td">
+                </td>
+                <td><strong>${v.name || 'Unnamed'}</strong></td>
                 <td>${v.category || '-'}</td>
                 <td>${v.city || '-'}</td>
                 <td>${v.priceRange || '-'}</td>
@@ -219,35 +287,57 @@
         `).join('');
     }
 
-    // --- DROPDOWN SYNC ---
-
     function updateCategoryDropdown() {
         const sel = document.getElementById('vendorCategory');
+        if(!sel) return;
         const val = sel.value;
-        sel.innerHTML = '<option value="">-- Select Category --</option>' + 
+        sel.innerHTML = '<option value="">-- Choose Category --</option>' + 
             categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
         if(val) sel.value = val;
     }
 
     function updateCityDropdown() {
         const sel = document.getElementById('vendorCity');
+        if(!sel) return;
         const val = sel.value;
-        sel.innerHTML = '<option value="">-- Select City --</option>' + 
-            cities.map(c => `<option value="${c.name.toLowerCase()}">${c.name}</option>`).join('');
+        // Sort for neat dropdown
+        const sorted = [...cities].sort((a,b) => a.name.localeCompare(b.name));
+        sel.innerHTML = '<option value="">-- Choose City --</option>' + 
+            sorted.map(c => `<option value="${c.name.toLowerCase()}">${c.name}</option>`).join('');
         if(val) sel.value = val;
     }
 
-    // --- CRUD FUNCTIONS ---
+    // ==========================================
+    // CRUD OPERATIONS (UPDATED FOR IMAGE)
+    // ==========================================
 
     window.saveVendor = async () => {
-        const name = document.getElementById('vendorName').value;
-        const cat = document.getElementById('vendorCategory').value;
-        const city = document.getElementById('vendorCity').value;
+        const nameInput = document.getElementById('vendorName');
+        const catInput = document.getElementById('vendorCategory');
+        const cityInput = document.getElementById('vendorCity');
 
-        if(!name || !cat || !city) { showMsg('Fill Name, Category & City!', 'error'); return; }
+        if(!nameInput.value || !catInput.value || !cityInput.value) { 
+            showMsg('Name, Category & City are mandatory!', 'error'); 
+            return; 
+        }
 
+        // 1. Determine temporary ID for image path
+        const vendorId = editingVendorId || nameInput.value.toLowerCase().replace(/\s+/g, '');
+
+        // 2. Upload Image first (New logic)
+        const imageUrl = await uploadVendorImage(vendorId);
+        
+        // Agar image fail hui upload hone mein
+        if (!imageUrl && document.getElementById('vendorPhoto').files.length) {
+             return; 
+        }
+
+        // 3. Prepare Data
         const data = {
-            name, category: cat, city,
+            name: nameInput.value,
+            category: catInput.value,
+            city: cityInput.value,
+            imageUrl: imageUrl || 'https://via.placeholder.com/300?text=StadiumConnect', // Default image
             location: document.getElementById('vendorLocation').value,
             priceRange: document.getElementById('vendorPrice').value,
             rating: document.getElementById('vendorRating').value || '4.0',
@@ -259,11 +349,12 @@
         try {
             if(editingVendorId) {
                 await updateDoc(doc(db, 'vendors', editingVendorId), data);
-                showMsg('Updated!', 'success');
+                showMsg('Vendor Updated!', 'success');
             } else {
                 data.createdAt = new Date().toISOString();
-                await addDoc(collection(db, 'vendors'), data);
-                showMsg('Added!', 'success');
+                // Firestore automatically assigns a unique ID with addDoc
+                await addDoc(collection(db, 'vendors'), data); 
+                showMsg('New Vendor Added!', 'success');
             }
             closeModal('vendorModal');
         } catch(e) { showMsg(e.message, 'error'); }
@@ -273,7 +364,9 @@
         const name = document.getElementById('catName').value;
         if(!name) return;
         const id = name.toLowerCase().replace(/\s+/g, '');
-        await setDoc(doc(db, 'categories', id), { id, name, icon: document.getElementById('catIcon').value });
+        await setDoc(doc(db, 'categories', id), { 
+            id, name, icon: document.getElementById('catIcon').value || '🏷️'
+        });
         closeModal('categoryModal');
         showMsg('Category Added!', 'success');
     };
@@ -283,23 +376,38 @@
         if(!name) return;
         const pop = document.getElementById('cityPopularCheck').checked;
         
-        if(editingCityIndex !== null) cities[editingCityIndex] = { name, popular: pop };
-        else cities.push({ name, popular: pop });
+        if(editingCityIndex !== null && editingCityIndex !== undefined) {
+             cities[editingCityIndex] = { name, popular: pop };
+        } else {
+             cities.push({ name, popular: pop });
+        }
 
         await setDoc(doc(db, 'settings', 'cities'), { list: cities });
         editingCityIndex = null;
         closeModal('cityModal');
-        showMsg('City Saved!', 'success');
+        showMsg('City Settings Saved!', 'success');
     };
 
-    // --- UTILS ---
+    // ==========================================
+    // UTILS & GLOBAL BUTTON HANDLERS
+    // ==========================================
+
     window.openModal = (id) => document.getElementById(id).style.display = 'flex';
-    window.closeModal = (id) => document.getElementById(id).style.display = 'none';
+    
+    window.closeModal = (id) => {
+        document.getElementById(id).style.display = 'none';
+        currentVendorImageUrl = null;
+        // Modal reset form clean karega
+    };
     
     window.openAddVendor = () => {
         editingVendorId = null;
+        currentVendorImageUrl = null;
         document.getElementById('vendorForm').reset();
         document.getElementById('vendorModalTitle').innerText = 'Add Vendor';
+        // Reset image preview
+        document.getElementById('imgPreview').style.display = 'none';
+        document.getElementById('imgPreview').src = '';
         openModal('vendorModal');
     };
 
@@ -307,6 +415,8 @@
         const v = vendors.find(x => x.id === id);
         if(!v) return;
         editingVendorId = id;
+        currentVendorImageUrl = v.imageUrl || null; // Track existing image
+        
         document.getElementById('vendorName').value = v.name || '';
         document.getElementById('vendorCategory').value = v.category || '';
         document.getElementById('vendorCity').value = v.city || '';
@@ -315,22 +425,38 @@
         document.getElementById('vendorRating').value = v.rating || '';
         document.getElementById('vendorPhone').value = v.phone || '';
         document.getElementById('vendorDescription').value = v.description || '';
+        
+        // Photo preview update
+        const preview = document.getElementById('imgPreview');
+        if(v.imageUrl) {
+            preview.src = v.imageUrl;
+            preview.style.display = 'block';
+        } else {
+            preview.style.display = 'none';
+        }
+
         openModal('vendorModal');
     };
 
-    window.deleteVendor = async (id) => { if(confirm('Delete?')) await deleteDoc(doc(db, 'vendors', id)); };
+    window.deleteVendor = async (id) => { 
+        if(confirm('Warning: Is vendor ko permantly delete kar diya jayega?')) 
+            await deleteDoc(doc(db, 'vendors', id)); 
+    };
     
-    window.deleteCategory = async (id) => { if(confirm('Delete Category?')) await setDoc(doc(db, 'categories', id), { deleted: true }); };
+    window.deleteCategory = async (id) => { 
+        if(confirm('Is category ko hidden mark kar diya jaye?')) 
+            await setDoc(doc(db, 'categories', id), { deleted: true }); 
+    };
 
     window.editCity = (i) => {
-        editingCityIndex = i;
+        window.editingCityIndex = i;
         document.getElementById('cityNameInput').value = cities[i].name;
         document.getElementById('cityPopularCheck').checked = cities[i].popular;
         openModal('cityModal');
     };
 
     window.deleteCity = async (i) => {
-        if(confirm('Delete City?')) {
+        if(confirm('Is city ko list se permantly hata diya jaye?')) {
             cities.splice(i, 1);
             await setDoc(doc(db, 'settings', 'cities'), { list: cities });
         }
@@ -342,7 +468,7 @@
         document.getElementById(t + 'Tab').classList.add('active');
     };
 
-    function showMsg(m, type) {
+    window.showMsg = (m, type) => {
         const el = document.getElementById('message');
         el.innerText = m; el.className = `message ${type}`; el.style.display = 'block';
         setTimeout(() => el.style.display = 'none', 3000);
@@ -350,7 +476,7 @@
 
     window.logout = () => { localStorage.removeItem('admin'); window.location.href = 'admin-login.html'; };
 
-    // Initial check
+    // Initial Auth Check
     if (localStorage.getItem('admin') !== 'true') window.location.href = 'admin-login.html';
 
 </script>
