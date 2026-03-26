@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - StadiumConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="firebase-config.js"></script>
+</head>
+<body>
+
+<header class="header">
+    <div class="logo" onclick="window.location.href='index.html'">STADIUM<span>CONNECT</span></div>
+    <div class="nav-buttons">
+        <a href="login.html">Sign In</a>
+        <a href="register.html">Join Royal Club</a>
+    </div>
+</header>
+
+<div class="auth-container">
+    <h2>Welcome Back</h2>
+    
+    <button class="google-btn" onclick="googleSignIn()">
+        <i class="fab fa-google"></i> Continue with Google
+    </button>
+    
+    <div style="text-align: center; margin: 20px 0; color: #999;">or</div>
+    
+    <form id="loginForm">
+        <div class="input-group">
+            <input type="email" id="email" placeholder="Email Address" required>
+        </div>
+        <div class="input-group">
+            <input type="password" id="password" placeholder="Password" required>
+        </div>
+        <button type="submit" class="btn-primary">Sign In →</button>
+    </form>
+    
+    <p style="text-align:center; margin-top:24px;">
+        New here? <a href="register.html" style="color:#b87c4f;">Join Royal Club</a>
+    </p>
+</div>
+
+<script>
+    function googleSignIn() {
+        auth.signInWithPopup(googleProvider)
+            .then(() => window.location.href = 'directory.html')
+            .catch((error) => alert(error.message));
+    }
+    
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        
+        auth.signInWithEmailAndPassword(email, password)
+            .then(() => window.location.href = 'directory.html')
+            .catch((error) => alert('Invalid email or password'));
+    });
+</script>
+
+</body>
+</html>
