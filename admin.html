@@ -10,7 +10,7 @@
         .card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         h2 { color: #ff6b35; margin-bottom: 15px; }
         
-        button { background: #ff6b35; color: white; border: none; padding: 10px 18px; border-radius: 25px; cursor: pointer; font-weight: 600; transition: 0.3s; margin-right: 5px; }
+        button { background: #ff6b35; color: white; border: none; padding: 10px 18px; border-radius: 25px; cursor: pointer; font-weight: 600; transition: 0.3s; margin-right: 5px; margin-bottom: 10px; }
         button:hover { opacity: 0.8; transform: translateY(-1px); }
         .btn-delete { background: #ff4757; }
         .btn-edit { background: #ffa502; }
@@ -26,8 +26,8 @@
         input:focus, select:focus { border-color: #ff6b35; }
         .file-input-label { display: block; margin-top: 8px; font-weight: 600; color: #666; font-size: 14px; }
         
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-        .tab { background: #fff; color: #666; border: 1px solid #ddd; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .tab { background: #fff; color: #666; border: 1px solid #ddd; padding: 10px 20px; border-radius: 30px; cursor: pointer; }
         .tab.active { background: #ff6b35; color: white; border-color: #ff6b35; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
@@ -48,12 +48,18 @@
         .list-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #eee; }
         .popular-badge { background: #ff6b35; color: white; font-size: 10px; padding: 2px 8px; border-radius: 20px; margin-left: 10px; }
         .checkbox-group { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
+        
+        @media (max-width: 600px) {
+            .modal-content { padding: 20px; }
+            .work-photos-grid { gap: 5px; }
+            .work-photo-item { width: 60px; height: 60px; }
+        }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
         <h2>⚡ StadiumConnect Admin</h2>
         <button onclick="logout()" style="background:#666;">Logout</button>
     </div>
@@ -70,12 +76,12 @@
     <div class="card">
         <button onclick="openAddVendor()">+ Add New Vendor</button>
         <div class="table-container">
-             <table>
+            <table>
                 <thead>
-                    <tr><th>Photo</th><th>Name</th><th>Category</th><th>City</th><th>Price</th><th>Rating</th><th>Actions</th> </>
+                    <tr><th>Photo</th><th>Name</th><th>Category</th><th>City</th><th>Price</th><th>Rating</th><th>Actions</th></tr>
                 </thead>
                 <tbody id="vendorTable"><tr><td colspan="7" style="text-align:center;">Loading...</td></tr></tbody>
-             </table>
+            </table>
         </div>
     </div>
 </div>
@@ -108,12 +114,12 @@
         <input type="text" id="vendorPhone" placeholder="Phone Number">
         <textarea id="vendorDescription" rows="3" placeholder="Description"></textarea>
         
-        <!-- Vendor Logo/Profile Photo -->
+        <!-- Vendor Logo -->
         <label class="file-input-label">📸 Vendor Logo / Profile Photo</label>
         <input type="file" id="vendorLogo" accept="image/*" onchange="previewLogo(this)">
         <img id="logoPreview" class="img-preview" style="display:none;">
         
-        <!-- Work Photos (Multiple) -->
+        <!-- Work Photos -->
         <label class="file-input-label" style="margin-top: 15px;">🎨 Work Photos / Portfolio (Multiple)</label>
         <input type="file" id="workPhotos" accept="image/*" multiple onchange="previewWorkPhotos(this)">
         <div id="workPhotosPreview" class="work-photos-grid"></div>
@@ -172,8 +178,8 @@
     let editingVendorId = null;
     let editingCityIndex = null;
     let currentLogoUrl = null;
-    let currentWorkPhotos = []; // Array of URLs
-    let tempWorkPhotos = []; // Base64 for preview
+    let currentWorkPhotos = [];
+    let tempWorkPhotosData = [];
 
     // ========== REAL-TIME SYNC ==========
     onSnapshot(collection(db, "categories"), (snap) => {
@@ -196,7 +202,7 @@
         renderVendors();
     });
 
-    // ========== IMAGE UPLOAD TO IMGBB ==========
+    // ========== IMAGE UPLOAD ==========
     async function uploadToImgBB(file) {
         const formData = new FormData();
         formData.append('image', file);
@@ -206,13 +212,9 @@
             method: 'POST',
             body: formData
         });
-        
         const data = await response.json();
-        if (data.success) {
-            return data.data.url;
-        } else {
-            throw new Error(data.error?.message || 'Upload failed');
-        }
+        if (data.success) return data.data.url;
+        else throw new Error(data.error?.message || 'Upload failed');
     }
 
     async function uploadMultiplePhotos(files) {
@@ -224,7 +226,7 @@
         return urls;
     }
 
-    // ========== PREVIEW FUNCTIONS ==========
+    // ========== PREVIEW ==========
     window.previewLogo = (input) => {
         const file = input.files[0];
         if (file) {
@@ -240,20 +242,17 @@
 
     window.previewWorkPhotos = (input) => {
         const files = Array.from(input.files);
-        tempWorkPhotos = [];
+        tempWorkPhotosData = [];
         const container = document.getElementById('workPhotosPreview');
         container.innerHTML = '';
         
         files.forEach((file, index) => {
             const reader = new FileReader();
             reader.onload = (e) => {
-                tempWorkPhotos.push(e.target.result);
+                tempWorkPhotosData.push(e.target.result);
                 const div = document.createElement('div');
                 div.className = 'work-photo-item';
-                div.innerHTML = `
-                    <img src="${e.target.result}">
-                    <button class="remove-work-photo" onclick="removeTempWorkPhoto(${index})">×</button>
-                `;
+                div.innerHTML = `<img src="${e.target.result}"><button class="remove-work-photo" onclick="removeTempWorkPhoto(${index})">×</button>`;
                 container.appendChild(div);
             };
             reader.readAsDataURL(file);
@@ -261,24 +260,35 @@
     };
 
     window.removeTempWorkPhoto = (index) => {
-        tempWorkPhotos.splice(index, 1);
+        tempWorkPhotosData.splice(index, 1);
         const container = document.getElementById('workPhotosPreview');
         container.innerHTML = '';
-        tempWorkPhotos.forEach((photo, i) => {
+        tempWorkPhotosData.forEach((photo, i) => {
             const div = document.createElement('div');
             div.className = 'work-photo-item';
             div.innerHTML = `<img src="${photo}"><button class="remove-work-photo" onclick="removeTempWorkPhoto(${i})">×</button>`;
             container.appendChild(div);
         });
-        // Also remove from file input
         const dt = new DataTransfer();
         const files = document.getElementById('workPhotos').files;
-        const remainingFiles = Array.from(files).filter((_, i) => i !== index);
-        remainingFiles.forEach(f => dt.items.add(f));
+        const remaining = Array.from(files).filter((_, i) => i !== index);
+        remaining.forEach(f => dt.items.add(f));
         document.getElementById('workPhotos').files = dt.files;
     };
 
-    // ========== RENDER FUNCTIONS ==========
+    window.removeExistingWorkPhoto = (index) => {
+        currentWorkPhotos.splice(index, 1);
+        const container = document.getElementById('workPhotosPreview');
+        container.innerHTML = '';
+        currentWorkPhotos.forEach((photo, i) => {
+            const div = document.createElement('div');
+            div.className = 'work-photo-item';
+            div.innerHTML = `<img src="${photo}"><button class="remove-work-photo" onclick="removeExistingWorkPhoto(${i})">×</button>`;
+            container.appendChild(div);
+        });
+    };
+
+    // ========== RENDER ==========
     function renderVendors() {
         const tbody = document.getElementById('vendorTable');
         if (!vendors.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No vendors found</td></tr>'; return; }
@@ -290,10 +300,7 @@
                 <td>${v.city || '-'}</td>
                 <td>${v.priceRange || '-'}</td>
                 <td>⭐ ${v.rating || '-'}</td>
-                <td>
-                    <button class="btn-edit" onclick="editVendor('${v.id}')">Edit</button>
-                    <button class="btn-delete" onclick="deleteVendor('${v.id}')">Del</button>
-                </td>
+                <td><button class="btn-edit" onclick="editVendor('${v.id}')">Edit</button><button class="btn-delete" onclick="deleteVendor('${v.id}')">Del</button></td>
             </tr>
         `).join('');
     }
@@ -301,41 +308,25 @@
     function renderCategories() {
         const container = document.getElementById('categoriesList');
         container.innerHTML = categories.map(c => `
-            <div class="list-item">
-                <span>${c.icon || '🏷️'} ${c.name}</span>
-                <div>
-                    <button class="btn-edit" onclick="editCategory('${c.id}')">Edit</button>
-                    <button class="btn-delete" onclick="deleteCategory('${c.id}')">Del</button>
-                </div>
-            </div>
+            <div class="list-item"><span>${c.icon || '🏷️'} ${c.name}</span><div><button class="btn-edit" onclick="editCategory('${c.id}')">Edit</button><button class="btn-delete" onclick="deleteCategory('${c.id}')">Del</button></div></div>
         `).join('');
     }
 
     function renderCities() {
         const container = document.getElementById('citiesList');
         container.innerHTML = cities.map((c, i) => `
-            <div class="list-item">
-                <span>📍 ${c.name} ${c.popular ? '<span class="popular-badge">Popular</span>' : ''}</span>
-                <div>
-                    <button class="btn-edit" onclick="editCity(${i})">Edit</button>
-                    <button class="btn-delete" onclick="deleteCity(${i})">Del</button>
-                </div>
-            </div>
+            <div class="list-item"><span>📍 ${c.name} ${c.popular ? '<span class="popular-badge">Popular</span>' : ''}</span><div><button class="btn-edit" onclick="editCity(${i})">Edit</button><button class="btn-delete" onclick="deleteCity(${i})">Del</button></div></div>
         `).join('');
     }
 
     function updateCategoryDropdown() {
         const sel = document.getElementById('vendorCategory');
-        if (!sel) return;
-        sel.innerHTML = '<option value="">-- Select Category --</option>' + 
-            categories.map(c => `<option value="${c.id}">${c.icon || '🏷️'} ${c.name}</option>`).join('');
+        if (sel) sel.innerHTML = '<option value="">-- Select Category --</option>' + categories.map(c => `<option value="${c.id}">${c.icon || '🏷️'} ${c.name}</option>`).join('');
     }
 
     function updateCityDropdown() {
         const sel = document.getElementById('vendorCity');
-        if (!sel) return;
-        sel.innerHTML = '<option value="">-- Select City --</option>' + 
-            cities.map(c => `<option value="${c.name.toLowerCase()}">${c.name}</option>`).join('');
+        if (sel) sel.innerHTML = '<option value="">-- Select City --</option>' + cities.map(c => `<option value="${c.name.toLowerCase()}">${c.name}</option>`).join('');
     }
 
     // ========== VENDOR CRUD ==========
@@ -343,7 +334,7 @@
         editingVendorId = null;
         currentLogoUrl = null;
         currentWorkPhotos = [];
-        tempWorkPhotos = [];
+        tempWorkPhotosData = [];
         document.getElementById('vendorForm').reset();
         document.getElementById('logoPreview').style.display = 'none';
         document.getElementById('workPhotosPreview').innerHTML = '';
@@ -367,16 +358,10 @@
         document.getElementById('vendorPhone').value = v.phone || '';
         document.getElementById('vendorDescription').value = v.description || '';
         
-        // Preview existing logo
         const logoPreview = document.getElementById('logoPreview');
-        if (v.imageUrl) {
-            logoPreview.src = v.imageUrl;
-            logoPreview.style.display = 'block';
-        } else {
-            logoPreview.style.display = 'none';
-        }
+        if (v.imageUrl) { logoPreview.src = v.imageUrl; logoPreview.style.display = 'block'; }
+        else logoPreview.style.display = 'none';
         
-        // Preview existing work photos
         const container = document.getElementById('workPhotosPreview');
         container.innerHTML = '';
         if (v.photos && v.photos.length) {
@@ -387,21 +372,8 @@
                 container.appendChild(div);
             });
         }
-        
         document.getElementById('vendorModalTitle').innerText = 'Edit Vendor';
         openModal('vendorModal');
-    };
-
-    window.removeExistingWorkPhoto = (index) => {
-        currentWorkPhotos.splice(index, 1);
-        const container = document.getElementById('workPhotosPreview');
-        container.innerHTML = '';
-        currentWorkPhotos.forEach((photo, i) => {
-            const div = document.createElement('div');
-            div.className = 'work-photo-item';
-            div.innerHTML = `<img src="${photo}"><button class="remove-work-photo" onclick="removeExistingWorkPhoto(${i})">×</button>`;
-            container.appendChild(div);
-        });
     };
 
     window.deleteVendor = async (id) => {
@@ -415,44 +387,27 @@
         const name = document.getElementById('vendorName').value;
         const category = document.getElementById('vendorCategory').value;
         const city = document.getElementById('vendorCity').value;
-        
-        if (!name || !category || !city) {
-            showMsg('Name, Category & City are required!', 'error');
-            return;
-        }
+        if (!name || !category || !city) { showMsg('Name, Category & City are required!', 'error'); return; }
         
         const saveBtn = document.getElementById('btnSaveVendor');
         const progress = document.getElementById('uploadProgress');
-        
         saveBtn.disabled = true;
         progress.style.display = 'block';
-        progress.innerText = 'Uploading logo...';
         
         try {
-            // Upload logo if new file selected
             const logoFile = document.getElementById('vendorLogo').files[0];
             let logoUrl = currentLogoUrl;
-            if (logoFile) {
-                logoUrl = await uploadToImgBB(logoFile);
-            }
+            if (logoFile) { progress.innerText = 'Uploading logo...'; logoUrl = await uploadToImgBB(logoFile); }
             
-            // Upload new work photos
             const newWorkFiles = document.getElementById('workPhotos').files;
             let newWorkUrls = [];
-            if (newWorkFiles.length > 0) {
-                progress.innerText = `Uploading ${newWorkFiles.length} work photos...`;
-                newWorkUrls = await uploadMultiplePhotos(Array.from(newWorkFiles));
-            }
+            if (newWorkFiles.length > 0) { progress.innerText = `Uploading ${newWorkFiles.length} work photos...`; newWorkUrls = await uploadMultiplePhotos(Array.from(newWorkFiles)); }
             
-            // Combine existing work photos + new ones
             const allWorkPhotos = [...currentWorkPhotos, ...newWorkUrls];
-            
             progress.innerText = 'Saving to database...';
             
             const vendorData = {
-                name: name,
-                category: category,
-                city: city,
+                name, category, city,
                 imageUrl: logoUrl || 'https://via.placeholder.com/80',
                 photos: allWorkPhotos,
                 location: document.getElementById('vendorLocation').value || '',
@@ -465,11 +420,11 @@
             
             if (editingVendorId) {
                 await updateDoc(doc(db, 'vendors', editingVendorId), vendorData);
-                showMsg('Vendor updated successfully!', 'success');
+                showMsg('Vendor updated!', 'success');
             } else {
                 vendorData.createdAt = new Date().toISOString();
                 await addDoc(collection(db, 'vendors'), vendorData);
-                showMsg('Vendor added successfully!', 'success');
+                showMsg('Vendor added!', 'success');
             }
             closeModal('vendorModal');
         } catch (error) {
@@ -481,114 +436,25 @@
     };
 
     // ========== CATEGORY CRUD ==========
-    window.openAddCategory = () => {
-        document.getElementById('catName').value = '';
-        document.getElementById('catIcon').value = '';
-        openModal('categoryModal');
-    };
-
-    window.editCategory = (id) => {
-        const cat = categories.find(c => c.id === id);
-        if (!cat) return;
-        document.getElementById('catName').value = cat.name;
-        document.getElementById('catIcon').value = cat.icon || '';
-        document.getElementById('categoryModal').style.display = 'flex';
-        window.editingCategoryId = id;
-    };
-
-    window.deleteCategory = async (id) => {
-        if (confirm('Delete this category?')) {
-            await setDoc(doc(db, 'categories', id), { deleted: true });
-            showMsg('Category deleted!', 'success');
-        }
-    };
-
-    window.saveCategory = async () => {
-        const name = document.getElementById('catName').value;
-        if (!name) { showMsg('Enter category name', 'error'); return; }
-        const id = name.toLowerCase().replace(/ /g, '');
-        const icon = document.getElementById('catIcon').value || '🏷️';
-        const cat = { id, name, icon };
-        
-        try {
-            await setDoc(doc(db, 'categories', id), cat);
-            showMsg('Category saved!', 'success');
-            closeModal('categoryModal');
-        } catch (error) {
-            showMsg('Error: ' + error.message, 'error');
-        }
-    };
+    window.openAddCategory = () => { document.getElementById('catName').value = ''; document.getElementById('catIcon').value = ''; openModal('categoryModal'); };
+    window.editCategory = (id) => { const cat = categories.find(c => c.id === id); if(cat){ document.getElementById('catName').value = cat.name; document.getElementById('catIcon').value = cat.icon || ''; document.getElementById('categoryModal').style.display = 'flex'; window.editingCategoryId = id; } };
+    window.deleteCategory = async (id) => { if(confirm('Delete?')){ await setDoc(doc(db, 'categories', id), { deleted: true }); showMsg('Category deleted!', 'success'); } };
+    window.saveCategory = async () => { const name = document.getElementById('catName').value; if(!name){ showMsg('Enter name','error'); return; } const id = name.toLowerCase().replace(/ /g, ''); const icon = document.getElementById('catIcon').value || '🏷️'; await setDoc(doc(db, 'categories', id), { id, name, icon }); showMsg('Category saved!','success'); closeModal('categoryModal'); };
 
     // ========== CITY CRUD ==========
-    window.openAddCity = () => {
-        editingCityIndex = null;
-        document.getElementById('cityNameInput').value = '';
-        document.getElementById('cityPopularCheck').checked = false;
-        openModal('cityModal');
-    };
-
-    window.editCity = (index) => {
-        editingCityIndex = index;
-        document.getElementById('cityNameInput').value = cities[index].name;
-        document.getElementById('cityPopularCheck').checked = cities[index].popular || false;
-        openModal('cityModal');
-    };
-
-    window.deleteCity = async (index) => {
-        if (confirm('Delete this city?')) {
-            cities.splice(index, 1);
-            await setDoc(doc(db, 'settings', 'cities'), { list: cities });
-            showMsg('City deleted!', 'success');
-        }
-    };
-
-    window.saveCity = async () => {
-        const name = document.getElementById('cityNameInput').value;
-        if (!name) { showMsg('Enter city name', 'error'); return; }
-        const popular = document.getElementById('cityPopularCheck').checked;
-        
-        if (editingCityIndex !== null) {
-            cities[editingCityIndex] = { name, popular };
-        } else {
-            if (cities.find(c => c.name === name)) {
-                showMsg('City already exists!', 'error');
-                return;
-            }
-            cities.push({ name, popular });
-        }
-        
-        await setDoc(doc(db, 'settings', 'cities'), { list: cities });
-        showMsg('City saved!', 'success');
-        closeModal('cityModal');
-        editingCityIndex = null;
-    };
+    window.openAddCity = () => { editingCityIndex = null; document.getElementById('cityNameInput').value = ''; document.getElementById('cityPopularCheck').checked = false; openModal('cityModal'); };
+    window.editCity = (index) => { editingCityIndex = index; document.getElementById('cityNameInput').value = cities[index].name; document.getElementById('cityPopularCheck').checked = cities[index].popular || false; openModal('cityModal'); };
+    window.deleteCity = async (index) => { if(confirm('Delete?')){ cities.splice(index,1); await setDoc(doc(db,'settings','cities'),{ list: cities }); showMsg('City deleted!','success'); } };
+    window.saveCity = async () => { const name = document.getElementById('cityNameInput').value; if(!name){ showMsg('Enter name','error'); return; } const popular = document.getElementById('cityPopularCheck').checked; if(editingCityIndex !== null) cities[editingCityIndex] = { name, popular }; else if(cities.find(c=>c.name===name)){ showMsg('City exists!','error'); return; } else cities.push({ name, popular }); await setDoc(doc(db,'settings','cities'),{ list: cities }); showMsg('City saved!','success'); closeModal('cityModal'); editingCityIndex = null; };
 
     // ========== UTILITIES ==========
-    function showMsg(msg, type) {
-        const msgDiv = document.getElementById('message');
-        msgDiv.className = `message ${type}`;
-        msgDiv.innerText = msg;
-        setTimeout(() => { msgDiv.style.display = 'none'; }, 3000);
-    }
-
+    function showMsg(msg, type) { const msgDiv = document.getElementById('message'); msgDiv.className = `message ${type}`; msgDiv.innerText = msg; setTimeout(() => msgDiv.style.display = 'none', 3000); }
     window.openModal = (id) => document.getElementById(id).style.display = 'flex';
     window.closeModal = (id) => document.getElementById(id).style.display = 'none';
+    window.switchTab = (tab) => { document.querySelectorAll('.tab, .tab-content').forEach(el => el.classList.remove('active')); event.target.classList.add('active'); document.getElementById(`${tab}Tab`).classList.add('active'); };
+    window.logout = () => { localStorage.removeItem('admin'); window.location.href = 'admin-login.html'; };
     
-    window.switchTab = (tab) => {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        event.target.classList.add('active');
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        document.getElementById(`${tab}Tab`).classList.add('active');
-    };
-
-    window.logout = () => {
-        localStorage.removeItem('admin');
-        window.location.href = 'admin-login.html';
-    };
-
-    if (localStorage.getItem('admin') !== 'true') {
-        window.location.href = 'admin-login.html';
-    }
+    if (localStorage.getItem('admin') !== 'true') window.location.href = 'admin-login.html';
 </script>
 </body>
 </html>
