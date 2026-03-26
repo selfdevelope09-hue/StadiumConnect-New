@@ -5,94 +5,139 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Vendors - StadiumConnect</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #fff;
-            color: #1a1a1a;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: #f8f9fa; }
 
         .header {
+            background: white;
             padding: 16px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid #f0f0f0;
-            background: #fff;
+            border-bottom: 1px solid #eee;
             position: sticky;
             top: 0;
             z-index: 100;
         }
+        .logo { font-size: 20px; font-weight: 800; cursor: pointer; }
+        .logo span { color: #ff6b35; }
+        .back-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #ff6b35; }
 
-        .logo {
-            font-size: 20px;
-            font-weight: 800;
-        }
-
-        .logo span {
-            color: #ff6b35;
-        }
-
-        .back-btn {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: #ff6b35;
-        }
-
-        .filter-bar {
+        /* Location Bar */
+        .location-bar {
+            background: white;
             padding: 12px 20px;
-            background: #fff;
-            border-bottom: 1px solid #f0f0f0;
             display: flex;
+            align-items: center;
             gap: 12px;
-            overflow-x: auto;
-            white-space: nowrap;
+            border-bottom: 1px solid #eee;
+            flex-wrap: wrap;
         }
-
-        .filter-chip {
+        .location-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
             background: #f5f5f5;
-            padding: 8px 16px;
-            border-radius: 30px;
+            padding: 10px 18px;
+            border-radius: 40px;
+            cursor: pointer;
             font-size: 14px;
             font-weight: 500;
-            cursor: pointer;
+        }
+        .location-active {
+            background: #ff6b35;
+            color: white;
+        }
+        .radius-badge {
+            background: #e8f5e9;
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-size: 12px;
+            color: #2e7d32;
         }
 
+        /* Filter Bar */
+        .filter-bar {
+            background: white;
+            padding: 12px 20px;
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            border-bottom: 1px solid #eee;
+        }
+        .filter-chip {
+            background: #f5f5f5;
+            padding: 8px 18px;
+            border-radius: 30px;
+            font-size: 14px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: 0.2s;
+        }
         .filter-chip.active {
             background: #ff6b35;
             color: white;
         }
 
+        /* Search */
+        .search-section {
+            background: white;
+            padding: 12px 20px;
+            display: flex;
+            gap: 10px;
+            border-bottom: 1px solid #eee;
+            flex-wrap: wrap;
+        }
+        .search-input {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            background: #f5f5f5;
+            border-radius: 40px;
+            padding: 10px 18px;
+            gap: 8px;
+        }
+        .search-input i { color: #999; }
+        .search-input input {
+            flex: 1;
+            border: none;
+            background: none;
+            outline: none;
+            font-size: 14px;
+        }
+        .search-btn {
+            background: #ff6b35;
+            color: white;
+            border: none;
+            padding: 0 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        /* Vendors Grid */
         .vendors-grid {
+            padding: 20px;
             display: flex;
             flex-direction: column;
             gap: 16px;
-            padding: 20px;
         }
-
         .vendor-card {
             background: white;
-            border: 1px solid #f0f0f0;
+            border: 1px solid #eee;
             border-radius: 20px;
             padding: 16px;
             display: flex;
             gap: 16px;
             cursor: pointer;
+            transition: 0.2s;
         }
-
         .vendor-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
-
         .vendor-icon {
             width: 60px;
             height: 60px;
@@ -103,203 +148,264 @@
             justify-content: center;
             font-size: 32px;
         }
-
-        .vendor-info {
-            flex: 1;
+        .vendor-info { flex: 1; }
+        .vendor-name { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+        .vendor-rating { display: flex; align-items: center; gap: 6px; margin: 6px 0; }
+        .stars { color: #ffb347; font-size: 12px; }
+        .vendor-location { font-size: 13px; color: #888; margin: 4px 0; }
+        .vendor-price { font-size: 14px; font-weight: 600; color: #ff6b35; margin-top: 6px; }
+        .distance-badge {
+            background: #f0f0f0;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            display: inline-block;
+            margin-left: 8px;
         }
+        .loading { text-align: center; padding: 60px; color: #ff6b35; }
+        .no-results { text-align: center; padding: 60px; color: #999; }
+        footer { text-align: center; padding: 24px; font-size: 12px; color: #aaa; }
 
-        .vendor-name {
-            font-size: 18px;
-            font-weight: 700;
-        }
-
-        .vendor-rating {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin: 6px 0;
-        }
-
-        .stars {
-            color: #ffb347;
-            font-size: 12px;
-        }
-
-        .vendor-location {
-            font-size: 13px;
-            color: #888;
-        }
-
-        .vendor-price {
-            font-size: 14px;
-            font-weight: 600;
-            color: #ff6b35;
-            margin-top: 6px;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 60px;
-            color: #ff6b35;
-        }
-
-        footer {
-            text-align: center;
-            padding: 24px;
-            font-size: 12px;
-            color: #aaa;
+        @media (max-width: 600px) {
+            .vendor-card { flex-direction: column; text-align: center; }
+            .vendor-icon { margin: 0 auto; }
         }
     </style>
-    
-    <!-- Firebase SDK -->
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
         import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-        
-        // Firebase Config
+
         const firebaseConfig = {
             apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
             authDomain: "stadiumconnect-8fecb.firebaseapp.com",
             projectId: "stadiumconnect-8fecb",
             storageBucket: "stadiumconnect-8fecb.firebasestorage.app",
             messagingSenderId: "458108198578",
-            appId: "1:458108198578:web:83d83646f0e24e718b73ab",
-            measurementId: "G-X4S6Z1QPC1"
+            appId: "1:458108198578:web:83d83646f0e24e718b73ab"
         };
-        
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        
+
+        let allVendors = [];
+        let currentLocation = null;
+        let currentFilter = 'all';
+        let currentSearch = '';
+
         // Get URL params
         const urlParams = new URLSearchParams(window.location.search);
         const categoryParam = urlParams.get('category');
-        
-        console.log("Category from URL:", categoryParam);
-        
-        // Load vendors
+        const cityParam = urlParams.get('city');
+        const latParam = urlParams.get('lat');
+        const lngParam = urlParams.get('lng');
+
+        // Load vendors from Firebase
         async function loadVendors() {
-            const container = document.getElementById('vendorsContainer');
-            container.innerHTML = '<div class="loading">🔄 Loading vendors...</div>';
+            const snap = await getDocs(collection(db, "vendors"));
+            allVendors = [];
+            snap.forEach(doc => allVendors.push({ id: doc.id, ...doc.data() }));
             
-            try {
-                const querySnapshot = await getDocs(collection(db, "vendors"));
-                let vendors = [];
-                querySnapshot.forEach((doc) => {
-                    vendors.push({ id: doc.id, ...doc.data() });
-                });
-                
-                console.log("All vendors loaded:", vendors);
-                
-                // Filter by category if present
-                if (categoryParam && categoryParam !== 'all') {
-                    vendors = vendors.filter(v => v.category === categoryParam);
-                    console.log("Filtered vendors:", vendors);
-                }
-                
-                if (vendors.length === 0) {
-                    container.innerHTML = '<div class="loading">😔 No vendors found in this category</div>';
-                    return;
-                }
-                
-                renderVendors(vendors);
-                
-            } catch (error) {
-                console.error("Error loading vendors:", error);
-                container.innerHTML = '<div class="loading">❌ Error loading vendors. Check console.</div>';
+            if (latParam && lngParam) {
+                currentLocation = { lat: parseFloat(latParam), lng: parseFloat(lngParam) };
+                document.getElementById('locationStatus').innerHTML = '<i class="fas fa-check-circle"></i> Nearby (250km)';
+                document.getElementById('locationStatus').classList.add('location-active');
+            } else if (cityParam) {
+                currentFilter = 'city';
+                document.getElementById('locationStatus').innerHTML = `<i class="fas fa-city"></i> ${cityParam.toUpperCase()}`;
+            } else if (categoryParam) {
+                currentFilter = categoryParam;
             }
+            
+            applyFilters();
         }
-        
-        function getCategoryIcon(category) {
-            const icons = {
-                decorator: '🎨',
-                photographer: '📸',
-                caterer: '🍽️',
-                bandbaja: '🎵',
-                stadium: '🏟️'
-            };
-            return icons[category] || '🏷️';
+
+        // Calculate distance between two coordinates (Haversine formula)
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Earth's radius in km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
         }
-        
-        function getStars(rating) {
-            const num = parseFloat(rating);
-            if (isNaN(num)) return '☆☆☆☆☆';
-            const full = Math.floor(num);
-            let stars = '';
-            for (let i = 0; i < full; i++) stars += '★';
-            for (let i = stars.length; i < 5; i++) stars += '☆';
-            return stars;
+
+        function applyFilters() {
+            let filtered = [...allVendors];
+            
+            // Category filter
+            if (currentFilter !== 'all' && currentFilter !== 'city') {
+                filtered = filtered.filter(v => v.category === currentFilter);
+            }
+            
+            // City filter (if city param)
+            if (cityParam) {
+                filtered = filtered.filter(v => v.city?.toLowerCase() === cityParam.toLowerCase());
+            }
+            
+            // Location filter (250km radius)
+            if (currentLocation) {
+                filtered = filtered.filter(v => {
+                    if (!v.lat || !v.lng) return false;
+                    const distance = calculateDistance(currentLocation.lat, currentLocation.lng, v.lat, v.lng);
+                    v.distance = Math.round(distance);
+                    return distance <= 250; // 250km radius
+                });
+                // Sort by distance
+                filtered.sort((a, b) => (a.distance || 999) - (b.distance || 999));
+            }
+            
+            // Search filter (vendor name or city)
+            if (currentSearch) {
+                const searchLower = currentSearch.toLowerCase();
+                filtered = filtered.filter(v => 
+                    v.name?.toLowerCase().includes(searchLower) ||
+                    v.city?.toLowerCase().includes(searchLower) ||
+                    v.location?.toLowerCase().includes(searchLower)
+                );
+            }
+            
+            renderVendors(filtered);
         }
-        
+
         function renderVendors(vendors) {
             const container = document.getElementById('vendorsContainer');
             
-            container.innerHTML = vendors.map(vendor => `
-                <div class="vendor-card" onclick="viewVendor('${vendor.id}')">
-                    <div class="vendor-icon">${getCategoryIcon(vendor.category)}</div>
+            if (vendors.length === 0) {
+                container.innerHTML = '<div class="no-results">😔 No vendors found<br><small>Try changing filters or search</small></div>';
+                return;
+            }
+            
+            container.innerHTML = vendors.map(v => `
+                <div class="vendor-card" onclick="viewVendor('${v.id}')">
+                    <div class="vendor-icon">${getCategoryIcon(v.category)}</div>
                     <div class="vendor-info">
-                        <div class="vendor-name">${vendor.name || 'Vendor'}</div>
+                        <div class="vendor-name">${v.name || 'Vendor'}</div>
                         <div class="vendor-rating">
-                            <div class="stars">${getStars(vendor.rating)}</div>
-                            <div style="font-size:12px; color:#666;">${vendor.rating || 'N/A'}</div>
+                            <div class="stars">${getStars(v.rating || 4.5)}</div>
+                            <span style="font-size:12px; color:#666;">${v.rating || 4.5}</span>
+                            ${v.distance ? `<span class="distance-badge">📍 ${v.distance} km away</span>` : ''}
                         </div>
-                        <div class="vendor-location">📍 ${vendor.location || vendor.city || 'Location'}</div>
-                        <div class="vendor-price">💰 ${vendor.priceRange || 'Contact for price'}</div>
+                        <div class="vendor-location">📍 ${v.location || v.city || 'Location'}</div>
+                        <div class="vendor-price">💰 ${v.priceRange || 'Contact for price'}</div>
                     </div>
                 </div>
             `).join('');
         }
-        
-        window.viewVendor = function(vendorId) {
-            window.location.href = `vendor-detail.html?id=${vendorId}`;
-        };
-        
-        // Filter chips
-        document.querySelectorAll('.filter-chip').forEach(chip => {
-            chip.addEventListener('click', () => {
-                const filter = chip.dataset.filter;
-                if (filter === 'all') {
-                    window.location.href = 'vendors.html';
-                } else {
-                    window.location.href = `vendors.html?category=${filter}`;
-                }
-            });
-        });
-        
-        // Highlight active category
-        if (categoryParam) {
-            document.querySelectorAll('.filter-chip').forEach(chip => {
-                if (chip.dataset.filter === categoryParam) {
-                    chip.classList.add('active');
-                }
-            });
+
+        function getCategoryIcon(category) {
+            const icons = { decorator: '🎨', photographer: '📸', caterer: '🍽️', bandbaja: '🎵', stadium: '🏟️' };
+            return icons[category] || '🏷️';
         }
-        
-        // Load vendors
+
+        function getStars(rating) {
+            const num = parseFloat(rating);
+            if (isNaN(num)) return '☆☆☆☆☆';
+            let stars = '';
+            for (let i = 0; i < Math.floor(num); i++) stars += '★';
+            for (let i = stars.length; i < 5; i++) stars += '☆';
+            return stars;
+        }
+
+        window.viewVendor = (id) => {
+            window.location.href = `vendor-detail.html?id=${id}`;
+        };
+
+        window.filterByCategory = (category) => {
+            currentFilter = category;
+            document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+            event.target.classList.add('active');
+            applyFilters();
+        };
+
+        window.showAllIndia = () => {
+            currentLocation = null;
+            currentFilter = 'all';
+            document.getElementById('locationStatus').innerHTML = '<i class="fas fa-globe"></i> All India';
+            document.getElementById('locationStatus').classList.remove('location-active');
+            document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+            document.querySelector('.filter-chip[data-filter="all"]')?.classList.add('active');
+            applyFilters();
+        };
+
+        window.detectLocation = () => {
+            if (navigator.geolocation) {
+                document.getElementById('locationStatus').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Detecting...';
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        currentLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                        document.getElementById('locationStatus').innerHTML = '<i class="fas fa-check-circle"></i> 250km radius';
+                        document.getElementById('locationStatus').classList.add('location-active');
+                        applyFilters();
+                    },
+                    () => {
+                        document.getElementById('locationStatus').innerHTML = '<i class="fas fa-map-marker-alt"></i> Detect Location';
+                        alert('Please allow location access to see nearby vendors');
+                    }
+                );
+            }
+        };
+
+        window.searchVendors = () => {
+            currentSearch = document.getElementById('searchInput').value;
+            applyFilters();
+        };
+
+        // Initialize
         loadVendors();
+
+        // Set active category from URL
+        if (categoryParam) {
+            currentFilter = categoryParam;
+            setTimeout(() => {
+                document.querySelectorAll('.filter-chip').forEach(c => {
+                    if (c.dataset.filter === categoryParam) c.classList.add('active');
+                });
+            }, 100);
+        }
     </script>
 </head>
 <body>
 
 <header class="header">
     <button class="back-btn" onclick="window.location.href='home.html'">←</button>
-    <div class="logo">STADIUM<span>CONNECT</span></div>
+    <div class="logo" onclick="window.location.href='home.html'">STADIUM<span>CONNECT</span></div>
     <div style="width: 40px;"></div>
 </header>
 
+<div class="location-bar">
+    <div class="location-btn" id="locationStatus" onclick="detectLocation()">
+        <i class="fas fa-map-marker-alt"></i> Detect Location
+    </div>
+    <button class="location-btn" onclick="showAllIndia()">
+        <i class="fas fa-globe"></i> All India
+    </button>
+    <span class="radius-badge">📍 250km radius</span>
+</div>
+
 <div class="filter-bar">
-    <div class="filter-chip" data-filter="all">All</div>
-    <div class="filter-chip" data-filter="decorator">🎨 Decorators</div>
-    <div class="filter-chip" data-filter="photographer">📸 Photographers</div>
-    <div class="filter-chip" data-filter="caterer">🍽️ Caterers</div>
-    <div class="filter-chip" data-filter="bandbaja">🎵 Band Baja</div>
-    <div class="filter-chip" data-filter="stadium">🏟️ Stadiums</div>
+    <div class="filter-chip" data-filter="all" onclick="filterByCategory('all')">All</div>
+    <div class="filter-chip" data-filter="decorator" onclick="filterByCategory('decorator')">🎨 Decorators</div>
+    <div class="filter-chip" data-filter="photographer" onclick="filterByCategory('photographer')">📸 Photographers</div>
+    <div class="filter-chip" data-filter="caterer" onclick="filterByCategory('caterer')">🍽️ Caterers</div>
+    <div class="filter-chip" data-filter="bandbaja" onclick="filterByCategory('bandbaja')">🎵 Band Baja</div>
+    <div class="filter-chip" data-filter="stadium" onclick="filterByCategory('stadium')">🏟️ Stadiums</div>
+</div>
+
+<div class="search-section">
+    <div class="search-input">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchInput" placeholder="Search by vendor name or city..." onkeyup="if(event.key==='Enter') searchVendors()">
+    </div>
+    <button class="search-btn" onclick="searchVendors()">Search</button>
 </div>
 
 <div id="vendorsContainer" class="vendors-grid">
-    <div class="loading">🔄 Loading vendors...</div>
+    <div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading vendors...</div>
 </div>
 
-<footer>© 2025 StadiumConnect</footer>
+<footer>© 2025 StadiumConnect | 250km radius nearby vendors</footer>
 
 </body>
 </html>
