@@ -6,18 +6,19 @@
     <title>Vendor Details - StadiumConnect</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background: #fff; }
+        body { background: #f5f7fb; padding-bottom: 80px; }
 
         /* Header */
         .header {
+            background: white;
             padding: 16px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid #f0f0f0;
-            background: white;
+            border-bottom: 1px solid #eee;
             position: sticky;
             top: 0;
             z-index: 100;
@@ -26,18 +27,23 @@
         .logo span { color: #ff6b35; }
         .back-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #ff6b35; }
 
-        /* Content */
-        .content { padding: 20px; max-width: 600px; margin: 0 auto; padding-bottom: 100px; }
+        /* Main Content */
+        .content { max-width: 800px; margin: 0 auto; padding: 20px; }
 
-        /* Vendor Header */
+        /* Vendor Profile Card */
+        .vendor-card {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
         .vendor-header {
             display: flex;
             gap: 20px;
-            align-items: center;
-            margin-bottom: 24px;
             padding: 20px;
             background: linear-gradient(135deg, #fffaf5, #fff);
-            border-radius: 24px;
+            border-bottom: 1px solid #f0f0f0;
         }
         .vendor-avatar {
             width: 80px;
@@ -47,10 +53,11 @@
             border: 3px solid #ff6b35;
         }
         .vendor-info h1 { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
-        .vendor-rating { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+        .vendor-rating { display: flex; align-items: center; gap: 8px; }
         .stars { color: #ffb347; font-size: 14px; letter-spacing: 2px; }
 
         /* Info Rows */
+        .info-section { padding: 0 20px; }
         .info-row {
             display: flex;
             align-items: center;
@@ -58,41 +65,24 @@
             padding: 14px 0;
             border-bottom: 1px solid #f0f0f0;
         }
-        .info-row i { width: 28px; color: #ff6b35; font-size: 16px; }
-        .info-row .label { color: #666; font-weight: 500; width: 100px; }
-        .info-row .value { flex: 1; color: #333; }
-
-        /* Price Box */
+        .info-row i { width: 28px; color: #ff6b35; }
         .price-box {
             background: #fff5f0;
             padding: 18px 20px;
+            margin: 20px;
             border-radius: 20px;
-            margin: 20px 0;
             display: flex;
             justify-content: space-between;
-            align-items: center;
         }
-        .price-label { color: #666; font-weight: 500; }
         .price-value { font-size: 24px; font-weight: 700; color: #ff6b35; }
 
-        /* Description */
-        .description {
-            background: #f8f9fa;
-            padding: 18px;
-            border-radius: 20px;
-            margin: 20px 0;
-            line-height: 1.6;
-            color: #555;
-        }
-        .description strong { color: #ff6b35; display: block; margin-bottom: 8px; }
-
         /* Gallery */
-        .gallery-section { margin: 24px 0; }
-        .gallery-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .gallery-section { padding: 0 20px 20px; }
         .gallery-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
+            gap: 10px;
+            margin-top: 12px;
         }
         .gallery-item {
             aspect-ratio: 1;
@@ -101,48 +91,90 @@
             cursor: pointer;
             background: #f5f5f5;
         }
-        .gallery-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: 0.3s;
-        }
-        .gallery-item:hover img { transform: scale(1.05); }
-        .view-all-btn {
-            text-align: center;
-            margin-top: 12px;
-            padding: 10px;
-            background: #f5f5f5;
-            border-radius: 30px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            color: #ff6b35;
-        }
+        .gallery-item img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* Book Button */
-        .book-btn {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: #ff6b35;
+        /* Booking Form */
+        .booking-form-card {
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            margin-top: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .form-title { font-size: 20px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 8px; color: #333; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 16px;
+            font-size: 15px;
+            transition: 0.2s;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #ff6b35;
+            box-shadow: 0 0 0 3px rgba(255,107,53,0.1);
+        }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        
+        /* Payment Plan */
+        .payment-plan {
+            background: #f8f9fa;
+            border-radius: 20px;
+            padding: 16px;
+            margin: 20px 0;
+        }
+        .installment-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .installment-amount { font-weight: 700; color: #ff6b35; }
+        .total-amount { font-size: 20px; font-weight: 800; color: #ff6b35; text-align: right; margin-top: 12px; }
+        
+        /* Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .call-btn {
+            flex: 1;
+            background: #28a745;
             color: white;
             border: none;
-            padding: 18px;
+            padding: 16px;
+            border-radius: 50px;
             font-size: 16px;
             font-weight: 700;
             cursor: pointer;
-            z-index: 100;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
-            transition: 0.3s;
+            gap: 10px;
         }
-        .book-btn:hover { background: #e55a2b; }
-
-        /* Lightbox Modal */
+        .book-btn {
+            flex: 2;
+            background: #ff6b35;
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .agent-id-field { background: #fff8f0; border-left: 3px solid #ff6b35; padding: 12px; border-radius: 12px; margin-top: 8px; }
+        .optional-badge { font-size: 12px; font-weight: normal; color: #999; margin-left: 8px; }
+        
+        /* Lightbox */
         .lightbox {
             display: none;
             position: fixed;
@@ -152,26 +184,12 @@
             height: 100%;
             background: #000;
             z-index: 2000;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
         }
         .lightbox.active { display: flex; }
-        .lightbox-image {
-            max-width: 90%;
-            max-height: 80%;
-            object-fit: contain;
-            cursor: pointer;
-        }
-        .lightbox-close {
-            position: absolute;
-            top: 20px;
-            right: 30px;
-            font-size: 40px;
-            color: white;
-            cursor: pointer;
-            z-index: 2001;
-        }
+        .lightbox-image { max-width: 90%; max-height: 80%; object-fit: contain; }
+        .lightbox-close { position: absolute; top: 20px; right: 30px; font-size: 40px; color: white; cursor: pointer; }
         .lightbox-prev, .lightbox-next {
             position: absolute;
             top: 50%;
@@ -182,41 +200,20 @@
             background: rgba(0,0,0,0.5);
             padding: 16px;
             border-radius: 50%;
-            transition: 0.3s;
         }
         .lightbox-prev { left: 20px; }
         .lightbox-next { right: 20px; }
-        .lightbox-prev:hover, .lightbox-next:hover { background: rgba(0,0,0,0.8); }
-        .lightbox-counter {
-            position: absolute;
-            bottom: 30px;
-            left: 0;
-            right: 0;
-            text-align: center;
-            color: white;
-            background: rgba(0,0,0,0.5);
-            padding: 8px 16px;
-            width: fit-content;
-            margin: 0 auto;
-            border-radius: 30px;
-            font-size: 14px;
-        }
-
-        .loading { text-align: center; padding: 60px; color: #ff6b35; }
-        .no-photos { text-align: center; padding: 40px; color: #999; background: #f8f9fa; border-radius: 16px; }
 
         @media (max-width: 600px) {
             .vendor-header { flex-direction: column; text-align: center; }
-            .info-row { flex-direction: column; align-items: flex-start; gap: 4px; }
-            .info-row i { width: auto; }
-            .gallery-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
-            .lightbox-prev, .lightbox-next { font-size: 32px; padding: 12px; }
+            .form-row { grid-template-columns: 1fr; }
+            .action-buttons { flex-direction: column; }
         }
     </style>
-
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, addDoc, collection } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
@@ -228,7 +225,9 @@
         };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app);
 
+        const RAZORPAY_KEY = "rzp_test_XXXXXXXX"; // Replace with your key
         const urlParams = new URLSearchParams(window.location.search);
         const vendorId = urlParams.get('id');
 
@@ -237,202 +236,125 @@
         let currentPhotoIndex = 0;
 
         async function loadVendor() {
-            const container = document.getElementById('vendorDetail');
-            if (!vendorId) {
-                container.innerHTML = '<div class="loading">No vendor selected</div>';
-                document.getElementById('bookBtn').style.display = 'none';
-                return;
-            }
-            
-            try {
-                const vendorDoc = await getDoc(doc(db, 'vendors', vendorId));
-                if (vendorDoc.exists()) {
-                    currentVendor = { id: vendorDoc.id, ...vendorDoc.data() };
-                    currentPhotos = currentVendor.photos || [];
-                    if (currentPhotos.length === 0 && currentVendor.imageUrl) {
-                        currentPhotos = [currentVendor.imageUrl];
-                    }
-                    renderVendor();
-                } else {
-                    container.innerHTML = '<div class="loading">Vendor not found</div>';
-                    document.getElementById('bookBtn').style.display = 'none';
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                container.innerHTML = '<div class="loading">Error loading vendor</div>';
+            const vendorDoc = await getDoc(doc(db, 'vendors', vendorId));
+            if (vendorDoc.exists()) {
+                currentVendor = { id: vendorDoc.id, ...vendorDoc.data() };
+                currentPhotos = currentVendor.photos || [];
+                if (currentPhotos.length === 0 && currentVendor.imageUrl) currentPhotos = [currentVendor.imageUrl];
+                renderVendor();
+                updatePaymentPlan();
             }
         }
 
         function getStars(rating) {
-            const num = parseFloat(rating);
-            if (isNaN(num)) return '☆☆☆☆☆';
             let stars = '';
-            for (let i = 0; i < Math.floor(num); i++) stars += '★';
+            for (let i = 0; i < Math.floor(rating); i++) stars += '★';
             for (let i = stars.length; i < 5; i++) stars += '☆';
             return stars;
         }
 
-        function getCategoryIcon(category) {
-            const icons = { decorator: '🎨', photographer: '📸', caterer: '🍽️', bandbaja: '🎵', stadium: '🏟️' };
-            return icons[category] || '🏷️';
-        }
-
         function renderGallery() {
-            if (!currentPhotos || currentPhotos.length === 0) {
-                return `<div class="no-photos"><i class="fas fa-images"></i> No work photos uploaded yet</div>`;
-            }
-            
-            const displayPhotos = currentPhotos.slice(0, 6);
-            return `
-                <div class="gallery-grid">
-                    ${displayPhotos.map((photo, i) => `
-                        <div class="gallery-item" onclick="openLightbox(${i})">
-                            <img src="${photo}" alt="Work sample ${i+1}" loading="lazy" onerror="this.src='https://via.placeholder.com/150'">
-                        </div>
-                    `).join('')}
-                </div>
-                ${currentPhotos.length > 6 ? `<div class="view-all-btn" onclick="openLightbox(0)">View All ${currentPhotos.length} Photos →</div>` : ''}
-            `;
+            if (!currentPhotos.length) return '<div class="gallery-grid"><div style="background:#f5f5f5;padding:40px;text-align:center;">No photos yet</div></div>';
+            return `<div class="gallery-grid">${currentPhotos.slice(0,6).map((p,i)=>`<div class="gallery-item" onclick="openLightbox(${i})"><img src="${p}"></div>`).join('')}</div>`;
         }
 
         function renderVendor() {
-            const container = document.getElementById('vendorDetail');
-            const categoryIcon = getCategoryIcon(currentVendor.category);
-            
-            container.innerHTML = `
-                <div class="vendor-header">
-                    <img src="${currentVendor.imageUrl || 'https://via.placeholder.com/80'}" class="vendor-avatar" alt="${currentVendor.name}" onerror="this.src='https://via.placeholder.com/80'">
-                    <div class="vendor-info">
-                        <h1>${currentVendor.name || 'Vendor'} ${categoryIcon}</h1>
-                        <div class="vendor-rating">
-                            <div class="stars">${getStars(currentVendor.rating || 4.5)}</div>
-                            <span style="font-size: 14px; color: #666;">${currentVendor.rating || 4.5} (${currentVendor.reviews || 0} reviews)</span>
+            document.getElementById('vendorDetail').innerHTML = `
+                <div class="vendor-card">
+                    <div class="vendor-header">
+                        <img src="${currentVendor.imageUrl || 'https://via.placeholder.com/80'}" class="vendor-avatar" onerror="this.src='https://via.placeholder.com/80'">
+                        <div class="vendor-info">
+                            <h1>${currentVendor.name || 'Vendor'}</h1>
+                            <div class="vendor-rating"><div class="stars">${getStars(currentVendor.rating || 4.5)}</div><span>${currentVendor.rating || 4.5} (${currentVendor.reviewsCount || 0} reviews)</span></div>
                         </div>
                     </div>
-                </div>
-                
-                <div class="info-row">
-                    <i class="fas fa-map-marker-alt"></i>
-                    <span class="label">Location</span>
-                    <span class="value">${currentVendor.location || currentVendor.city || 'Location not specified'}</span>
-                </div>
-                <div class="info-row">
-                    <i class="fas fa-briefcase"></i>
-                    <span class="label">Experience</span>
-                    <span class="value">${currentVendor.experience || 'Professional vendor'}</span>
-                </div>
-                <div class="info-row">
-                    <i class="fas fa-tag"></i>
-                    <span class="label">Category</span>
-                    <span class="value">${currentVendor.category || '-'}</span>
-                </div>
-                <div class="info-row">
-                    <i class="fas fa-phone"></i>
-                    <span class="label">Vendor Phone</span>
-                    <span class="value">${currentVendor.phone || 'Not available'}</span>
-                </div>
-                
-                <div class="price-box">
-                    <span class="price-label">Price Range</span>
-                    <span class="price-value">${currentVendor.priceRange || 'Contact for price'}</span>
-                </div>
-                
-                <div class="description">
-                    <strong>📖 About</strong>
-                    ${currentVendor.description || 'Professional vendor with years of experience in the industry. Known for quality service and customer satisfaction.'}
-                </div>
-                
-                <div class="gallery-section">
-                    <div class="gallery-title"><i class="fas fa-images"></i> Work Portfolio</div>
-                    ${renderGallery()}
+                    <div class="info-section">
+                        <div class="info-row"><i class="fas fa-map-marker-alt"></i> ${currentVendor.location || currentVendor.city || 'Location'}</div>
+                        <div class="info-row"><i class="fas fa-briefcase"></i> ${currentVendor.experience || 'Experienced vendor'}</div>
+                        <div class="info-row"><i class="fas fa-tag"></i> ${currentVendor.category || 'Category'}</div>
+                        <div class="price-box"><span>Price Range</span><span class="price-value">${currentVendor.priceRange || 'Contact for price'}</span></div>
+                    </div>
+                    <div class="gallery-section">
+                        <div style="font-weight:600; margin-bottom:12px;">📷 Work Portfolio</div>
+                        ${renderGallery()}
+                    </div>
                 </div>
             `;
+        }
+
+        function updatePaymentPlan() {
+            const amount = parseInt(currentVendor.priceRange?.replace(/[^0-9]/g, '')) || 50000;
+            const isDecorator = currentVendor.category === 'decorator';
+            const planDiv = document.getElementById('paymentPlan');
             
-            // Update Book Now button with agent phone
-            const bookBtn = document.getElementById('bookBtn');
-            if (bookBtn) {
-                if (currentVendor.agentPhone) {
-                    bookBtn.innerHTML = `<i class="fas fa-phone-alt"></i> Book Now - Call Agent (${currentVendor.agentPhone})`;
-                    bookBtn.onclick = () => {
-                        window.location.href = `tel:${currentVendor.agentPhone}`;
-                    };
-                    bookBtn.style.display = 'flex';
-                } else {
-                    bookBtn.innerHTML = `<i class="fas fa-phone-alt"></i> Book Now - Contact Vendor`;
-                    bookBtn.onclick = () => {
-                        if (currentVendor.phone) {
-                            window.location.href = `tel:${currentVendor.phone}`;
-                        } else {
-                            alert('Contact number not available');
-                        }
-                    };
-                    bookBtn.style.display = 'flex';
-                }
+            if (isDecorator) {
+                const inst1 = Math.round(amount * 0.3);
+                const inst2 = Math.round(amount * 0.3);
+                const inst3 = Math.round(amount * 0.4);
+                planDiv.innerHTML = `
+                    <div class="payment-plan">
+                        <strong>📅 Payment Plan (Decorator - 3 Installments)</strong>
+                        <div class="installment-item"><span>1st Installment (30%)</span><span class="installment-amount">₹${inst1.toLocaleString()}</span></div>
+                        <div class="installment-item"><span>2nd Installment (30%)</span><span class="installment-amount">₹${inst2.toLocaleString()}</span></div>
+                        <div class="installment-item"><span>Final Installment (40%)</span><span class="installment-amount">₹${inst3.toLocaleString()}</span></div>
+                        <div class="total-amount">Total: ₹${amount.toLocaleString()}</div>
+                    </div>
+                `;
+            } else {
+                planDiv.innerHTML = `
+                    <div class="payment-plan">
+                        <strong>💰 Full Payment</strong>
+                        <div class="installment-item"><span>Total Amount</span><span class="installment-amount">₹${amount.toLocaleString()}</span></div>
+                    </div>
+                `;
             }
         }
 
-        // Lightbox Functions
-        window.openLightbox = (index) => {
-            if (!currentPhotos.length) return;
-            currentPhotoIndex = index;
-            updateLightboxImage();
-            document.getElementById('lightbox').classList.add('active');
-            document.body.style.overflow = 'hidden';
+        window.callAgent = () => {
+            if (currentVendor?.agentPhone) window.location.href = `tel:${currentVendor.agentPhone}`;
+            else alert('Agent phone not available');
         };
 
-        function updateLightboxImage() {
-            const img = document.getElementById('lightboxImage');
-            if (currentPhotos[currentPhotoIndex]) {
-                img.src = currentPhotos[currentPhotoIndex];
+        window.submitBooking = async () => {
+            const user = auth.currentUser;
+            if (!user) { alert('Please login first'); window.location.href = 'login.html'; return; }
+            
+            const bookingData = {
+                vendorId: currentVendor.id,
+                vendorName: currentVendor.name,
+                vendorCategory: currentVendor.category,
+                userId: user.uid,
+                userName: user.displayName || user.email,
+                userPhone: document.getElementById('userPhone').value,
+                eventName: document.getElementById('eventName').value,
+                eventDate: document.getElementById('eventDate').value,
+                eventTime: document.getElementById('eventTime').value,
+                guestCount: document.getElementById('guestCount').value,
+                eventLocation: document.getElementById('eventLocation').value,
+                eventType: document.getElementById('eventType').value,
+                specialRequests: document.getElementById('specialRequests').value,
+                agentId: document.getElementById('agentId').value || '',
+                amount: parseInt(currentVendor.priceRange?.replace(/[^0-9]/g, '')) || 50000,
+                status: 'pending',
+                createdAt: new Date().toISOString()
+            };
+            
+            if (!bookingData.userPhone || !bookingData.eventDate || !bookingData.eventLocation) {
+                alert('Please fill all required fields');
+                return;
             }
-            document.getElementById('lightboxCounter').innerText = `${currentPhotoIndex + 1} / ${currentPhotos.length}`;
-        }
-
-        window.closeLightbox = () => {
-            document.getElementById('lightbox').classList.remove('active');
-            document.body.style.overflow = 'auto';
+            
+            const docRef = await addDoc(collection(db, 'bookings'), bookingData);
+            alert('✅ Booking created! Redirecting to payment...');
+            window.location.href = `payment-page.html?id=${docRef.id}`;
         };
 
-        window.prevPhoto = (e) => {
-            e.stopPropagation();
-            if (!currentPhotos.length) return;
-            currentPhotoIndex = (currentPhotoIndex - 1 + currentPhotos.length) % currentPhotos.length;
-            updateLightboxImage();
-        };
-
-        window.nextPhoto = (e) => {
-            e.stopPropagation();
-            if (!currentPhotos.length) return;
-            currentPhotoIndex = (currentPhotoIndex + 1) % currentPhotos.length;
-            updateLightboxImage();
-        };
-
-        // Keyboard navigation
-        document.addEventListener('keydown', (e) => {
-            const lightbox = document.getElementById('lightbox');
-            if (lightbox.classList.contains('active')) {
-                if (e.key === 'ArrowLeft') prevPhoto(e);
-                if (e.key === 'ArrowRight') nextPhoto(e);
-                if (e.key === 'Escape') closeLightbox();
-            }
-        });
-
-        // Touch swipe for mobile
-        let touchStartX = 0;
-        let touchEndX = 0;
-        
-        document.addEventListener('touchstart', (e) => {
-            touchStartX = e.changedTouches[0].screenX;
-        });
-        
-        document.addEventListener('touchend', (e) => {
-            touchEndX = e.changedTouches[0].screenX;
-            const lightbox = document.getElementById('lightbox');
-            if (lightbox.classList.contains('active')) {
-                if (touchEndX < touchStartX - 50) nextPhoto(e);
-                if (touchEndX > touchStartX + 50) prevPhoto(e);
-            }
-        });
+        // Lightbox functions
+        window.openLightbox = (index) => { currentPhotoIndex = index; updateLightbox(); document.getElementById('lightbox').classList.add('active'); };
+        function updateLightbox() { document.getElementById('lightboxImage').src = currentPhotos[currentPhotoIndex]; }
+        window.closeLightbox = () => document.getElementById('lightbox').classList.remove('active');
+        window.prevPhoto = (e) => { e.stopPropagation(); currentPhotoIndex = (currentPhotoIndex-1+currentPhotos.length)%currentPhotos.length; updateLightbox(); };
+        window.nextPhoto = (e) => { e.stopPropagation(); currentPhotoIndex = (currentPhotoIndex+1)%currentPhotos.length; updateLightbox(); };
 
         loadVendor();
     </script>
@@ -445,19 +367,92 @@
     <div style="width: 40px;"></div>
 </header>
 
-<div id="vendorDetail" class="content">
-    <div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading vendor details...</div>
+<div class="content">
+    <div id="vendorDetail"></div>
+
+    <!-- Booking Form -->
+    <div class="booking-form-card">
+        <div class="form-title"><i class="fas fa-calendar-alt"></i> Book This Vendor</div>
+        
+        <div id="paymentPlan"></div>
+        
+        <div class="form-group">
+            <label>Your Full Name *</label>
+            <input type="text" id="userName" placeholder="Enter your full name">
+        </div>
+        
+        <div class="form-group">
+            <label>Your Phone Number *</label>
+            <input type="tel" id="userPhone" placeholder="Enter your phone number" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Event Name *</label>
+            <input type="text" id="eventName" placeholder="e.g., Wedding Reception, Birthday Party">
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>Event Date *</label>
+                <input type="date" id="eventDate" required>
+            </div>
+            <div class="form-group">
+                <label>Event Time</label>
+                <select id="eventTime">
+                    <option value="Morning (6am-12pm)">Morning (6am-12pm)</option>
+                    <option value="Afternoon (12pm-6pm)">Afternoon (12pm-6pm)</option>
+                    <option value="Evening (6pm-12am)">Evening (6pm-12am)</option>
+                    <option value="Full Day">Full Day</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>Expected Guests</label>
+                <input type="number" id="guestCount" placeholder="Number of guests">
+            </div>
+            <div class="form-group">
+                <label>Event Type *</label>
+                <select id="eventType" required>
+                    <option value="Wedding">Wedding</option>
+                    <option value="Corporate Event">Corporate Event</option>
+                    <option value="Birthday Party">Birthday Party</option>
+                    <option value="Concert">Concert</option>
+                    <option value="Sports Event">Sports Event</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>Event Location *</label>
+            <input type="text" id="eventLocation" placeholder="Full address with city, pincode" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Special Requests</label>
+            <textarea id="specialRequests" rows="2" placeholder="Any special requirements..."></textarea>
+        </div>
+        
+        <div class="agent-id-field">
+            <label>Agent ID <span class="optional-badge">(if referred by an agent)</span></label>
+            <input type="text" id="agentId" placeholder="Enter agent ID if any">
+        </div>
+        
+        <div class="action-buttons">
+            <button class="call-btn" onclick="callAgent()"><i class="fas fa-phone-alt"></i> Call Agent</button>
+            <button class="book-btn" onclick="submitBooking()"><i class="fas fa-credit-card"></i> Book & Pay Now</button>
+        </div>
+    </div>
 </div>
 
-<button id="bookBtn" class="book-btn"><i class="fas fa-phone-alt"></i> Book Now - Call Agent</button>
-
-<!-- Lightbox Modal -->
+<!-- Lightbox -->
 <div id="lightbox" class="lightbox" onclick="closeLightbox()">
     <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
     <span class="lightbox-prev" onclick="prevPhoto(event)">❮</span>
-    <img id="lightboxImage" class="lightbox-image" onclick="event.stopPropagation()">
+    <img id="lightboxImage" class="lightbox-image">
     <span class="lightbox-next" onclick="nextPhoto(event)">❯</span>
-    <div id="lightboxCounter" class="lightbox-counter">1 / 1</div>
 </div>
 
 </body>
