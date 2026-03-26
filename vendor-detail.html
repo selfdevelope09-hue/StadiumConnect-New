@@ -10,6 +10,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background: #fff; }
 
+        /* Header */
         .header {
             padding: 16px 20px;
             display: flex;
@@ -25,16 +26,10 @@
         .logo span { color: #ff6b35; }
         .back-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #ff6b35; }
 
-        .content { padding: 20px; max-width: 600px; margin: 0 auto; }
+        /* Content */
+        .content { padding: 20px; max-width: 600px; margin: 0 auto; padding-bottom: 100px; }
 
-        /* Vendor Profile Card */
-        .vendor-card {
-            background: white;
-            border-radius: 24px;
-            overflow: hidden;
-        }
-
-        /* Vendor Header with Photo */
+        /* Vendor Header */
         .vendor-header {
             display: flex;
             gap: 20px;
@@ -51,46 +46,49 @@
             object-fit: cover;
             border: 3px solid #ff6b35;
         }
-        .vendor-info h1 {
-            font-size: 24px;
-            font-weight: 800;
-            margin-bottom: 8px;
-        }
-        .vendor-rating {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .stars { color: #ffb347; font-size: 14px; }
+        .vendor-info h1 { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
+        .vendor-rating { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+        .stars { color: #ffb347; font-size: 14px; letter-spacing: 2px; }
 
         /* Info Rows */
         .info-row {
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 12px 0;
+            padding: 14px 0;
             border-bottom: 1px solid #f0f0f0;
         }
-        .info-row i { width: 24px; color: #ff6b35; }
+        .info-row i { width: 28px; color: #ff6b35; font-size: 16px; }
+        .info-row .label { color: #666; font-weight: 500; width: 100px; }
+        .info-row .value { flex: 1; color: #333; }
+
+        /* Price Box */
         .price-box {
             background: #fff5f0;
-            padding: 16px;
-            border-radius: 16px;
+            padding: 18px 20px;
+            border-radius: 20px;
             margin: 20px 0;
             display: flex;
             justify-content: space-between;
+            align-items: center;
         }
+        .price-label { color: #666; font-weight: 500; }
         .price-value { font-size: 24px; font-weight: 700; color: #ff6b35; }
 
-        /* Photo Gallery */
-        .gallery-section {
-            margin: 24px 0;
+        /* Description */
+        .description {
+            background: #f8f9fa;
+            padding: 18px;
+            border-radius: 20px;
+            margin: 20px 0;
+            line-height: 1.6;
+            color: #555;
         }
-        .gallery-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 16px;
-        }
+        .description strong { color: #ff6b35; display: block; margin-bottom: 8px; }
+
+        /* Gallery */
+        .gallery-section { margin: 24px 0; }
+        .gallery-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
         .gallery-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -109,9 +107,7 @@
             object-fit: cover;
             transition: 0.3s;
         }
-        .gallery-item:hover img {
-            transform: scale(1.05);
-        }
+        .gallery-item:hover img { transform: scale(1.05); }
         .view-all-btn {
             text-align: center;
             margin-top: 12px;
@@ -124,7 +120,29 @@
             color: #ff6b35;
         }
 
-        /* Lightbox Modal - Full Screen Photo Viewer */
+        /* Book Button */
+        .book-btn {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #ff6b35;
+            color: white;
+            border: none;
+            padding: 18px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: 0.3s;
+        }
+        .book-btn:hover { background: #e55a2b; }
+
+        /* Lightbox Modal */
         .lightbox {
             display: none;
             position: fixed;
@@ -138,18 +156,12 @@
             justify-content: center;
             align-items: center;
         }
-        .lightbox.active {
-            display: flex;
-        }
+        .lightbox.active { display: flex; }
         .lightbox-image {
             max-width: 90%;
             max-height: 80%;
             object-fit: contain;
-            cursor: zoom-in;
-        }
-        .lightbox-image.zoomed {
-            cursor: zoom-out;
-            transform: scale(1.5);
+            cursor: pointer;
         }
         .lightbox-close {
             position: absolute;
@@ -174,9 +186,7 @@
         }
         .lightbox-prev { left: 20px; }
         .lightbox-next { right: 20px; }
-        .lightbox-prev:hover, .lightbox-next:hover {
-            background: rgba(0,0,0,0.8);
-        }
+        .lightbox-prev:hover, .lightbox-next:hover { background: rgba(0,0,0,0.8); }
         .lightbox-counter {
             position: absolute;
             bottom: 30px;
@@ -184,48 +194,22 @@
             right: 0;
             text-align: center;
             color: white;
-            font-size: 14px;
             background: rgba(0,0,0,0.5);
-            padding: 8px;
+            padding: 8px 16px;
             width: fit-content;
             margin: 0 auto;
-            border-radius: 20px;
-        }
-
-        /* Description */
-        .description {
-            background: #f8f9fa;
-            padding: 16px;
-            border-radius: 16px;
-            margin: 20px 0;
-            line-height: 1.6;
-            color: #555;
-        }
-
-        /* Book Button */
-        .book-btn {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: #ff6b35;
-            color: white;
-            border: none;
-            padding: 18px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            z-index: 100;
-        }
-        .book-btn:hover {
-            background: #e55a2b;
+            border-radius: 30px;
+            font-size: 14px;
         }
 
         .loading { text-align: center; padding: 60px; color: #ff6b35; }
-        
+        .no-photos { text-align: center; padding: 40px; color: #999; background: #f8f9fa; border-radius: 16px; }
+
         @media (max-width: 600px) {
             .vendor-header { flex-direction: column; text-align: center; }
-            .gallery-grid { grid-template-columns: repeat(3, 1fr); }
+            .info-row { flex-direction: column; align-items: flex-start; gap: 4px; }
+            .info-row i { width: auto; }
+            .gallery-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
             .lightbox-prev, .lightbox-next { font-size: 32px; padding: 12px; }
         }
     </style>
@@ -233,7 +217,6 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
         import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
@@ -243,10 +226,8 @@
             messagingSenderId: "458108198578",
             appId: "1:458108198578:web:83d83646f0e24e718b73ab"
         };
-
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const auth = getAuth(app);
 
         const urlParams = new URLSearchParams(window.location.search);
         const vendorId = urlParams.get('id');
@@ -254,7 +235,6 @@
         let currentVendor = null;
         let currentPhotos = [];
         let currentPhotoIndex = 0;
-        let isZoomed = false;
 
         async function loadVendor() {
             const container = document.getElementById('vendorDetail');
@@ -265,19 +245,17 @@
             }
             
             try {
-                const vendorRef = doc(db, 'vendors', vendorId);
-                const vendorDoc = await getDoc(vendorRef);
-                
+                const vendorDoc = await getDoc(doc(db, 'vendors', vendorId));
                 if (vendorDoc.exists()) {
                     currentVendor = { id: vendorDoc.id, ...vendorDoc.data() };
                     currentPhotos = currentVendor.photos || [];
-                    // If no photos array, use single imageUrl as fallback
                     if (currentPhotos.length === 0 && currentVendor.imageUrl) {
                         currentPhotos = [currentVendor.imageUrl];
                     }
                     renderVendor();
                 } else {
                     container.innerHTML = '<div class="loading">Vendor not found</div>';
+                    document.getElementById('bookBtn').style.display = 'none';
                 }
             } catch (error) {
                 console.error('Error:', error);
@@ -294,100 +272,112 @@
             return stars;
         }
 
-        function renderGallery() {
-            if (!currentPhotos || currentPhotos.length === 0) {
-                return `
-                    <div class="gallery-section">
-                        <div class="gallery-title">Work Portfolio</div>
-                        <div class="gallery-grid">
-                            <div class="gallery-item" style="display: flex; align-items: center; justify-content: center; background: #f5f5f5;">
-                                <span style="color: #999;">No photos yet</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-            
-            const displayPhotos = currentPhotos.slice(0, 6);
-            return `
-                <div class="gallery-section">
-                    <div class="gallery-title">Work Portfolio (${currentPhotos.length} photos)</div>
-                    <div class="gallery-grid">
-                        ${displayPhotos.map((photo, i) => `
-                            <div class="gallery-item" onclick="openLightbox(${i})">
-                                <img src="${photo}" alt="Work sample ${i+1}" loading="lazy">
-                            </div>
-                        `).join('')}
-                    </div>
-                    ${currentPhotos.length > 6 ? `<div class="view-all-btn" onclick="openLightbox(0)">View All ${currentPhotos.length} Photos →</div>` : ''}
-                </div>
-            `;
-        }
-
-        function renderVendor() {
-            const container = document.getElementById('vendorDetail');
-            const icon = getCategoryIcon(currentVendor.category);
-            
-            container.innerHTML = `
-                <div class="vendor-card">
-                    <div class="vendor-header">
-                        <img src="${currentVendor.imageUrl || 'https://via.placeholder.com/80'}" class="vendor-avatar" alt="${currentVendor.name}" onerror="this.src='https://via.placeholder.com/80'">
-                        <div class="vendor-info">
-                            <h1>${currentVendor.name || 'Vendor'}</h1>
-                            <div class="vendor-rating">
-                                <div class="stars">${getStars(currentVendor.rating)}</div>
-                                <span>${currentVendor.rating || '4.5'} (${currentVendor.reviews || 0} reviews)</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="info-row"><i class="fas fa-map-marker-alt"></i> ${currentVendor.location || currentVendor.city || 'Location not specified'}</div>
-                    <div class="info-row"><i class="fas fa-phone"></i> ${currentVendor.phone || 'Contact not available'}</div>
-                    <div class="info-row"><i class="fas fa-briefcase"></i> ${currentVendor.experience || 'Experienced vendor'}</div>
-                    
-                    <div class="price-box">
-                        <span>Price Range</span>
-                        <span class="price-value">${currentVendor.priceRange || 'Contact for price'}</span>
-                    </div>
-                    
-                    <div class="description">
-                        <strong>About</strong><br>
-                        ${currentVendor.description || 'Professional vendor with years of experience in the industry.'}
-                    </div>
-                    
-                    ${renderGallery()}
-                    
-                    <div class="description">
-                        <strong>Reviews</strong><br>
-                        <div style="margin-top: 12px;">
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
-                                <span>Rahul Sharma</span>
-                                <span class="stars">★★★★★</span>
-                            </div>
-                            <p style="color: #666;">Excellent service! Highly recommended.</p>
-                            <div style="margin-top: 12px; display: flex; justify-content: space-between;">
-                                <span>Priya Patel</span>
-                                <span class="stars">★★★★☆</span>
-                            </div>
-                            <p style="color: #666;">Great work, on time delivery.</p>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
         function getCategoryIcon(category) {
             const icons = { decorator: '🎨', photographer: '📸', caterer: '🍽️', bandbaja: '🎵', stadium: '🏟️' };
             return icons[category] || '🏷️';
         }
 
+        function renderGallery() {
+            if (!currentPhotos || currentPhotos.length === 0) {
+                return `<div class="no-photos"><i class="fas fa-images"></i> No work photos uploaded yet</div>`;
+            }
+            
+            const displayPhotos = currentPhotos.slice(0, 6);
+            return `
+                <div class="gallery-grid">
+                    ${displayPhotos.map((photo, i) => `
+                        <div class="gallery-item" onclick="openLightbox(${i})">
+                            <img src="${photo}" alt="Work sample ${i+1}" loading="lazy" onerror="this.src='https://via.placeholder.com/150'">
+                        </div>
+                    `).join('')}
+                </div>
+                ${currentPhotos.length > 6 ? `<div class="view-all-btn" onclick="openLightbox(0)">View All ${currentPhotos.length} Photos →</div>` : ''}
+            `;
+        }
+
+        function renderVendor() {
+            const container = document.getElementById('vendorDetail');
+            const categoryIcon = getCategoryIcon(currentVendor.category);
+            
+            container.innerHTML = `
+                <div class="vendor-header">
+                    <img src="${currentVendor.imageUrl || 'https://via.placeholder.com/80'}" class="vendor-avatar" alt="${currentVendor.name}" onerror="this.src='https://via.placeholder.com/80'">
+                    <div class="vendor-info">
+                        <h1>${currentVendor.name || 'Vendor'} ${categoryIcon}</h1>
+                        <div class="vendor-rating">
+                            <div class="stars">${getStars(currentVendor.rating || 4.5)}</div>
+                            <span style="font-size: 14px; color: #666;">${currentVendor.rating || 4.5} (${currentVendor.reviews || 0} reviews)</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="info-row">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span class="label">Location</span>
+                    <span class="value">${currentVendor.location || currentVendor.city || 'Location not specified'}</span>
+                </div>
+                <div class="info-row">
+                    <i class="fas fa-briefcase"></i>
+                    <span class="label">Experience</span>
+                    <span class="value">${currentVendor.experience || 'Professional vendor'}</span>
+                </div>
+                <div class="info-row">
+                    <i class="fas fa-tag"></i>
+                    <span class="label">Category</span>
+                    <span class="value">${currentVendor.category || '-'}</span>
+                </div>
+                <div class="info-row">
+                    <i class="fas fa-phone"></i>
+                    <span class="label">Vendor Phone</span>
+                    <span class="value">${currentVendor.phone || 'Not available'}</span>
+                </div>
+                
+                <div class="price-box">
+                    <span class="price-label">Price Range</span>
+                    <span class="price-value">${currentVendor.priceRange || 'Contact for price'}</span>
+                </div>
+                
+                <div class="description">
+                    <strong>📖 About</strong>
+                    ${currentVendor.description || 'Professional vendor with years of experience in the industry. Known for quality service and customer satisfaction.'}
+                </div>
+                
+                <div class="gallery-section">
+                    <div class="gallery-title"><i class="fas fa-images"></i> Work Portfolio</div>
+                    ${renderGallery()}
+                </div>
+            `;
+            
+            // Update Book Now button with agent phone
+            const bookBtn = document.getElementById('bookBtn');
+            if (bookBtn) {
+                if (currentVendor.agentPhone) {
+                    bookBtn.innerHTML = `<i class="fas fa-phone-alt"></i> Book Now - Call Agent (${currentVendor.agentPhone})`;
+                    bookBtn.onclick = () => {
+                        window.location.href = `tel:${currentVendor.agentPhone}`;
+                    };
+                    bookBtn.style.display = 'flex';
+                } else {
+                    bookBtn.innerHTML = `<i class="fas fa-phone-alt"></i> Book Now - Contact Vendor`;
+                    bookBtn.onclick = () => {
+                        if (currentVendor.phone) {
+                            window.location.href = `tel:${currentVendor.phone}`;
+                        } else {
+                            alert('Contact number not available');
+                        }
+                    };
+                    bookBtn.style.display = 'flex';
+                }
+            }
+        }
+
         // Lightbox Functions
         window.openLightbox = (index) => {
+            if (!currentPhotos.length) return;
             currentPhotoIndex = index;
             updateLightboxImage();
             document.getElementById('lightbox').classList.add('active');
             document.body.style.overflow = 'hidden';
-            isZoomed = false;
         };
 
         function updateLightboxImage() {
@@ -401,42 +391,33 @@
         window.closeLightbox = () => {
             document.getElementById('lightbox').classList.remove('active');
             document.body.style.overflow = 'auto';
-            isZoomed = false;
-            document.getElementById('lightboxImage').classList.remove('zoomed');
         };
 
         window.prevPhoto = (e) => {
             e.stopPropagation();
-            if (currentPhotos.length === 0) return;
+            if (!currentPhotos.length) return;
             currentPhotoIndex = (currentPhotoIndex - 1 + currentPhotos.length) % currentPhotos.length;
             updateLightboxImage();
-            // Reset zoom when changing photo
-            isZoomed = false;
-            document.getElementById('lightboxImage').classList.remove('zoomed');
         };
 
         window.nextPhoto = (e) => {
             e.stopPropagation();
-            if (currentPhotos.length === 0) return;
+            if (!currentPhotos.length) return;
             currentPhotoIndex = (currentPhotoIndex + 1) % currentPhotos.length;
             updateLightboxImage();
-            isZoomed = false;
-            document.getElementById('lightboxImage').classList.remove('zoomed');
         };
 
-        window.toggleZoom = (e) => {
-            e.stopPropagation();
-            const img = document.getElementById('lightboxImage');
-            if (isZoomed) {
-                img.classList.remove('zoomed');
-                isZoomed = false;
-            } else {
-                img.classList.add('zoomed');
-                isZoomed = true;
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            const lightbox = document.getElementById('lightbox');
+            if (lightbox.classList.contains('active')) {
+                if (e.key === 'ArrowLeft') prevPhoto(e);
+                if (e.key === 'ArrowRight') nextPhoto(e);
+                if (e.key === 'Escape') closeLightbox();
             }
-        };
+        });
 
-        // Swipe support for touch devices
+        // Touch swipe for mobile
         let touchStartX = 0;
         let touchEndX = 0;
         
@@ -448,44 +429,9 @@
             touchEndX = e.changedTouches[0].screenX;
             const lightbox = document.getElementById('lightbox');
             if (lightbox.classList.contains('active')) {
-                if (touchEndX < touchStartX - 50) {
-                    nextPhoto(e);
-                }
-                if (touchEndX > touchStartX + 50) {
-                    prevPhoto(e);
-                }
+                if (touchEndX < touchStartX - 50) nextPhoto(e);
+                if (touchEndX > touchStartX + 50) prevPhoto(e);
             }
-        });
-
-        // Keyboard navigation for lightbox
-        document.addEventListener('keydown', (e) => {
-            const lightbox = document.getElementById('lightbox');
-            if (lightbox.classList.contains('active')) {
-                if (e.key === 'ArrowLeft') {
-                    prevPhoto(e);
-                } else if (e.key === 'ArrowRight') {
-                    nextPhoto(e);
-                } else if (e.key === 'Escape') {
-                    closeLightbox();
-                }
-            }
-        });
-
-        // Booking modal (simplified)
-        window.openBooking = () => {
-            const user = auth.currentUser;
-            if (!user) {
-                alert('Please login to book this vendor');
-                window.location.href = 'login.html';
-                return;
-            }
-            const date = prompt('Enter event date (YYYY-MM-DD):');
-            if (!date) return;
-            alert(`✅ Booking request sent to ${currentVendor.name}! Vendor will contact you.`);
-        };
-
-        onAuthStateChanged(auth, (user) => {
-            // Just for booking check
         });
 
         loadVendor();
@@ -500,16 +446,16 @@
 </header>
 
 <div id="vendorDetail" class="content">
-    <div class="loading">Loading vendor details...</div>
+    <div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading vendor details...</div>
 </div>
 
-<button class="book-btn" onclick="openBooking()">Book Now →</button>
+<button id="bookBtn" class="book-btn"><i class="fas fa-phone-alt"></i> Book Now - Call Agent</button>
 
-<!-- Lightbox Modal for Full Screen Photo Gallery -->
+<!-- Lightbox Modal -->
 <div id="lightbox" class="lightbox" onclick="closeLightbox()">
     <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
     <span class="lightbox-prev" onclick="prevPhoto(event)">❮</span>
-    <img id="lightboxImage" class="lightbox-image" onclick="toggleZoom(event)" src="">
+    <img id="lightboxImage" class="lightbox-image" onclick="event.stopPropagation()">
     <span class="lightbox-next" onclick="nextPhoto(event)">❯</span>
     <div id="lightboxCounter" class="lightbox-counter">1 / 1</div>
 </div>
