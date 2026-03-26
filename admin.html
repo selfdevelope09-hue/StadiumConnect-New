@@ -3,27 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel</title>
+    <title>StadiumConnect Admin Panel</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui; }
         body { background: #f5f5f5; padding: 20px; }
         .card { background: white; border-radius: 20px; padding: 24px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         h2 { color: #ff6b35; margin-bottom: 20px; }
-        button { background: #ff6b35; color: white; border: none; padding: 10px 20px; border-radius: 30px; cursor: pointer; margin-right: 10px; margin-bottom: 10px; }
+        button { background: #ff6b35; color: white; border: none; padding: 10px 20px; border-radius: 30px; cursor: pointer; margin-right: 10px; margin-bottom: 10px; transition: 0.3s; }
+        button:hover { opacity: 0.8; }
         .btn-delete { background: #dc3545; }
         .btn-edit { background: #ffc107; color: #000; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
-        th { background: #f8f8f8; }
-        input, select, textarea { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; }
-        .modal-content { background: white; padding: 24px; border-radius: 24px; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; }
-        .close { float: right; font-size: 24px; cursor: pointer; }
-        .message { padding: 12px; border-radius: 12px; margin-bottom: 15px; display: none; }
+        th { background: #f8f8f8; color: #666; font-size: 14px; }
+        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; font-size: 14px; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; z-index: 1000; }
+        .modal-content { background: white; padding: 24px; border-radius: 24px; width: 95%; max-width: 500px; max-height: 90vh; overflow-y: auto; position: relative; }
+        .close { position: absolute; right: 20px; top: 15px; font-size: 28px; cursor: pointer; color: #666; }
+        .message { padding: 12px; border-radius: 12px; margin-bottom: 15px; display: none; text-align: center; font-weight: 500; }
         .success { background: #d4edda; color: #155724; display: block; }
         .error { background: #f8d7da; color: #721c24; display: block; }
         .tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        .tab { background: white; border: none; padding: 10px 24px; border-radius: 30px; cursor: pointer; }
+        .tab { background: white; border: none; padding: 10px 24px; border-radius: 30px; cursor: pointer; font-weight: 600; color: #666; }
         .tab.active { background: #ff6b35; color: white; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
@@ -54,6 +55,12 @@
         let editingVendorId = null;
 
         // ========== LOAD DATA ==========
+        async function loadAllData() {
+            await loadCategories();
+            await loadCities();
+            await loadVendors();
+        }
+
         async function loadVendors() {
             try {
                 const snapshot = await getDocs(collection(db, "vendors"));
@@ -61,10 +68,9 @@
                 snapshot.forEach(doc => vendors.push({ id: doc.id, ...doc.data() }));
                 renderVendors();
                 updateStats();
-                console.log("Loaded", vendors.length, "vendors");
             } catch (error) {
                 console.error("Error loading vendors:", error);
-                showMessage("Error loading vendors: " + error.message, "error");
+                showMessage("Load Error: " + error.message, "error");
             }
         }
 
@@ -75,20 +81,9 @@
                 snapshot.forEach(doc => {
                     if (!doc.data().deleted) categories.push({ id: doc.id, ...doc.data() });
                 });
-                if (categories.length === 0) {
-                    categories = [
-                        { id: 'decorator', name: 'Decorators', icon: '🎨' },
-                        { id: 'photographer', name: 'Photographers', icon: '📸' },
-                        { id: 'caterer', name: 'Caterers', icon: '🍽️' },
-                        { id: 'bandbaja', name: 'Band Baja', icon: '🎵' },
-                        { id: 'stadium', name: 'Stadiums', icon: '🏟️' }
-                    ];
-                }
                 renderCategories();
-                updateCategorySelect();
-            } catch (error) {
-                console.error("Error loading categories:", error);
-            }
+                updateCategorySelects();
+            } catch (error) { console.error("Cat Load Error:", error); }
         }
 
         async function loadCities() {
@@ -96,39 +91,28 @@
                 const docRef = doc(db, 'settings', 'cities');
                 const docSnap = await getDoc(docRef);
                 cities = docSnap.exists() ? docSnap.data().list : [];
-                if (cities.length === 0) {
-                    cities = [
-                        { name: 'Nagpur', popular: true },
-                        { name: 'Mumbai', popular: true },
-                        { name: 'Pune', popular: true },
-                        { name: 'Delhi', popular: true },
-                        { name: 'Bangalore', popular: true }
-                    ];
-                    await saveCities();
-                }
                 renderCities();
-                updateCitySelect();
-            } catch (error) {
-                console.error("Error loading cities:", error);
-            }
+                updateCitySelects();
+            } catch (error) { console.error("City Load Error:", error); }
         }
 
+        // ========== RENDER FUNCTIONS ==========
         function renderVendors() {
             const tbody = document.getElementById('vendorTable');
             if (!tbody) return;
-            tbody.innerHTML = vendors.map(v => `
+            tbody.innerHTML = vendors.length ? vendors.map(v => `
                 <tr>
-                    <td><strong>${v.name || '-'}</strong></td>
+                    <td><strong>${v.name || 'Unnamed'}</strong></td>
                     <td>${v.category || '-'}</td>
                     <td>${v.city || '-'}</td>
                     <td>${v.priceRange || '-'}</td>
-                    <td>⭐ ${v.rating || '-'}</td>
+                    <td>⭐ ${v.rating || '0'}</td>
                     <td>
                         <button class="btn-edit" onclick="editVendor('${v.id}')">Edit</button>
                         <button class="btn-delete" onclick="deleteVendor('${v.id}')">Del</button>
                     </td>
                 </tr>
-            `).join('');
+            `).join('') : '<tr><td colspan="6" style="text-align:center">No vendors found</td></tr>';
         }
 
         function renderCategories() {
@@ -161,33 +145,74 @@
 
         function updateStats() {
             document.getElementById('totalVendors').innerText = vendors.length;
-            document.getElementById('totalDecorators').innerText = vendors.filter(v => v.category === 'decorator').length;
-            document.getElementById('totalPhotographers').innerText = vendors.filter(v => v.category === 'photographer').length;
-            document.getElementById('totalCaterers').innerText = vendors.filter(v => v.category === 'caterer').length;
-            document.getElementById('totalBand').innerText = vendors.filter(v => v.category === 'bandbaja').length;
-            document.getElementById('totalStadiums').innerText = vendors.filter(v => v.category === 'stadium').length;
+            const cats = ['decorator', 'photographer', 'caterer', 'bandbaja', 'stadium'];
+            cats.forEach(cat => {
+                const element = document.getElementById('total' + cat.charAt(0).toUpperCase() + cat.slice(1).replace('baja','Band'));
+                if(element) element.innerText = vendors.filter(v => v.category === cat).length;
+            });
         }
 
-        function updateCategorySelect() {
+        function updateCategorySelects() {
             const select = document.getElementById('vendorCategory');
             if (select) {
-                select.innerHTML = categories.map(c => `<option value="${c.id}">${c.icon || '🏷️'} ${c.name}</option>`).join('');
+                select.innerHTML = '<option value="">Select Category</option>' + 
+                    categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
             }
         }
 
-        function updateCitySelect() {
+        function updateCitySelects() {
             const select = document.getElementById('vendorCity');
             if (select) {
-                select.innerHTML = cities.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+                select.innerHTML = '<option value="">Select City</option>' + 
+                    cities.map(c => `<option value="${c.name.toLowerCase()}">${c.name}</option>`).join('');
             }
         }
 
-        // ========== VENDOR CRUD ==========
+        // ========== VENDOR CRUD (FIXED) ==========
         window.openAddVendor = () => {
             editingVendorId = null;
-            document.getElementById('vendorModalTitle').innerText = 'Add Vendor';
+            document.getElementById('vendorModalTitle').innerText = 'Add New Vendor';
             document.getElementById('vendorForm').reset();
             document.getElementById('vendorModal').style.display = 'flex';
+        };
+
+        window.saveVendor = async () => {
+            const name = document.getElementById('vendorName').value;
+            const category = document.getElementById('vendorCategory').value;
+            const city = document.getElementById('vendorCity').value;
+
+            if (!name || !category || !city) {
+                showMessage('Name, Category and City are required!', 'error');
+                return;
+            }
+
+            const vendorData = {
+                name: name,
+                category: category,
+                city: city,
+                location: document.getElementById('vendorLocation').value || '',
+                priceRange: document.getElementById('vendorPrice').value || '',
+                rating: document.getElementById('vendorRating').value || '4.0',
+                phone: document.getElementById('vendorPhone').value || '',
+                description: document.getElementById('vendorDescription').value || '',
+                updatedAt: new Date().toISOString()
+            };
+
+            try {
+                if (editingVendorId) {
+                    await updateDoc(doc(db, 'vendors', editingVendorId), vendorData);
+                    showMessage('Vendor updated!', 'success');
+                } else {
+                    vendorData.createdAt = new Date().toISOString();
+                    await addDoc(collection(db, 'vendors'), vendorData);
+                    showMessage('Vendor added!', 'success');
+                }
+                closeModal('vendorModal');
+                await loadVendors();
+            } catch (error) {
+                console.error("Firebase Error:", error);
+                showMessage('Error: ' + error.message, 'error');
+            }
         };
 
         window.editVendor = (id) => {
@@ -210,193 +235,63 @@
             if (confirm('Delete this vendor?')) {
                 try {
                     await deleteDoc(doc(db, 'vendors', id));
-                    showMessage('Vendor deleted successfully!', 'success');
+                    showMessage('Deleted!', 'success');
                     await loadVendors();
-                } catch (error) {
-                    showMessage('Error: ' + error.message, 'error');
-                }
+                } catch (error) { showMessage(error.message, 'error'); }
             }
         };
 
-        window.saveVendor = async () => {
-            const name = document.getElementById('vendorName').value;
-            if (!name) {
-                showMessage('Please enter vendor name', 'error');
-                return;
-            }
-            
-            const vendorData = {
-                name: name,
-                category: document.getElementById('vendorCategory').value,
-                city: document.getElementById('vendorCity').value,
-                location: document.getElementById('vendorLocation').value || '',
-                priceRange: document.getElementById('vendorPrice').value || '',
-                rating: parseFloat(document.getElementById('vendorRating').value) || 4.0,
-                phone: document.getElementById('vendorPhone').value || '',
-                description: document.getElementById('vendorDescription').value || '',
-                updatedAt: new Date().toISOString()
-            };
-            
-            try {
-                if (editingVendorId) {
-                    await updateDoc(doc(db, 'vendors', editingVendorId), vendorData);
-                    showMessage('Vendor updated successfully!', 'success');
-                } else {
-                    vendorData.createdAt = new Date().toISOString();
-                    await addDoc(collection(db, 'vendors'), vendorData);
-                    showMessage('Vendor added successfully!', 'success');
-                }
-                closeModal('vendorModal');
-                await loadVendors();
-            } catch (error) {
-                showMessage('Error: ' + error.message, 'error');
-            }
-        };
-
-        // ========== CATEGORY CRUD ==========
-        window.openAddCategory = () => {
-            document.getElementById('categoryName').value = '';
-            document.getElementById('categoryIcon').value = '';
-            document.getElementById('categoryModal').style.display = 'flex';
-            window.editingCategoryId = null;
-        };
-
-        window.editCategory = (id) => {
-            const cat = categories.find(c => c.id === id);
-            if (!cat) return;
-            window.editingCategoryId = id;
-            document.getElementById('categoryName').value = cat.name;
-            document.getElementById('categoryIcon').value = cat.icon || '';
-            document.getElementById('categoryModal').style.display = 'flex';
-        };
-
-        window.deleteCategory = async (id) => {
-            if (confirm('Delete this category?')) {
-                categories = categories.filter(c => c.id !== id);
-                await setDoc(doc(db, 'categories', id), { deleted: true });
-                renderCategories();
-                updateCategorySelect();
-                showMessage('Category deleted!', 'success');
-            }
-        };
-
+        // ========== CATEGORY & CITY SAVING ==========
         window.saveCategory = async () => {
             const name = document.getElementById('categoryName').value;
-            if (!name) {
-                showMessage('Enter category name', 'error');
-                return;
-            }
-            const id = name.toLowerCase().replace(/ /g, '');
-            const icon = document.getElementById('categoryIcon').value || '🏷️';
-            const cat = { id, name, icon };
-            
+            if (!name) return;
+            const id = name.toLowerCase().replace(/\s+/g, '');
+            const catData = { id, name, icon: document.getElementById('categoryIcon').value || '🏷️' };
             try {
-                if (window.editingCategoryId) {
-                    const index = categories.findIndex(c => c.id === window.editingCategoryId);
-                    if (index !== -1) categories[index] = cat;
-                    await setDoc(doc(db, 'categories', id), cat);
-                    showMessage('Category updated!', 'success');
-                } else {
-                    if (categories.find(c => c.id === id)) {
-                        showMessage('Category already exists!', 'error');
-                        return;
-                    }
-                    categories.push(cat);
-                    await setDoc(doc(db, 'categories', id), cat);
-                    showMessage('Category added!', 'success');
-                }
-                renderCategories();
-                updateCategorySelect();
+                await setDoc(doc(db, 'categories', id), catData);
                 closeModal('categoryModal');
-                window.editingCategoryId = null;
-            } catch (error) {
-                showMessage('Error: ' + error.message, 'error');
-            }
-        };
-
-        // ========== CITY CRUD ==========
-        window.openAddCity = () => {
-            document.getElementById('cityName').value = '';
-            document.getElementById('cityPopular').checked = false;
-            document.getElementById('cityModal').style.display = 'flex';
-            window.editingCityIndex = null;
-        };
-
-        window.editCity = (index) => {
-            const city = cities[index];
-            if (!city) return;
-            window.editingCityIndex = index;
-            document.getElementById('cityName').value = city.name;
-            document.getElementById('cityPopular').checked = city.popular || false;
-            document.getElementById('cityModal').style.display = 'flex';
-        };
-
-        window.deleteCity = (index) => {
-            if (confirm('Delete this city?')) {
-                cities.splice(index, 1);
-                saveCities();
-                renderCities();
-                updateCitySelect();
-                showMessage('City deleted!', 'success');
-            }
+                await loadCategories();
+                showMessage('Category saved!', 'success');
+            } catch (e) { showMessage(e.message, 'error'); }
         };
 
         window.saveCity = async () => {
             const name = document.getElementById('cityName').value;
-            const popular = document.getElementById('cityPopular').checked;
-            if (!name) {
-                showMessage('Enter city name', 'error');
-                return;
+            if (!name) return;
+            const newCity = { name, popular: document.getElementById('cityPopular').checked };
+            
+            // Handle Edit vs Add for cities
+            if(window.editingCityIndex !== null) {
+                cities[window.editingCityIndex] = newCity;
+            } else {
+                cities.push(newCity);
             }
-            
-            const cityData = { name: name, popular: popular };
-            
+
             try {
-                if (window.editingCityIndex !== null) {
-                    cities[window.editingCityIndex] = cityData;
-                    showMessage('City updated!', 'success');
-                } else {
-                    if (cities.find(c => c.name === name)) {
-                        showMessage('City already exists!', 'error');
-                        return;
-                    }
-                    cities.push(cityData);
-                    showMessage('City added!', 'success');
-                }
-                await saveCities();
-                renderCities();
-                updateCitySelect();
+                await setDoc(doc(db, 'settings', 'cities'), { list: cities });
                 closeModal('cityModal');
+                await loadCities();
+                showMessage('City saved!', 'success');
                 window.editingCityIndex = null;
-            } catch (error) {
-                showMessage('Error: ' + error.message, 'error');
-            }
+            } catch (e) { showMessage(e.message, 'error'); }
         };
 
-        async function saveCities() {
-            await setDoc(doc(db, 'settings', 'cities'), { list: cities });
-        }
-
-        // ========== UTILITIES ==========
+        // ========== UTILS ==========
+        window.closeModal = (id) => document.getElementById(id).style.display = 'none';
+        
         function showMessage(msg, type) {
-            const msgDiv = document.getElementById('message');
-            msgDiv.className = `message ${type}`;
-            msgDiv.innerText = msg;
-            setTimeout(() => { msgDiv.style.display = 'none'; }, 3000);
+            const m = document.getElementById('message');
+            m.className = `message ${type}`;
+            m.innerText = msg;
+            m.style.display = 'block';
+            setTimeout(() => m.style.display = 'none', 3000);
         }
 
-        window.closeModal = (id) => {
-            document.getElementById(id).style.display = 'none';
-        };
-
-        window.switchTab = (tab) => {
+        window.switchTab = (tabName) => {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.getElementById(`${tab}Tab`).classList.add('active');
-            if (tab === 'vendors') loadVendors();
-            if (tab === 'categories') loadCategories();
-            if (tab === 'cities') loadCities();
+            event.target.classList.add('active');
+            document.getElementById(tabName + 'Tab').classList.add('active');
         };
 
         window.logout = () => {
@@ -404,34 +299,25 @@
             window.location.href = 'admin-login.html';
         };
 
-        // Admin check
-        if (localStorage.getItem('admin') !== 'true') {
-            window.location.href = 'admin-login.html';
-        }
-
-        // Initial load
-        loadVendors();
-        loadCategories();
-        loadCities();
+        // Init
+        loadAllData();
     </script>
 </head>
 <body>
 
 <div class="card">
     <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h2>⚡ Admin Panel</h2>
+        <h2>⚡ StadiumConnect Admin</h2>
         <button onclick="logout()" style="background:#dc3545;">Logout</button>
     </div>
     <div id="message" class="message"></div>
 </div>
 
-<div class="stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px,1fr)); gap: 15px; margin-bottom: 20px;">
-    <div class="card" style="text-align:center"><div class="stat-number" id="totalVendors" style="font-size:32px; font-weight:bold; color:#ff6b35;">0</div><div>Total Vendors</div></div>
-    <div class="card" style="text-align:center"><div class="stat-number" id="totalDecorators" style="font-size:32px; font-weight:bold; color:#ff6b35;">0</div><div>🎨 Decorators</div></div>
-    <div class="card" style="text-align:center"><div class="stat-number" id="totalPhotographers" style="font-size:32px; font-weight:bold; color:#ff6b35;">0</div><div>📸 Photographers</div></div>
-    <div class="card" style="text-align:center"><div class="stat-number" id="totalCaterers" style="font-size:32px; font-weight:bold; color:#ff6b35;">0</div><div>🍽️ Caterers</div></div>
-    <div class="card" style="text-align:center"><div class="stat-number" id="totalBand" style="font-size:32px; font-weight:bold; color:#ff6b35;">0</div><div>🎵 Band Baja</div></div>
-    <div class="card" style="text-align:center"><div class="stat-number" id="totalStadiums" style="font-size:32px; font-weight:bold; color:#ff6b35;">0</div><div>🏟️ Stadiums</div></div>
+<div class="stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px;">
+    <div class="card" style="text-align:center"><div id="totalVendors" style="font-size:28px; font-weight:bold; color:#ff6b35;">0</div><div style="font-size:12px; color:#666;">Total Vendors</div></div>
+    <div class="card" style="text-align:center"><div id="totalDecorator" style="font-size:28px; font-weight:bold; color:#ff6b35;">0</div><div style="font-size:12px; color:#666;">🎨 Decorators</div></div>
+    <div class="card" style="text-align:center"><div id="totalPhotographer" style="font-size:28px; font-weight:bold; color:#ff6b35;">0</div><div style="font-size:12px; color:#666;">📸 Photo</div></div>
+    <div class="card" style="text-align:center"><div id="totalStadium" style="font-size:28px; font-weight:bold; color:#ff6b35;">0</div><div style="font-size:12px; color:#666;">🏟️ Stadiums</div></div>
 </div>
 
 <div class="tabs">
@@ -440,64 +326,60 @@
     <button class="tab" onclick="switchTab('cities')">📍 Cities</button>
 </div>
 
-<!-- Vendors Tab -->
 <div id="vendorsTab" class="tab-content active">
     <div class="card">
         <button onclick="openAddVendor()">+ Add Vendor</button>
         <div style="overflow-x: auto;">
-             <table>
-                <thead> <tr><th>Name</th><th>Category</th><th>City</th><th>Price</th><th>Rating</th><th>Actions</th></tr> </thead>
-                <tbody id="vendorTable"><tr><td colspan="6">Loading...</td></tr></tbody>
-             </table>
+            <table>
+                <thead><tr><th>Name</th><th>Category</th><th>City</th><th>Price</th><th>Rating</th><th>Actions</th></tr></thead>
+                <tbody id="vendorTable"></tbody>
+            </table>
         </div>
     </div>
 </div>
 
-<!-- Categories Tab -->
 <div id="categoriesTab" class="tab-content">
     <div class="card">
-        <button onclick="openAddCategory()">+ Add Category</button>
-        <div id="categoriesList" style="margin-top: 20px;"></div>
+        <button onclick="window.openAddCategory()">+ Add Category</button>
+        <div id="categoriesList"></div>
     </div>
 </div>
 
-<!-- Cities Tab -->
 <div id="citiesTab" class="tab-content">
     <div class="card">
-        <button onclick="openAddCity()">+ Add City</button>
-        <div id="citiesList" style="margin-top: 20px;"></div>
+        <button onclick="window.openAddCity()">+ Add City</button>
+        <div id="citiesList"></div>
     </div>
 </div>
 
-<!-- Vendor Modal -->
 <div id="vendorModal" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeModal('vendorModal')">&times;</span>
         <h3 id="vendorModalTitle">Add Vendor</h3>
-        <input type="text" id="vendorName" placeholder="Vendor Name *">
-        <select id="vendorCategory"></select>
-        <select id="vendorCity"></select>
-        <input type="text" id="vendorLocation" placeholder="Location (Area)">
-        <input type="text" id="vendorPrice" placeholder="Price Range (e.g., ₹10,000 - ₹50,000)">
-        <input type="text" id="vendorRating" placeholder="Rating (1-5)">
-        <input type="text" id="vendorPhone" placeholder="Phone Number">
-        <textarea id="vendorDescription" rows="2" placeholder="Description"></textarea>
-        <button onclick="saveVendor()" style="background:#28a745; width:100%; margin-top:10px;">Save Vendor</button>
+        <form id="vendorForm" onsubmit="event.preventDefault()">
+            <input type="text" id="vendorName" placeholder="Vendor Name *">
+            <select id="vendorCategory"></select>
+            <select id="vendorCity"></select>
+            <input type="text" id="vendorLocation" placeholder="Location (e.g. Sadar)">
+            <input type="text" id="vendorPrice" placeholder="Price (e.g. 15,000 - 50,000)">
+            <input type="text" id="vendorRating" placeholder="Rating (e.g. 4.5)">
+            <input type="text" id="vendorPhone" placeholder="Phone Number">
+            <textarea id="vendorDescription" rows="3" placeholder="Description"></textarea>
+            <button onclick="saveVendor()" style="background:#28a745; width:100%; margin-top:10px; font-weight:bold;">SAVE VENDOR</button>
+        </form>
     </div>
 </div>
 
-<!-- Category Modal -->
 <div id="categoryModal" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeModal('categoryModal')">&times;</span>
         <h3>Add Category</h3>
-        <input type="text" id="categoryName" placeholder="Category Name">
+        <input type="text" id="categoryName" placeholder="Category Name (e.g. Decorator)">
         <input type="text" id="categoryIcon" placeholder="Icon (emoji)">
-        <button onclick="saveCategory()" style="background:#28a745; width:100%; margin-top:10px;">Save</button>
+        <button onclick="saveCategory()" style="background:#28a745; width:100%;">Save</button>
     </div>
 </div>
 
-<!-- City Modal -->
 <div id="cityModal" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeModal('cityModal')">&times;</span>
@@ -505,9 +387,9 @@
         <input type="text" id="cityName" placeholder="City Name">
         <div class="checkbox-group">
             <input type="checkbox" id="cityPopular">
-            <label>⭐ Show in Popular Cities (Home Page)</label>
+            <label>Show in Popular Cities</label>
         </div>
-        <button onclick="saveCity()" style="background:#28a745; width:100%; margin-top:10px;">Save</button>
+        <button onclick="saveCity()" style="background:#28a745; width:100%;">Save</button>
     </div>
 </div>
 
