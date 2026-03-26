@@ -6,125 +6,260 @@
     <title>StadiumConnect</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: #fff; }
 
-        body {
-            font-family: 'Inter', sans-serif;
+        .header {
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #f0f0f0;
             background: #fff;
-            color: #1a1a1a;
-            min-height: 100vh;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
-
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
-            padding: 40px 20px;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .logo {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .logo h1 {
-            font-size: 36px;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            color: #1a1a1a;
-        }
-
-        .logo span {
-            color: #ff6b35;
-        }
-
-        .tagline {
-            text-align: center;
-            font-size: 16px;
-            color: #ff6b35;
-            font-weight: 500;
-            margin-bottom: 16px;
-        }
-
-        .description {
-            text-align: center;
-            font-size: 14px;
-            color: #666;
-            line-height: 1.5;
-            margin-bottom: 48px;
-            padding: 0 20px;
-        }
-
-        .buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            margin-bottom: 32px;
-        }
-
-        .btn {
-            padding: 16px;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            text-align: center;
-            cursor: pointer;
-            transition: 0.2s;
+        .logo { font-size: 20px; font-weight: 800; cursor: pointer; }
+        .logo span { color: #ff6b35; }
+        .nav-buttons { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .nav-buttons a {
             text-decoration: none;
-            display: block;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: 0.2s;
         }
-
-        .btn-login {
-            background: white;
-            border: 1.5px solid #ff6b35;
+        .nav-buttons a:first-child {
+            background: transparent;
+            border: 1px solid #ff6b35;
             color: #ff6b35;
         }
-
-        .btn-login:hover {
-            background: #fff5f0;
-        }
-
-        .btn-register {
+        .nav-buttons a:last-child {
             background: #ff6b35;
-            border: none;
             color: white;
         }
+        .nav-buttons a:first-child:hover { background: #fff5f0; }
+        .nav-buttons a:last-child:hover { background: #e55a2b; }
 
-        .btn-register:hover {
+        .hero {
+            text-align: center;
+            padding: 80px 20px 60px;
+            background: linear-gradient(to bottom, #fff, #fef9f5);
+        }
+        .hero h1 {
+            font-size: 48px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 16px;
+        }
+        .hero h1 span { color: #ff6b35; }
+        .hero p { font-size: 18px; color: #666; max-width: 600px; margin: 0 auto; }
+
+        .categories {
+            padding: 60px 20px;
+            text-align: center;
+        }
+        .section-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 32px;
+        }
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 24px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .category-card {
+            background: white;
+            border: 1px solid #f0f0f0;
+            border-radius: 24px;
+            padding: 32px 20px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .category-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+            border-color: #ffebe3;
+        }
+        .category-icon { font-size: 48px; margin-bottom: 12px; }
+        .category-card h3 { font-size: 18px; font-weight: 600; }
+
+        .cities {
+            background: #fef9f5;
+            padding: 60px 20px;
+            text-align: center;
+        }
+        .city-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            max-width: 800px;
+            margin: 32px auto 0;
+        }
+        .city-chip {
+            background: white;
+            border: 1px solid #e0e0e0;
+            padding: 10px 24px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .city-chip:hover { background: #ff6b35; color: white; border-color: #ff6b35; }
+
+        .vendor-register-section {
+            text-align: center;
+            padding: 60px 20px;
+            background: #fff;
+        }
+        .vendor-register-btn {
+            display: inline-block;
+            background: #ff6b35;
+            color: white;
+            border: none;
+            padding: 16px 40px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            margin-top: 20px;
+            transition: 0.2s;
+        }
+        .vendor-register-btn:hover {
             background: #e55a2b;
+            transform: scale(1.02);
         }
 
         footer {
             text-align: center;
-            font-size: 12px;
+            padding: 32px;
             color: #aaa;
-            margin-top: 40px;
+            border-top: 1px solid #f0f0f0;
+            font-size: 14px;
+        }
+
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 32px; }
+            .category-grid { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="logo">
-        <h1>STADIUM<span>CONNECT</span></h1>
+<header class="header">
+    <div class="logo" onclick="window.location.href='index.html'">STADIUM<span>CONNECT</span></div>
+    <div class="nav-buttons">
+        <a href="login.html">Login</a>
+        <a href="register.html">Register</a>
     </div>
-    <div class="tagline">your need, our network</div>
-    <div class="description">
-        India's premier event platform. Book stadiums, decorators, caterers, photographers & bands for your dream event.
+</header>
+
+<section class="hero">
+    <h1>Book the Perfect <span>Venue & Vendors</span></h1>
+    <p>Find stadiums, decorators, caterers, photographers & bands for your dream event</p>
+</section>
+
+<section class="categories">
+    <div class="section-title">Browse by Category</div>
+    <div class="category-grid">
+        <div class="category-card" onclick="window.location.href='vendors.html?category=decorator'">
+            <div class="category-icon">🎨</div>
+            <h3>Decorators</h3>
+        </div>
+        <div class="category-card" onclick="window.location.href='vendors.html?category=photographer'">
+            <div class="category-icon">📸</div>
+            <h3>Photographers</h3>
+        </div>
+        <div class="category-card" onclick="window.location.href='vendors.html?category=caterer'">
+            <div class="category-icon">🍽️</div>
+            <h3>Caterers</h3>
+        </div>
+        <div class="category-card" onclick="window.location.href='vendors.html?category=bandbaja'">
+            <div class="category-icon">🎵</div>
+            <h3>Band Baja</h3>
+        </div>
+        <div class="category-card" onclick="window.location.href='vendors.html?category=stadium'">
+            <div class="category-icon">🏟️</div>
+            <h3>Stadiums</h3>
+        </div>
     </div>
-    <div class="buttons">
-        <a href="login.html" class="btn btn-login">Login</a>
-        <a href="register.html" class="btn btn-register">Create an account</a>
+</section>
+
+<section class="cities">
+    <div class="section-title">Popular Cities</div>
+    <div class="city-list" id="cityList">
+        <div class="city-chip" onclick="window.location.href='vendors.html?city=nagpur'">Nagpur</div>
+        <div class="city-chip" onclick="window.location.href='vendors.html?city=mumbai'">Mumbai</div>
+        <div class="city-chip" onclick="window.location.href='vendors.html?city=pune'">Pune</div>
+        <div class="city-chip" onclick="window.location.href='vendors.html?city=delhi'">Delhi</div>
+        <div class="city-chip" onclick="window.location.href='vendors.html?city=bangalore'">Bangalore</div>
+        <div class="city-chip" onclick="window.location.href='vendors.html?city=hyderabad'">Hyderabad</div>
     </div>
-    <footer>© 2025 StadiumConnect</footer>
-</div>
+</section>
+
+<!-- Vendor Registration Section -->
+<section class="vendor-register-section">
+    <h2 style="font-size: 28px; margin-bottom: 16px;">Want to list your services?</h2>
+    <p style="color: #666; max-width: 600px; margin: 0 auto;">Join StadiumConnect and get more customers for your business</p>
+    <a href="https://forms.gle/t7oc3SeNvCMbdCVX7" target="_blank" class="vendor-register-btn">
+        Register as Vendor →
+    </a>
+</section>
+
+<footer>
+    <p>© 2025 StadiumConnect | Your Need, Our Network</p>
+</footer>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
+        authDomain: "stadiumconnect-8fecb.firebaseapp.com",
+        projectId: "stadiumconnect-8fecb",
+        storageBucket: "stadiumconnect-8fecb.firebasestorage.app",
+        messagingSenderId: "458108198578",
+        appId: "1:458108198578:web:83d83646f0e24e718b73ab"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    async function loadPopularCities() {
+        const docRef = doc(db, 'settings', 'cities');
+        const docSnap = await getDoc(docRef);
+        let cities = [];
+        if (docSnap.exists()) {
+            cities = docSnap.data().list || [];
+        }
+        const popularCities = cities.filter(c => c.popular === true).map(c => c.name);
+        if (popularCities.length > 0) {
+            const container = document.getElementById('cityList');
+            container.innerHTML = popularCities.map(city => `
+                <div class="city-chip" onclick="window.location.href='vendors.html?city=${city.toLowerCase()}'">${city}</div>
+            `).join('');
+        }
+    }
+
+    onAuthStateChanged(auth, (user) => {
+        const nav = document.querySelector('.nav-buttons');
+        if (user) {
+            nav.innerHTML = `<a href="dashboard.html">Dashboard</a><a href="#" onclick="logout()">Logout</a>`;
+        }
+    });
+
+    window.logout = () => { auth.signOut(); window.location.href = 'index.html'; };
+    
+    loadPopularCities();
+</script>
 
 </body>
 </html>
