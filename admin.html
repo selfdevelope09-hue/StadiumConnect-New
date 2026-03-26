@@ -39,6 +39,16 @@
         .list-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #eee; }
         .popular-badge { background: #ff6b35; color: white; font-size: 10px; padding: 2px 8px; border-radius: 20px; margin-left: 10px; }
         .checkbox-group { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
+        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-confirmed { background: #d4edda; color: #155724; }
+        .status-completed { background: #d4edda; color: #155724; }
+        .status-cancelled { background: #f8d7da; color: #721c24; }
+        .btn-confirm { background: #28a745; }
+        .btn-complete { background: #17a2b8; }
+        .btn-cancel { background: #dc3545; }
+        
+        @media (max-width: 768px) { th, td { font-size: 12px; padding: 8px; } .tab { padding: 6px 14px; font-size: 12px; } }
     </style>
 </head>
 <body>
@@ -55,16 +65,17 @@
     <button class="tab active" onclick="switchTab('vendors')">📦 Vendors</button>
     <button class="tab" onclick="switchTab('categories')">🏷️ Categories</button>
     <button class="tab" onclick="switchTab('cities')">📍 Cities</button>
+    <button class="tab" onclick="switchTab('bookings')">📋 Bookings</button>
 </div>
 
 <div id="vendorsTab" class="tab-content active">
     <div class="card">
         <button onclick="openAddVendor()">+ Add New Vendor</button>
         <div class="table-container">
-             <table>
-                <thead> <tr><th>Photo</th><th>Name</th><th>Category</th><th>City</th><th>Actions</th></tr> </thead>
+             能
+                <thead>  bon<th>Photo</th><th>Name</th><th>Category</th><th>City</th><th>Actions</th> </thead>
                 <tbody id="vendorTable"></tbody>
-             </table>
+             </>
         </div>
     </div>
 </div>
@@ -82,6 +93,20 @@
         <h3>📍 Cities Management</h3>
         <button onclick="openModal('cityModal')">+ Add New City</button>
         <div id="citiesList" style="margin-top: 10px;"></div>
+    </div>
+</div>
+
+<div id="bookingsTab" class="tab-content">
+    <div class="card">
+        <h3>📋 All Bookings</h3>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr><th>ID</th><th>Customer</th><th>Phone</th><th>Vendor</th><th>City</th><th>Date</th><th>Amount</th><th>Agent ID</th><th>Status</th><th>Actions</th></tr>
+                </thead>
+                <tbody id="bookingsTableBody"><tr><td colspan="10">Loading...</td></tr></tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -143,7 +168,8 @@
     const db = getFirestore(app);
     const IMGBB_API_KEY = "459b0b4e8a9c6fcceaffd15320a6fdbd";
 
-    let vendors = [], categories = [], cities = [], editingVendorId = null, editingCityIndex = null;
+    let vendors = [], categories = [], cities = [], bookings = [];
+    let editingVendorId = null, editingCityIndex = null;
 
     // --- REALTIME SYNC ---
     onSnapshot(collection(db, "categories"), (snap) => {
@@ -163,8 +189,41 @@
         renderVendors();
     });
 
-    // --- CRUD FUNCTIONS ---
+    onSnapshot(collection(db, "bookings"), (snap) => {
+        bookings = snap.docs.map(d => ({id: d.id, ...d.data()}));
+        renderBookings();
+    });
 
+    // --- BOOKINGS RENDER ---
+    function renderBookings() {
+        const tbody = document.getElementById('bookingsTableBody');
+        if(!bookings.length){ tbody.innerHTML='<tr><td colspan="10">No bookings yet</td></tr>'; return; }
+        tbody.innerHTML = bookings.map(b => `
+            <tr>
+                <td>${b.id?.slice(-6) || '-'}</td>
+                <td>${b.userName || '-'}</td>
+                <td>${b.userPhone || '-'}</td>
+                <td>${b.vendorName || '-'}</td>
+                <td>${b.vendorCity || b.eventLocation?.split(',').pop() || '-'}</td>
+                <td>${b.eventDate || '-'}</td>
+                <td>${b.amount || '-'}</td>
+                <td>${b.agentId || '-'}</td>
+                <td><span class="status-badge status-${b.status}">${b.status}</span></td>
+                <td>
+                    ${b.status === 'pending' ? `<button class="btn-confirm" onclick="updateBooking('${b.id}','confirmed')">Confirm</button>` : ''}
+                    ${b.status === 'confirmed' ? `<button class="btn-complete" onclick="updateBooking('${b.id}','completed')">Complete</button>` : ''}
+                    ${b.status !== 'cancelled' ? `<button class="btn-cancel" onclick="updateBooking('${b.id}','cancelled')">Cancel</button>` : ''}
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    window.updateBooking = async (id, status) => {
+        await updateDoc(doc(db, 'bookings', id), { status, updatedAt: new Date().toISOString() });
+        showMsg(`Booking ${status}!`, 'success');
+    };
+
+    // --- CRUD FUNCTIONS ---
     window.saveCategory = async () => {
         const name = document.getElementById('catName').value;
         const icon = document.getElementById('catIcon').value || '🏷️';
@@ -179,14 +238,12 @@
         const name = document.getElementById('cityNameInput').value;
         const popular = document.getElementById('cityPopularCheck').checked;
         if(!name) return;
-
         let newList = [...cities];
         if(editingCityIndex !== null) {
             newList[editingCityIndex] = { name, popular };
         } else {
             newList.push({ name, popular });
         }
-
         try {
             await setDoc(doc(db, 'settings', 'cities'), { list: newList });
             closeModal('cityModal');
@@ -200,15 +257,11 @@
         const cat = document.getElementById('vendorCategory').value;
         const city = document.getElementById('vendorCity').value;
         const btn = document.getElementById('saveBtn');
-
         if(!name || !cat || !city) return showMsg("Fill Name, Category & City!", "error");
-
         btn.innerText = "Processing..."; btn.disabled = true;
-
         try {
             let imageUrl = editingVendorId ? vendors.find(v => v.id === editingVendorId).imageUrl : 'https://via.placeholder.com/80';
             const file = document.getElementById('vendorLogo').files[0];
-            
             if(file) {
                 const formData = new FormData();
                 formData.append('image', file);
@@ -216,7 +269,6 @@
                 const imgData = await res.json();
                 if(imgData.success) imageUrl = imgData.data.url;
             }
-
             const data = {
                 name, category: cat, city, imageUrl,
                 agentPhone: document.getElementById('agentPhone').value,
@@ -224,10 +276,8 @@
                 description: document.getElementById('vendorDescription').value,
                 updatedAt: new Date().toISOString()
             };
-
             if(editingVendorId) await updateDoc(doc(db, 'vendors', editingVendorId), data);
             else { data.createdAt = new Date().toISOString(); await addDoc(collection(db, 'vendors'), data); }
-
             closeModal('vendorModal');
             showMsg("Vendor Saved!", "success");
         } catch (e) { showMsg(e.message, "error"); }
@@ -235,16 +285,17 @@
     };
 
     // --- RENDERERS ---
-
     function updateDropdowns() {
-        document.getElementById('vendorCategory').innerHTML = '<option value="">-- Category --</option>' + categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-        document.getElementById('vendorCity').innerHTML = '<option value="">-- City --</option>' + cities.map(c => `<option value="${c.name.toLowerCase()}">${c.name}</option>`).join('');
+        const catSel = document.getElementById('vendorCategory');
+        const citySel = document.getElementById('vendorCity');
+        if(catSel) catSel.innerHTML = '<option value="">-- Category --</option>' + categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        if(citySel) citySel.innerHTML = '<option value="">-- City --</option>' + cities.map(c => `<option value="${c.name.toLowerCase()}">${c.name}</option>`).join('');
     }
 
     function renderVendors() {
         document.getElementById('vendorTable').innerHTML = vendors.map(v => `
             <tr>
-                <td><img src="${v.imageUrl}" class="vendor-img-td"></td>
+                <td><img src="${v.imageUrl}" class="vendor-img-td" onerror="this.src='https://via.placeholder.com/50'"></td>
                 <td><strong>${v.name}</strong></td>
                 <td>${v.category}</td>
                 <td>${v.city}</td>
