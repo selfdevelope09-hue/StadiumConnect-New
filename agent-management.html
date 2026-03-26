@@ -60,9 +60,9 @@
         <div style="overflow-x: auto;">
              <table>
                 <thead>
-                    <tr><th>Agent ID</th><th>Name</th><th>Phone</th><th>City</th><th>Target (₹)</th><th>Bookings</th><th>Earnings</th><th>Status</th><th>Actions</th>
+                     <tr><th>Agent ID</th><th>Name</th><th>Phone</th><th>City</th><th>Target (₹)</th><th>Bookings</th><th>Earnings</th><th>Status</th><th>Actions</th></tr>
                 </thead>
-                <tbody id="agentsTableBody">  <td colspan="9" style="text-align:center;">Loading...   </tbody>
+                <tbody id="agentsTableBody"><tr><td colspan="9" style="text-align:center;">Loading...</td></tr></tbody>
              </table>
         </div>
     </div>
@@ -78,13 +78,7 @@
             <input type="hidden" id="agentId">
             <div class="form-group"><label>Full Name *</label><input type="text" id="agentName" placeholder="Enter full name" required></div>
             <div class="form-group"><label>Phone Number *</label><input type="tel" id="agentPhone" placeholder="10 digit mobile number" required></div>
-            <div class="form-group"><label>City *</label>
-                <select id="agentCity" required>
-                    <option value="">Select City</option>
-                    <option value="Nagpur">Nagpur</option><option value="Mumbai">Mumbai</option><option value="Pune">Pune</option>
-                    <option value="Delhi">Delhi</option><option value="Bangalore">Bangalore</option><option value="Hyderabad">Hyderabad</option>
-                </select>
-            </div>
+            <div class="form-group"><label>City *</label><select id="agentCity" required><option value="">Loading cities...</option></select></div>
             <div class="form-group"><label>Email (Optional)</label><input type="email" id="agentEmail" placeholder="Email address"></div>
             <div class="form-group"><label>Monthly Target (₹)</label><input type="number" id="agentTarget" value="50000" placeholder="Monthly target amount"></div>
             <div class="form-group"><label>Password *</label><input type="text" id="agentPassword" placeholder="Default: agent123" value="agent123"></div>
@@ -95,7 +89,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, setDoc, getDoc, query, where } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
@@ -108,9 +102,31 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    // Check admin login
+    if (localStorage.getItem('admin') !== 'true' && localStorage.getItem('developer') === null) {
+        window.location.href = 'admin-login.html';
+    }
+
     let allAgents = [];
     let allBookings = [];
-    let editingAgentId = null;
+    let citiesList = [];
+
+    async function loadCities() {
+        try {
+            const docRef = doc(db, 'settings', 'cities');
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                citiesList = docSnap.data().list || [];
+            } else {
+                citiesList = [{ name: 'Nagpur', popular: true }, { name: 'Mumbai', popular: true }, { name: 'Pune', popular: true }, { name: 'Delhi', popular: true }, { name: 'Bangalore', popular: true }];
+            }
+            const citySelect = document.getElementById('agentCity');
+            citySelect.innerHTML = '<option value="">Select City</option>' + 
+                citiesList.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+        } catch (error) {
+            console.error("Error loading cities:", error);
+        }
+    }
 
     async function loadAgents() {
         const agentsSnap = await getDocs(collection(db, "agents"));
@@ -132,26 +148,24 @@
 
     function renderAgents() {
         const tbody = document.getElementById('agentsTableBody');
-        if (!allAgents.length) { tbody.innerHTML = '<tr><td colspan="9">No agents found</td></tr>'; return; }
+        if (!allAgents.length) { tbody.innerHTML = '.<td colspan="9">No agents found</td>.'; return; }
         tbody.innerHTML = allAgents.map(agent => {
             const stats = getAgentStats(agent.id);
-            return `
-                <tr>
-                    <td class="agent-id">${agent.id}</td>
-                    <td>${agent.name || '-'}</td>
-                    <td>${agent.phone || '-'}</td>
-                    <td>${agent.city || '-'}</td>
-                    <td>₹${(agent.target || 50000).toLocaleString()}</td>
-                    <td>${stats.bookings}</td>
-                    <td>₹${stats.earnings.toLocaleString()}</td>
-                    <td><span style="color:#28a745;">Active</span></td>
-                    <td>
-                        <button class="btn-edit" onclick="editAgent('${agent.id}')">Edit</button>
-                        <button class="btn-delete" onclick="deleteAgent('${agent.id}')">Del</button>
-                        <button class="btn-copy" onclick="copyCredentials('${agent.id}', '${agent.password || 'agent123'}')">Copy Creds</button>
-                    </td>
-                </tr>
-            `;
+            return `<tr>
+                <td class="agent-id">${agent.id}</td>
+                <td>${agent.name || '-'}</td>
+                <td>${agent.phone || '-'}</td>
+                <td>${agent.city || '-'}</td>
+                <td>₹${(agent.target || 50000).toLocaleString()}</td>
+                <td>${stats.bookings}</td>
+                <td>₹${stats.earnings.toLocaleString()}</td>
+                <td><span style="color:#28a745;">Active</span></td>
+                <td>
+                    <button class="btn-edit" onclick="editAgent('${agent.id}')">Edit</button>
+                    <button class="btn-delete" onclick="deleteAgent('${agent.id}')">Del</button>
+                    <button class="btn-copy" onclick="copyCredentials('${agent.id}', '${agent.password || 'agent123'}')">Copy Creds</button>
+                </td>
+            </tr>`;
         }).join('');
     }
 
@@ -161,10 +175,9 @@
     }
 
     window.openAddAgentModal = async () => {
-        editingAgentId = null;
-        const newId = await generateAgentId();
         document.getElementById('modalTitle').innerText = 'Add New Agent';
         document.getElementById('agentId').value = '';
+        const newId = await generateAgentId();
         document.getElementById('generatedIdDisplay').innerHTML = `<i class="fas fa-id-card"></i> Agent ID: <strong>${newId}</strong>`;
         document.getElementById('generatedIdDisplay').style.display = 'block';
         document.getElementById('agentName').value = '';
@@ -179,7 +192,6 @@
     window.editAgent = async (id) => {
         const agent = allAgents.find(a => a.id === id);
         if (!agent) return;
-        editingAgentId = id;
         document.getElementById('modalTitle').innerText = 'Edit Agent';
         document.getElementById('agentId').value = agent.id;
         document.getElementById('generatedIdDisplay').style.display = 'none';
@@ -193,7 +205,7 @@
     };
 
     window.deleteAgent = async (id) => {
-        if (confirm(`Delete agent ${id}? This will not delete their bookings.`)) {
+        if (confirm(`Delete agent ${id}?`)) {
             await deleteDoc(doc(db, 'agents', id));
             showMessage('Agent deleted!', 'success');
             loadAgents();
@@ -221,7 +233,8 @@
         
         let agentId = document.getElementById('agentId').value;
         if (!agentId) {
-            agentId = await generateAgentId();
+            const count = allAgents.length + 1;
+            agentId = `AG${String(count).padStart(5, '0')}`;
         }
         
         const agentData = {
@@ -267,6 +280,8 @@
         window.location.href = 'index.html';
     };
 
+    // Load everything
+    loadCities();
     loadAgents();
 </script>
 </body>
