@@ -1,6 +1,6 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
@@ -19,28 +19,30 @@
     let cities = [];
     let editingVendorId = null;
 
-    // ========== REAL-TIME LISTENERS (AUTO SYNC) ==========
-    
-    // 1. Categories Sync
+    // ==========================================
+    // REAL-TIME SYNC (Sab kuch auto-update hoga)
+    // ==========================================
+
+    // 1. Listen for Categories
     onSnapshot(collection(db, "categories"), (snapshot) => {
         categories = [];
         snapshot.forEach(doc => {
             if (!doc.data().deleted) categories.push({ id: doc.id, ...doc.data() });
         });
         renderCategories();
-        updateCategorySelects(); // Yeh dropdown ko update karega
+        updateCategoryDropdown(); // Vendor form update karega
     });
 
-    // 2. Cities Sync
+    // 2. Listen for Cities
     onSnapshot(doc(db, 'settings', 'cities'), (docSnap) => {
         if (docSnap.exists()) {
             cities = docSnap.data().list || [];
             renderCities();
-            updateCitySelects(); // Yeh dropdown ko update karega
+            updateCityDropdown(); // Nayi city aate hi dropdown update hoga
         }
     });
 
-    // 3. Vendors Sync
+    // 3. Listen for Vendors
     onSnapshot(collection(db, "vendors"), (snapshot) => {
         vendors = [];
         snapshot.forEach(doc => vendors.push({ id: doc.id, ...doc.data() }));
@@ -48,88 +50,35 @@
         updateStats();
     });
 
-    // ========== RENDER FUNCTIONS ==========
-    function renderVendors() {
-        const tbody = document.getElementById('vendorTable');
-        if (!tbody) return;
-        tbody.innerHTML = vendors.map(v => `
-            <tr>
-                <td><strong>${v.name || 'Unnamed'}</strong></td>
-                <td>${v.category || '-'}</td>
-                <td>${v.city || '-'}</td>
-                <td>${v.priceRange || '-'}</td>
-                <td>⭐ ${v.rating || '0'}</td>
-                <td>
-                    <button class="btn-edit" onclick="editVendor('${v.id}')">Edit</button>
-                    <button class="btn-delete" onclick="deleteVendor('${v.id}')">Del</button>
-                </td>
-            </tr>
-        `).join('');
-    }
+    // ==========================================
+    // DROPDOWN UPDATERS (Sync Logic)
+    // ==========================================
 
-    function renderCategories() {
-        const container = document.getElementById('categoriesList');
-        if (!container) return;
-        container.innerHTML = categories.map(c => `
-            <div class="list-item">
-                <span>${c.icon || '🏷️'} ${c.name}</span>
-                <div>
-                    <button class="btn-edit" onclick="editCategory('${c.id}')">Edit</button>
-                    <button class="btn-delete" onclick="deleteCategory('${c.id}')">Del</button>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    function renderCities() {
-        const container = document.getElementById('citiesList');
-        if (!container) return;
-        container.innerHTML = cities.map((c, index) => `
-            <div class="list-item">
-                <span>📍 ${c.name} ${c.popular ? '<span class="popular-badge">Popular</span>' : ''}</span>
-                <div>
-                    <button class="btn-edit" onclick="editCity(${index})">Edit</button>
-                    <button class="btn-delete" onclick="deleteCity(${index})">Del</button>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    function updateStats() {
-        document.getElementById('totalVendors').innerText = vendors.length;
-        const catKeys = ['decorator', 'photographer', 'caterer', 'bandbaja', 'stadium'];
-        catKeys.forEach(cat => {
-            const el = document.getElementById('total' + cat.charAt(0).toUpperCase() + cat.slice(1).replace('baja','Band'));
-            if(el) el.innerText = vendors.filter(v => v.category === cat).length;
-        });
-    }
-
-    // ========== DROPDOWN AUTO-FILL (CRITICAL FIX) ==========
-    function updateCategorySelects() {
+    function updateCategoryDropdown() {
         const select = document.getElementById('vendorCategory');
         if (!select) return;
-        const currentVal = select.value; // Purani value save rakho agar edit mode ho
-        select.innerHTML = '<option value="">-- Choose Category --</option>' + 
-            categories.map(c => `<option value="${c.id}">${c.icon || ''} ${c.name}</option>`).join('');
-        if (currentVal) select.value = currentVal;
+        const currentSelection = select.value;
+        select.innerHTML = '<option value="">-- Select Category --</option>' + 
+            categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        if (currentSelection) select.value = currentSelection;
     }
 
-    function updateCitySelects() {
+    function updateCityDropdown() {
         const select = document.getElementById('vendorCity');
         if (!select) return;
-        const currentVal = select.value;
-        select.innerHTML = '<option value="">-- Choose City --</option>' + 
-            cities.map(c => `<option value="${c.name.toLowerCase()}">${c.name}</option>`).join('');
-        if (currentVal) select.value = currentVal;
+        const currentSelection = select.value;
+        // Cities ko alphabetical order mein dikhane ke liye sort kar sakte hain
+        const sortedCities = [...cities].sort((a, b) => a.name.localeCompare(b.name));
+        
+        select.innerHTML = '<option value="">-- Select City --</option>' + 
+            sortedCities.map(c => `<option value="${c.name.toLowerCase()}">${c.name}</option>`).join('');
+        
+        if (currentSelection) select.value = currentSelection;
     }
 
-    // ========== CRUD ACTIONS ==========
-    window.openAddVendor = () => {
-        editingVendorId = null;
-        document.getElementById('vendorModalTitle').innerText = 'Add New Vendor';
-        document.getElementById('vendorForm').reset();
-        document.getElementById('vendorModal').style.display = 'flex';
-    };
+    // ==========================================
+    // CRUD OPERATIONS
+    // ==========================================
 
     window.saveVendor = async () => {
         const name = document.getElementById('vendorName').value;
@@ -137,11 +86,11 @@
         const city = document.getElementById('vendorCity').value;
 
         if (!name || !category || !city) {
-            showMessage('Please select Name, Category and City!', 'error');
+            window.showMessage('Name, Category aur City bharna zaroori hai!', 'error');
             return;
         }
 
-        const vendorData = {
+        const data = {
             name, category, city,
             location: document.getElementById('vendorLocation').value || '',
             priceRange: document.getElementById('vendorPrice').value || '',
@@ -153,70 +102,131 @@
 
         try {
             if (editingVendorId) {
-                await updateDoc(doc(db, 'vendors', editingVendorId), vendorData);
-                showMessage('Vendor updated!', 'success');
+                await updateDoc(doc(db, 'vendors', editingVendorId), data);
+                window.showMessage('Vendor Update Ho Gaya!', 'success');
             } else {
-                vendorData.createdAt = new Date().toISOString();
-                await addDoc(collection(db, 'vendors'), vendorData);
-                showMessage('Vendor added!', 'success');
+                data.createdAt = new Date().toISOString();
+                await addDoc(collection(db, 'vendors'), data);
+                window.showMessage('Naya Vendor Add Ho Gaya!', 'success');
             }
-            closeModal('vendorModal');
-        } catch (error) {
-            showMessage('Error: ' + error.message, 'error');
-        }
-    };
-
-    window.editVendor = (id) => {
-        const v = vendors.find(x => x.id === id);
-        if (!v) return;
-        editingVendorId = id;
-        document.getElementById('vendorModalTitle').innerText = 'Edit Vendor';
-        document.getElementById('vendorName').value = v.name || '';
-        document.getElementById('vendorCategory').value = v.category || '';
-        document.getElementById('vendorCity').value = v.city || '';
-        document.getElementById('vendorLocation').value = v.location || '';
-        document.getElementById('vendorPrice').value = v.priceRange || '';
-        document.getElementById('vendorRating').value = v.rating || '';
-        document.getElementById('vendorPhone').value = v.phone || '';
-        document.getElementById('vendorDescription').value = v.description || '';
-        document.getElementById('vendorModal').style.display = 'flex';
-    };
-
-    window.deleteVendor = async (id) => {
-        if (confirm('Delete this vendor?')) {
-            await deleteDoc(doc(db, 'vendors', id));
-            showMessage('Deleted!', 'success');
-        }
+            window.closeModal('vendorModal');
+        } catch (e) { window.showMessage(e.message, 'error'); }
     };
 
     window.saveCategory = async () => {
         const name = document.getElementById('categoryName').value;
         if (!name) return;
         const id = name.toLowerCase().replace(/\s+/g, '');
-        const catData = { id, name, icon: document.getElementById('categoryIcon').value || '🏷️' };
-        await setDoc(doc(db, 'categories', id), catData);
-        closeModal('categoryModal');
-        showMessage('Category Saved!', 'success');
+        await setDoc(doc(db, 'categories', id), { 
+            id, name, icon: document.getElementById('categoryIcon').value || '🏷️' 
+        });
+        window.closeModal('categoryModal');
+        window.showMessage('Category Add Ho Gayi!', 'success');
     };
 
     window.saveCity = async () => {
         const name = document.getElementById('cityName').value;
         if (!name) return;
-        const newCity = { name, popular: document.getElementById('cityPopular').checked };
+        const popular = document.getElementById('cityPopular').checked;
         
-        if(window.editingCityIndex !== null && window.editingCityIndex !== undefined) {
-            cities[window.editingCityIndex] = newCity;
+        // Agar edit kar rahe hain toh purani replace hogi, warna nayi add hogi
+        if (window.editingCityIndex !== null && window.editingCityIndex !== undefined) {
+            cities[window.editingCityIndex] = { name, popular };
         } else {
-            cities.push(newCity);
+            cities.push({ name, popular });
         }
+
         await setDoc(doc(db, 'settings', 'cities'), { list: cities });
-        closeModal('cityModal');
+        window.closeModal('cityModal');
         window.editingCityIndex = null;
-        showMessage('City Saved!', 'success');
+        window.showMessage('City List Update Ho Gayi!', 'success');
     };
 
-    // Global Utils
+    // ==========================================
+    // RENDER & UI UTILS
+    // ==========================================
+
+    function renderVendors() {
+        const tbody = document.getElementById('vendorTable');
+        tbody.innerHTML = vendors.map(v => `
+            <tr>
+                <td><strong>${v.name}</strong></td>
+                <td>${v.category}</td>
+                <td>${v.city}</td>
+                <td>${v.priceRange}</td>
+                <td>⭐ ${v.rating}</td>
+                <td>
+                    <button class="btn-edit" onclick="editVendor('${v.id}')">Edit</button>
+                    <button class="btn-delete" onclick="deleteVendor('${v.id}')">Del</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function renderCategories() {
+        document.getElementById('categoriesList').innerHTML = categories.map(c => `
+            <div class="list-item">
+                <span>${c.icon} ${c.name}</span>
+                <button class="btn-delete" onclick="deleteCategory('${c.id}')">Delete</button>
+            </div>
+        `).join('');
+    }
+
+    function renderCities() {
+        document.getElementById('citiesList').innerHTML = cities.map((c, i) => `
+            <div class="list-item">
+                <span>📍 ${c.name} ${c.popular ? '⭐' : ''}</span>
+                <div>
+                    <button class="btn-edit" onclick="editCity(${i})">Edit</button>
+                    <button class="btn-delete" onclick="deleteCity(${i})">Del</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function updateStats() {
+        document.getElementById('totalVendors').innerText = vendors.length;
+    }
+
+    // Window Globals for HTML onclicks
     window.closeModal = (id) => document.getElementById(id).style.display = 'none';
+    window.switchTab = (t) => {
+        document.querySelectorAll('.tab, .tab-content').forEach(el => el.classList.remove('active'));
+        event.target.classList.add('active');
+        document.getElementById(t + 'Tab').classList.add('active');
+    };
+    window.openAddVendor = () => {
+        editingVendorId = null;
+        document.getElementById('vendorForm').reset();
+        document.getElementById('vendorModal').style.display = 'flex';
+    };
+    window.editVendor = (id) => {
+        const v = vendors.find(x => x.id === id);
+        if (!v) return;
+        editingVendorId = id;
+        document.getElementById('vendorName').value = v.name;
+        document.getElementById('vendorCategory').value = v.category;
+        document.getElementById('vendorCity').value = v.city;
+        document.getElementById('vendorLocation').value = v.location;
+        document.getElementById('vendorPrice').value = v.priceRange;
+        document.getElementById('vendorRating').value = v.rating;
+        document.getElementById('vendorPhone').value = v.phone;
+        document.getElementById('vendorDescription').value = v.description;
+        document.getElementById('vendorModal').style.display = 'flex';
+    };
+    window.deleteVendor = async (id) => { if(confirm('Delete?')) await deleteDoc(doc(db, 'vendors', id)); };
+    window.editCity = (i) => {
+        window.editingCityIndex = i;
+        document.getElementById('cityName').value = cities[i].name;
+        document.getElementById('cityPopular').checked = cities[i].popular;
+        document.getElementById('cityModal').style.display = 'flex';
+    };
+    window.deleteCity = async (i) => {
+        if(confirm('Delete city?')) {
+            cities.splice(i, 1);
+            await setDoc(doc(db, 'settings', 'cities'), { list: cities });
+        }
+    };
     window.showMessage = (msg, type) => {
         const m = document.getElementById('message');
         m.className = `message ${type}`;
@@ -224,11 +234,5 @@
         m.style.display = 'block';
         setTimeout(() => m.style.display = 'none', 3000);
     };
-    window.switchTab = (t) => {
-        document.querySelectorAll('.tab, .tab-content').forEach(el => el.classList.remove('active'));
-        event.target.classList.add('active');
-        document.getElementById(t + 'Tab').classList.add('active');
-    };
-    window.logout = () => { localStorage.removeItem('admin'); window.location.href = 'admin-login.html'; };
-
 </script>
+
