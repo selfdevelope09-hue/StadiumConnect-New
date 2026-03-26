@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Developer Login - StadiumConnect</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; }
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .login-card {
+            background: white;
+            border-radius: 32px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 20px;
+        }
+        .logo span {
+            color: #ff6b35;
+        }
+        .badge {
+            background: #ff6b35;
+            color: white;
+            font-size: 12px;
+            padding: 4px 12px;
+            border-radius: 30px;
+            display: inline-block;
+            margin-left: 8px;
+        }
+        h2 {
+            font-size: 24px;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 16px;
+            font-size: 15px;
+            transition: 0.2s;
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: #ff6b35;
+            box-shadow: 0 0 0 3px rgba(255,107,53,0.1);
+        }
+        button {
+            width: 100%;
+            background: #ff6b35;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 40px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        button:hover {
+            background: #e55a2b;
+        }
+        .error {
+            color: #d32f2f;
+            background: #ffe5e5;
+            padding: 12px;
+            border-radius: 12px;
+            margin-top: 15px;
+            display: none;
+            font-size: 14px;
+        }
+        .back-link {
+            margin-top: 20px;
+        }
+        .back-link a {
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .back-link a:hover {
+            color: #ff6b35;
+        }
+        .note {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #999;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="logo">STADIUM<span>CONNECT</span><span class="badge">Developer</span></div>
+        <h2>Developer Access</h2>
+        <div class="subtitle">Enter your credentials to continue</div>
+        
+        <div id="error" class="error"></div>
+        
+        <div class="input-group">
+            <label>Developer ID</label>
+            <input type="text" id="devId" placeholder="e.g., DEV001" value="DEV001" autocomplete="off">
+        </div>
+        <div class="input-group">
+            <label>Password</label>
+            <input type="password" id="password" placeholder="Enter your password" value="dev@2025">
+        </div>
+        
+        <button onclick="login()">Login →</button>
+        
+        <div class="back-link">
+            <a href="index.html">← Back to Home</a>
+        </div>
+        <div class="note">
+            Demo Credentials: DEV001 / dev@2025
+        </div>
+    </div>
+
+    <script>
+        function login() {
+            const devId = document.getElementById('devId').value.trim();
+            const password = document.getElementById('password').value;
+            
+            // Demo credentials
+            if (devId === 'DEV001' && password === 'dev@2025') {
+                // Save developer session
+                const devData = {
+                    id: 'DEV001',
+                    name: 'Atharva Darshanwar',
+                    role: 'developer',
+                    loginTime: new Date().toISOString()
+                };
+                localStorage.setItem('developer', JSON.stringify(devData));
+                window.location.href = 'developer-panel.html';
+            } else {
+                const errorDiv = document.getElementById('error');
+                errorDiv.innerText = 'Invalid Developer ID or Password';
+                errorDiv.style.display = 'block';
+                
+                // Clear error after 3 seconds
+                setTimeout(() => {
+                    errorDiv.style.display = 'none';
+                }, 3000);
+            }
+        }
+        
+        // Enter key press
+        document.getElementById('password').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                login();
+            }
+        });
+    </script>
+</body>
+</html>
