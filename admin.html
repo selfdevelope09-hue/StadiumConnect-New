@@ -18,7 +18,6 @@
         table { width: 100%; border-collapse: collapse; background: white; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 14px; }
         th { background: #f8f9fa; color: #666; font-size: 13px; text-transform: uppercase; }
-        .vendor-img-td { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; }
         
         input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 14px; }
         
@@ -47,6 +46,7 @@
         .btn-confirm { background: #28a745; }
         .btn-complete { background: #17a2b8; }
         .btn-cancel { background: #dc3545; }
+        .earnings-cell { color: #28a745; font-weight: bold; }
         
         @media (max-width: 768px) { th, td { font-size: 12px; padding: 8px; } .tab { padding: 6px 14px; font-size: 12px; } }
     </style>
@@ -66,16 +66,17 @@
     <button class="tab" onclick="switchTab('categories')">🏷️ Categories</button>
     <button class="tab" onclick="switchTab('cities')">📍 Cities</button>
     <button class="tab" onclick="switchTab('bookings')">📋 Bookings</button>
+    <button class="tab" onclick="switchTab('agents')">🤝 Agents</button>
 </div>
 
 <div id="vendorsTab" class="tab-content active">
     <div class="card">
         <button onclick="openAddVendor()">+ Add New Vendor</button>
         <div class="table-container">
-             能
-                <thead>  bon<th>Photo</th><th>Name</th><th>Category</th><th>City</th><th>Actions</th> </thead>
+            <table>
+                <thead>  <th>Photo</th><th>Name</th><th>Category</th><th>City</th><th>Actions</th> </thead>
                 <tbody id="vendorTable"></tbody>
-             </>
+            </table>
         </div>
     </div>
 </div>
@@ -84,7 +85,7 @@
     <div class="card">
         <h3>🏷️ Categories Management</h3>
         <button onclick="openModal('categoryModal')">+ Add New Category</button>
-        <div id="categoriesList" style="margin-top: 10px;"></div>
+        <div id="categoriesList"></div>
     </div>
 </div>
 
@@ -92,68 +93,105 @@
     <div class="card">
         <h3>📍 Cities Management</h3>
         <button onclick="openModal('cityModal')">+ Add New City</button>
-        <div id="citiesList" style="margin-top: 10px;"></div>
+        <div id="citiesList"></div>
     </div>
 </div>
 
+<!-- ========== BOOKINGS TAB - REAL TIME ========== -->
 <div id="bookingsTab" class="tab-content">
     <div class="card">
-        <h3>📋 All Bookings</h3>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3>📋 All Bookings (Real-time)</h3>
+            <div style="display: flex; gap: 10px;">
+                <select id="bookingStatusFilter" onchange="filterBookings()">
+                    <option value="all">All Status</option>
+                    <option value="pending">⏳ Pending</option>
+                    <option value="confirmed">✅ Confirmed</option>
+                    <option value="completed">🎉 Completed</option>
+                    <option value="cancelled">❌ Cancelled</option>
+                </select>
+                <input type="text" id="bookingSearch" placeholder="🔍 Search vendor/city..." onkeyup="filterBookings()">
+            </div>
+        </div>
         <div class="table-container">
-            <table>
+            <table id="bookingsTable">
                 <thead>
-                    <tr><th>ID</th><th>Customer</th><th>Phone</th><th>Vendor</th><th>City</th><th>Date</th><th>Amount</th><th>Agent ID</th><th>Status</th><th>Actions</th></tr>
+                     <th>ID</th><th>Date & Time</th><th>Customer</th><th>Phone</th><th>Vendor</th><th>City</th><th>Amount</th><th>Agent ID</th><th>Status</th><th>Actions</th>
                 </thead>
-                <tbody id="bookingsTableBody"><tr><td colspan="10">Loading...</td></tr></tbody>
+                <tbody id="bookingsTableBody">
+                     <td colspan="10" style="text-align:center;">Loading bookings...</td>
+                </tbody>
             </table>
         </div>
     </div>
 </div>
 
-<div id="vendorModal" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="closeModal('vendorModal')">&times;</span>
-        <h3 id="vendorModalTitle">Add Vendor</h3>
-        <form id="vendorForm" onsubmit="event.preventDefault()">
-            <input type="text" id="vendorName" placeholder="Vendor Name *">
-            <select id="vendorCategory"></select>
-            <select id="vendorCity"></select>
-            <input type="text" id="vendorPrice" placeholder="Price (e.g. ₹20,000)">
-            <input type="tel" id="agentPhone" placeholder="Agent Phone Number *">
-            <textarea id="vendorDescription" rows="3" placeholder="Description"></textarea>
-            <input type="file" id="vendorLogo" accept="image/*" onchange="previewLogo(this)">
-            <img id="logoPreview" style="display:none; width:100px; height:100px; border-radius:10px; margin-top:10px; object-fit: cover;">
-            <button id="saveBtn" onclick="saveVendor()" style="background:#2ed573; width:100%; margin-top:15px;">SAVE VENDOR</button>
-        </form>
-    </div>
-</div>
-
-<div id="categoryModal" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="closeModal('categoryModal')">&times;</span>
-        <h3>Add Category</h3>
-        <input type="text" id="catName" placeholder="Category Name">
-        <input type="text" id="catIcon" placeholder="Icon Emoji (e.g. 📸)">
-        <button onclick="saveCategory()" style="background:#2ed573; width:100%; margin-top:10px;">SAVE CATEGORY</button>
-    </div>
-</div>
-
-<div id="cityModal" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="closeModal('cityModal')">&times;</span>
-        <h3 id="cityModalTitle">Add City</h3>
-        <input type="text" id="cityNameInput" placeholder="City Name (e.g. Nagpur)">
-        <div class="checkbox-group">
-            <input type="checkbox" id="cityPopularCheck">
-            <label>⭐ Show in Popular Cities (Home Page)</label>
+<div id="agentsTab" class="tab-content">
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3>🤝 Agents Management</h3>
+            <button onclick="openAddAgent()">+ Add New Agent</button>
         </div>
-        <button onclick="saveCity()" style="background:#2ed573; width:100%; margin-top:15px;">SAVE CITY</button>
+        <div class="table-container">
+            <table style="width:100%">
+                <thead> <th>Agent ID</th><th>Name</th><th>Phone</th><th>City</th><th>Target</th><th>Bookings</th><th>Revenue</th><th>Earnings</th><th>Progress</th><th>Actions</th> </thead>
+                <tbody id="agentsTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Vendor Modal -->
+<div id="vendorModal" class="modal">
+    <div class="modal-content"><span class="close" onclick="closeModal('vendorModal')">&times;</span>
+        <h3 id="vendorModalTitle">Add Vendor</h3>
+        <input type="text" id="vendorName" placeholder="Vendor Name *">
+        <select id="vendorCategory"></select>
+        <select id="vendorCity"></select>
+        <input type="text" id="vendorPrice" placeholder="Price (e.g. ₹20,000)">
+        <input type="tel" id="agentPhone" placeholder="Agent Phone Number *">
+        <textarea id="vendorDescription" rows="2" placeholder="Description"></textarea>
+        <input type="file" id="vendorLogo" accept="image/*" onchange="previewLogo(this)">
+        <img id="logoPreview" style="display:none; width:80px; height:80px; border-radius:10px;">
+        <button onclick="saveVendor()" style="background:#28a745; width:100%; margin-top:10px;">SAVE VENDOR</button>
+    </div>
+</div>
+
+<!-- Category Modal -->
+<div id="categoryModal" class="modal">
+    <div class="modal-content"><span class="close" onclick="closeModal('categoryModal')">&times;</span>
+        <h3>Add Category</h3><input type="text" id="catName" placeholder="Category Name"><input type="text" id="catIcon" placeholder="Icon Emoji">
+        <button onclick="saveCategory()" style="background:#28a745; width:100%; margin-top:10px;">SAVE</button>
+    </div>
+</div>
+
+<!-- City Modal -->
+<div id="cityModal" class="modal">
+    <div class="modal-content"><span class="close" onclick="closeModal('cityModal')">&times;</span>
+        <h3>Add City</h3><input type="text" id="cityNameInput" placeholder="City Name">
+        <div class="checkbox-group"><input type="checkbox" id="cityPopularCheck"><label>⭐ Show in Popular Cities</label></div>
+        <button onclick="saveCity()" style="background:#28a745; width:100%; margin-top:10px;">SAVE</button>
+    </div>
+</div>
+
+<!-- Agent Modal -->
+<div id="agentModal" class="modal">
+    <div class="modal-content"><span class="close" onclick="closeModal('agentModal')">&times;</span>
+        <h3 id="agentModalTitle">Add Agent</h3>
+        <input type="text" id="agentId" placeholder="Agent ID" readonly>
+        <input type="text" id="agentName" placeholder="Full Name *">
+        <input type="tel" id="agentPhone" placeholder="Phone Number *">
+        <select id="agentCity"></select>
+        <input type="email" id="agentEmail" placeholder="Email">
+        <input type="number" id="agentTarget" placeholder="Monthly Target" value="50000">
+        <input type="text" id="agentPassword" placeholder="Password" value="agent123">
+        <button onclick="saveAgent()" style="background:#28a745; width:100%; margin-top:10px;">Save Agent</button>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, setDoc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
@@ -163,210 +201,220 @@
         messagingSenderId: "458108198578",
         appId: "1:458108198578:web:83d83646f0e24e718b73ab"
     };
-
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const IMGBB_API_KEY = "459b0b4e8a9c6fcceaffd15320a6fdbd";
 
-    let vendors = [], categories = [], cities = [], bookings = [];
+    if (localStorage.getItem('admin') !== 'true') window.location.href = 'admin-login.html';
+
+    let vendors = [], categories = [], cities = [], bookings = [], agents = [];
     let editingVendorId = null, editingCityIndex = null;
 
-    // --- REALTIME SYNC ---
+    // ========== REAL-TIME BOOKINGS SYNC ==========
+    onSnapshot(collection(db, "bookings"), (snap) => {
+        bookings = [];
+        snap.forEach(doc => bookings.push({ id: doc.id, ...doc.data() }));
+        renderBookings();
+        renderAgents(); // Refresh agents when bookings change
+    });
+
     onSnapshot(collection(db, "categories"), (snap) => {
         categories = snap.docs.map(d => ({id: d.id, ...d.data()})).filter(c => !c.deleted);
         renderCategories(); updateDropdowns();
     });
-
     onSnapshot(doc(db, 'settings', 'cities'), (d) => {
-        if(d.exists()) {
-            cities = d.data().list || [];
-            renderCities(); updateDropdowns();
-        }
+        if(d.exists()) cities = d.data().list || [];
+        else cities = [{ name:'Nagpur', popular:true }, { name:'Mumbai', popular:true }, { name:'Pune', popular:true }, { name:'Delhi', popular:true }, { name:'Bangalore', popular:true }];
+        renderCities(); updateDropdowns();
     });
-
     onSnapshot(collection(db, "vendors"), (snap) => {
         vendors = snap.docs.map(d => ({id: d.id, ...d.data()}));
         renderVendors();
     });
-
-    onSnapshot(collection(db, "bookings"), (snap) => {
-        bookings = snap.docs.map(d => ({id: d.id, ...d.data()}));
-        renderBookings();
+    onSnapshot(collection(db, "agents"), (snap) => {
+        agents = snap.docs.map(d => ({id: d.id, ...d.data()}));
+        renderAgents();
     });
 
-    // --- BOOKINGS RENDER ---
+    // ========== CALCULATE COMMISSION ==========
+    function calculateCommission(amount) {
+        if (!amount) return 0;
+        const price = parseInt(String(amount).replace(/[₹,]/g, '')) || 0;
+        return Math.floor(price * 0.025);
+    }
+
+    // ========== RENDER BOOKINGS (REAL-TIME WITH DATE & TIME) ==========
     function renderBookings() {
         const tbody = document.getElementById('bookingsTableBody');
-        if(!bookings.length){ tbody.innerHTML='<tr><td colspan="10">No bookings yet</td></tr>'; return; }
-        tbody.innerHTML = bookings.map(b => `
-            <tr>
-                <td>${b.id?.slice(-6) || '-'}</td>
-                <td>${b.userName || '-'}</td>
-                <td>${b.userPhone || '-'}</td>
-                <td>${b.vendorName || '-'}</td>
-                <td>${b.vendorCity || b.eventLocation?.split(',').pop() || '-'}</td>
-                <td>${b.eventDate || '-'}</td>
-                <td>${b.amount || '-'}</td>
-                <td>${b.agentId || '-'}</td>
-                <td><span class="status-badge status-${b.status}">${b.status}</span></td>
-                <td>
-                    ${b.status === 'pending' ? `<button class="btn-confirm" onclick="updateBooking('${b.id}','confirmed')">Confirm</button>` : ''}
-                    ${b.status === 'confirmed' ? `<button class="btn-complete" onclick="updateBooking('${b.id}','completed')">Complete</button>` : ''}
-                    ${b.status !== 'cancelled' ? `<button class="btn-cancel" onclick="updateBooking('${b.id}','cancelled')">Cancel</button>` : ''}
-                </td>
-            </tr>
-        `).join('');
+        if (!bookings.length) {
+            tbody.innerHTML = '.<td colspan="10" style="text-align:center;">No bookings yet.'; 
+            return;
+        }
+        
+        // Sort by date (newest first)
+        const sortedBookings = [...bookings].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        
+        tbody.innerHTML = sortedBookings.map(b => {
+            const createdDate = b.createdAt ? new Date(b.createdAt).toLocaleString('en-IN', { 
+                day: '2-digit', month: 'short', year: 'numeric', 
+                hour: '2-digit', minute: '2-digit' 
+            }) : '-';
+            
+            return `
+                 <tr>
+                    <td><small>${b.id?.slice(-6) || '-'}</small></td>
+                    <td><small>${createdDate}</small></td>
+                    <td><strong>${b.userName || '-'}</strong></td>
+                    <td>${b.userPhone || '-'}</td>
+                    <td>${b.vendorName || '-'}</td>
+                    <td>${b.vendorCity || b.eventLocation?.split(',').pop() || '-'}</td>
+                    <td>${b.amount || '-'}</td>
+                    <td>${b.agentId || '-'}</td>
+                    <td><span class="status-badge status-${b.status}">${b.status}</span></td>
+                    <td>
+                        ${b.status === 'pending' ? `<button class="btn-confirm" onclick="updateBooking('${b.id}','confirmed')">Confirm</button>` : ''}
+                        ${b.status === 'confirmed' ? `<button class="btn-complete" onclick="updateBooking('${b.id}','completed')">Complete</button>` : ''}
+                        ${b.status !== 'cancelled' ? `<button class="btn-cancel" onclick="updateBooking('${b.id}','cancelled')">Cancel</button>` : ''}
+                    </td>
+                </tr>
+            `;
+        }).join('');
     }
+
+    window.filterBookings = () => {
+        const status = document.getElementById('bookingStatusFilter').value;
+        const search = document.getElementById('bookingSearch').value.toLowerCase();
+        const rows = document.querySelectorAll('#bookingsTableBody tr');
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            const statusMatch = status === 'all' || text.includes(status);
+            const searchMatch = !search || text.includes(search);
+            row.style.display = statusMatch && searchMatch ? '' : 'none';
+        });
+    };
 
     window.updateBooking = async (id, status) => {
         await updateDoc(doc(db, 'bookings', id), { status, updatedAt: new Date().toISOString() });
         showMsg(`Booking ${status}!`, 'success');
     };
 
-    // --- CRUD FUNCTIONS ---
-    window.saveCategory = async () => {
-        const name = document.getElementById('catName').value;
-        const icon = document.getElementById('catIcon').value || '🏷️';
-        if(!name) return;
-        const id = name.toLowerCase().replace(/\s+/g, '');
-        await setDoc(doc(db, "categories", id), { name, icon });
-        closeModal('categoryModal');
-        showMsg("Category Added Successfully!", "success");
-    };
+    function getAgentEarnings(agentId) {
+        const agentBookings = bookings.filter(b => b.agentId === agentId && (b.status === 'confirmed' || b.status === 'completed'));
+        const totalRevenue = agentBookings.reduce((sum, b) => sum + (parseInt(String(b.amount).replace(/[₹,]/g, '')) || 0), 0);
+        const earnings = calculateCommission(totalRevenue);
+        return { bookingsCount: agentBookings.length, totalRevenue, earnings };
+    }
 
-    window.saveCity = async () => {
-        const name = document.getElementById('cityNameInput').value;
-        const popular = document.getElementById('cityPopularCheck').checked;
-        if(!name) return;
-        let newList = [...cities];
-        if(editingCityIndex !== null) {
-            newList[editingCityIndex] = { name, popular };
-        } else {
-            newList.push({ name, popular });
-        }
-        try {
-            await setDoc(doc(db, 'settings', 'cities'), { list: newList });
-            closeModal('cityModal');
-            showMsg(editingCityIndex !== null ? "City Updated!" : "City Added Successfully!", "success");
-            editingCityIndex = null;
-        } catch (e) { showMsg(e.message, "error"); }
-    };
+    function renderAgents() {
+        const tbody = document.getElementById('agentsTableBody');
+        if (!agents.length) { tbody.innerHTML = '.<td colspan="10">No agents found.'; return; }
+        tbody.innerHTML = agents.map(agent => {
+            const stats = getAgentEarnings(agent.id);
+            const target = agent.target || 50000;
+            const progress = Math.min(100, (stats.totalRevenue / target) * 100);
+            return `
+                <tr>
+                    <td><strong>${agent.id}</strong></td>
+                    <td>${agent.name || '-'}</td>
+                    <td>${agent.phone || '-'}</td>
+                    <td>${agent.city || '-'}</td>
+                    <td>₹${target.toLocaleString()}</td>
+                    <td>${stats.bookingsCount}</td>
+                    <td>₹${stats.totalRevenue.toLocaleString()}</td>
+                    <td class="earnings-cell">₹${stats.earnings.toLocaleString()}</td>
+                    <td><div style="width:80px; background:#e0e0e0; border-radius:10px;"><div style="width:${progress}%; background:#ff6b35; height:6px; border-radius:10px;"></div></div> ${Math.floor(progress)}%</td>
+                    <td><button class="btn-edit" onclick="editAgent('${agent.id}')">Edit</button> <button onclick="deleteAgent('${agent.id}')" style="background:red;">Del</button></td>
+                </tr>
+            `;
+        }).join('');
+    }
 
+    // ========== VENDOR FUNCTIONS ==========
     window.saveVendor = async () => {
         const name = document.getElementById('vendorName').value;
         const cat = document.getElementById('vendorCategory').value;
         const city = document.getElementById('vendorCity').value;
-        const btn = document.getElementById('saveBtn');
         if(!name || !cat || !city) return showMsg("Fill Name, Category & City!", "error");
-        btn.innerText = "Processing..."; btn.disabled = true;
-        try {
-            let imageUrl = editingVendorId ? vendors.find(v => v.id === editingVendorId).imageUrl : 'https://via.placeholder.com/80';
-            const file = document.getElementById('vendorLogo').files[0];
-            if(file) {
-                const formData = new FormData();
-                formData.append('image', file);
-                const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: formData });
-                const imgData = await res.json();
-                if(imgData.success) imageUrl = imgData.data.url;
-            }
-            const data = {
-                name, category: cat, city, imageUrl,
-                agentPhone: document.getElementById('agentPhone').value,
-                priceRange: document.getElementById('vendorPrice').value,
-                description: document.getElementById('vendorDescription').value,
-                updatedAt: new Date().toISOString()
-            };
-            if(editingVendorId) await updateDoc(doc(db, 'vendors', editingVendorId), data);
-            else { data.createdAt = new Date().toISOString(); await addDoc(collection(db, 'vendors'), data); }
-            closeModal('vendorModal');
-            showMsg("Vendor Saved!", "success");
-        } catch (e) { showMsg(e.message, "error"); }
-        finally { btn.innerText = "SAVE VENDOR"; btn.disabled = false; }
+        let imageUrl = editingVendorId ? vendors.find(v => v.id === editingVendorId).imageUrl : 'https://via.placeholder.com/80';
+        const file = document.getElementById('vendorLogo').files[0];
+        if(file) {
+            const formData = new FormData(); formData.append('image', file);
+            const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: formData });
+            const imgData = await res.json();
+            if(imgData.success) imageUrl = imgData.data.url;
+        }
+        const data = { name, category: cat, city, imageUrl, agentPhone: document.getElementById('agentPhone').value, priceRange: document.getElementById('vendorPrice').value, description: document.getElementById('vendorDescription').value, updatedAt: new Date().toISOString() };
+        if(editingVendorId) await updateDoc(doc(db, 'vendors', editingVendorId), data);
+        else { data.createdAt = new Date().toISOString(); await addDoc(collection(db, 'vendors'), data); }
+        closeModal('vendorModal'); showMsg("Vendor Saved!", "success");
     };
-
-    // --- RENDERERS ---
+    
+    window.openAddVendor = () => { editingVendorId = null; document.getElementById('vendorForm').reset(); document.getElementById('logoPreview').style.display='none'; openModal('vendorModal'); };
+    window.editVendor = (id) => { const v = vendors.find(x => x.id === id); editingVendorId = id; document.getElementById('vendorName').value = v.name; document.getElementById('vendorCategory').value = v.category; document.getElementById('vendorCity').value = v.city; document.getElementById('agentPhone').value = v.agentPhone || ''; document.getElementById('vendorPrice').value = v.priceRange || ''; document.getElementById('vendorDescription').value = v.description || ''; document.getElementById('logoPreview').src = v.imageUrl; document.getElementById('logoPreview').style.display = 'block'; openModal('vendorModal'); };
+    window.deleteVendor = async (id) => { if(confirm('Delete?')) await deleteDoc(doc(db, 'vendors', id)); };
+    window.previewLogo = (i) => { if(i.files[0]){ const r=new FileReader(); r.onload=e=>{ document.getElementById('logoPreview').src=e.target.result; document.getElementById('logoPreview').style.display='block'; }; r.readAsDataURL(i.files[0]); } };
+    
+    // ========== CATEGORY FUNCTIONS ==========
+    window.saveCategory = async () => { const name = document.getElementById('catName').value, icon = document.getElementById('catIcon').value || '🏷️'; if(!name) return; const id = name.toLowerCase().replace(/\s+/g, ''); await setDoc(doc(db, "categories", id), { name, icon }); closeModal('categoryModal'); showMsg("Category Added!", "success"); };
+    window.deleteCategory = async (id) => { if(confirm('Delete?')) await updateDoc(doc(db, 'categories', id), {deleted: true}); };
+    
+    // ========== CITY FUNCTIONS ==========
+    window.saveCity = async () => { const name = document.getElementById('cityNameInput').value, popular = document.getElementById('cityPopularCheck').checked; if(!name) return; let newList = [...cities]; if(editingCityIndex !== null) newList[editingCityIndex] = { name, popular }; else newList.push({ name, popular }); await setDoc(doc(db, 'settings', 'cities'), { list: newList }); closeModal('cityModal'); showMsg(editingCityIndex !== null ? "City Updated!" : "City Added!", "success"); editingCityIndex = null; };
+    window.editCity = (i) => { editingCityIndex = i; document.getElementById('cityNameInput').value = cities[i].name; document.getElementById('cityPopularCheck').checked = cities[i].popular; openModal('cityModal'); };
+    window.deleteCity = async (i) => { if(confirm('Delete?')) { let newList = [...cities]; newList.splice(i, 1); await setDoc(doc(db, 'settings', 'cities'), { list: newList }); } };
+    
+    // ========== AGENT FUNCTIONS ==========
+    window.openAddAgent = async () => {
+        const count = agents.length + 1;
+        const newId = `AG${String(count).padStart(5, '0')}`;
+        document.getElementById('agentId').value = newId;
+        document.getElementById('agentName').value = '';
+        document.getElementById('agentPhone').value = '';
+        document.getElementById('agentCity').value = '';
+        document.getElementById('agentEmail').value = '';
+        document.getElementById('agentTarget').value = '50000';
+        document.getElementById('agentPassword').value = 'agent123';
+        document.getElementById('agentModalTitle').innerText = 'Add Agent';
+        openModal('agentModal');
+    };
+    window.editAgent = (id) => { const a = agents.find(x => x.id === id); if(!a) return; document.getElementById('agentId').value = a.id; document.getElementById('agentName').value = a.name || ''; document.getElementById('agentPhone').value = a.phone || ''; document.getElementById('agentCity').value = a.city || ''; document.getElementById('agentEmail').value = a.email || ''; document.getElementById('agentTarget').value = a.target || 50000; document.getElementById('agentPassword').value = ''; document.getElementById('agentModalTitle').innerText = 'Edit Agent'; openModal('agentModal'); };
+    window.deleteAgent = async (id) => { if(confirm('Delete?')) await deleteDoc(doc(db, 'agents', id)); showMsg('Agent deleted!', 'success'); };
+    window.saveAgent = async () => {
+        const id = document.getElementById('agentId').value;
+        const name = document.getElementById('agentName').value;
+        const phone = document.getElementById('agentPhone').value;
+        const city = document.getElementById('agentCity').value;
+        const email = document.getElementById('agentEmail').value;
+        const target = parseInt(document.getElementById('agentTarget').value) || 50000;
+        const password = document.getElementById('agentPassword').value;
+        if (!name || !phone || !city) { showMsg('Name, Phone and City required!', 'error'); return; }
+        const data = { id, name, phone, city, email: email || '', target, password: password || 'agent123', updatedAt: new Date().toISOString() };
+        const ref = doc(db, 'agents', id);
+        const snap = await getDoc(ref);
+        if(snap.exists()) await updateDoc(ref, data);
+        else { data.createdAt = new Date().toISOString(); await setDoc(ref, data); }
+        closeModal('agentModal'); showMsg('Agent saved!', 'success');
+    };
+    
+    // ========== UTILITIES ==========
     function updateDropdowns() {
         const catSel = document.getElementById('vendorCategory');
         const citySel = document.getElementById('vendorCity');
+        const agentCitySel = document.getElementById('agentCity');
         if(catSel) catSel.innerHTML = '<option value="">-- Category --</option>' + categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
         if(citySel) citySel.innerHTML = '<option value="">-- City --</option>' + cities.map(c => `<option value="${c.name.toLowerCase()}">${c.name}</option>`).join('');
+        if(agentCitySel) agentCitySel.innerHTML = '<option value="">-- City --</option>' + cities.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
     }
-
-    function renderVendors() {
-        document.getElementById('vendorTable').innerHTML = vendors.map(v => `
-            <tr>
-                <td><img src="${v.imageUrl}" class="vendor-img-td" onerror="this.src='https://via.placeholder.com/50'"></td>
-                <td><strong>${v.name}</strong></td>
-                <td>${v.category}</td>
-                <td>${v.city}</td>
-                <td><button class="btn-edit" onclick="editVendor('${v.id}')">Edit</button> <button onclick="deleteVendor('${v.id}')" style="background:red; padding:5px 10px;">Del</button></td>
-            </tr>
-        `).join('');
-    }
-
-    function renderCategories() {
-        document.getElementById('categoriesList').innerHTML = categories.map(c => `
-            <div class="list-item"><span>${c.icon} ${c.name}</span> <button onclick="deleteCategory('${c.id}')" style="background:red; font-size:12px;">Delete</button></div>
-        `).join('');
-    }
-
-    function renderCities() {
-        document.getElementById('citiesList').innerHTML = cities.map((c, i) => `
-            <div class="list-item">
-                <span>📍 ${c.name} ${c.popular ? '<span class="popular-badge">Popular</span>' : ''}</span>
-                <div>
-                    <button class="btn-edit" onclick="editCity(${i})">Edit</button>
-                    <button onclick="deleteCity(${i})" style="background:red; font-size:12px;">Delete</button>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    // --- UI UTILS ---
-    window.switchTab = (t) => {
-        document.querySelectorAll('.tab, .tab-content').forEach(el => el.classList.remove('active'));
-        event.target.classList.add('active');
-        document.getElementById(t + 'Tab').classList.add('active');
-    };
-    window.openModal = (id) => {
-        if(id === 'cityModal' && editingCityIndex === null) document.getElementById('cityModalTitle').innerText = "Add City";
-        document.getElementById(id).style.display='flex';
-    };
-    window.closeModal = (id) => {
-        document.getElementById(id).style.display='none';
-        if(id === 'cityModal') { editingCityIndex = null; document.getElementById('cityNameInput').value = ''; }
-    };
-    window.showMsg = (m, t) => {
-        const el = document.getElementById('message');
-        el.innerText = m; el.className = `message ${t}`; el.style.display = 'block';
-        setTimeout(() => el.style.display = 'none', 3000);
-    };
-    window.editCity = (i) => {
-        editingCityIndex = i;
-        document.getElementById('cityModalTitle').innerText = "Edit City";
-        document.getElementById('cityNameInput').value = cities[i].name;
-        document.getElementById('cityPopularCheck').checked = cities[i].popular;
-        openModal('cityModal');
-    };
-    window.openAddVendor = () => { editingVendorId = null; document.getElementById('vendorForm').reset(); document.getElementById('logoPreview').style.display='none'; openModal('vendorModal'); };
-    window.editVendor = (id) => {
-        const v = vendors.find(x => x.id === id); editingVendorId = id;
-        document.getElementById('vendorName').value = v.name;
-        document.getElementById('vendorCategory').value = v.category;
-        document.getElementById('vendorCity').value = v.city;
-        document.getElementById('agentPhone').value = v.agentPhone || '';
-        document.getElementById('vendorPrice').value = v.priceRange || '';
-        document.getElementById('vendorDescription').value = v.description || '';
-        document.getElementById('logoPreview').src = v.imageUrl;
-        document.getElementById('logoPreview').style.display = 'block';
-        openModal('vendorModal');
-    };
-    window.previewLogo = (i) => { if(i.files[0]){ const r=new FileReader(); r.onload=e=>{ document.getElementById('logoPreview').src=e.target.result; document.getElementById('logoPreview').style.display='block'; }; r.readAsDataURL(i.files[0]); } };
-    window.deleteVendor = async (id) => { if(confirm('Delete?')) await deleteDoc(doc(db, 'vendors', id)); };
-    window.deleteCategory = async (id) => { if(confirm('Delete?')) await updateDoc(doc(db, 'categories', id), {deleted: true}); };
-    window.deleteCity = async (i) => { if(confirm('Delete?')) { let newList = [...cities]; newList.splice(i, 1); await setDoc(doc(db, 'settings', 'cities'), { list: newList }); } };
+    
+    function renderVendors() { document.getElementById('vendorTable').innerHTML = vendors.map(v => `<tr><td><img src="${v.imageUrl}" style="width:40px;height:40px;border-radius:8px;"></td><td><strong>${v.name}</strong></td><td>${v.category}</td><td>${v.city}</td><td><button onclick="editVendor('${v.id}')">Edit</button> <button onclick="deleteVendor('${v.id}')" style="background:red;">Del</button></td></tr>`).join(''); }
+    function renderCategories() { document.getElementById('categoriesList').innerHTML = categories.map(c => `<div class="list-item"><span>${c.icon} ${c.name}</span> <button onclick="deleteCategory('${c.id}')" style="background:red;">Delete</button></div>`).join(''); }
+    function renderCities() { document.getElementById('citiesList').innerHTML = cities.map((c,i) => `<div class="list-item"><span>📍 ${c.name} ${c.popular ? '<span class="popular-badge">Popular</span>' : ''}</span><div><button onclick="editCity(${i})">Edit</button> <button onclick="deleteCity(${i})" style="background:red;">Delete</button></div></div>`).join(''); }
+    
+    window.openModal = (id) => document.getElementById(id).style.display='flex';
+    window.closeModal = (id) => document.getElementById(id).style.display='none';
+    window.switchTab = (t) => { document.querySelectorAll('.tab, .tab-content').forEach(el => el.classList.remove('active')); event.target.classList.add('active'); document.getElementById(t + 'Tab').classList.add('active'); if(t === 'bookings') renderBookings(); };
+    window.showMsg = (m, t) => { const el = document.getElementById('message'); el.innerText = m; el.className = `message ${t}`; el.style.display = 'block'; setTimeout(() => el.style.display = 'none', 3000); };
     window.logout = () => { localStorage.clear(); window.location.href='admin-login.html'; };
-    if(localStorage.getItem('admin') !== 'true') window.location.href='admin-login.html';
 </script>
 </body>
 </html>
