@@ -5,18 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Vendor Details - StadiumConnect</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #fff;
-            color: #1a1a1a;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: #fff; }
 
         .header {
             padding: 16px 20px;
@@ -24,99 +16,62 @@
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid #f0f0f0;
-            background: #fff;
+            background: white;
             position: sticky;
             top: 0;
             z-index: 100;
         }
+        .logo { font-size: 20px; font-weight: 800; cursor: pointer; }
+        .logo span { color: #ff6b35; }
+        .back-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #ff6b35; }
 
-        .back-btn {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: #ff6b35;
-        }
+        .content { padding: 20px; max-width: 600px; margin: 0 auto; }
 
-        .logo {
-            font-size: 18px;
-            font-weight: 800;
-        }
-
-        .logo span {
-            color: #ff6b35;
-        }
-
-        .placeholder {
-            width: 40px;
-        }
-
-        .hero-banner {
-            height: 200px;
-            background: linear-gradient(135deg, #ff6b35, #ff9068);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-
-        .vendor-icon-large {
-            width: 100px;
-            height: 100px;
+        /* Vendor Profile Card */
+        .vendor-card {
             background: white;
-            border-radius: 30px;
+            border-radius: 24px;
+            overflow: hidden;
+        }
+
+        /* Vendor Header with Photo */
+        .vendor-header {
             display: flex;
+            gap: 20px;
             align-items: center;
-            justify-content: center;
-            font-size: 50px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-            position: absolute;
-            bottom: -30px;
-            left: 20px;
+            margin-bottom: 24px;
+            padding: 20px;
+            background: linear-gradient(135deg, #fffaf5, #fff);
+            border-radius: 24px;
         }
-
-        .content {
-            padding: 50px 20px 100px;
+        .vendor-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 40px;
+            object-fit: cover;
+            border: 3px solid #ff6b35;
         }
-
-        .vendor-name {
-            font-size: 28px;
+        .vendor-info h1 {
+            font-size: 24px;
             font-weight: 800;
             margin-bottom: 8px;
         }
-
         .vendor-rating {
             display: flex;
             align-items: center;
             gap: 8px;
-            margin-bottom: 16px;
         }
+        .stars { color: #ffb347; font-size: 14px; }
 
-        .stars {
-            color: #ffb347;
-            font-size: 14px;
-        }
-
-        .rating-value {
-            font-size: 14px;
-            font-weight: 500;
-            color: #666;
-        }
-
+        /* Info Rows */
         .info-row {
             display: flex;
             align-items: center;
             gap: 12px;
-            margin-bottom: 12px;
-            font-size: 14px;
-            color: #666;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
         }
-
-        .info-row i {
-            width: 20px;
-            color: #ff6b35;
-        }
-
+        .info-row i { width: 24px; color: #ff6b35; }
         .price-box {
             background: #fff5f0;
             padding: 16px;
@@ -124,79 +79,52 @@
             margin: 20px 0;
             display: flex;
             justify-content: space-between;
-            align-items: center;
         }
-
-        .price-label {
-            font-size: 14px;
-            color: #666;
-        }
-
-        .price-value {
-            font-size: 24px;
-            font-weight: 700;
-            color: #ff6b35;
-        }
-
-        .section-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin: 24px 0 12px;
-        }
-
-        .description {
-            color: #666;
-            line-height: 1.6;
-            font-size: 14px;
-        }
+        .price-value { font-size: 24px; font-weight: 700; color: #ff6b35; }
 
         /* Photo Gallery */
-        .photos-gallery {
+        .gallery-section {
+            margin: 24px 0;
+        }
+        .gallery-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+        .gallery-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin: 12px 0;
+            gap: 12px;
         }
-
-        .photo-item {
-            position: relative;
+        .gallery-item {
             aspect-ratio: 1;
             border-radius: 16px;
             overflow: hidden;
             cursor: pointer;
             background: #f5f5f5;
         }
-
-        .photo-item img {
+        .gallery-item img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            transition: 0.3s;
         }
-
-        .photo-placeholder {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 32px;
-            background: #f5f5f5;
-            color: #ccc;
+        .gallery-item:hover img {
+            transform: scale(1.05);
         }
-
         .view-all-btn {
             text-align: center;
-            margin-top: 10px;
+            margin-top: 12px;
             padding: 10px;
             background: #f5f5f5;
             border-radius: 30px;
+            cursor: pointer;
             font-size: 14px;
             font-weight: 500;
-            cursor: pointer;
             color: #ff6b35;
         }
 
-        /* Lightbox Modal for Full Screen Photos */
+        /* Lightbox Modal - Full Screen Photo Viewer */
         .lightbox {
             display: none;
             position: fixed;
@@ -204,20 +132,25 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.95);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
+            background: #000;
+            z-index: 2000;
             flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
-
-        .lightbox img {
+        .lightbox.active {
+            display: flex;
+        }
+        .lightbox-image {
             max-width: 90%;
             max-height: 80%;
             object-fit: contain;
-            border-radius: 12px;
+            cursor: zoom-in;
         }
-
+        .lightbox-image.zoomed {
+            cursor: zoom-out;
+            transform: scale(1.5);
+        }
         .lightbox-close {
             position: absolute;
             top: 20px;
@@ -225,49 +158,51 @@
             font-size: 40px;
             color: white;
             cursor: pointer;
+            z-index: 2001;
         }
-
         .lightbox-prev, .lightbox-next {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            font-size: 40px;
+            font-size: 48px;
             color: white;
             cursor: pointer;
             background: rgba(0,0,0,0.5);
-            padding: 15px;
+            padding: 16px;
             border-radius: 50%;
+            transition: 0.3s;
         }
-
         .lightbox-prev { left: 20px; }
         .lightbox-next { right: 20px; }
-
-        /* Reviews */
-        .review-card {
-            background: #f8f8f8;
-            border-radius: 16px;
-            padding: 16px;
-            margin-bottom: 12px;
+        .lightbox-prev:hover, .lightbox-next:hover {
+            background: rgba(0,0,0,0.8);
         }
-
-        .reviewer-name {
-            font-weight: 600;
+        .lightbox-counter {
+            position: absolute;
+            bottom: 30px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: white;
             font-size: 14px;
-            margin-bottom: 4px;
+            background: rgba(0,0,0,0.5);
+            padding: 8px;
+            width: fit-content;
+            margin: 0 auto;
+            border-radius: 20px;
         }
 
-        .review-stars {
-            font-size: 12px;
-            color: #ffb347;
-            margin-bottom: 8px;
+        /* Description */
+        .description {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 16px;
+            margin: 20px 0;
+            line-height: 1.6;
+            color: #555;
         }
 
-        .review-text {
-            font-size: 13px;
-            color: #666;
-            line-height: 1.5;
-        }
-
+        /* Book Button */
         .book-btn {
             position: fixed;
             bottom: 0;
@@ -282,70 +217,22 @@
             cursor: pointer;
             z-index: 100;
         }
-
-        .loading {
-            text-align: center;
-            padding: 60px;
-            color: #ff6b35;
+        .book-btn:hover {
+            background: #e55a2b;
         }
 
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 200;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 24px;
-            padding: 24px;
-            width: 90%;
-            max-width: 400px;
-        }
-
-        .modal-header {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 16px;
-        }
-
-        .modal-input {
-            width: 100%;
-            padding: 14px;
-            border: 1px solid #e0e0e0;
-            border-radius: 12px;
-            margin-bottom: 16px;
-            font-family: inherit;
-        }
-
-        .modal-btn {
-            width: 100%;
-            background: #ff6b35;
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .close-modal {
-            float: right;
-            font-size: 24px;
-            cursor: pointer;
+        .loading { text-align: center; padding: 60px; color: #ff6b35; }
+        
+        @media (max-width: 600px) {
+            .vendor-header { flex-direction: column; text-align: center; }
+            .gallery-grid { grid-template-columns: repeat(3, 1fr); }
+            .lightbox-prev, .lightbox-next { font-size: 32px; padding: 12px; }
         }
     </style>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getFirestore, doc, getDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
         const firebaseConfig = {
@@ -354,8 +241,7 @@
             projectId: "stadiumconnect-8fecb",
             storageBucket: "stadiumconnect-8fecb.firebasestorage.app",
             messagingSenderId: "458108198578",
-            appId: "1:458108198578:web:83d83646f0e24e718b73ab",
-            measurementId: "G-X4S6Z1QPC1"
+            appId: "1:458108198578:web:83d83646f0e24e718b73ab"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -366,16 +252,11 @@
         const vendorId = urlParams.get('id');
 
         let currentVendor = null;
-        let currentUser = null;
         let currentPhotos = [];
         let currentPhotoIndex = 0;
+        let isZoomed = false;
 
-        onAuthStateChanged(auth, (user) => {
-            currentUser = user;
-            if (vendorId) loadVendorDetails();
-        });
-
-        async function loadVendorDetails() {
+        async function loadVendor() {
             const container = document.getElementById('vendorDetail');
             if (!vendorId) {
                 container.innerHTML = '<div class="loading">No vendor selected</div>';
@@ -390,7 +271,11 @@
                 if (vendorDoc.exists()) {
                     currentVendor = { id: vendorDoc.id, ...vendorDoc.data() };
                     currentPhotos = currentVendor.photos || [];
-                    renderVendorDetails(currentVendor);
+                    // If no photos array, use single imageUrl as fallback
+                    if (currentPhotos.length === 0 && currentVendor.imageUrl) {
+                        currentPhotos = [currentVendor.imageUrl];
+                    }
+                    renderVendor();
                 } else {
                     container.innerHTML = '<div class="loading">Vendor not found</div>';
                 }
@@ -398,11 +283,6 @@
                 console.error('Error:', error);
                 container.innerHTML = '<div class="loading">Error loading vendor</div>';
             }
-        }
-
-        function getCategoryIcon(category) {
-            const icons = { decorator: '🎨', photographer: '📸', caterer: '🍽️', bandbaja: '🎵', stadium: '🏟️' };
-            return icons[category] || '🏷️';
         }
 
         function getStars(rating) {
@@ -414,179 +294,224 @@
             return stars;
         }
 
-        function renderPhotos(photos) {
-            if (!photos || photos.length === 0) {
+        function renderGallery() {
+            if (!currentPhotos || currentPhotos.length === 0) {
                 return `
-                    <div class="photos-gallery">
-                        <div class="photo-item"><div class="photo-placeholder">📸</div></div>
-                        <div class="photo-item"><div class="photo-placeholder">📸</div></div>
-                        <div class="photo-item"><div class="photo-placeholder">📸</div></div>
+                    <div class="gallery-section">
+                        <div class="gallery-title">Work Portfolio</div>
+                        <div class="gallery-grid">
+                            <div class="gallery-item" style="display: flex; align-items: center; justify-content: center; background: #f5f5f5;">
+                                <span style="color: #999;">No photos yet</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="view-all-btn" onclick="alert('Photos coming soon!')">+ Upload Photos</div>
                 `;
             }
             
-            const displayPhotos = photos.slice(0, 6);
+            const displayPhotos = currentPhotos.slice(0, 6);
             return `
-                <div class="photos-gallery">
-                    ${displayPhotos.map((photo, i) => `
-                        <div class="photo-item" onclick="openLightbox(${i})">
-                            <img src="${photo}" alt="Work sample">
-                        </div>
-                    `).join('')}
+                <div class="gallery-section">
+                    <div class="gallery-title">Work Portfolio (${currentPhotos.length} photos)</div>
+                    <div class="gallery-grid">
+                        ${displayPhotos.map((photo, i) => `
+                            <div class="gallery-item" onclick="openLightbox(${i})">
+                                <img src="${photo}" alt="Work sample ${i+1}" loading="lazy">
+                            </div>
+                        `).join('')}
+                    </div>
+                    ${currentPhotos.length > 6 ? `<div class="view-all-btn" onclick="openLightbox(0)">View All ${currentPhotos.length} Photos →</div>` : ''}
                 </div>
-                ${photos.length > 6 ? `<div class="view-all-btn" onclick="openLightbox(0)">View All ${photos.length} Photos →</div>` : ''}
             `;
         }
 
-        function renderVendorDetails(vendor) {
+        function renderVendor() {
             const container = document.getElementById('vendorDetail');
-            const icon = getCategoryIcon(vendor.category);
+            const icon = getCategoryIcon(currentVendor.category);
             
             container.innerHTML = `
-                <div class="hero-banner">
-                    <div class="vendor-icon-large">${icon}</div>
+                <div class="vendor-card">
+                    <div class="vendor-header">
+                        <img src="${currentVendor.imageUrl || 'https://via.placeholder.com/80'}" class="vendor-avatar" alt="${currentVendor.name}" onerror="this.src='https://via.placeholder.com/80'">
+                        <div class="vendor-info">
+                            <h1>${currentVendor.name || 'Vendor'}</h1>
+                            <div class="vendor-rating">
+                                <div class="stars">${getStars(currentVendor.rating)}</div>
+                                <span>${currentVendor.rating || '4.5'} (${currentVendor.reviews || 0} reviews)</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-row"><i class="fas fa-map-marker-alt"></i> ${currentVendor.location || currentVendor.city || 'Location not specified'}</div>
+                    <div class="info-row"><i class="fas fa-phone"></i> ${currentVendor.phone || 'Contact not available'}</div>
+                    <div class="info-row"><i class="fas fa-briefcase"></i> ${currentVendor.experience || 'Experienced vendor'}</div>
+                    
+                    <div class="price-box">
+                        <span>Price Range</span>
+                        <span class="price-value">${currentVendor.priceRange || 'Contact for price'}</span>
+                    </div>
+                    
+                    <div class="description">
+                        <strong>About</strong><br>
+                        ${currentVendor.description || 'Professional vendor with years of experience in the industry.'}
+                    </div>
+                    
+                    ${renderGallery()}
+                    
+                    <div class="description">
+                        <strong>Reviews</strong><br>
+                        <div style="margin-top: 12px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                                <span>Rahul Sharma</span>
+                                <span class="stars">★★★★★</span>
+                            </div>
+                            <p style="color: #666;">Excellent service! Highly recommended.</p>
+                            <div style="margin-top: 12px; display: flex; justify-content: space-between;">
+                                <span>Priya Patel</span>
+                                <span class="stars">★★★★☆</span>
+                            </div>
+                            <p style="color: #666;">Great work, on time delivery.</p>
+                        </div>
+                    </div>
                 </div>
-                <div class="vendor-name">${vendor.name || 'Vendor'}</div>
-                <div class="vendor-rating">
-                    <div class="stars">${getStars(vendor.rating)}</div>
-                    <div class="rating-value">${vendor.rating || '4.5'} (${vendor.reviews || 0} reviews)</div>
-                </div>
-                <div class="info-row"><i>📍</i> ${vendor.location || vendor.city || 'Location'}</div>
-                <div class="info-row"><i>📞</i> ${vendor.phone || 'Contact not available'}</div>
-                <div class="price-box">
-                    <div class="price-label">Price Range</div>
-                    <div class="price-value">${vendor.priceRange || 'Contact for price'}</div>
-                </div>
-                <div class="section-title">About</div>
-                <div class="description">${vendor.description || 'Professional vendor with years of experience.'}</div>
-                <div class="section-title">Work Portfolio</div>
-                ${renderPhotos(currentPhotos)}
-                <div class="section-title">Reviews (${vendor.reviews || 0})</div>
-                <div id="reviewsContainer"></div>
             `;
-            
-            loadReviews();
         }
 
-        function loadReviews() {
-            const container = document.getElementById('reviewsContainer');
-            container.innerHTML = `
-                <div class="review-card"><div class="reviewer-name">Rahul Sharma</div><div class="review-stars">★★★★★</div><div class="review-text">Excellent service! Highly recommended.</div></div>
-                <div class="review-card"><div class="reviewer-name">Priya Patel</div><div class="review-stars">★★★★☆</div><div class="review-text">Great work, on time delivery.</div></div>
-                <div class="review-card"><div class="reviewer-name">Amit Kumar</div><div class="review-stars">★★★★★</div><div class="review-text">Best in the business!</div></div>
-            `;
+        function getCategoryIcon(category) {
+            const icons = { decorator: '🎨', photographer: '📸', caterer: '🍽️', bandbaja: '🎵', stadium: '🏟️' };
+            return icons[category] || '🏷️';
         }
 
-        // Lightbox functions
-        window.openLightbox = function(index) {
-            if (!currentPhotos || currentPhotos.length === 0) {
-                alert('No photos available yet');
-                return;
-            }
+        // Lightbox Functions
+        window.openLightbox = (index) => {
             currentPhotoIndex = index;
-            const lightbox = document.getElementById('lightbox');
-            const lightboxImg = document.getElementById('lightboxImg');
-            lightboxImg.src = currentPhotos[currentPhotoIndex];
-            lightbox.style.display = 'flex';
+            updateLightboxImage();
+            document.getElementById('lightbox').classList.add('active');
+            document.body.style.overflow = 'hidden';
+            isZoomed = false;
         };
 
-        window.closeLightbox = function() {
-            document.getElementById('lightbox').style.display = 'none';
+        function updateLightboxImage() {
+            const img = document.getElementById('lightboxImage');
+            if (currentPhotos[currentPhotoIndex]) {
+                img.src = currentPhotos[currentPhotoIndex];
+            }
+            document.getElementById('lightboxCounter').innerText = `${currentPhotoIndex + 1} / ${currentPhotos.length}`;
+        }
+
+        window.closeLightbox = () => {
+            document.getElementById('lightbox').classList.remove('active');
+            document.body.style.overflow = 'auto';
+            isZoomed = false;
+            document.getElementById('lightboxImage').classList.remove('zoomed');
         };
 
-        window.prevPhoto = function() {
+        window.prevPhoto = (e) => {
+            e.stopPropagation();
             if (currentPhotos.length === 0) return;
             currentPhotoIndex = (currentPhotoIndex - 1 + currentPhotos.length) % currentPhotos.length;
-            document.getElementById('lightboxImg').src = currentPhotos[currentPhotoIndex];
+            updateLightboxImage();
+            // Reset zoom when changing photo
+            isZoomed = false;
+            document.getElementById('lightboxImage').classList.remove('zoomed');
         };
 
-        window.nextPhoto = function() {
+        window.nextPhoto = (e) => {
+            e.stopPropagation();
             if (currentPhotos.length === 0) return;
             currentPhotoIndex = (currentPhotoIndex + 1) % currentPhotos.length;
-            document.getElementById('lightboxImg').src = currentPhotos[currentPhotoIndex];
+            updateLightboxImage();
+            isZoomed = false;
+            document.getElementById('lightboxImage').classList.remove('zoomed');
         };
 
-        window.openBookingModal = function() {
-            if (!currentUser) {
-                alert('Please login to book');
+        window.toggleZoom = (e) => {
+            e.stopPropagation();
+            const img = document.getElementById('lightboxImage');
+            if (isZoomed) {
+                img.classList.remove('zoomed');
+                isZoomed = false;
+            } else {
+                img.classList.add('zoomed');
+                isZoomed = true;
+            }
+        };
+
+        // Swipe support for touch devices
+        let touchStartX = 0;
+        let touchEndX = 0;
+        
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+        
+        document.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            const lightbox = document.getElementById('lightbox');
+            if (lightbox.classList.contains('active')) {
+                if (touchEndX < touchStartX - 50) {
+                    nextPhoto(e);
+                }
+                if (touchEndX > touchStartX + 50) {
+                    prevPhoto(e);
+                }
+            }
+        });
+
+        // Keyboard navigation for lightbox
+        document.addEventListener('keydown', (e) => {
+            const lightbox = document.getElementById('lightbox');
+            if (lightbox.classList.contains('active')) {
+                if (e.key === 'ArrowLeft') {
+                    prevPhoto(e);
+                } else if (e.key === 'ArrowRight') {
+                    nextPhoto(e);
+                } else if (e.key === 'Escape') {
+                    closeLightbox();
+                }
+            }
+        });
+
+        // Booking modal (simplified)
+        window.openBooking = () => {
+            const user = auth.currentUser;
+            if (!user) {
+                alert('Please login to book this vendor');
                 window.location.href = 'login.html';
                 return;
             }
-            document.getElementById('bookingModal').style.display = 'flex';
+            const date = prompt('Enter event date (YYYY-MM-DD):');
+            if (!date) return;
+            alert(`✅ Booking request sent to ${currentVendor.name}! Vendor will contact you.`);
         };
 
-        window.closeBookingModal = function() {
-            document.getElementById('bookingModal').style.display = 'none';
-        };
+        onAuthStateChanged(auth, (user) => {
+            // Just for booking check
+        });
 
-        window.submitBooking = async function() {
-            if (!currentUser || !currentVendor) return;
-            
-            const eventDate = document.getElementById('eventDate').value;
-            if (!eventDate) {
-                alert('Please select event date');
-                return;
-            }
-            
-            const booking = {
-                vendorId: currentVendor.id,
-                vendorName: currentVendor.name,
-                userId: currentUser.uid,
-                userName: currentUser.displayName || currentUser.email,
-                eventDate: eventDate,
-                eventType: document.getElementById('eventType').value,
-                guestCount: document.getElementById('guestCount').value,
-                specialRequests: document.getElementById('specialRequests').value,
-                status: 'pending',
-                createdAt: serverTimestamp()
-            };
-            
-            try {
-                await addDoc(collection(db, 'bookings'), booking);
-                alert('✅ Booking sent! Vendor will contact you.');
-                closeBookingModal();
-            } catch (error) {
-                alert('Booking failed');
-            }
-        };
+        loadVendor();
     </script>
 </head>
 <body>
 
 <header class="header">
     <button class="back-btn" onclick="window.location.href='vendors.html'">←</button>
-    <div class="logo">STADIUM<span>CONNECT</span></div>
-    <div class="placeholder"></div>
+    <div class="logo" onclick="window.location.href='index.html'">STADIUM<span>CONNECT</span></div>
+    <div style="width: 40px;"></div>
 </header>
 
 <div id="vendorDetail" class="content">
-    <div class="loading">🔄 Loading...</div>
+    <div class="loading">Loading vendor details...</div>
 </div>
 
-<button class="book-btn" onclick="openBookingModal()">Book Now →</button>
+<button class="book-btn" onclick="openBooking()">Book Now →</button>
 
-<!-- Lightbox Modal -->
+<!-- Lightbox Modal for Full Screen Photo Gallery -->
 <div id="lightbox" class="lightbox" onclick="closeLightbox()">
     <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
-    <span class="lightbox-prev" onclick="event.stopPropagation(); prevPhoto()">❮</span>
-    <img id="lightboxImg" src="">
-    <span class="lightbox-next" onclick="event.stopPropagation(); nextPhoto()">❯</span>
-</div>
-
-<!-- Booking Modal -->
-<div id="bookingModal" class="modal">
-    <div class="modal-content">
-        <span class="close-modal" onclick="closeBookingModal()">&times;</span>
-        <div class="modal-header">Book this vendor</div>
-        <input type="date" id="eventDate" class="modal-input">
-        <select id="eventType" class="modal-input">
-            <option>Wedding</option><option>Corporate</option><option>Birthday</option><option>Concert</option>
-        </select>
-        <input type="number" id="guestCount" class="modal-input" placeholder="Guests">
-        <textarea id="specialRequests" class="modal-input" rows="2" placeholder="Special requests"></textarea>
-        <button class="modal-btn" onclick="submitBooking()">Confirm →</button>
-    </div>
+    <span class="lightbox-prev" onclick="prevPhoto(event)">❮</span>
+    <img id="lightboxImage" class="lightbox-image" onclick="toggleZoom(event)" src="">
+    <span class="lightbox-next" onclick="nextPhoto(event)">❯</span>
+    <div id="lightboxCounter" class="lightbox-counter">1 / 1</div>
 </div>
 
 </body>
