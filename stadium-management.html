@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stadium Management - StadiumConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: #f0f2f5; }
+        
+        .header {
+            background: white;
+            padding: 16px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .logo { font-size: 22px; font-weight: 800; }
+        .logo span { color: #ff6b35; }
+        .badge { background: #ff6b35; color: white; font-size: 10px; padding: 2px 8px; border-radius: 20px; margin-left: 8px; }
+        .user-info { background: #fff5f0; padding: 8px 20px; border-radius: 40px; }
+        .logout-btn { background: #ff6b35; color: white; border: none; padding: 8px 20px; border-radius: 30px; cursor: pointer; }
+        
+        .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+        
+        .card { background: white; border-radius: 24px; padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+        .btn-primary { background: #ff6b35; color: white; border: none; padding: 10px 20px; border-radius: 30px; cursor: pointer; font-weight: 600; }
+        .btn-edit { background: #ffa502; color: white; border: none; padding: 6px 12px; border-radius: 20px; cursor: pointer; margin-right: 5px; }
+        .btn-delete { background: #ff4757; color: white; border: none; padding: 6px 12px; border-radius: 20px; cursor: pointer; }
+        .btn-copy { background: #2ed573; color: white; border: none; padding: 4px 10px; border-radius: 20px; cursor: pointer; font-size: 12px; margin-left: 5px; }
+        .btn-view { background: #1e90ff; color: white; border: none; padding: 6px 12px; border-radius: 20px; cursor: pointer; margin-right: 5px; }
+        
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 14px 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th { color: #666; font-weight: 500; font-size: 13px; text-transform: uppercase; }
+        .stadium-id { font-weight: 700; color: #ff6b35; }
+        .revenue-cell { color: #28a745; font-weight: bold; }
+        .progress-bar { width: 100px; background: #e0e0e0; border-radius: 10px; height: 6px; overflow: hidden; display: inline-block; margin-right: 5px; }
+        .progress-fill { background: #ff6b35; height: 100%; border-radius: 10px; }
+        .logo-img { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; background: #f0f0f0; }
+        
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 1000; }
+        .modal-content { background: white; border-radius: 28px; padding: 32px; width: 90%; max-width: 600px; position: relative; max-height: 90vh; overflow-y: auto; }
+        .close-modal { position: absolute; right: 20px; top: 20px; font-size: 24px; cursor: pointer; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 8px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 16px; border: 1px solid #ddd; border-radius: 16px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .generated-id { background: #f8f9fa; padding: 12px; border-radius: 12px; text-align: center; margin: 10px 0; font-size: 18px; font-weight: 700; color: #ff6b35; }
+        .credentials-box { background: #f0f9ff; border-left: 4px solid #ff6b35; padding: 15px; margin: 15px 0; border-radius: 12px; }
+        .credential-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; }
+        .message { padding: 12px; border-radius: 12px; margin-bottom: 15px; display: none; text-align: center; }
+        .success { background: #d4edda; color: #155724; display: block; }
+        .error { background: #f8d7da; color: #721c24; display: block; }
+        
+        @media (max-width: 768px) { th, td { font-size: 12px; padding: 8px; } .form-row { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="logo">STADIUM<span>CONNECT</span><span class="badge">Stadium Management</span></div>
+    <div class="user-info"><i class="fas fa-stadium"></i> <span id="userName"></span></div>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+</header>
+
+<div class="container">
+    <div id="message" class="message"></div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h2><i class="fas fa-stadium"></i> Stadium Management</h2>
+            <button class="btn-primary" onclick="openAddStadiumModal()"><i class="fas fa-plus"></i> Add New Stadium</button>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Logo</th>
+                        <th>Stadium ID</th>
+                        <th>Name</th>
+                        <th>City</th>
+                        <th>Type</th>
+                        <th>Capacity</th>
+                        <th>Price/Day</th>
+                        <th>Total Bookings</th>
+                        <th>Total Revenue (₹)</th>
+                        <th>Progress</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="stadiumsTableBody">
+                    <tr><td colspan="11" style="text-align:center;">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Stadium Modal -->
+<div id="stadiumModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal()">&times;</span>
+        <h3 id="modalTitle">Add New Stadium</h3>
+        <div id="generatedIdDisplay" class="generated-id" style="display:none;"></div>
+        <div id="credentialsDisplay" class="credentials-box" style="display:none;"></div>
+        <form id="stadiumForm">
+            <input type="hidden" id="stadiumEditId">
+            <div class="form-row">
+                <div class="form-group"><label>Stadium Name *</label><input type="text" id="stadiumName" placeholder="Enter stadium name" required></div>
+                <div class="form-group"><label>City *</label><select id="stadiumCity" required><option value="">Loading cities...</option></select></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Capacity (Seats)</label><input type="number" id="stadiumCapacity" placeholder="Total seats"></div>
+                <div class="form-group"><label>Base Price/Day *</label><input type="number" id="stadiumPrice" placeholder="Price per day" required></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Location</label><input type="text" id="stadiumLocation" placeholder="Full address"></div>
+                <div class="form-group"><label>Type</label><select id="stadiumType"><option>Cricket</option><option>Football</option><option>Multipurpose</option></select></div>
+            </div>
+            <div class="form-group"><label>Description</label><textarea id="stadiumDescription" rows="2" placeholder="Stadium description..."></textarea></div>
+            <div class="form-group"><label>Amenities (comma separated)</label><input type="text" id="stadiumAmenities" placeholder="Floodlights, Parking, WiFi, CCTV"></div>
+            <div class="form-group"><label>Blocked Dates (Match days)</label><input type="text" id="blockedDates" placeholder="2024-12-25, 2024-12-31"></div>
+            <div class="form-group"><label>Stadium Logo</label><input type="file" id="stadiumLogo" accept="image/*"></div>
+            <div class="form-group"><label>Password *</label><input type="text" id="stadiumPassword" placeholder="Default: stadium123" value="stadium123"></div>
+            <button type="button" class="btn-primary" onclick="saveStadium()" style="width:100%; margin-top:10px;">Save Stadium</button>
+        </form>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, setDoc, getDoc, query, where } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
+        authDomain: "stadiumconnect-8fecb.firebaseapp.com",
+        projectId: "stadiumconnect-8fecb",
+        storageBucket: "stadiumconnect-8fecb.appspot.com",
+        messagingSenderId: "458108198578",
+        appId: "1:458108198578:web:83d83646f0e24e718b73ab"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
+
+    // Check login
+    const adminLoggedIn = localStorage.getItem('admin');
+    const developerLoggedIn = localStorage.getItem('developer');
+    if (adminLoggedIn !== 'true' && !developerLoggedIn) {
+        window.location.href = 'admin-login.html';
+    }
+    
+    // Display user name
+    const devData = JSON.parse(localStorage.getItem('developer'));
+    document.getElementById('userName').innerText = devData ? (devData.name || devData.id) : 'Admin';
+
+    let allStadiums = [];
+    let allBookings = [];
+    let allCities = [];
+
+    // ========== LOAD CITIES ==========
+    async function loadCities() {
+        try {
+            const docRef = doc(db, 'settings', 'cities');
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                allCities = docSnap.data().list || [];
+            } else {
+                allCities = [
+                    { name: 'Mumbai', popular: true }, { name: 'Delhi', popular: true },
+                    { name: 'Bangalore', popular: true }, { name: 'Hyderabad', popular: true },
+                    { name: 'Chennai', popular: true }, { name: 'Kolkata', popular: true },
+                    { name: 'Nagpur', popular: true }, { name: 'Pune', popular: true }
+                ];
+            }
+            const citySelect = document.getElementById('stadiumCity');
+            citySelect.innerHTML = '<option value="">Select City</option>' + 
+                allCities.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+        } catch (error) {
+            console.error("Error loading cities:", error);
+        }
+    }
+
+    // ========== CALCULATE STADIUM STATS ==========
+    function getStadiumStats(stadiumId) {
+        const stadiumBookings = allBookings.filter(b => 
+            b.vendorId === stadiumId && 
+            (b.status === 'confirmed' || b.status === 'completed')
+        );
+        const totalRevenue = stadiumBookings.reduce((sum, b) => {
+            const price = parseInt(String(b.amount).replace(/[₹,]/g, '')) || 0;
+            return sum + price;
+        }, 0);
+        return { bookingsCount: stadiumBookings.length, totalRevenue };
+    }
+
+    // ========== UPLOAD IMAGE ==========
+    async function uploadImage(file, path) {
+        if (!file) return null;
+        try {
+            const storageRef = ref(storage, path + Date.now() + '_' + file.name);
+            await uploadBytes(storageRef, file);
+            return await getDownloadURL(storageRef);
+        } catch(e) { return null; }
+    }
+
+    // ========== LOAD STADIUMS ==========
+    async function loadStadiums() {
+        const vendorsSnap = await getDocs(collection(db, "vendors"));
+        allStadiums = [];
+        vendorsSnap.forEach(doc => {
+            const data = doc.data();
+            if (data.category === 'stadium') {
+                allStadiums.push({ id: doc.id, ...data });
+            }
+        });
+        
+        const bookingsSnap = await getDocs(collection(db, "bookings"));
+        allBookings = bookingsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        
+        renderStadiums();
+    }
+
+    function renderStadiums() {
+        const tbody = document.getElementById('stadiumsTableBody');
+        if (!allStadiums.length) {
+            tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;">No stadiums found</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = allStadiums.map(stadium => {
+            const stats = getStadiumStats(stadium.id);
+            const target = stadium.targetRevenue || 500000;
+            const progress = Math.min(100, (stats.totalRevenue / target) * 100);
+            return `
+                <tr>
+                    <td><img src="${stadium.imageUrl || 'https://via.placeholder.com/40'}" class="logo-img" onerror="this.src='https://via.placeholder.com/40'"></td>
+                    <td class="stadium-id">${stadium.loginId || stadium.id.slice(-8)}</td>
+                    <td><strong>${stadium.name || '-'}</strong></td>
+                    <td>${stadium.city || '-'}</td>
+                    <td>${stadium.type || 'Cricket'}</td>
+                    <td>${(stadium.capacity || 0).toLocaleString()}</td>
+                    <td>₹${(stadium.basePrice || 50000).toLocaleString()}</td>
+                    <td>${stats.bookingsCount}</td>
+                    <td class="revenue-cell">₹${stats.totalRevenue.toLocaleString()}</td>
+                    <td>
+                        <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div>
+                        ${Math.floor(progress)}%
+                    </td>
+                    <td>
+                        <button class="btn-view" onclick="viewStadiumDetails('${stadium.id}')">View</button>
+                        <button class="btn-edit" onclick="editStadium('${stadium.id}')">Edit</button>
+                        <button class="btn-delete" onclick="deleteStadium('${stadium.id}')">Del</button>
+                        <button class="btn-copy" onclick="copyCredentials('${stadium.loginId || stadium.id}', '${stadium.password || 'stadium123'}')">Copy</button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    // ========== GENERATE STADIUM ID ==========
+    async function generateStadiumId() {
+        const count = allStadiums.length + 1;
+        return `STAD${String(count).padStart(3, '0')}`;
+    }
+
+    function generateRandomPassword() {
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+        let pass = '';
+        for(let i = 0; i < 8; i++) pass += chars[Math.floor(Math.random() * chars.length)];
+        return pass;
+    }
+
+    // ========== STADIUM CRUD ==========
+    window.openAddStadiumModal = async () => {
+        document.getElementById('modalTitle').innerText = 'Add New Stadium';
+        document.getElementById('stadiumEditId').value = '';
+        const newId = await generateStadiumId();
+        document.getElementById('generatedIdDisplay').innerHTML = `<i class="fas fa-id-card"></i> Stadium ID: <strong>${newId}</strong>`;
+        document.getElementById('generatedIdDisplay').style.display = 'block';
+        document.getElementById('credentialsDisplay').style.display = 'none';
+        document.getElementById('stadiumName').value = '';
+        document.getElementById('stadiumCity').value = '';
+        document.getElementById('stadiumCapacity').value = '';
+        document.getElementById('stadiumPrice').value = '';
+        document.getElementById('stadiumLocation').value = '';
+        document.getElementById('stadiumType').value = 'Cricket';
+        document.getElementById('stadiumDescription').value = '';
+        document.getElementById('stadiumAmenities').value = '';
+        document.getElementById('blockedDates').value = '';
+        document.getElementById('stadiumLogo').value = '';
+        document.getElementById('stadiumPassword').value = generateRandomPassword();
+        document.getElementById('stadiumModal').style.display = 'flex';
+    };
+
+    window.viewStadiumDetails = (id) => {
+        const stadium = allStadiums.find(s => s.id === id);
+        if (stadium) {
+            const stats = getStadiumStats(id);
+            alert(`🏟️ ${stadium.name}\n📍 ${stadium.city}\n📅 Bookings: ${stats.bookingsCount}\n💰 Revenue: ₹${stats.totalRevenue.toLocaleString()}\n🔑 Login ID: ${stadium.loginId || stadium.id}`);
+        }
+    };
+
+    window.editStadium = async (id) => {
+        const stadium = allStadiums.find(s => s.id === id);
+        if (!stadium) return;
+        document.getElementById('modalTitle').innerText = 'Edit Stadium';
+        document.getElementById('stadiumEditId').value = stadium.id;
+        document.getElementById('generatedIdDisplay').style.display = 'none';
+        document.getElementById('credentialsDisplay').style.display = 'none';
+        document.getElementById('stadiumName').value = stadium.name || '';
+        document.getElementById('stadiumCity').value = stadium.city || '';
+        document.getElementById('stadiumCapacity').value = stadium.capacity || '';
+        document.getElementById('stadiumPrice').value = stadium.basePrice || '';
+        document.getElementById('stadiumLocation').value = stadium.location || '';
+        document.getElementById('stadiumType').value = stadium.type || 'Cricket';
+        document.getElementById('stadiumDescription').value = stadium.description || '';
+        document.getElementById('stadiumAmenities').value = (stadium.amenities || []).join(', ');
+        document.getElementById('blockedDates').value = (stadium.blockedDates || []).join(', ');
+        document.getElementById('stadiumPassword').value = '';
+        document.getElementById('stadiumModal').style.display = 'flex';
+    };
+
+    window.deleteStadium = async (id) => {
+        if (confirm(`Delete stadium? This will also delete all associated bookings.`)) {
+            // Delete all bookings for this stadium
+            const bookingsQuery = query(collection(db, "bookings"), where("vendorId", "==", id));
+            const bookingsSnap = await getDocs(bookingsQuery);
+            bookingsSnap.forEach(async (bookingDoc) => {
+                await deleteDoc(doc(db, "bookings", bookingDoc.id));
+            });
+            // Delete stadium
+            await deleteDoc(doc(db, 'vendors', id));
+            showMessage('Stadium deleted!', 'success');
+            loadStadiums();
+        }
+    };
+
+    window.copyCredentials = (stadiumId, password) => {
+        const credentials = `Stadium ID: ${stadiumId}\nPassword: ${password}\nLogin URL: owner-login.html`;
+        navigator.clipboard.writeText(credentials);
+        showMessage('Credentials copied to clipboard!', 'success');
+    };
+
+    window.saveStadium = async () => {
+        const isEdit = document.getElementById('stadiumEditId').value;
+        const loginId = isEdit ? null : await generateStadiumId();
+        const password = document.getElementById('stadiumPassword').value || generateRandomPassword();
+        
+        const data = {
+            name: document.getElementById('stadiumName').value,
+            category: 'stadium',
+            city: document.getElementById('stadiumCity').value,
+            capacity: parseInt(document.getElementById('stadiumCapacity').value) || 0,
+            basePrice: parseInt(document.getElementById('stadiumPrice').value) || 50000,
+            location: document.getElementById('stadiumLocation').value,
+            type: document.getElementById('stadiumType').value,
+            description: document.getElementById('stadiumDescription').value,
+            amenities: document.getElementById('stadiumAmenities').value.split(',').map(a=>a.trim()),
+            blockedDates: document.getElementById('blockedDates').value.split(',').map(d=>d.trim()).filter(d=>d),
+            password: password,
+            updatedAt: new Date().toISOString()
+        };
+        
+        if (!data.name || !data.city) {
+            showMessage('Name and City are required!', 'error');
+            return;
+        }
+        
+        // Upload logo if selected
+        const logoFile = document.getElementById('stadiumLogo').files[0];
+        if (logoFile) {
+            data.imageUrl = await uploadImage(logoFile, 'stadiums/');
+        }
+        
+        if (isEdit) {
+            // Keep existing loginId
+            const existingStadium = allStadiums.find(s => s.id === isEdit);
+            if (existingStadium && existingStadium.loginId) {
+                data.loginId = existingStadium.loginId;
+            }
+            await updateDoc(doc(db, 'vendors', isEdit), data);
+            showMessage('Stadium updated!', 'success');
+        } else {
+            data.loginId = loginId;
+            data.createdAt = new Date().toISOString();
+            await addDoc(collection(db, 'vendors'), data);
+            showMessage(`✅ Stadium added! ID: ${loginId} | Password: ${password}`, 'success');
+            
+            // Show credentials for copying
+            document.getElementById('credentialsDisplay').innerHTML = `
+                <h4><i class="fas fa-key"></i> Login Credentials (Share with Owner)</h4>
+                <div class="credential-item">
+                    <strong>Stadium ID:</strong> ${loginId}
+                    <button class="btn-copy" onclick="copyCredentials('${loginId}', '${password}')">Copy</button>
+                </div>
+                <div class="credential-item">
+                    <strong>Password:</strong> ${password}
+                    <button class="btn-copy" onclick="copyCredentials('${loginId}', '${password}')">Copy</button>
+                </div>
+                <div class="credential-item">
+                    <strong>Login URL:</strong> owner-login.html
+                </div>
+                <div class="credential-item">
+                    <strong>Dashboard URL:</strong> owner-dashboard.html?id=${loginId}
+                </div>
+            `;
+            document.getElementById('credentialsDisplay').style.display = 'block';
+            document.getElementById('generatedIdDisplay').style.display = 'none';
+        }
+        closeModal();
+        loadStadiums();
+    };
+
+    function showMessage(msg, type) {
+        const msgDiv = document.getElementById('message');
+        msgDiv.className = `message ${type}`;
+        msgDiv.innerText = msg;
+        msgDiv.style.display = 'block';
+        setTimeout(() => msgDiv.style.display = 'none', 4000);
+    }
+
+    window.closeModal = () => {
+        document.getElementById('stadiumModal').style.display = 'none';
+    };
+
+    window.logout = () => {
+        localStorage.removeItem('admin');
+        localStorage.removeItem('developer');
+        window.location.href = 'index.html';
+    };
+
+    // Initialize
+    loadCities();
+    loadStadiums();
+</script>
+</body>
+</html>
