@@ -3,106 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StadiumConnect - Auth</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>StadiumConnect - Book Stadiums & Vendors</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background: #f9f9f9; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .auth-card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 400px; text-align: center; animation: fadeIn 0.5s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .logo { font-size: 28px; font-weight: 800; margin-bottom: 30px; }
+        body { background: #fff; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .container { text-align: center; padding: 20px; width: 100%; max-width: 500px; }
+        .logo { font-size: 48px; font-weight: 800; margin-bottom: 40px; }
         .logo span { color: #ff6b35; }
         
-        .input-group { margin-bottom: 15px; text-align: left; }
-        input { width: 100%; padding: 12px 15px; border: 1.5px solid #eee; border-radius: 10px; outline: none; transition: 0.3s; }
-        input:focus { border-color: #ff6b35; }
+        /* Auth Form Styles */
+        .auth-container { margin-bottom: 20px; display: none; background: #f9f9f9; padding: 20px; border-radius: 15px; }
+        .input-box { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; }
         
-        .btn { width: 100%; padding: 14px; border-radius: 12px; font-weight: 600; cursor: pointer; border: none; margin-bottom: 10px; transition: 0.3s; }
-        .btn-primary { background: #ff6b35; color: white; }
-        .btn-google { background: white; border: 1.5px solid #eee; color: #444; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .btn:active { transform: scale(0.98); }
+        .buttons { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
+        .btn { padding: 14px 30px; border-radius: 40px; font-size: 16px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; transition: 0.3s; border: none; }
+        
+        .btn-login { background: transparent; border: 1.5px solid #ff6b35; color: #ff6b35; }
+        .btn-register { background: #ff6b35; color: white; }
+        .btn-google { background: #4285F4; color: white; width: 100%; margin-top: 10px; }
+        .vendor-btn { background: #28a745; color: white; font-size: 14px; margin-top: 10px; }
 
-        #recaptcha-container { margin-bottom: 15px; }
-        .hidden { display: none; }
-        .divider { margin: 20px 0; color: #aaa; font-size: 12px; position: relative; }
+        .feature-grid { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin: 30px 0; }
+        .feature { text-align: center; padding: 10px; width: 120px; }
+        .feature-icon { font-size: 28px; margin-bottom: 8px; }
+        .feature-title { font-weight: 600; font-size: 14px; }
+        .feature-desc { font-size: 11px; color: #666; }
+        
+        footer { position: fixed; bottom: 20px; left: 0; right: 0; text-align: center; font-size: 12px; color: #aaa; }
+        @media (max-width: 500px) { .logo { font-size: 32px; } .btn { padding: 10px 20px; font-size: 14px; } }
     </style>
 </head>
 <body>
 
-    <div class="auth-card">
+    <div class="container">
         <div class="logo">STADIUM<span>CONNECT</span></div>
 
-        <div id="phone-section">
-            <div class="input-group">
-                <input type="tel" id="phoneNumber" placeholder="+91 9876543210">
-            </div>
+        <div id="login-form" class="auth-container" style="display: block;">
+            <input type="tel" id="phone" class="input-box" placeholder="+91 9876543210">
             <div id="recaptcha-container"></div>
-            <button class="btn btn-primary" onclick="sendOTP()">Send OTP</button>
-        </div>
-
-        <div id="otp-section" class="hidden">
-            <div class="input-group">
-                <input type="text" id="otpCode" placeholder="Enter 6-digit OTP">
+            <button class="btn btn-register" onclick="sendOTP()" id="send-btn">Send OTP</button>
+            
+            <div id="otp-box" style="display:none; margin-top:10px;">
+                <input type="text" id="otp" class="input-box" placeholder="Enter 6-digit OTP">
+                <button class="btn btn-register" onclick="verifyOTP()">Verify OTP</button>
             </div>
-            <button class="btn btn-primary" onclick="verifyOTP()">Verify & Login</button>
+
+            <button class="btn btn-google" onclick="googleLogin()">Login with Google</button>
         </div>
 
-        <div class="divider">OR</div>
-
-        <button class="btn btn-google" onclick="googleLogin()">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18">
-            Continue with Google
-        </button>
+        <div class="buttons">
+            <a href="https://forms.gle/t7oc3SeNvCMbdCVX7" target="_blank" class="btn vendor-btn">Register as Vendor →</a>
+        </div>
+        
+        <div class="feature-grid">
+            <div class="feature"><div class="feature-icon">🏟️</div><div class="feature-title">AI Booking</div><div class="feature-desc">3D View enabled</div></div>
+            <div class="feature"><div class="feature-icon">🎨</div><div class="feature-title">Top Vendors</div><div class="feature-desc">Decorators & More</div></div>
+            <div class="feature"><div class="feature-icon">🤝</div><div class="feature-title">Support</div><div class="feature-desc">Local agents</div></div>
+        </div>
+        
+        <footer>© 2025 StadiumConnect | Your Need, Our Network</footer>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
 
     <script>
-        // 1. APNA FIREBASE CONFIG YAHAN DAALO
+        // YAHAN APNI CONFIG DAALEIN
         const firebaseConfig = {
             apiKey: "YOUR_API_KEY",
-            authDomain: "stadiumconnect-xxxx.firebaseapp.com",
-            projectId: "stadiumconnect-xxxx",
-            storageBucket: "stadiumconnect-xxxx.appspot.com",
-            messagingSenderId: "xxxx",
-            appId: "xxxx"
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
         };
         firebase.initializeApp(firebaseConfig);
 
-        const auth = firebase.auth();
-
-        // Google Login Fix for APK (Redirect use karein)
+        // Google Login Function
         function googleLogin() {
             const provider = new firebase.auth.GoogleAuthProvider();
-            // signInWithPopup APK mein block ho jata hai, isliye redirect use karein
-            auth.signInWithRedirect(provider);
+            firebase.auth().signInWithPopup(provider).then((result) => {
+                alert("Login Success: " + result.user.displayName);
+                window.location.href = "home.html"; 
+            }).catch((error) => {
+                alert("Google Error: " + error.message);
+            });
         }
 
-        // Phone OTP Logic
+        // Phone OTP Function
         window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
             'size': 'invisible'
         });
 
         function sendOTP() {
-            const number = document.getElementById('phoneNumber').value;
-            auth.signInWithPhoneNumber(number, window.recaptchaVerifier)
+            const phoneNumber = document.getElementById('phone').value;
+            const appVerifier = window.recaptchaVerifier;
+            firebase.auth().signInWithPhoneNumber(phoneNumber, appVerifier)
                 .then((confirmationResult) => {
                     window.confirmationResult = confirmationResult;
-                    document.getElementById('phone-section').classList.add('hidden');
-                    document.getElementById('otp-section').classList.remove('hidden');
+                    document.getElementById('otp-box').style.display = 'block';
+                    document.getElementById('send-btn').style.display = 'none';
                     alert("OTP Sent!");
                 }).catch((error) => {
-                    alert(error.message);
+                    alert("Error: " + error.message);
                 });
         }
 
         function verifyOTP() {
-            const code = document.getElementById('otpCode').value;
+            const code = document.getElementById('otp').value;
             confirmationResult.confirm(code).then((result) => {
-                alert("Login Successful!");
-                window.location.href = "dashboard.html"; // Success page
+                alert("Phone Verified!");
+                window.location.href = "home.html";
             }).catch((error) => {
                 alert("Invalid OTP");
             });
