@@ -3,124 +3,202 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StadiumConnect - Login</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>StadiumConnect - Book Stadiums & Vendors</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background: #fff; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .container { text-align: center; width: 100%; max-width: 400px; }
-        .logo { font-size: 36px; font-weight: 800; margin-bottom: 30px; color: #333; }
+        body { background: #fff; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .container { text-align: center; padding: 20px; }
+        .logo { font-size: 48px; font-weight: 800; margin-bottom: 40px; }
         .logo span { color: #ff6b35; }
+        .buttons { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-bottom: 40px; }
+        .btn { padding: 14px 36px; border-radius: 40px; font-size: 16px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
+        .btn-login { background: transparent; border: 1.5px solid #ff6b35; color: #ff6b35; }
+        .btn-register { background: #ff6b35; border: none; color: white; }
+        .vendor-btn { background: #28a745; color: white; border: none; padding: 12px 28px; font-size: 14px; margin-top: 10px; cursor: pointer; text-decoration: none; display: inline-block; border-radius: 40px; }
+        .feature-grid {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin: 40px 0;
+        }
+        .feature {
+            text-align: center;
+            padding: 20px;
+        }
+        .feature-icon { font-size: 32px; margin-bottom: 12px; }
+        .feature-title { font-weight: 600; margin-bottom: 4px; }
+        .feature-desc { font-size: 12px; color: #666; }
+        footer { position: fixed; bottom: 20px; left: 0; right: 0; text-align: center; font-size: 12px; color: #aaa; }
         
-        /* Input & Buttons */
-        .auth-card { background: #fdfdfd; padding: 25px; border-radius: 20px; border: 1px solid #eee; }
-        input { width: 100%; padding: 14px; margin: 10px 0; border: 1.5px solid #ddd; border-radius: 10px; outline: none; }
-        input:focus { border-color: #ff6b35; }
+        /* Loading */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #fff;
+            border-top-color: #ff6b35;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
         
-        .btn { width: 100%; padding: 14px; border-radius: 10px; font-weight: 600; cursor: pointer; border: none; transition: 0.2s; margin-top: 10px; }
-        .btn-primary { background: #ff6b35; color: white; }
-        .btn-google { background: white; border: 1.5px solid #ddd; color: #444; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .btn:active { transform: scale(0.98); }
-
-        #recaptcha-container { margin: 10px 0; }
-        .hidden { display: none; }
-        .divider { margin: 20px 0; color: #999; font-size: 14px; }
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 14px;
+            display: none;
+            z-index: 1001;
+        }
+        
+        @media (max-width: 500px) { .logo { font-size: 32px; } .btn { padding: 10px 24px; } }
     </style>
 </head>
 <body>
-
     <div class="container">
         <div class="logo">STADIUM<span>CONNECT</span></div>
-
-        <div class="auth-card">
-            <div id="phone-ui">
-                <input type="tel" id="phoneNumber" placeholder="+91 9876543210">
-                <div id="recaptcha-container"></div>
-                <button class="btn btn-primary" onclick="handlePhoneAuth()">Get OTP</button>
-            </div>
-
-            <div id="otp-ui" class="hidden">
-                <input type="text" id="otpCode" placeholder="Enter 6-digit OTP">
-                <button class="btn btn-primary" onclick="handleVerifyOTP()">Verify OTP</button>
-            </div>
-
-            <div class="divider">OR</div>
-
-            <button class="btn btn-google" onclick="handleGoogleLogin()">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18">
-                Continue with Google
-            </button>
+        <div class="buttons">
+            <a href="login.html" class="btn btn-login">Login</a>
+            <a href="register.html" class="btn btn-register">Register</a>
         </div>
+        <a href="https://forms.gle/t7oc3SeNvCMbdCVX7" target="_blank" class="vendor-btn">Register as Vendor →</a>
+        
+        <div class="feature-grid">
+            <div class="feature"><div class="feature-icon">🏟️</div><div class="feature-title">AI Stadium Booking</div><div class="feature-desc">Fractional booking with 3D view</div></div>
+            <div class="feature"><div class="feature-icon">🎨</div><div class="feature-title">Top Vendors</div><div class="feature-desc">Decorators, Caterers & More</div></div>
+            <div class="feature"><div class="feature-icon">🤝</div><div class="feature-title">Agent Support</div><div class="feature-desc">Local agents for coordination</div></div>
+        </div>
+        
+        <footer>© 2025 StadiumConnect | Your Need, Our Network</footer>
     </div>
+    
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+    <div id="toast" class="toast"></div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
-
-    <script>
-        // 1. APNI FIREBASE CONFIG YAHAN REPLACE KAREIN
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+        
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT_ID.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
+            apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
+            authDomain: "stadiumconnect-8fecb.firebaseapp.com",
+            projectId: "stadiumconnect-8fecb",
+            storageBucket: "stadiumconnect-8fecb.appspot.com",
+            messagingSenderId: "458108198578",
+            appId: "1:458108198578:web:83d83646f0e24e718b73ab"
         };
         
-        // Initialize Firebase
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+        
+        function showToast(msg, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.style.background = isError ? '#dc3545' : '#28a745';
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 3000);
         }
-        const auth = firebase.auth();
-
-        // --- GOOGLE LOGIN ---
-        function handleGoogleLogin() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            // Web ke liye Popup best hai, APK ke liye SHA-1 zaruri hai
-            auth.signInWithPopup(provider)
-                .then((result) => {
-                    console.log("Success:", result.user);
-                    window.location.href = "dashboard.html"; // Success page URL
-                })
-                .catch((error) => {
-                    console.error("Error:", error);
-                    alert("Google Error: " + error.message);
-                });
+        
+        function setLoading(show) {
+            document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
         }
-
-        // --- PHONE AUTH ---
-        window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-            'size': 'invisible'
+        
+        // Check if already logged in
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                localStorage.setItem('userLoggedIn', 'true');
+                localStorage.setItem('userEmail', user.email);
+                localStorage.setItem('userName', user.displayName || 'User');
+                window.location.href = 'super-admin-dashboard.html';
+            }
         });
-
-        function handlePhoneAuth() {
-            const phone = document.getElementById('phoneNumber').value;
-            if(!phone) return alert("Please enter phone number!");
-
-            auth.signInWithPhoneNumber(phone, window.recaptchaVerifier)
-                .then((confirmationResult) => {
-                    window.confirmationResult = confirmationResult;
-                    document.getElementById('phone-ui').classList.add('hidden');
-                    document.getElementById('otp-ui').classList.remove('hidden');
-                })
-                .catch((error) => {
-                    alert("SMS Error: " + error.message);
-                });
-        }
-
-        function handleVerifyOTP() {
-            const code = document.getElementById('otpCode').value;
-            window.confirmationResult.confirm(code)
-                .then((result) => {
-                    alert("Login Success!");
-                    window.location.href = "dashboard.html";
-                })
-                .catch((error) => {
-                    alert("Wrong OTP!");
-                });
-        }
+        
+        // Handle redirect result (for APK)
+        getRedirectResult(auth).then((result) => {
+            if (result && result.user) {
+                window.location.href = 'super-admin-dashboard.html';
+            }
+        }).catch((error) => {
+            console.log('Redirect error:', error);
+        });
+        
+        // Add Google Sign-In button to page
+        const buttonsDiv = document.querySelector('.buttons');
+        const googleBtn = document.createElement('button');
+        googleBtn.innerHTML = '🔐 Sign in with Google';
+        googleBtn.style.cssText = `
+            background: white;
+            border: 1.5px solid #ff6b35;
+            color: #ff6b35;
+            padding: 14px 36px;
+            border-radius: 40px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 280px;
+        `;
+        
+        googleBtn.onclick = async () => {
+            setLoading(true);
+            try {
+                // Try popup first
+                const result = await signInWithPopup(auth, provider);
+                if (result.user) {
+                    window.location.href = 'super-admin-dashboard.html';
+                }
+            } catch (error) {
+                // If popup fails (APK/WebView), use redirect
+                if (error.code === 'auth/popup-blocked' || error.message.includes('popup')) {
+                    showToast('Redirecting to Google...', false);
+                    await signInWithRedirect(auth, provider);
+                } else {
+                    setLoading(false);
+                    showToast(error.message, true);
+                }
+            }
+        };
+        
+        // Insert Google button at the top
+        const container = document.querySelector('.container');
+        const firstChild = container.firstChild;
+        const googleDiv = document.createElement('div');
+        googleDiv.style.marginBottom = '20px';
+        googleDiv.appendChild(googleBtn);
+        container.insertBefore(googleDiv, firstChild);
+        
+        // Add OR divider
+        const orDiv = document.createElement('div');
+        orDiv.style.cssText = 'margin: 15px 0; color: #999; font-size: 14px;';
+        orDiv.innerHTML = '────────── OR ──────────';
+        container.insertBefore(orDiv, document.querySelector('.buttons'));
+        
+        console.log('✅ Index loaded - APK compatible');
     </script>
 </body>
 </html>
-
 
