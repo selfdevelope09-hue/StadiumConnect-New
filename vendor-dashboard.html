@@ -70,10 +70,12 @@
             border-radius: 20px;
             font-size: 12px;
             font-weight: 600;
+            display: inline-block;
         }
         .status-confirmed { background: #d4edda; color: #155724; }
         .status-pending { background: #fff3cd; color: #856404; }
         .status-cancelled { background: #f8d7da; color: #721c24; }
+        .revenue-cell { color: #28a745; font-weight: bold; }
         
         .logo-img { width: 80px; height: 80px; border-radius: 12px; object-fit: cover; margin-top: 10px; }
         
@@ -163,7 +165,7 @@
                         <th>Status</th>
                     </thead>
                 <tbody id="bookingsTableBody">
-                    <tr><td colspan="7" style="text-align:center;">Loading bookings...</td></tr>
+                    <tr><td colspan="7" style="text-align:center;">Loading bookings...<br><i class="fas fa-spinner fa-spin"></i> Please wait</td></tr>
                 </tbody>
              </table>
         </div>
@@ -260,33 +262,49 @@
     
     async function loadBookings() {
         try {
-            const q = query(
-                collection(db, "bookings"),
-                where("vendorId", "==", vendorId),
-                orderBy("createdAt", "desc")
-            );
+            console.log("Loading bookings for vendor ID:", vendorId);
+            
+            // Simple query - get all bookings where vendorId matches
+            const bookingsRef = collection(db, "bookings");
+            const q = query(bookingsRef, where("vendorId", "==", vendorId));
             const snapshot = await getDocs(q);
-            allBookings = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+            
+            console.log("Bookings found:", snapshot.size);
+            
+            allBookings = [];
+            snapshot.forEach(doc => {
+                allBookings.push({ id: doc.id, ...doc.data() });
+            });
+            
+            // Sort by date (newest first)
+            allBookings.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             
             const tableBody = document.getElementById('bookingsTableBody');
             if (allBookings.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No bookings yet</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;">📭 No bookings yet. Bookings will appear here when customers book your services.</td></tr>';
                 return;
             }
             
-            tableBody.innerHTML = allBookings.map(b => `
-                <tr>
-                    <td>${b.id.slice(-8)}</td>
-                    <td><strong>${b.userName || '-'}</strong></td>
-                    <td>${b.userPhone || '-'}</td>
-                    <td>${b.eventDate || '-'}</td>
-                    <td>₹${(parseInt(String(b.amount).replace(/[₹,]/g,''))||0).toLocaleString()}</td>
-                    <td class="revenue-cell">₹${calculateCommission(b.amount).toLocaleString()}</td>
-                    <td><span class="status-badge status-${b.status}">${b.status}</span></td>
-                </tr>
-            `).join('');
+            tableBody.innerHTML = allBookings.map(b => {
+                const amount = parseInt(String(b.amount).replace(/[₹,]/g, '')) || 0;
+                const commission = calculateCommission(amount);
+                return `
+                    <tr>
+                        <td>${b.id.slice(-8)}</td>
+                        <td><strong>${b.userName || b.customerName || '-'}</strong></td>
+                        <td>${b.userPhone || b.phone || '-'}</td>
+                        <td>${b.eventDate || b.date || '-'}</td>
+                        <td>₹${amount.toLocaleString()}</td>
+                        <td class="revenue-cell">₹${commission.toLocaleString()}</td>
+                        <td><span class="status-badge status-${b.status || 'pending'}">${b.status || 'pending'}</span></td>
+                    </tr>
+                `;
+            }).join('');
+            
         } catch(error) {
             console.error("Error loading bookings:", error);
+            document.getElementById('bookingsTableBody').innerHTML = '<tr><td colspan="7" style="text-align:center;">❌ Error loading bookings. Please refresh the page.</td></tr>';
+            showToast('Error loading bookings', true);
         }
     }
     
@@ -316,10 +334,10 @@
         earningsChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: Object.keys(monthly),
+                labels: Object.keys(monthly).length ? Object.keys(monthly) : ['No Data'],
                 datasets: [{
                     label: 'Revenue (₹)',
-                    data: Object.values(monthly),
+                    data: Object.keys(monthly).length ? Object.values(monthly) : [0],
                     borderColor: '#ff6b35',
                     backgroundColor: 'rgba(255,107,53,0.1)',
                     tension: 0.3,
