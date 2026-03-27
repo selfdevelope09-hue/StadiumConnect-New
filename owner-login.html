@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stadium Owner Login - StadiumConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a2a 0%, #050517 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 20% 50%, rgba(255,107,53,0.1) 0%, transparent 50%);
+            animation: rotate 20s linear infinite;
+        }
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            padding: 48px 40px;
+            border-radius: 48px;
+            width: 100%;
+            max-width: 450px;
+            border: 1px solid rgba(255, 107, 53, 0.3);
+            z-index: 1;
+            animation: fadeInUp 0.6s ease;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo {
+            text-align: center;
+            font-size: 32px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #fff, #ff6b35);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 30px;
+        }
+
+        .logo span {
+            background: linear-gradient(135deg, #ff6b35, #ff9068);
+            -webkit-background-clip: text;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .login-header h2 {
+            color: white;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .login-header p {
+            color: rgba(255,255,255,0.6);
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #ccc;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            color: white;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #ff6b35;
+            box-shadow: 0 0 10px rgba(255,107,53,0.3);
+        }
+
+        .form-group input::placeholder {
+            color: rgba(255,255,255,0.4);
+        }
+
+        .login-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #ff6b35, #ff9068);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 40px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255,107,53,0.4);
+        }
+
+        .error-msg {
+            background: rgba(220, 53, 69, 0.2);
+            border-left: 3px solid #dc3545;
+            padding: 12px;
+            border-radius: 12px;
+            margin-top: 20px;
+            color: #ff6b6b;
+            font-size: 14px;
+            text-align: center;
+            display: none;
+        }
+
+        .error-msg.show {
+            display: block;
+            animation: shake 0.3s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .help-text {
+            text-align: center;
+            margin-top: 25px;
+            color: rgba(255,255,255,0.5);
+            font-size: 12px;
+        }
+
+        .help-text a {
+            color: #ff6b35;
+            text-decoration: none;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-link a {
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            font-size: 13px;
+            transition: 0.3s;
+        }
+
+        .back-link a:hover {
+            color: #ff6b35;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+    
+    <div class="login-container">
+        <div class="logo">🏟️ STADIUM<span>CONNECT</span></div>
+        
+        <div class="login-header">
+            <h2>Owner Login</h2>
+            <p>Access your stadium dashboard</p>
+        </div>
+        
+        <div class="form-group">
+            <label><i class="fas fa-id-card"></i> Stadium ID / Login ID</label>
+            <input type="text" id="loginId" placeholder="Enter your stadium ID">
+        </div>
+        
+        <div class="form-group">
+            <label><i class="fas fa-lock"></i> Password</label>
+            <input type="password" id="password" placeholder="Enter your password">
+        </div>
+        
+        <button class="login-btn" onclick="login()">
+            <i class="fas fa-sign-in-alt"></i> Login to Dashboard
+        </button>
+        
+        <div id="errorMsg" class="error-msg">
+            <i class="fas fa-exclamation-triangle"></i> Invalid Login ID or Password
+        </div>
+        
+        <div class="help-text">
+            <i class="fas fa-question-circle"></i> Contact admin if you don't have credentials
+        </div>
+        
+        <div class="back-link">
+            <a href="directory.html"><i class="fas fa-arrow-left"></i> Back to Home</a>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
+            authDomain: "stadiumconnect-8fecb.firebaseapp.com",
+            projectId: "stadiumconnect-8fecb",
+            storageBucket: "stadiumconnect-8fecb.firebasestorage.app",
+            messagingSenderId: "458108198578",
+            appId: "1:458108198578:web:83d83646f0e24e718b73ab"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.login = async () => {
+            const loginId = document.getElementById('loginId').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const errorMsg = document.getElementById('errorMsg');
+            
+            if(!loginId || !password) {
+                errorMsg.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Please enter both ID and Password';
+                errorMsg.classList.add('show');
+                setTimeout(() => errorMsg.classList.remove('show'), 3000);
+                return;
+            }
+            
+            try {
+                // Search for stadium with matching loginId and password
+                const q = query(
+                    collection(db, "vendors"), 
+                    where("loginId", "==", loginId),
+                    where("password", "==", password)
+                );
+                const snapshot = await getDocs(q);
+                
+                if(!snapshot.empty) {
+                    const stadium = snapshot.docs[0];
+                    const stadiumData = stadium.data();
+                    
+                    // Save login info in session storage
+                    sessionStorage.setItem('ownerId', stadium.id);
+                    sessionStorage.setItem('ownerName', stadiumData.name);
+                    sessionStorage.setItem('ownerLoginId', loginId);
+                    
+                    // Redirect to dashboard
+                    window.location.href = `owner-dashboard.html?id=${stadium.id}`;
+                } else {
+                    errorMsg.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Invalid Login ID or Password. Please check and try again.';
+                    errorMsg.classList.add('show');
+                    setTimeout(() => errorMsg.classList.remove('show'), 3000);
+                }
+            } catch(error) {
+                console.error("Login error:", error);
+                errorMsg.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Login failed. Please try again.';
+                errorMsg.classList.add('show');
+                setTimeout(() => errorMsg.classList.remove('show'), 3000);
+            }
+        };
+        
+        // Enter key press handler
+        document.getElementById('password').addEventListener('keypress', function(e) {
+            if(e.key === 'Enter') {
+                login();
+            }
+        });
+        document.getElementById('loginId').addEventListener('keypress', function(e) {
+            if(e.key === 'Enter') {
+                document.getElementById('password').focus();
+            }
+        });
+    </script>
+</body>
+</html>
