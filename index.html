@@ -2,55 +2,604 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>StadiumConnect - Book Stadiums & Vendors</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background: #fff; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
-        .container { text-align: center; padding: 20px; }
-        .logo { font-size: 48px; font-weight: 800; margin-bottom: 40px; }
-        .logo span { color: #ff6b35; }
-        .buttons { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-bottom: 40px; }
-        .btn { padding: 14px 36px; border-radius: 40px; font-size: 16px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
-        .btn-login { background: transparent; border: 1.5px solid #ff6b35; color: #ff6b35; }
-        .btn-register { background: #ff6b35; border: none; color: white; }
-        .vendor-btn { background: #28a745; color: white; border: none; padding: 12px 28px; font-size: 14px; margin-top: 10px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* Animated Background */
+        body::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,107,53,0.03) 0%, rgba(255,107,53,0) 70%);
+            animation: rotateBg 30s linear infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes rotateBg {
+            0% { transform: translate(-25%, -25%) rotate(0deg); }
+            100% { transform: translate(-25%, -25%) rotate(360deg); }
+        }
+        
+        .container {
+            text-align: center;
+            padding: 20px;
+            position: relative;
+            z-index: 2;
+            animation: fadeInUp 0.8s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Logo Animation */
+        .logo {
+            font-size: 52px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            animation: glowPulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes glowPulse {
+            0%, 100% {
+                text-shadow: 0 0 0px rgba(255,107,53,0);
+            }
+            50% {
+                text-shadow: 0 0 20px rgba(255,107,53,0.3);
+            }
+        }
+        
+        .logo span {
+            background: linear-gradient(135deg, #ff6b35, #ff9068);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .tagline {
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 16px;
+            animation: fadeInUp 0.8s ease-out 0.1s backwards;
+        }
+        
+        /* Buttons Container */
+        .buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+        
+        .btn {
+            padding: 14px 40px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .btn-login {
+            background: transparent;
+            border: 2px solid #ff6b35;
+            color: #ff6b35;
+        }
+        
+        .btn-login:hover {
+            background: #ff6b35;
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(255,107,53,0.3);
+        }
+        
+        .btn-register {
+            background: linear-gradient(135deg, #ff6b35, #ff9068);
+            border: none;
+            color: white;
+            box-shadow: 0 4px 15px rgba(255,107,53,0.3);
+        }
+        
+        .btn-register:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255,107,53,0.4);
+        }
+        
+        /* Google Sign-In Button */
+        .google-signin-container {
+            margin: 20px 0;
+            animation: fadeInUp 0.8s ease-out 0.2s backwards;
+        }
+        
+        .google-btn {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 50px;
+            padding: 12px 32px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .google-btn:hover {
+            border-color: #ff6b35;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+        
+        .google-btn img {
+            width: 22px;
+            height: 22px;
+        }
+        
+        /* Divider */
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 25px 0;
+            color: #999;
+            font-size: 12px;
+        }
+        
+        .divider::before,
+        .divider::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #ddd, transparent);
+        }
+        
+        .divider::before {
+            margin-right: 16px;
+        }
+        
+        .divider::after {
+            margin-left: 16px;
+        }
+        
+        /* Vendor Button */
+        .vendor-btn {
+            background: linear-gradient(135deg, #28a745, #34ce57);
+            color: white;
+            border: none;
+            padding: 12px 32px;
+            font-size: 14px;
+            margin-top: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.8s ease-out 0.3s backwards;
+        }
+        
+        .vendor-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(40,167,69,0.3);
+        }
+        
+        /* Features Grid */
         .feature-grid {
             display: flex;
             justify-content: center;
-            gap: 30px;
+            gap: 40px;
             flex-wrap: wrap;
-            margin: 40px 0;
+            margin: 50px 0 30px;
         }
+        
         .feature {
             text-align: center;
             padding: 20px;
+            background: white;
+            border-radius: 24px;
+            transition: all 0.4s ease;
+            cursor: pointer;
+            animation: fadeInUp 0.8s ease-out 0.4s backwards;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
-        .feature-icon { font-size: 32px; margin-bottom: 12px; }
-        .feature-title { font-weight: 600; margin-bottom: 4px; }
-        .feature-desc { font-size: 12px; color: #666; }
-        footer { position: fixed; bottom: 20px; left: 0; right: 0; text-align: center; font-size: 12px; color: #aaa; }
-        @media (max-width: 500px) { .logo { font-size: 32px; } .btn { padding: 10px 24px; } }
+        
+        .feature:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(255,107,53,0.15);
+        }
+        
+        .feature-icon {
+            font-size: 44px;
+            margin-bottom: 12px;
+            display: inline-block;
+            animation: bounceSoft 3s ease-in-out infinite;
+        }
+        
+        @keyframes bounceSoft {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        .feature-title {
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: #333;
+        }
+        
+        .feature-desc {
+            font-size: 12px;
+            color: #888;
+            max-width: 180px;
+        }
+        
+        /* Toast Message */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #1f2937;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 14px;
+            z-index: 1000;
+            opacity: 0;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+        
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+        
+        .toast.error {
+            background: #dc2626;
+        }
+        
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255,107,53,0.3);
+            border-top-color: #ff6b35;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        footer {
+            margin-top: 40px;
+            font-size: 12px;
+            color: #aaa;
+            animation: fadeInUp 0.8s ease-out 0.5s backwards;
+        }
+        
+        /* WebView Warning (hidden by default) */
+        .webview-warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px 15px;
+            font-size: 11px;
+            margin-top: 20px;
+            border-radius: 12px;
+            text-align: left;
+            display: none;
+            animation: fadeInUp 0.5s ease;
+        }
+        
+        @media (max-width: 550px) {
+            .logo { font-size: 36px; }
+            .btn { padding: 10px 28px; font-size: 14px; }
+            .feature-grid { gap: 20px; }
+            .feature { padding: 15px; }
+            .feature-icon { font-size: 32px; }
+            .toast { white-space: normal; text-align: center; max-width: 90%; }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="logo">STADIUM<span>CONNECT</span></div>
-        <div class="buttons">
-            <a href="login.html" class="btn btn-login">Login</a>
-            <a href="register.html" class="btn btn-register">Register</a>
-        </div>
-        <a href="https://forms.gle/t7oc3SeNvCMbdCVX7" target="_blank" class="btn vendor-btn">Register as Vendor →</a>
+        <div class="tagline">Your Need, Our Network ✨</div>
         
+        <!-- Google Sign-In Button -->
+        <div class="google-signin-container">
+            <button class="google-btn" id="googleSignInBtn">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+                Continue with Google
+            </button>
+        </div>
+        
+        <div class="divider">OR</div>
+        
+        <!-- Traditional Login/Register Buttons -->
+        <div class="buttons">
+            <a href="login.html" class="btn btn-login">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </a>
+            <a href="register.html" class="btn btn-register">
+                <i class="fas fa-user-plus"></i> Register
+            </a>
+        </div>
+        
+        <!-- Vendor Registration -->
+        <a href="https://forms.gle/t7oc3SeNvCMbdCVX7" target="_blank" class="vendor-btn" id="vendorBtn">
+            <i class="fas fa-store"></i> Register as Vendor →
+        </a>
+        
+        <!-- Features Grid -->
         <div class="feature-grid">
-            <div class="feature"><div class="feature-icon">🏟️</div><div class="feature-title">AI Stadium Booking</div><div class="feature-desc">Fractional booking with 3D view</div></div>
-            <div class="feature"><div class="feature-icon">🎨</div><div class="feature-title">Top Vendors</div><div class="feature-desc">Decorators, Caterers & More</div></div>
-            <div class="feature"><div class="feature-icon">🤝</div><div class="feature-title">Agent Support</div><div class="feature-desc">Local agents for coordination</div></div>
+            <div class="feature">
+                <div class="feature-icon">🏟️</div>
+                <div class="feature-title">AI Stadium Booking</div>
+                <div class="feature-desc">Fractional booking with 3D view</div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🎨</div>
+                <div class="feature-title">Top Vendors</div>
+                <div class="feature-desc">Decorators, Caterers & More</div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🤝</div>
+                <div class="feature-title">Agent Support</div>
+                <div class="feature-desc">Local agents for coordination</div>
+            </div>
+        </div>
+        
+        <!-- WebView Warning (shows only if in WebView) -->
+        <div class="webview-warning" id="webviewWarning">
+            <i class="fas fa-info-circle"></i> 
+            <strong>Tip:</strong> If Google Sign-In doesn't work, use Login/Register buttons above.
         </div>
         
         <footer>© 2025 StadiumConnect | Your Need, Our Network</footer>
     </div>
+    
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+    
+    <!-- Toast Container -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, browserPopupRedirectResolver, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+        
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
+            authDomain: "stadiumconnect-8fecb.firebaseapp.com",
+            projectId: "stadiumconnect-8fecb",
+            storageBucket: "stadiumconnect-8fecb.appspot.com",
+            messagingSenderId: "458108198578",
+            appId: "1:458108198578:web:83d83646f0e24e718b73ab"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+        
+        // Detect WebView
+        function isWebView() {
+            const ua = navigator.userAgent.toLowerCase();
+            return (ua.includes('wv') || ua.includes('webview') || 
+                    (ua.includes('android') && !ua.includes('chrome')) ||
+                    (ua.includes('iphone') && !ua.includes('safari')));
+        }
+        
+        // Show WebView warning if needed
+        if (isWebView()) {
+            const warning = document.getElementById('webviewWarning');
+            warning.style.display = 'block';
+            setTimeout(() => {
+                warning.style.opacity = '0.9';
+            }, 100);
+        }
+        
+        // Toast function
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${isError ? 'error' : ''}`;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Show/Hide Loading
+        function setLoading(show) {
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.style.display = show ? 'flex' : 'none';
+        }
+        
+        // Save user to localStorage and redirect
+        function handleUserLogin(user) {
+            const userData = {
+                uid: user.uid,
+                name: user.displayName || 'User',
+                email: user.email,
+                photo: user.photoURL || '',
+                loggedIn: true,
+                loginTime: new Date().toISOString()
+            };
+            
+            localStorage.setItem('stadiumconnect_user', JSON.stringify(userData));
+            localStorage.setItem('userLoggedIn', 'true');
+            
+            showToast(`Welcome ${userData.name}! Redirecting...`);
+            
+            setTimeout(() => {
+                window.location.href = 'customer-dashboard.html';
+            }, 1500);
+        }
+        
+        // Google Sign-In with fallback for WebView
+        async function googleSignIn() {
+            setLoading(true);
+            
+            try {
+                // Try popup first
+                const result = await signInWithPopup(auth, provider, browserPopupRedirectResolver);
+                handleUserLogin(result.user);
+            } catch (error) {
+                console.error('Popup error:', error);
+                
+                // If popup fails (WebView issue), try redirect method
+                if (error.code === 'auth/popup-blocked' || 
+                    error.code === 'auth/unauthorized-domain' ||
+                    error.message.includes('popup') ||
+                    error.message.includes('cross-origin')) {
+                    
+                    showToast('Using redirect method...', false);
+                    try {
+                        await signInWithRedirect(auth, provider);
+                        // After redirect, result will be handled by getRedirectResult
+                    } catch (redirectError) {
+                        console.error('Redirect error:', redirectError);
+                        setLoading(false);
+                        showToast('Google Sign-In failed. Please use Login button instead.', true);
+                    }
+                } else {
+                    setLoading(false);
+                    showToast(error.message || 'Google Sign-In failed', true);
+                }
+            }
+        }
+        
+        // Handle redirect result (for WebView redirect flow)
+        async function handleRedirectResult() {
+            try {
+                const result = await getRedirectResult(auth);
+                if (result && result.user) {
+                    handleUserLogin(result.user);
+                }
+            } catch (error) {
+                console.error('Redirect result error:', error);
+                setLoading(false);
+                if (error.code !== 'auth/no-stored-user') {
+                    showToast('Login failed. Please try Login button.', true);
+                }
+            }
+        }
+        
+        // Check if user is already logged in
+        onAuthStateChanged(auth, (user) => {
+            if (user && window.location.pathname.includes('index.html')) {
+                const savedUser = localStorage.getItem('stadiumconnect_user');
+                if (savedUser) {
+                    const userData = JSON.parse(savedUser);
+                    if (userData.uid === user.uid) {
+                        window.location.href = 'customer-dashboard.html';
+                    }
+                }
+            }
+            setLoading(false);
+        });
+        
+        // Handle redirect result on page load
+        handleRedirectResult();
+        
+        // Attach Google Sign-In button event
+        const googleBtn = document.getElementById('googleSignInBtn');
+        if (googleBtn) {
+            googleBtn.addEventListener('click', googleSignIn);
+        }
+        
+        // Add animation for vendor button
+        const vendorBtn = document.getElementById('vendorBtn');
+        if (vendorBtn) {
+            vendorBtn.addEventListener('click', (e) => {
+                showToast('Opening vendor registration form...');
+            });
+        }
+        
+        // Preload animation for features
+        const features = document.querySelectorAll('.feature');
+        features.forEach((feature, index) => {
+            feature.style.animationDelay = `${0.5 + index * 0.1}s`;
+        });
+        
+        console.log('Index page loaded - WebView compatible');
+    </script>
 </body>
 </html>
 
