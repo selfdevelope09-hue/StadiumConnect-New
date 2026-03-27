@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>StadiumConnect - Premium Event Marketplace</title>
+    <title>StadiumConnect | Premium Event Marketplace</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -22,242 +22,145 @@
             --darker: #050517;
             --light: #ffffff;
             --gray: #f8f9fa;
-            --dark-gray: #2d2d44;
-            --success: #28a745;
-            --warning: #ffc107;
-            --danger: #dc3545;
-            --info: #17a2b8;
+            --dark-gray: #1e1e3a;
         }
 
         body {
-            background: var(--gray);
-            transition: all 0.3s ease;
+            background: linear-gradient(135deg, var(--dark) 0%, var(--darker) 100%);
+            color: #fff;
+            min-height: 100vh;
         }
 
-        body.dark-mode {
-            background: var(--darker);
-            color: white;
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
         }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 20% 50%, rgba(255,107,53,0.08) 0%, transparent 50%);
+            animation: rotate 30s linear infinite;
         }
-
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--primary);
-            border-radius: 10px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--primary-dark);
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
 
         /* Header Premium */
         .header {
-            background: rgba(255, 255, 255, 0.98);
+            background: rgba(10, 10, 42, 0.95);
             backdrop-filter: blur(20px);
             padding: 16px 32px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid rgba(0,0,0,0.05);
+            border-bottom: 1px solid rgba(255,107,53,0.3);
             position: sticky;
             top: 0;
             z-index: 1000;
             flex-wrap: wrap;
             gap: 15px;
-            transition: all 0.3s;
-        }
-
-        body.dark-mode .header {
-            background: rgba(10, 10, 42, 0.98);
-            border-bottom-color: rgba(255,255,255,0.1);
         }
 
         .logo {
             font-size: 26px;
             font-weight: 900;
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            background: linear-gradient(135deg, #fff, var(--primary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             cursor: pointer;
-            transition: transform 0.3s;
+            transition: 0.3s;
         }
-
-        .logo:hover {
-            transform: scale(1.05);
-        }
-
-        .logo span {
-            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-            -webkit-background-clip: text;
-        }
-
-        .header-actions {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
+        .logo:hover { transform: scale(1.05); }
 
         .location-chip {
             display: flex;
             align-items: center;
             gap: 10px;
-            background: rgba(255,107,53,0.1);
+            background: rgba(255,107,53,0.15);
             padding: 10px 20px;
             border-radius: 50px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: 0.3s;
             font-weight: 500;
         }
-
         .location-chip:hover {
             background: var(--primary);
-            color: white;
-        }
-
-        .theme-toggle {
-            background: rgba(0,0,0,0.05);
-            border: none;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: 0.3s;
-            font-size: 18px;
-        }
-
-        body.dark-mode .theme-toggle {
-            background: rgba(255,255,255,0.1);
-            color: white;
+            transform: translateY(-2px);
         }
 
         .nav-buttons {
             display: flex;
             gap: 12px;
         }
-
         .nav-buttons a {
             text-decoration: none;
             padding: 10px 24px;
             border-radius: 40px;
-            font-size: 14px;
             font-weight: 600;
-            transition: all 0.3s;
+            transition: 0.3s;
         }
-
         .nav-buttons a:first-child {
             background: transparent;
             border: 2px solid var(--primary);
             color: var(--primary);
         }
-
-        .nav-buttons a:first-child:hover {
-            background: var(--primary);
-            color: white;
-            transform: translateY(-2px);
-        }
-
         .nav-buttons a:last-child {
             background: linear-gradient(135deg, var(--primary), var(--primary-light));
             color: white;
-            border: none;
         }
-
-        .nav-buttons a:last-child:hover {
+        .nav-buttons a:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255,107,53,0.4);
         }
 
-        /* Hero Premium */
-        .hero-premium {
-            position: relative;
-            background: linear-gradient(135deg, var(--dark), var(--darker));
-            color: white;
-            padding: 80px 32px;
+        /* Hero Section */
+        .hero {
             text-align: center;
-            overflow: hidden;
+            padding: 60px 20px 40px;
         }
-
-        .hero-premium::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="rgba(255,107,53,0.1)" fill-opacity="1" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,154.7C960,171,1056,181,1152,165.3C1248,149,1344,107,1392,85.3L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') no-repeat bottom;
-            background-size: cover;
-            opacity: 0.3;
-        }
-
-        .hero-content {
-            position: relative;
-            z-index: 1;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .hero-premium h1 {
+        .hero h1 {
             font-size: 56px;
             font-weight: 900;
-            margin-bottom: 20px;
             background: linear-gradient(135deg, #fff, var(--primary-light));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
         }
-
-        .hero-premium p {
+        .hero p {
+            color: rgba(255,255,255,0.7);
             font-size: 18px;
-            opacity: 0.9;
-            margin-bottom: 30px;
+            max-width: 600px;
+            margin: 0 auto;
         }
 
-        .hero-stats {
-            display: flex;
-            justify-content: center;
-            gap: 40px;
-            margin-top: 40px;
-        }
-
-        .stat-item {
-            text-align: center;
-        }
-
-        .stat-number {
-            font-size: 32px;
-            font-weight: 800;
-            color: var(--primary);
-        }
-
-        /* Search Bar Premium */
+        /* Search Section Premium */
         .search-premium {
             max-width: 800px;
-            margin: -30px auto 0;
-            position: relative;
-            z-index: 10;
+            margin: 0 auto 40px;
             padding: 0 20px;
+            position: relative;
         }
-
         .search-box-premium {
             display: flex;
-            background: white;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
             border-radius: 60px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             overflow: hidden;
-            transition: all 0.3s;
+            border: 1px solid rgba(255,107,53,0.3);
+            transition: 0.3s;
         }
-
-        body.dark-mode .search-box-premium {
-            background: var(--dark-gray);
+        .search-box-premium:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(255,107,53,0.3);
         }
-
         .search-box-premium input {
             flex: 1;
             padding: 18px 28px;
@@ -265,9 +168,11 @@
             outline: none;
             font-size: 16px;
             background: transparent;
-            color: inherit;
+            color: white;
         }
-
+        .search-box-premium input::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
         .search-box-premium button {
             background: linear-gradient(135deg, var(--primary), var(--primary-light));
             border: none;
@@ -277,324 +182,156 @@
             cursor: pointer;
             transition: 0.3s;
         }
-
         .search-box-premium button:hover {
             background: var(--primary-dark);
         }
 
-        /* Section Styles Premium */
-        .section-premium {
-            padding: 60px 32px;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 40px;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-
-        .section-header h2 {
-            font-size: 36px;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .section-badge {
-            background: rgba(255,107,53,0.1);
-            padding: 8px 20px;
-            border-radius: 40px;
-            font-weight: 600;
-            color: var(--primary);
-        }
-
-        /* Premium Cards Grid */
-        .premium-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 30px;
-        }
-
-        .premium-card {
-            background: white;
-            border-radius: 28px;
-            overflow: hidden;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-            position: relative;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-        }
-
-        body.dark-mode .premium-card {
-            background: var(--dark-gray);
-        }
-
-        .premium-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(255,107,53,0.2);
-        }
-
-        .card-badge {
+        /* Autocomplete Dropdown */
+        .autocomplete-dropdown {
             position: absolute;
-            top: 20px;
+            top: 100%;
+            left: 20px;
             right: 20px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            color: white;
-            padding: 6px 14px;
-            border-radius: 30px;
-            font-size: 12px;
-            font-weight: 700;
-            z-index: 2;
-        }
-
-        .card-image {
-            height: 220px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 70px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .card-image::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            transition: 0.5s;
-        }
-
-        .premium-card:hover .card-image::after {
-            left: 100%;
-        }
-
-        .card-content {
-            padding: 24px;
-        }
-
-        .card-title {
-            font-size: 20px;
-            font-weight: 800;
-            margin-bottom: 8px;
-        }
-
-        .card-location {
-            font-size: 13px;
-            color: #666;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        body.dark-mode .card-location {
-            color: #aaa;
-        }
-
-        .card-price {
-            font-size: 24px;
-            font-weight: 800;
-            color: var(--primary);
-            margin-bottom: 12px;
-        }
-
-        .card-tags {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .tag {
-            background: rgba(255,107,53,0.1);
-            padding: 4px 12px;
+            background: rgba(30,30,60,0.98);
+            backdrop-filter: blur(20px);
             border-radius: 20px;
-            font-size: 11px;
-            font-weight: 600;
+            margin-top: 10px;
+            z-index: 1000;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid rgba(255,107,53,0.3);
+            display: none;
+        }
+        .autocomplete-dropdown.show {
+            display: block;
+            animation: fadeInDown 0.2s ease;
+        }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .autocomplete-item {
+            padding: 14px 20px;
+            cursor: pointer;
+            transition: 0.2s;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .autocomplete-item:hover {
+            background: rgba(255,107,53,0.2);
+        }
+        .autocomplete-item i {
             color: var(--primary);
+            width: 24px;
         }
 
-        /* AI Stadium Section Premium */
-        .ai-premium {
-            background: linear-gradient(135deg, var(--dark), var(--darker));
-            border-radius: 40px;
-            padding: 60px;
-            margin: 40px auto;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .ai-premium::before {
-            content: '🤖';
-            position: absolute;
-            font-size: 200px;
-            right: -50px;
-            bottom: -80px;
-            opacity: 0.1;
-            pointer-events: none;
-        }
-
-        .ai-header {
-            text-align: center;
+        /* Stats Cards */
+        .stats-container {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
             margin-bottom: 50px;
         }
-
-        .ai-header h2 {
-            font-size: 42px;
-            font-weight: 800;
-            color: white;
-            margin-bottom: 15px;
-        }
-
-        .ai-header p {
-            color: rgba(255,255,255,0.7);
-            font-size: 18px;
-        }
-
-        .stadium-slider {
-            display: flex;
-            gap: 25px;
-            overflow-x: auto;
-            padding-bottom: 20px;
-            scrollbar-width: thin;
-        }
-
-        .stadium-slider::-webkit-scrollbar {
-            height: 6px;
-        }
-
-        .stadium-premium-card {
-            min-width: 300px;
-            background: rgba(255,255,255,0.1);
+        .stat-card {
+            background: rgba(255,255,255,0.05);
             backdrop-filter: blur(10px);
-            border-radius: 28px;
-            padding: 28px;
-            cursor: pointer;
-            transition: all 0.3s;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-
-        .stadium-premium-card:hover {
-            transform: translateY(-5px);
-            background: rgba(255,255,255,0.2);
-            border-color: var(--primary);
-        }
-
-        .stadium-icon {
-            font-size: 50px;
-            margin-bottom: 20px;
-        }
-
-        .stadium-name {
-            font-size: 22px;
-            font-weight: 800;
-            margin-bottom: 8px;
-            color: white;
-        }
-
-        .stadium-location {
-            font-size: 13px;
-            color: rgba(255,255,255,0.7);
-            margin-bottom: 15px;
-        }
-
-        .stadium-price {
-            font-size: 28px;
-            font-weight: 800;
-            color: var(--primary);
-            margin-bottom: 15px;
-        }
-
-        .ai-feature {
-            background: rgba(255,107,53,0.2);
-            padding: 8px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            display: inline-block;
-        }
-
-        /* Cities Grid Premium */
-        .cities-premium {
-            background: rgba(255,107,53,0.05);
-            border-radius: 40px;
-            padding: 50px;
-            margin-top: 40px;
-        }
-
-        .cities-header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .cities-header h2 {
-            font-size: 32px;
-            font-weight: 800;
-            margin-bottom: 10px;
-        }
-
-        .cities-grid-premium {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 20px;
-        }
-
-        .city-premium-card {
-            background: white;
-            padding: 18px;
+            padding: 20px 35px;
             border-radius: 60px;
             text-align: center;
+            border: 1px solid rgba(255,107,53,0.2);
+        }
+        .stat-number {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+        .stat-label {
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+        }
+
+        /* Category Tabs */
+        .category-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
+        }
+        .category-tab {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 12px 28px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: 600;
+        }
+        .category-tab:hover, .category-tab.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        /* Cities Grid */
+        .section-title {
+            font-size: 32px;
+            font-weight: 800;
+            text-align: center;
+            margin: 50px 0 30px;
+        }
+        .cities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        .city-card {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 24px;
+            text-align: center;
             cursor: pointer;
             transition: all 0.3s;
-            font-weight: 600;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
         }
-
-        body.dark-mode .city-premium-card {
-            background: var(--dark-gray);
-            color: white;
+        .city-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255,107,53,0.2);
+            border-color: var(--primary);
         }
-
-        .city-premium-card:hover {
-            background: var(--primary);
-            color: white;
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(255,107,53,0.3);
+        .city-name {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .city-count {
+            font-size: 12px;
+            color: var(--primary);
         }
 
         /* Results Section */
-        .results-premium {
-            margin-top: 40px;
+        .results-section {
+            max-width: 1400px;
+            margin: 50px auto;
+            padding: 0 20px;
             display: none;
             animation: fadeInUp 0.5s ease;
         }
-
-        .results-premium.active {
+        .results-section.active {
             display: block;
         }
-
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-
-        .results-header-premium {
+        .results-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -602,221 +339,210 @@
             flex-wrap: wrap;
             gap: 15px;
         }
-
-        .results-header-premium h3 {
+        .results-header h2 {
             font-size: 28px;
             font-weight: 800;
         }
-
         .close-results {
-            background: none;
+            background: rgba(255,107,53,0.2);
             border: none;
-            font-size: 20px;
+            padding: 10px 20px;
+            border-radius: 40px;
             cursor: pointer;
-            color: #666;
-            transition: 0.3s;
+            color: var(--primary);
+            font-weight: 600;
         }
-
-        .close-results:hover {
-            color: var(--danger);
-            transform: rotate(90deg);
+        .category-results {
+            margin-bottom: 40px;
         }
-
-        /* Loading Animation */
-        .loading-premium {
-            text-align: center;
-            padding: 60px;
+        .category-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 30px 0 20px;
+            padding-left: 10px;
+            border-left: 4px solid var(--primary);
         }
-
-        .loader {
-            width: 50px;
-            height: 50px;
-            border: 3px solid rgba(255,107,53,0.2);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Footer */
-        .footer-premium {
-            background: var(--dark);
-            color: white;
-            padding: 60px 32px 30px;
-            margin-top: 60px;
-        }
-
-        .footer-content {
-            max-width: 1400px;
-            margin: 0 auto;
+        .vendors-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 40px;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
         }
 
-        .footer-section h4 {
+        /* Vendor Card Premium */
+        .vendor-card {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            overflow: hidden;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .vendor-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 30px rgba(255,107,53,0.2);
+        }
+        .vendor-logo {
+            height: 140px;
+            background: linear-gradient(135deg, #2a2a4a, #1a1a3a);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            position: relative;
+        }
+        .vendor-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .vendor-rating {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(0,0,0,0.7);
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .vendor-info {
+            padding: 20px;
+        }
+        .vendor-name {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+        .vendor-category {
+            display: inline-block;
+            background: rgba(255,107,53,0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .vendor-location {
+            font-size: 13px;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 12px;
+        }
+        .vendor-price {
             font-size: 18px;
-            margin-bottom: 20px;
+            font-weight: 700;
             color: var(--primary);
         }
-
-        .footer-section p {
-            color: rgba(255,255,255,0.7);
-            line-height: 1.6;
-        }
-
-        .social-links {
-            display: flex;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .social-links a {
-            color: white;
-            font-size: 20px;
+        .vendor-book-btn {
+            margin-top: 15px;
+            background: rgba(255,107,53,0.2);
+            border: 1px solid var(--primary);
+            padding: 8px;
+            border-radius: 30px;
+            text-align: center;
+            font-weight: 600;
             transition: 0.3s;
         }
-
-        .social-links a:hover {
-            color: var(--primary);
-            transform: translateY(-3px);
+        .vendor-card:hover .vendor-book-btn {
+            background: var(--primary);
         }
 
-        .footer-bottom {
+        /* Loading Skeleton */
+        .skeleton-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+        }
+        .skeleton-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 24px;
+            height: 320px;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 0.8; }
+        }
+
+        footer {
             text-align: center;
-            padding-top: 40px;
-            margin-top: 40px;
+            padding: 40px;
             border-top: 1px solid rgba(255,255,255,0.1);
+            margin-top: 60px;
             color: rgba(255,255,255,0.5);
         }
 
         @media (max-width: 768px) {
-            .hero-premium h1 { font-size: 32px; }
-            .section-premium { padding: 40px 20px; }
-            .ai-premium { padding: 40px 24px; }
-            .cities-premium { padding: 30px 20px; }
-            .premium-grid { grid-template-columns: 1fr; }
+            .hero h1 { font-size: 32px; }
+            .cities-grid { grid-template-columns: repeat(2, 1fr); }
+            .vendors-grid { grid-template-columns: 1fr; }
+            .category-tab { padding: 8px 20px; font-size: 14px; }
         }
     </style>
 </head>
 <body>
 
+<div class="bg-animation"></div>
+
 <header class="header">
-    <div class="logo" onclick="window.location.href='index.html'">🏟️ STADIUM<span>CONNECT</span></div>
-    <div class="header-actions">
-        <div class="location-chip" onclick="detectLocation()">
-            <i class="fas fa-map-marker-alt"></i> <span id="locationText">Detect Location</span>
-        </div>
-        <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
-        <div class="nav-buttons" id="navButtons">
-            <a href="login.html">Login</a>
-            <a href="register.html">Register</a>
-        </div>
+    <div class="logo" onclick="resetToHome()">🏟️ STADIUM<span>CONNECT</span></div>
+    <div class="location-chip" onclick="detectLocation()">
+        <i class="fas fa-map-marker-alt"></i> <span id="locationText">Detect Location</span>
+    </div>
+    <div class="nav-buttons" id="navButtons">
+        <a href="login.html">Login</a>
+        <a href="register.html">Register</a>
     </div>
 </header>
 
-<!-- Hero Section Premium -->
-<section class="hero-premium">
-    <div class="hero-content">
-        <h1>Find Perfect Vendors & Stadiums</h1>
-        <p>AI-powered discovery for weddings, concerts, sports events & corporate gatherings</p>
-        <div class="hero-stats">
-            <div class="stat-item"><div class="stat-number" id="vendorCount">500+</div><div>Vendors</div></div>
-            <div class="stat-item"><div class="stat-number" id="stadiumCount">50+</div><div>Stadiums</div></div>
-            <div class="stat-item"><div class="stat-number" id="cityCount">30+</div><div>Cities</div></div>
-        </div>
-    </div>
+<section class="hero">
+    <h1>Find Perfect Vendors & Stadiums</h1>
+    <p>Discover top-rated decorators, photographers, caterers, and stadiums for your dream event</p>
 </section>
 
-<!-- Search Bar -->
 <div class="search-premium">
     <div class="search-box-premium">
-        <input type="text" id="searchInput" placeholder="🔍 Search stadiums, vendors, or cities... (e.g., Nagpur, Wedding, Stadium)">
-        <button onclick="searchAll()"><i class="fas fa-search"></i> Search</button>
+        <input type="text" id="searchInput" placeholder="🔍 Search by city, vendor name, or category... (e.g., Nagpur, Wedding, Stadium)" autocomplete="off">
+        <button onclick="performSearch()"><i class="fas fa-search"></i> Search</button>
     </div>
+    <div id="autocompleteDropdown" class="autocomplete-dropdown"></div>
 </div>
 
-<!-- Featured Vendors Section -->
-<div class="section-premium">
-    <div class="section-header">
-        <h2><i class="fas fa-star"></i> Featured Vendors</h2>
-        <div class="section-badge">⭐ Top Rated ⭐</div>
-    </div>
-    <div class="premium-grid" id="vendorsGrid">
-        <div class="loading-premium"><div class="loader"></div>Loading vendors...</div>
-    </div>
+<div class="stats-container" id="statsContainer">
+    <div class="stat-card"><div class="stat-number" id="vendorCount">0</div><div class="stat-label">Vendors</div></div>
+    <div class="stat-card"><div class="stat-number" id="stadiumCount">0</div><div class="stat-label">Stadiums</div></div>
+    <div class="stat-card"><div class="stat-number" id="cityCount">0</div><div class="stat-label">Cities</div></div>
 </div>
 
-<!-- AI Stadium Section Premium -->
-<div class="section-premium">
-    <div class="ai-premium">
-        <div class="ai-header">
-            <h2>🤖 AI-Powered Stadium Booking</h2>
-            <p>Fractional booking with smart pricing | Select your portion, AI calculates the cost</p>
-        </div>
-        <div class="stadium-slider" id="stadiumsSlider">
-            <div class="loading-premium" style="color:white;"><div class="loader"></div>Loading stadiums...</div>
-        </div>
-    </div>
+<div class="category-tabs" id="categoryTabs">
+    <div class="category-tab active" data-category="all">All</div>
+    <div class="category-tab" data-category="decorator">🎨 Decorators</div>
+    <div class="category-tab" data-category="photographer">📸 Photographers</div>
+    <div class="category-tab" data-category="caterer">🍽️ Caterers</div>
+    <div class="category-tab" data-category="bandbaja">🎵 Band Baja</div>
+    <div class="category-tab" data-category="stadium">🏟️ Stadiums</div>
 </div>
 
-<!-- Popular Cities Section -->
-<div class="section-premium">
-    <div class="cities-premium">
-        <div class="cities-header">
-            <h2><i class="fas fa-map-marker-alt"></i> Popular Cities</h2>
-            <p>Explore venues in your city</p>
-        </div>
-        <div class="cities-grid-premium" id="citiesGrid"></div>
-        
-        <!-- Results Section -->
-        <div id="resultsSection" class="results-premium">
-            <div class="results-header-premium">
-                <h3>Results in <span id="selectedCityName"></span></h3>
-                <button class="close-results" onclick="closeResults()">✕ Close</button>
-            </div>
-            <div id="resultsGrid" class="premium-grid"></div>
-        </div>
+<div class="section-title">📍 Popular Cities</div>
+<div class="cities-grid" id="citiesGrid"></div>
+
+<div id="resultsSection" class="results-section">
+    <div class="results-header">
+        <h2>Results in <span id="searchQueryDisplay"></span></h2>
+        <button class="close-results" onclick="closeResults()">✕ Close</button>
     </div>
+    <div id="categoryResultsContainer"></div>
 </div>
 
-<!-- Footer Premium -->
-<footer class="footer-premium">
-    <div class="footer-content">
-        <div class="footer-section">
-            <h4>🏟️ StadiumConnect</h4>
-            <p>Your one-stop platform for booking premium stadiums and top-rated vendors for unforgettable events.</p>
-            <div class="social-links">
-                <a href="#"><i class="fab fa-facebook"></i></a>
-                <a href="#"><i class="fab fa-instagram"></i></a>
-                <a href="#"><i class="fab fa-twitter"></i></a>
-                <a href="#"><i class="fab fa-linkedin"></i></a>
-            </div>
-        </div>
-        <div class="footer-section">
-            <h4>Quick Links</h4>
-            <p>🏟️ Stadiums<br>🎨 Decorators<br>📸 Photographers<br>🍽️ Caterers<br>🎵 Band Baja</p>
-        </div>
-        <div class="footer-section">
-            <h4>Contact Us</h4>
-            <p><i class="fas fa-phone"></i> +91 98765 43210<br>
-            <i class="fas fa-envelope"></i> support@stadiumconnect.com<br>
-            <i class="fas fa-map-marker-alt"></i> Mumbai, India</p>
-        </div>
-    </div>
-    <div class="footer-bottom">
-        <p>© 2025 StadiumConnect | Your Need, Our Network | All Rights Reserved</p>
-    </div>
+<footer>
+    <p>© 2025 StadiumConnect | Your Need, Our Network | Premium Event Marketplace</p>
 </footer>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, doc, getDoc, query, where, limit } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+    import { getFirestore, collection, getDocs, doc, getDoc, query, where } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
@@ -832,28 +558,28 @@
 
     let allVendors = [];
     let allStadiums = [];
-    let allCities = [];
+    let allCitiesData = [];
+    let currentCategory = 'all';
+    let currentSearchTerm = '';
 
-    // Default Stadiums Data
-    const defaultStadiums = [
-        { id: "s1", name: "Wankhede Stadium", city: "Mumbai", capacity: 33000, basePrice: 85000, location: "Marine Drive, Mumbai", rating: 4.8 },
-        { id: "s2", name: "Eden Gardens", city: "Kolkata", capacity: 68000, basePrice: 95000, location: "Kolkata", rating: 4.9 },
-        { id: "s3", name: "M. Chinnaswamy Stadium", city: "Bangalore", capacity: 40000, basePrice: 75000, location: "Bangalore", rating: 4.7 },
-        { id: "s4", name: "Narendra Modi Stadium", city: "Ahmedabad", capacity: 132000, basePrice: 150000, location: "Ahmedabad", rating: 4.9 },
-        { id: "s5", name: "Arun Jaitley Stadium", city: "Delhi", capacity: 41000, basePrice: 70000, location: "Delhi", rating: 4.6 },
-        { id: "s6", name: "Rajiv Gandhi Stadium", city: "Hyderabad", capacity: 55000, basePrice: 80000, location: "Hyderabad", rating: 4.7 },
-        { id: "s7", name: "Vidarbha Cricket Stadium", city: "Nagpur", capacity: 45000, basePrice: 55000, location: "Nagpur", rating: 4.8 },
-        { id: "s8", name: "MA Chidambaram Stadium", city: "Chennai", capacity: 38000, basePrice: 65000, location: "Chennai", rating: 4.7 }
+    // Default Vendors with logos
+    const defaultVendors = [
+        { id: "v1", name: "Elegant Decorators", category: "decorator", city: "Nagpur", priceRange: "₹50,000 - ₹2,00,000", rating: 4.9, logo: "🎨", location: "Sadar, Nagpur", phone: "9876543210" },
+        { id: "v2", name: "Capture Moments", category: "photographer", city: "Nagpur", priceRange: "₹30,000 - ₹1,50,000", rating: 4.8, logo: "📸", location: "Dharampeth, Nagpur", phone: "9876543211" },
+        { id: "v3", name: "Royal Caterers", category: "caterer", city: "Nagpur", priceRange: "₹500/plate", rating: 4.9, logo: "🍽️", location: "Civil Lines, Nagpur", phone: "9876543212" },
+        { id: "v4", name: "Rhythm Band Baja", category: "bandbaja", city: "Nagpur", priceRange: "₹40,000 - ₹1,20,000", rating: 4.7, logo: "🎵", location: "Itwari, Nagpur", phone: "9876543213" },
+        { id: "v5", name: "Mumbai Decorators", category: "decorator", city: "Mumbai", priceRange: "₹80,000 - ₹3,00,000", rating: 4.9, logo: "🎨", location: "Andheri, Mumbai", phone: "9876543214" },
+        { id: "v6", name: "Mumbai Photographers", category: "photographer", city: "Mumbai", priceRange: "₹50,000 - ₹2,00,000", rating: 4.8, logo: "📸", location: "Bandra, Mumbai", phone: "9876543215" },
+        { id: "v7", name: "Delhi Caterers", category: "caterer", city: "Delhi", priceRange: "₹600/plate", rating: 4.7, logo: "🍽️", location: "Connaught Place, Delhi", phone: "9876543216" },
+        { id: "v8", name: "Bangalore Band", category: "bandbaja", city: "Bangalore", priceRange: "₹50,000 - ₹1,50,000", rating: 4.8, logo: "🎵", location: "Indiranagar, Bangalore", phone: "9876543217" }
     ];
 
-    // Default Vendors Data
-    const defaultVendors = [
-        { id: "v1", name: "Elegant Decorators", category: "decorator", city: "Mumbai", priceRange: "₹50,000 - ₹2,00,000", rating: 4.9, location: "Mumbai" },
-        { id: "v2", name: "Capture Moments Photography", category: "photographer", city: "Delhi", priceRange: "₹30,000 - ₹1,50,000", rating: 4.8, location: "Delhi" },
-        { id: "v3", name: "Royal Caterers", category: "caterer", city: "Bangalore", priceRange: "₹500/plate", rating: 4.9, location: "Bangalore" },
-        { id: "v4", name: "Rhythm Band Baja", category: "bandbaja", city: "Nagpur", priceRange: "₹40,000 - ₹1,20,000", rating: 4.7, location: "Nagpur" },
-        { id: "v5", name: "Dream Weddings", category: "decorator", city: "Pune", priceRange: "₹60,000 - ₹2,50,000", rating: 4.8, location: "Pune" },
-        { id: "v6", name: "Shutterbug Studio", category: "photographer", city: "Hyderabad", priceRange: "₹35,000 - ₹1,80,000", rating: 4.8, location: "Hyderabad" }
+    const defaultStadiums = [
+        { id: "s1", name: "Vidarbha Cricket Stadium", category: "stadium", city: "Nagpur", capacity: 45000, basePrice: 55000, rating: 4.8, logo: "🏟️", location: "Nagpur" },
+        { id: "s2", name: "Wankhede Stadium", category: "stadium", city: "Mumbai", capacity: 33000, basePrice: 85000, rating: 4.9, logo: "🏟️", location: "Mumbai" },
+        { id: "s3", name: "Eden Gardens", category: "stadium", city: "Kolkata", capacity: 68000, basePrice: 95000, rating: 4.9, logo: "🏟️", location: "Kolkata" },
+        { id: "s4", name: "M. Chinnaswamy Stadium", category: "stadium", city: "Bangalore", capacity: 40000, basePrice: 75000, rating: 4.7, logo: "🏟️", location: "Bangalore" },
+        { id: "s5", name: "Narendra Modi Stadium", category: "stadium", city: "Ahmedabad", capacity: 132000, basePrice: 150000, rating: 4.9, logo: "🏟️", location: "Ahmedabad" }
     ];
 
     async function loadData() {
@@ -864,166 +590,295 @@
                 allStadiums = allData.filter(v => v.category === 'stadium' || v.type === 'stadium');
                 allVendors = allData.filter(v => v.category !== 'stadium');
             } else {
-                allStadiums = defaultStadiums;
                 allVendors = defaultVendors;
+                allStadiums = defaultStadiums;
             }
             
-            // Load cities
-            const citiesDoc = await getDocs(collection(db, "settings"));
-            citiesDoc.forEach(doc => {
-                if (doc.id === 'cities') allCities = doc.data().list || [];
+            // Combine all vendors (including stadiums for city counts)
+            const allItems = [...allVendors, ...allStadiums];
+            
+            // Calculate city counts
+            const cityMap = new Map();
+            allItems.forEach(item => {
+                if (item.city) {
+                    cityMap.set(item.city, (cityMap.get(item.city) || 0) + 1);
+                }
             });
-            if (allCities.length === 0) {
-                allCities = [
-                    { name: 'Mumbai', popular: true }, { name: 'Delhi', popular: true },
-                    { name: 'Bangalore', popular: true }, { name: 'Hyderabad', popular: true },
-                    { name: 'Ahmedabad', popular: true }, { name: 'Chennai', popular: true },
-                    { name: 'Kolkata', popular: true }, { name: 'Pune', popular: true },
-                    { name: 'Jaipur', popular: false }, { name: 'Lucknow', popular: false },
-                    { name: 'Nagpur', popular: true }, { name: 'Indore', popular: false }
-                ];
-            }
+            allCitiesData = Array.from(cityMap.entries()).map(([name, count]) => ({ name, count })).sort((a,b) => b.count - a.count);
             
-            renderVendors();
-            renderStadiums();
-            renderCities();
             updateStats();
-            updateNav();
+            renderCities();
+            setupAutocomplete();
+            renderVendorsByCategory();
         } catch (error) {
             console.error("Error:", error);
-            allStadiums = defaultStadiums;
             allVendors = defaultVendors;
-            renderVendors();
-            renderStadiums();
-            renderCities();
+            allStadiums = defaultStadiums;
+            const allItems = [...allVendors, ...allStadiums];
+            const cityMap = new Map();
+            allItems.forEach(item => {
+                if (item.city) cityMap.set(item.city, (cityMap.get(item.city) || 0) + 1);
+            });
+            allCitiesData = Array.from(cityMap.entries()).map(([name, count]) => ({ name, count })).sort((a,b) => b.count - a.count);
             updateStats();
+            renderCities();
+            setupAutocomplete();
+            renderVendorsByCategory();
         }
-    }
-
-    function renderVendors() {
-        const container = document.getElementById('vendorsGrid');
-        const featuredVendors = [...allVendors].sort((a,b) => (b.rating || 0) - (a.rating || 0)).slice(0, 6);
-        
-        container.innerHTML = featuredVendors.map(vendor => `
-            <div class="premium-card" onclick="openVendor('${vendor.id}')">
-                <div class="card-badge">⭐ ${vendor.rating || 4.5}</div>
-                <div class="card-image">${getCategoryIcon(vendor.category)}</div>
-                <div class="card-content">
-                    <div class="card-title">${vendor.name}</div>
-                    <div class="card-location"><i class="fas fa-map-marker-alt"></i> ${vendor.city}</div>
-                    <div class="card-price">${vendor.priceRange || 'Contact for quote'}</div>
-                    <div class="card-tags"><span class="tag">${vendor.category}</span><span class="tag">${vendor.city}</span></div>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    function renderStadiums() {
-        const container = document.getElementById('stadiumsSlider');
-        container.innerHTML = allStadiums.map(stadium => `
-            <div class="stadium-premium-card" onclick="openStadium('${stadium.id}')">
-                <div class="stadium-icon">🏟️</div>
-                <div class="stadium-name">${stadium.name}</div>
-                <div class="stadium-location"><i class="fas fa-map-marker-alt"></i> ${stadium.city}</div>
-                <div class="stadium-price">₹${(stadium.basePrice || 50000).toLocaleString()}<span style="font-size:14px;">/day</span></div>
-                <div class="ai-feature">🤖 AI Fractional Booking Available</div>
-                <div style="margin-top:12px; font-size:12px; color:rgba(255,255,255,0.6);">⭐ ${stadium.rating || 4.7} ★ (${stadium.capacity?.toLocaleString()} seats)</div>
-            </div>
-        `).join('');
-    }
-
-    function renderCities() {
-        const popularCities = allCities.filter(c => c.popular === true);
-        const container = document.getElementById('citiesGrid');
-        container.innerHTML = popularCities.map(city => `
-            <div class="city-premium-card" onclick="showCityResults('${city.name}')">
-                <i class="fas fa-location-dot"></i> ${city.name}
-            </div>
-        `).join('');
     }
 
     function updateStats() {
-        document.getElementById('vendorCount').innerHTML = allVendors.length + '+';
-        document.getElementById('stadiumCount').innerHTML = allStadiums.length + '+';
-        document.getElementById('cityCount').innerHTML = allCities.length + '+';
+        document.getElementById('vendorCount').innerHTML = allVendors.length;
+        document.getElementById('stadiumCount').innerHTML = allStadiums.length;
+        document.getElementById('cityCount').innerHTML = allCitiesData.length;
     }
 
-    function getCategoryIcon(category) {
-        const icons = { decorator: '🎨', photographer: '📸', caterer: '🍽️', bandbaja: '🎵' };
-        return icons[category] || '🏷️';
+    function renderCities() {
+        const container = document.getElementById('citiesGrid');
+        container.innerHTML = allCitiesData.slice(0, 12).map(city => `
+            <div class="city-card" onclick="searchByCity('${city.name}')">
+                <div class="city-name">📍 ${city.name}</div>
+                <div class="city-count">${city.count} venues</div>
+            </div>
+        `).join('');
     }
 
-    window.showCityResults = (cityName) => {
-        const cityLower = cityName.toLowerCase();
-        const cityVendors = allVendors.filter(v => v.city?.toLowerCase() === cityLower);
-        const cityStadiums = allStadiums.filter(s => s.city?.toLowerCase() === cityLower);
-        const allResults = [...cityVendors, ...cityStadiums];
+    function renderVendorsByCategory() {
+        const categoryTabs = document.querySelectorAll('.category-tab');
+        categoryTabs.forEach(tab => {
+            tab.classList.remove('active');
+            if (tab.dataset.category === currentCategory) {
+                tab.classList.add('active');
+            }
+        });
         
-        document.getElementById('selectedCityName').innerText = cityName;
-        const resultsGrid = document.getElementById('resultsGrid');
-        
-        if (allResults.length === 0) {
-            resultsGrid.innerHTML = '<div style="text-align:center; padding:60px; grid-column:1/-1; background:rgba(0,0,0,0.05); border-radius:30px;">🎯 No vendors or stadiums found in this city yet. Check back soon!</div>';
-        } else {
-            resultsGrid.innerHTML = allResults.map(item => {
-                const isStadium = item.category === 'stadium' || item.type === 'stadium';
-                return `
-                    <div class="premium-card" onclick="${isStadium ? `openStadium('${item.id}')` : `openVendor('${item.id}')`}">
-                        ${!isStadium ? `<div class="card-badge">⭐ ${item.rating || 4.5}</div>` : '<div class="card-badge">🏟️ Premium</div>'}
-                        <div class="card-image">${isStadium ? '🏟️' : getCategoryIcon(item.category)}</div>
-                        <div class="card-content">
-                            <div class="card-title">${item.name}</div>
-                            <div class="card-location"><i class="fas fa-map-marker-alt"></i> ${item.city}</div>
-                            <div class="card-price">${isStadium ? `₹${(item.basePrice || 50000).toLocaleString()}/day` : (item.priceRange || 'Contact for quote')}</div>
-                            <div class="card-tags">${isStadium ? '<span class="tag">AI Fractional Booking</span>' : `<span class="tag">${item.category}</span>`}</div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
+        let filtered = [...allVendors, ...allStadiums];
+        if (currentCategory !== 'all') {
+            filtered = filtered.filter(v => v.category === currentCategory);
         }
         
+        const container = document.getElementById('categoryResultsContainer');
+        if (!container) return;
+        
+        if (filtered.length === 0) {
+            container.innerHTML = '<div style="text-align:center; padding:60px;">No vendors found in this category</div>';
+            return;
+        }
+        
+        // Group by category for better display
+        const grouped = {};
+        filtered.forEach(v => {
+            if (!grouped[v.category]) grouped[v.category] = [];
+            grouped[v.category].push(v);
+        });
+        
+        const categoryNames = {
+            decorator: '🎨 Decorators',
+            photographer: '📸 Photographers',
+            caterer: '🍽️ Caterers',
+            bandbaja: '🎵 Band Baja',
+            stadium: '🏟️ Stadiums'
+        };
+        
+        let html = '';
+        for (const [cat, items] of Object.entries(grouped)) {
+            html += `
+                <div class="category-results">
+                    <div class="category-title">${categoryNames[cat] || cat} (${items.length})</div>
+                    <div class="vendors-grid">
+                        ${items.map(v => `
+                            <div class="vendor-card" onclick="openVendorOrStadium('${v.id}', '${v.category === 'stadium' ? 'stadium' : 'vendor'}')">
+                                <div class="vendor-logo">
+                                    ${v.logo && v.logo.startsWith('http') ? `<img src="${v.logo}" alt="${v.name}">` : `<span style="font-size: 60px;">${v.logo || (v.category === 'stadium' ? '🏟️' : '🏷️')}</span>`}
+                                    <div class="vendor-rating">⭐ ${v.rating || 4.5}</div>
+                                </div>
+                                <div class="vendor-info">
+                                    <div class="vendor-name">${v.name}</div>
+                                    <div class="vendor-category">${categoryNames[v.category] || v.category}</div>
+                                    <div class="vendor-location"><i class="fas fa-map-marker-alt"></i> ${v.city} • ${v.location || ''}</div>
+                                    <div class="vendor-price">${v.priceRange || (v.basePrice ? `₹${v.basePrice.toLocaleString()}/day` : 'Contact for quote')}</div>
+                                    <div class="vendor-book-btn">Book Now →</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        container.innerHTML = html;
+    }
+
+    function setupAutocomplete() {
+        const searchInput = document.getElementById('searchInput');
+        const dropdown = document.getElementById('autocompleteDropdown');
+        const allItems = [...allVendors, ...allStadiums];
+        const allCitiesList = [...new Set(allItems.map(i => i.city))];
+        
+        searchInput.addEventListener('input', function() {
+            const value = this.value.toLowerCase().trim();
+            if (value.length === 0) {
+                dropdown.classList.remove('show');
+                return;
+            }
+            
+            const matchedCities = allCitiesList.filter(city => city.toLowerCase().includes(value)).slice(0, 5);
+            const matchedVendors = allItems.filter(v => v.name.toLowerCase().includes(value)).slice(0, 5);
+            
+            if (matchedCities.length === 0 && matchedVendors.length === 0) {
+                dropdown.classList.remove('show');
+                return;
+            }
+            
+            dropdown.innerHTML = '';
+            
+            matchedCities.forEach(city => {
+                const item = document.createElement('div');
+                item.className = 'autocomplete-item';
+                item.innerHTML = `<i class="fas fa-city"></i> ${city} <span style="color:#ffaa66; margin-left:auto;">City</span>`;
+                item.onclick = () => {
+                    searchInput.value = city;
+                    dropdown.classList.remove('show');
+                    searchByCity(city);
+                };
+                dropdown.appendChild(item);
+            });
+            
+            matchedVendors.forEach(vendor => {
+                const item = document.createElement('div');
+                item.className = 'autocomplete-item';
+                item.innerHTML = `<i class="fas fa-store"></i> ${vendor.name} <span style="color:#ffaa66; margin-left:auto;">${vendor.category}</span>`;
+                item.onclick = () => {
+                    searchInput.value = vendor.name;
+                    dropdown.classList.remove('show');
+                    performSearch();
+                };
+                dropdown.appendChild(item);
+            });
+            
+            dropdown.classList.add('show');
+        });
+        
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+    }
+
+    window.searchByCity = (city) => {
+        currentSearchTerm = city;
+        document.getElementById('searchQueryDisplay').innerHTML = city;
+        document.getElementById('searchInput').value = city;
+        
+        const filtered = [...allVendors, ...allStadiums].filter(v => v.city?.toLowerCase() === city.toLowerCase());
+        
+        const grouped = {};
+        filtered.forEach(v => {
+            if (!grouped[v.category]) grouped[v.category] = [];
+            grouped[v.category].push(v);
+        });
+        
+        const categoryNames = {
+            decorator: '🎨 Decorators',
+            photographer: '📸 Photographers',
+            caterer: '🍽️ Caterers',
+            bandbaja: '🎵 Band Baja',
+            stadium: '🏟️ Stadiums'
+        };
+        
+        let html = '';
+        for (const [cat, items] of Object.entries(grouped)) {
+            html += `
+                <div class="category-results">
+                    <div class="category-title">${categoryNames[cat] || cat} (${items.length})</div>
+                    <div class="vendors-grid">
+                        ${items.map(v => `
+                            <div class="vendor-card" onclick="openVendorOrStadium('${v.id}', '${v.category === 'stadium' ? 'stadium' : 'vendor'}')">
+                                <div class="vendor-logo">
+                                    ${v.logo && v.logo.startsWith('http') ? `<img src="${v.logo}">` : `<span style="font-size: 60px;">${v.logo || (v.category === 'stadium' ? '🏟️' : '🏷️')}</span>`}
+                                    <div class="vendor-rating">⭐ ${v.rating || 4.5}</div>
+                                </div>
+                                <div class="vendor-info">
+                                    <div class="vendor-name">${v.name}</div>
+                                    <div class="vendor-category">${categoryNames[v.category] || v.category}</div>
+                                    <div class="vendor-location"><i class="fas fa-map-marker-alt"></i> ${v.city}</div>
+                                    <div class="vendor-price">${v.priceRange || (v.basePrice ? `₹${v.basePrice.toLocaleString()}/day` : 'Contact for quote')}</div>
+                                    <div class="vendor-book-btn">Book Now →</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        
+        if (filtered.length === 0) {
+            html = `<div style="text-align:center; padding:60px;">🎯 No vendors found in ${city}. Try another city!</div>`;
+        }
+        
+        document.getElementById('categoryResultsContainer').innerHTML = html;
         document.getElementById('resultsSection').classList.add('active');
         document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
     };
 
-    window.searchAll = () => {
+    window.performSearch = () => {
         const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
         if (!searchTerm) return;
         
-        const vendorResults = allVendors.filter(v => 
+        currentSearchTerm = searchTerm;
+        document.getElementById('searchQueryDisplay').innerHTML = searchTerm;
+        
+        const filtered = [...allVendors, ...allStadiums].filter(v => 
             v.name?.toLowerCase().includes(searchTerm) || 
             v.city?.toLowerCase().includes(searchTerm) ||
             v.category?.toLowerCase().includes(searchTerm)
         );
-        const stadiumResults = allStadiums.filter(s => 
-            s.name?.toLowerCase().includes(searchTerm) || 
-            s.city?.toLowerCase().includes(searchTerm)
-        );
-        const allResults = [...vendorResults, ...stadiumResults];
         
-        document.getElementById('selectedCityName').innerText = `"${searchTerm}"`;
-        const resultsGrid = document.getElementById('resultsGrid');
+        const grouped = {};
+        filtered.forEach(v => {
+            if (!grouped[v.category]) grouped[v.category] = [];
+            grouped[v.category].push(v);
+        });
         
-        if (allResults.length === 0) {
-            resultsGrid.innerHTML = '<div style="text-align:center; padding:60px; grid-column:1/-1; background:rgba(0,0,0,0.05); border-radius:30px;">🔍 No results found for "' + searchTerm + '". Try "Mumbai", "Stadium", "Decorator" etc.</div>';
-        } else {
-            resultsGrid.innerHTML = allResults.map(item => {
-                const isStadium = item.category === 'stadium' || item.type === 'stadium';
-                return `
-                    <div class="premium-card" onclick="${isStadium ? `openStadium('${item.id}')` : `openVendor('${item.id}')`}">
-                        ${!isStadium ? `<div class="card-badge">⭐ ${item.rating || 4.5}</div>` : '<div class="card-badge">🏟️ AI Ready</div>'}
-                        <div class="card-image">${isStadium ? '🏟️' : getCategoryIcon(item.category)}</div>
-                        <div class="card-content">
-                            <div class="card-title">${item.name}</div>
-                            <div class="card-location"><i class="fas fa-map-marker-alt"></i> ${item.city}</div>
-                            <div class="card-price">${isStadium ? `₹${(item.basePrice || 50000).toLocaleString()}/day` : (item.priceRange || 'Contact for quote')}</div>
-                            <div class="card-tags">${isStadium ? '<span class="tag">AI Fractional Booking</span>' : `<span class="tag">${item.category}</span>`}</div>
-                        </div>
+        const categoryNames = {
+            decorator: '🎨 Decorators',
+            photographer: '📸 Photographers',
+            caterer: '🍽️ Caterers',
+            bandbaja: '🎵 Band Baja',
+            stadium: '🏟️ Stadiums'
+        };
+        
+        let html = '';
+        for (const [cat, items] of Object.entries(grouped)) {
+            html += `
+                <div class="category-results">
+                    <div class="category-title">${categoryNames[cat] || cat} (${items.length})</div>
+                    <div class="vendors-grid">
+                        ${items.map(v => `
+                            <div class="vendor-card" onclick="openVendorOrStadium('${v.id}', '${v.category === 'stadium' ? 'stadium' : 'vendor'}')">
+                                <div class="vendor-logo">
+                                    ${v.logo && v.logo.startsWith('http') ? `<img src="${v.logo}">` : `<span style="font-size: 60px;">${v.logo || (v.category === 'stadium' ? '🏟️' : '🏷️')}</span>`}
+                                    <div class="vendor-rating">⭐ ${v.rating || 4.5}</div>
+                                </div>
+                                <div class="vendor-info">
+                                    <div class="vendor-name">${v.name}</div>
+                                    <div class="vendor-category">${categoryNames[v.category] || v.category}</div>
+                                    <div class="vendor-location"><i class="fas fa-map-marker-alt"></i> ${v.city}</div>
+                                    <div class="vendor-price">${v.priceRange || (v.basePrice ? `₹${v.basePrice.toLocaleString()}/day` : 'Contact for quote')}</div>
+                                    <div class="vendor-book-btn">Book Now →</div>
+                                </div>
+                            </div>
+                        `).join('')}
                     </div>
-                `;
-            }).join('');
+                </div>
+            `;
         }
         
+        if (filtered.length === 0) {
+            html = `<div style="text-align:center; padding:60px;">🔍 No results found for "${searchTerm}". Try "Nagpur", "Wedding", or "Stadium"</div>`;
+        }
+        
+        document.getElementById('categoryResultsContainer').innerHTML = html;
         document.getElementById('resultsSection').classList.add('active');
         document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
     };
@@ -1031,14 +886,22 @@
     window.closeResults = () => {
         document.getElementById('resultsSection').classList.remove('active');
         document.getElementById('searchInput').value = '';
+        currentSearchTerm = '';
     };
 
-    window.openStadium = (id) => {
-        window.location.href = `stadium-booking-3d.html?id=${id}`;
+    window.resetToHome = () => {
+        closeResults();
+        currentCategory = 'all';
+        renderVendorsByCategory();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    window.openVendor = (id) => {
-        window.location.href = `vendor-detail.html?id=${id}`;
+    window.openVendorOrStadium = (id, type) => {
+        if (type === 'stadium') {
+            window.location.href = `stadium-booking.html?id=${id}`;
+        } else {
+            window.location.href = `vendor-detail.html?id=${id}`;
+        }
     };
 
     window.detectLocation = () => {
@@ -1048,48 +911,29 @@
                 (pos) => {
                     document.getElementById('locationText').innerHTML = '📍 Location Detected';
                     setTimeout(() => {
-                        if (confirm('Show vendors and stadiums near your location?')) {
+                        if (confirm('Show vendors near your location?')) {
                             window.location.href = `vendors.html?lat=${pos.coords.latitude}&lng=${pos.coords.longitude}`;
                         }
                     }, 500);
                 },
                 () => {
                     document.getElementById('locationText').innerHTML = '📍 Detect Location';
-                    alert('Please allow location access to see nearby vendors');
+                    alert('Please allow location access');
                 }
             );
         }
     };
 
-    window.toggleTheme = () => {
-        document.body.classList.toggle('dark-mode');
-        const btn = document.querySelector('.theme-toggle');
-        if (document.body.classList.contains('dark-mode')) {
-            btn.innerHTML = '☀️';
-        } else {
-            btn.innerHTML = '🌙';
-        }
-    };
-
-    function updateNav() {
-        onAuthStateChanged(auth, (user) => {
-            const nav = document.getElementById('navButtons');
-            if (user) {
-                nav.innerHTML = `<a href="dashboard.html">Dashboard</a><a href="#" onclick="logout()">Logout</a>`;
-            } else {
-                nav.innerHTML = `<a href="login.html">Login</a><a href="register.html">Register</a>`;
-            }
+    // Category tabs
+    document.querySelectorAll('.category-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            currentCategory = tab.dataset.category;
+            renderVendorsByCategory();
+            closeResults();
         });
-    }
+    });
 
-    window.logout = () => {
-        auth.signOut();
-        window.location.href = 'index.html';
-    };
-
-    // Load all data
     loadData();
 </script>
-
 </body>
 </html>
