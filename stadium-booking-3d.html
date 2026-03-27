@@ -7,9 +7,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background: #0a0a0a; color: #fff; }
+        body { background: #0a0a0a; color: #fff; overflow-x: hidden; }
 
         .header {
             background: rgba(0,0,0,0.95);
@@ -25,194 +26,175 @@
         .logo { font-size: 22px; font-weight: 800; background: linear-gradient(135deg, #fff, #ff6b35); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .back-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #ff6b35; }
 
-        .container { max-width: 1400px; margin: 0 auto; padding: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .container { max-width: 1600px; margin: 0 auto; padding: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
 
-        /* Left Side - Stadium Visual */
-        .visual-panel {
-            background: #1a1a2e;
-            border-radius: 28px;
-            padding: 24px;
-            position: sticky;
-            top: 100px;
-        }
-        .stadium-canvas {
-            background: #0a0a2a;
-            border-radius: 20px;
-            height: 450px;
-            position: relative;
-            cursor: crosshair;
-            overflow: hidden;
-        }
-        canvas {
-            width: 100%;
-            height: 100%;
-            display: block;
-            cursor: crosshair;
-        }
-        .selection-info {
-            margin-top: 20px;
-            padding: 16px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 16px;
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        .selection-percentage { font-size: 28px; font-weight: 800; color: #ff6b35; }
-        .selection-area { color: #aaa; }
+        /* Left Panel */
+        .visual-panel { background: #1a1a2e; border-radius: 28px; padding: 24px; position: sticky; top: 100px; }
+        .view-controls { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+        .view-btn { background: rgba(255,255,255,0.1); border: none; padding: 8px 20px; border-radius: 30px; cursor: pointer; transition: 0.2s; font-size: 13px; }
+        .view-btn.active { background: #ff6b35; }
+        .stadium-canvas { background: #0a0a2a; border-radius: 20px; height: 450px; position: relative; overflow: hidden; }
+        canvas { width: 100%; height: 100%; display: block; cursor: crosshair; }
+        .ar-view { display: none; position: relative; height: 450px; background: #000; border-radius: 20px; overflow: hidden; }
+        #arVideo { width: 100%; height: 100%; object-fit: cover; }
+        .ar-overlay { position: absolute; bottom: 20px; left: 0; right: 0; text-align: center; color: white; background: rgba(0,0,0,0.6); padding: 10px; font-size: 12px; }
+        .heatmap-legend { display: flex; gap: 20px; justify-content: center; margin-top: 15px; font-size: 12px; }
+        .live-counter { background: rgba(255,107,53,0.2); padding: 8px 16px; border-radius: 30px; text-align: center; margin-top: 15px; font-size: 13px; }
+        .traffic-card { background: rgba(0,0,0,0.5); border-radius: 16px; padding: 15px; margin-top: 15px; display: none; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
 
-        /* Right Side - Booking Panel */
-        .booking-panel {
-            background: rgba(255,255,255,0.05);
-            border-radius: 28px;
-            padding: 28px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
+        /* Right Panel */
+        .booking-panel { background: rgba(255,255,255,0.05); border-radius: 28px; padding: 28px; border: 1px solid rgba(255,255,255,0.1); max-height: 85vh; overflow-y: auto; }
         .stadium-name { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
-        .stadium-location { color: #aaa; margin-bottom: 24px; }
-
-        /* Portion Selection Buttons */
-        .portion-buttons {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            margin: 24px 0;
-        }
-        .portion-btn {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            padding: 14px;
-            border-radius: 16px;
-            text-align: center;
-            cursor: pointer;
-            transition: 0.2s;
-        }
+        .ai-suggest { background: linear-gradient(135deg, #ff6b35, #ff9068); border: none; padding: 12px 20px; border-radius: 40px; width: 100%; margin: 20px 0; cursor: pointer; font-weight: 600; }
+        
+        /* Form Styles */
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 8px; color: #ccc; font-size: 13px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 14px 16px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 16px; color: white; font-size: 15px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        
+        /* Portion Buttons */
+        .portion-buttons { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin: 20px 0; }
+        .portion-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); padding: 14px; border-radius: 16px; text-align: center; cursor: pointer; transition: 0.2s; }
         .portion-btn.selected { background: #ff6b35; border-color: #ff6b35; }
-        .portion-btn:hover { background: rgba(255,107,53,0.5); }
-
-        /* Date Calendar */
-        .calendar-section { margin: 24px 0; }
+        
+        /* Layout Planner */
+        .layout-planner { background: rgba(255,255,255,0.05); border-radius: 20px; padding: 20px; margin: 20px 0; }
+        .drag-items { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+        .drag-item { background: rgba(255,107,53,0.3); padding: 8px 16px; border-radius: 30px; cursor: grab; user-select: none; display: flex; align-items: center; gap: 8px; font-size: 12px; }
+        .layout-canvas { background: rgba(0,0,0,0.3); border-radius: 16px; height: 100px; position: relative; margin-top: 10px; }
+        .placed-item { position: absolute; background: #ff6b35; padding: 4px 8px; border-radius: 20px; font-size: 10px; cursor: move; }
+        
+        /* Calendar */
+        .calendar-section { margin: 20px 0; }
         .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
-        .calendar-day {
-            text-align: center;
-            padding: 12px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 12px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 8px; }
+        .calendar-day { text-align: center; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 12px; cursor: pointer; font-size: 13px; }
         .calendar-day.available { background: rgba(46,125,50,0.3); border: 1px solid #2e7d32; }
         .calendar-day.booked { background: rgba(211,47,47,0.3); border: 1px solid #d32f2f; cursor: not-allowed; opacity: 0.5; }
-        .calendar-day.selected { background: #ff6b35; color: white; }
-        .calendar-day:hover:not(.booked) { background: rgba(255,107,53,0.5); }
-
+        .calendar-day.selected { background: #ff6b35; }
+        
         /* Price Calculator */
-        .price-calculator {
-            background: rgba(255,107,53,0.1);
-            border-radius: 20px;
-            padding: 20px;
-            margin: 24px 0;
-            border: 1px solid rgba(255,107,53,0.3);
-        }
-        .price-row { display: flex; justify-content: space-between; margin-bottom: 12px; }
-        .ai-price { font-size: 32px; font-weight: 800; color: #ff6b35; }
-
+        .price-calculator { background: rgba(255,107,53,0.1); border-radius: 20px; padding: 20px; margin: 20px 0; }
+        .price-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; }
+        .ai-price { font-size: 28px; font-weight: 800; color: #ff6b35; }
+        
         /* Payment Options */
-        .payment-options {
-            display: flex;
-            gap: 12px;
-            margin: 20px 0;
-        }
-        .payment-option {
-            flex: 1;
-            padding: 14px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 16px;
-            text-align: center;
-            cursor: pointer;
-            transition: 0.2s;
-        }
+        .payment-options { display: flex; gap: 12px; margin: 20px 0; }
+        .payment-option { flex: 1; padding: 14px; background: rgba(255,255,255,0.1); border-radius: 16px; text-align: center; cursor: pointer; transition: 0.2s; }
         .payment-option.selected { background: #ff6b35; }
-        .payment-option small { display: block; font-size: 11px; color: #aaa; }
-
-        .book-btn {
-            width: 100%;
-            background: #ff6b35;
-            color: white;
-            border: none;
-            padding: 18px;
-            border-radius: 50px;
-            font-size: 18px;
-            font-weight: 700;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: 0.2s;
-        }
-        .book-btn:hover { background: #e55a2b; transform: scale(1.02); }
-
-        .agent-card {
-            background: rgba(255,255,255,0.05);
-            border-radius: 16px;
-            padding: 16px;
-            margin-top: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        .call-agent { background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 30px; cursor: pointer; }
-
-        @media (max-width: 1000px) { .container { grid-template-columns: 1fr; } .visual-panel { position: relative; top: 0; } }
+        .payment-option small { display: block; font-size: 10px; color: #aaa; }
+        
+        /* QR Section */
+        .qr-section { background: rgba(255,107,53,0.1); border-radius: 20px; padding: 20px; margin: 20px 0; text-align: center; display: none; }
+        #qrCode { width: 120px; height: 120px; margin: 0 auto; background: white; padding: 8px; border-radius: 12px; }
+        .invite-btn { background: #28a745; border: none; padding: 10px 20px; border-radius: 30px; cursor: pointer; margin-top: 10px; font-size: 13px; }
+        
+        /* Vendor Combo */
+        .vendor-combo { background: rgba(255,107,53,0.1); border-radius: 20px; padding: 20px; margin: 20px 0; }
+        .vendor-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .vendor-check { margin-right: 10px; }
+        
+        .book-btn { width: 100%; background: #ff6b35; color: white; border: none; padding: 18px; border-radius: 50px; font-size: 18px; font-weight: 700; cursor: pointer; margin-top: 20px; transition: 0.2s; }
+        .agent-card { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 16px; margin-top: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .call-agent { background: #28a745; border: none; padding: 10px 20px; border-radius: 30px; cursor: pointer; }
+        
+        .overlap-alert { background: rgba(211,47,47,0.3); border-left: 3px solid #d32f2f; padding: 12px; border-radius: 12px; margin: 15px 0; display: none; }
+        
+        @media (max-width: 1000px) { .container { grid-template-columns: 1fr; } .visual-panel { position: relative; top: 0; } .form-row { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
 <header class="header">
-    <button class="back-btn" onclick="window.location.href='stadium-booking.html'">←</button>
-    <div class="logo">STADIUM<span>CONNECT</span></div>
+    <button class="back-btn" onclick="window.location.href='directory.html'">←</button>
+    <div class="logo">STADIUM<span>CONNECT</span> <span style="font-size:10px;">AI Powered</span></div>
     <div style="width: 40px;"></div>
 </header>
 
 <div class="container">
-    <!-- Left Side - Interactive Stadium Visual -->
+    <!-- LEFT PANEL -->
     <div class="visual-panel">
-        <div class="stadium-canvas">
-            <canvas id="stadiumCanvas" width="500" height="400"></canvas>
+        <div class="view-controls">
+            <button class="view-btn active" onclick="toggleView('2d')">2D Map</button>
+            <button class="view-btn" onclick="toggleView('3d')">3D Drone</button>
+            <button class="view-btn" onclick="toggleView('heatmap')">🔥 Heatmap</button>
+            <button class="view-btn" onclick="startAR()">📱 AR View</button>
+            <button class="view-btn" onclick="toggleView('traffic')">🚗 Traffic</button>
         </div>
-        <div class="selection-info">
-            <div>
-                <div class="selection-percentage" id="selectedPercent">0%</div>
-                <div class="selection-area" id="selectedArea">0 sq meters</div>
-            </div>
-            <div>
-                <div class="selection-percentage" id="estimatedSeats">0 seats</div>
-                <div class="selection-area">Estimated capacity</div>
-            </div>
-            <div>
-                <i class="fas fa-info-circle"></i> Click & drag to select area
-            </div>
+        <div id="canvasView">
+            <canvas id="stadiumCanvas" width="600" height="450"></canvas>
         </div>
+        <div id="arView" class="ar-view">
+            <video id="arVideo" autoplay playsinline></video>
+            <div class="ar-overlay"><i class="fas fa-cube"></i> Virtual Stage & Seating</div>
+        </div>
+        <div id="heatmapLegend" class="heatmap-legend" style="display:none;">
+            <span><span style="background:#2ecc71; display:inline-block; width:12px; height:12px;"></span> Low</span>
+            <span><span style="background:#f39c12; display:inline-block; width:12px; height:12px;"></span> Medium</span>
+            <span><span style="background:#e74c3c; display:inline-block; width:12px; height:12px;"></span> High</span>
+        </div>
+        <div id="trafficPanel" class="traffic-card">
+            <div><i class="fas fa-car"></i> <span id="parkingSpots">0</span> spots</div>
+            <div><i class="fas fa-chart-line"></i> Traffic: <span id="trafficStatus">Moderate</span></div>
+            <div><label><input type="checkbox" id="vipParking"> VIP Parking (+₹2,000)</label></div>
+        </div>
+        <div class="live-counter"><i class="fas fa-users"></i> <span id="viewerCount">0</span> viewing now</div>
     </div>
 
-    <!-- Right Side - Booking Panel -->
+    <!-- RIGHT PANEL -->
     <div class="booking-panel">
         <div class="stadium-name" id="stadiumName">Vidarbha Cricket Stadium</div>
         <div class="stadium-location"><i class="fas fa-map-marker-alt"></i> <span id="stadiumLocation">Nagpur</span></div>
 
-        <!-- Quick Portion Buttons -->
+        <!-- Booking Form -->
+        <form id="bookingForm">
+            <div class="form-row">
+                <div class="form-group"><label>Full Name *</label><input type="text" id="fullName" required placeholder="Enter full name"></div>
+                <div class="form-group"><label>Phone Number *</label><input type="tel" id="phone" required placeholder="10 digit mobile"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Email *</label><input type="email" id="email" required placeholder="Email address"></div>
+                <div class="form-group"><label>City *</label><input type="text" id="city" required placeholder="Your city"></div>
+            </div>
+            <div class="form-group"><label>Event Location / Address *</label><input type="text" id="eventLocation" required placeholder="Full address"></div>
+            <div class="form-row">
+                <div class="form-group"><label>Event Date *</label><input type="date" id="eventDate" required></div>
+                <div class="form-group"><label>Event Time</label><select id="eventTime"><option>Morning (6am-12pm)</option><option>Afternoon (12pm-6pm)</option><option>Evening (6pm-12am)</option><option>Full Day</option></select></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Event Type *</label><select id="eventType" required><option>Wedding</option><option>Corporate</option><option>Concert</option><option>Sports</option><option>Birthday</option><option>Other</option></select></div>
+                <div class="form-group"><label>Expected Guests *</label><input type="number" id="guestCount" required placeholder="Number of guests"></div>
+            </div>
+            <div class="form-group"><label>Special Requests</label><textarea id="specialRequests" rows="2" placeholder="Any special requirements..."></textarea></div>
+        </form>
+
+        <!-- AI Suggest Button -->
+        <button class="ai-suggest" onclick="openAISuggestModal()"><i class="fas fa-robot"></i> AI Suggest - Enter Guest Count</button>
+
+        <!-- Portion Selection -->
         <div class="portion-buttons">
             <div class="portion-btn" onclick="selectPortion(25)">25%</div>
             <div class="portion-btn" onclick="selectPortion(50)">50%</div>
             <div class="portion-btn" onclick="selectPortion(75)">75%</div>
-            <div class="portion-btn" onclick="selectPortion(100)">Full Stadium</div>
-            <div class="portion-btn" onclick="selectPortion(30)">30%</div>
-            <div class="portion-btn" onclick="selectPortion(40)">40%</div>
+            <div class="portion-btn" onclick="selectPortion(100)">Full</div>
         </div>
 
-        <!-- Date Availability Calendar -->
+        <div id="overlapAlert" class="overlap-alert"><i class="fas fa-exclamation-triangle"></i> <span id="overlapText"></span></div>
+
+        <!-- AI Layout Planner -->
+        <div class="layout-planner">
+            <div style="display:flex; justify-content:space-between;"><strong>🎯 Layout Planner</strong><span style="font-size:10px;">Drag & Drop</span></div>
+            <div class="drag-items">
+                <div class="drag-item" draggable="true" data-type="stage" ondragstart="dragStart(event)">🎭 Stage</div>
+                <div class="drag-item" draggable="true" data-type="food" ondragstart="dragStart(event)">🍔 Food Stalls</div>
+                <div class="drag-item" draggable="true" data-type="vip" ondragstart="dragStart(event)">👑 VIP</div>
+                <div class="drag-item" draggable="true" data-type="parking" ondragstart="dragStart(event)">🅿️ Parking</div>
+            </div>
+            <div class="layout-canvas" id="layoutCanvas" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+        </div>
+
+        <!-- Calendar -->
         <div class="calendar-section">
             <div class="calendar-header">
                 <button onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button>
@@ -220,57 +202,64 @@
                 <button onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button>
             </div>
             <div class="calendar-grid" id="calendarGrid"></div>
-            <div style="font-size: 12px; margin-top: 12px; display: flex; gap: 20px; justify-content: center;">
-                <span><span style="background:#2e7d32; display:inline-block; width:12px; height:12px; border-radius:2px;"></span> Available</span>
-                <span><span style="background:#d32f2f; display:inline-block; width:12px; height:12px; border-radius:2px;"></span> Booked</span>
-                <span><span style="background:#ff6b35; display:inline-block; width:12px; height:12px; border-radius:2px;"></span> Selected</span>
-            </div>
         </div>
 
-        <!-- AI Price Calculator -->
+        <!-- Vendor Combo Engine -->
+        <div class="vendor-combo" id="vendorCombo">
+            <h4><i class="fas fa-magic"></i> AI Recommended Vendors</h4>
+            <div id="vendorComboList"></div>
+            <button class="invite-btn" style="background:#ff6b35; width:100%; margin-top:10px;" onclick="addRecommendedVendors()">Add Selected Vendors</button>
+        </div>
+
+        <!-- Price Calculator -->
         <div class="price-calculator">
-            <div class="price-row"><span>Base Price (Full Stadium)</span><span id="basePrice">₹50,000</span></div>
             <div class="price-row"><span>Selected Area</span><span id="selectedAreaText">0%</span></div>
-            <div class="price-row"><span>AI Demand Multiplier</span><span id="aiMultiplier">1.0x</span></div>
-            <div class="price-row" style="border-top:1px solid rgba(255,255,255,0.2); padding-top:12px;">
-                <span><strong>AI Calculated Price</strong></span>
-                <span class="ai-price" id="aiPrice">₹0</span>
-            </div>
+            <div class="price-row"><span>Base Price</span><span id="basePrice">₹50,000</span></div>
+            <div class="price-row"><span>Seasonal Surge</span><span id="seasonalMultiplier">1.0x</span></div>
+            <div class="price-row"><span>Weekend Premium</span><span id="weekendMultiplier">1.0x</span></div>
+            <div class="price-row"><span>VIP Parking</span><span id="parkingPrice">₹0</span></div>
+            <div class="price-row"><span><strong>AI Price</strong></span><span class="ai-price" id="aiPrice">₹0</span></div>
         </div>
 
         <!-- Payment Options -->
         <div class="payment-options">
-            <div class="payment-option selected" onclick="selectPayment('full')">
-                <strong>Full Payment</strong><br>
-                <small>Pay 100% now</small>
-            </div>
-            <div class="payment-option" onclick="selectPayment('advance')">
-                <strong>4 Months Advance</strong><br>
-                <small>Pay 25% now, rest later</small>
-            </div>
+            <div class="payment-option selected" onclick="selectPayment('full')"><strong>Full Payment</strong><small>Pay 100% now</small></div>
+            <div class="payment-option" onclick="selectPayment('advance')"><strong>4 Months Advance</strong><small>Pay 25% now</small></div>
         </div>
 
-        <button class="book-btn" onclick="bookStadium()">
-            <i class="fas fa-credit-card"></i> Book Now with AI →
-        </button>
-
-        <!-- Agent Card -->
-        <div class="agent-card" id="agentCard">
-            <div>
-                <strong>📞 Your Local Agent</strong><br>
-                <span id="agentName">Loading...</span><br>
-                <span id="agentCity">-</span>
-            </div>
-            <button class="call-agent" id="callAgentBtn" onclick="callAgent()">
-                <i class="fas fa-phone-alt"></i> Call Agent
-            </button>
+        <!-- QR Section -->
+        <div id="qrSection" class="qr-section">
+            <h4><i class="fas fa-qrcode"></i> Digital Entry Pass</h4>
+            <div id="qrCode"></div>
+            <button class="invite-btn" onclick="shareInvite()"><i class="fab fa-whatsapp"></i> Share Invites</button>
         </div>
+
+        <button class="book-btn" onclick="submitBooking()"><i class="fas fa-credit-card"></i> Confirm Booking →</button>
+
+        <div class="agent-card">
+            <div><strong>📞 Local Agent</strong><br><span id="agentName">Loading...</span><br><span id="agentCity">-</span></div>
+            <button class="call-agent" onclick="callAgent()"><i class="fas fa-phone-alt"></i> Call Agent</button>
+        </div>
+    </div>
+</div>
+
+<!-- AI Suggest Modal -->
+<div id="aiModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:1000; justify-content:center; align-items:center;">
+    <div style="background:#1a1a2e; border-radius:28px; padding:32px; width:90%; max-width:400px;">
+        <h3>🤖 AI Event Planner</h3>
+        <p>Enter guest count:</p>
+        <input type="number" id="guestCountInput" placeholder="Number of guests" style="width:100%; padding:12px; margin:15px 0; border-radius:12px;">
+        <select id="eventTypeSelect" style="width:100%; padding:12px; margin-bottom:15px; border-radius:12px;">
+            <option value="wedding">Wedding</option><option value="concert">Concert</option><option value="corporate">Corporate</option><option value="sports">Sports</option>
+        </select>
+        <button onclick="aiSuggest()" style="background:#ff6b35; padding:12px; width:100%; border-radius:30px;">Suggest Layout</button>
+        <button onclick="closeAIModal()" style="background:none; border:1px solid #666; padding:12px; width:100%; margin-top:10px; border-radius:30px;">Cancel</button>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, doc, getDoc, collection, getDocs, updateDoc, addDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
     import { getAuth } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -288,307 +277,176 @@
     const urlParams = new URLSearchParams(window.location.search);
     const stadiumId = urlParams.get('id');
 
-    let stadium = {
-        id: null,
-        name: "Vidarbha Cricket Stadium",
-        city: "Nagpur",
-        basePrice: 50000,
-        totalArea: 45000,
-        boundaries: { length: 160, width: 140 }
-    };
-    let selectedPercent = 0;
-    let selectedDate = null;
-    let paymentType = 'full';
-    let bookedDates = [];
-    let cityAgent = null;
+    let stadium = { name: "Vidarbha Cricket Stadium", city: "Nagpur", basePrice: 50000, totalCapacity: 45000 };
+    let selectedPercent = 0, selectedDate = null, paymentType = 'full', currentView = '2d', bookedDates = [], cityAgent = null, vipParking = false;
+    let liveViewers = Math.floor(Math.random() * 20) + 5;
+    let recommendedVendors = [];
 
-    // Canvas variables for drag selection
-    let canvas = document.getElementById('stadiumCanvas');
-    let ctx = canvas.getContext('2d');
-    let isDragging = false;
-    let startX, startY;
-    let selectionRect = { x: 0, y: 0, w: 0, h: 0 };
-
-    // Load stadium data
     async function loadStadium() {
         if (stadiumId) {
-            const stadiumDoc = await getDoc(doc(db, 'vendors', stadiumId));
-            if (stadiumDoc.exists()) {
-                stadium = { id: stadiumDoc.id, ...stadiumDoc.data() };
-                stadium.basePrice = parseInt(stadium.priceRange?.replace(/[^0-9]/g, '')) || 50000;
-                document.getElementById('stadiumName').innerText = stadium.name || 'Stadium';
-                document.getElementById('stadiumLocation').innerText = stadium.city || 'Location';
-                document.getElementById('basePrice').innerHTML = `₹${stadium.basePrice.toLocaleString()}`;
-            }
+            const docSnap = await getDoc(doc(db, 'vendors', stadiumId));
+            if (docSnap.exists()) stadium = { id: docSnap.id, ...docSnap.data(), basePrice: parseInt(docSnap.data().priceRange?.replace(/[^0-9]/g, '')) || 50000 };
         }
         await loadBookedDates();
         await loadCityAgent();
+        await loadRecommendedVendors();
+        document.getElementById('stadiumName').innerText = stadium.name;
+        document.getElementById('stadiumLocation').innerText = stadium.city;
+        document.getElementById('basePrice').innerHTML = `₹${stadium.basePrice.toLocaleString()}`;
+        document.getElementById('viewerCount').innerText = liveViewers;
         drawStadium();
         drawCalendar();
+        updatePrice();
+        setInterval(() => { liveViewers += Math.floor(Math.random() * 3) - 1; if(liveViewers<2) liveViewers=2; document.getElementById('viewerCount').innerText = liveViewers; }, 10000);
     }
 
-    // Load booked dates for this stadium
     async function loadBookedDates() {
-        const bookingsSnap = await getDocs(collection(db, "bookings"));
-        bookedDates = bookingsSnap.docs
-            .filter(d => d.data().vendorId === stadium.id && d.data().status !== 'cancelled')
-            .map(d => d.data().eventDate);
+        const snap = await getDocs(collection(db, "bookings"));
+        bookedDates = snap.docs.filter(d => d.data().vendorId === stadium.id).map(d => d.data().eventDate);
     }
 
-    // Load agent for stadium's city
     async function loadCityAgent() {
-        const agentsSnap = await getDocs(collection(db, "agents"));
-        agentsSnap.forEach(doc => {
-            const agent = doc.data();
-            if (agent.city?.toLowerCase() === stadium.city?.toLowerCase()) {
-                cityAgent = { id: doc.id, ...agent };
-            }
-        });
-        if (cityAgent) {
-            document.getElementById('agentName').innerText = cityAgent.name || cityAgent.id;
-            document.getElementById('agentCity').innerText = cityAgent.city || '-';
-        } else {
-            document.getElementById('agentCard').innerHTML = '<div>No agent assigned to this city yet</div>';
-        }
+        const snap = await getDocs(collection(db, "agents"));
+        snap.forEach(d => { if(d.data().city?.toLowerCase() === stadium.city?.toLowerCase()) cityAgent = { id: d.id, ...d.data() }; });
+        if(cityAgent) { document.getElementById('agentName').innerHTML = cityAgent.name || cityAgent.id; document.getElementById('agentCity').innerHTML = cityAgent.city; }
     }
 
-    // Draw stadium ground with boundaries
+    async function loadRecommendedVendors() {
+        const vendorsSnap = await getDocs(collection(db, "vendors"));
+        const vendors = vendorsSnap.docs.filter(d => d.data().category !== 'stadium').slice(0, 3);
+        recommendedVendors = vendors.map(v => ({ id: v.id, name: v.data().name, category: v.data().category, price: v.data().priceRange }));
+        const container = document.getElementById('vendorComboList');
+        container.innerHTML = recommendedVendors.map(v => `
+            <div class="vendor-item">
+                <div><strong>${v.name}</strong><br><small>${v.category}</small><br><span style="color:#ff6b35;">${v.price}</span></div>
+                <label><input type="checkbox" class="vendor-check" value="${v.id}" data-name="${v.name}"> Add (10% off)</label>
+            </div>
+        `).join('');
+    }
+
+    window.addRecommendedVendors = () => {
+        let selected = []; document.querySelectorAll('.vendor-check:checked').forEach(cb => selected.push(cb.dataset.name));
+        if(selected.length) alert(`✅ Added: ${selected.join(', ')}\nThey will be notified.`);
+        else alert('No vendors selected');
+    };
+
     function drawStadium() {
+        const canvas = document.getElementById('stadiumCanvas');
+        const ctx = canvas.getContext('2d');
         const w = canvas.width, h = canvas.height;
         ctx.clearRect(0, 0, w, h);
         
-        // Background
-        ctx.fillStyle = '#1a5c2a';
-        ctx.fillRect(0, 0, w, h);
-        
-        // Boundary (oval)
-        ctx.beginPath();
-        ctx.ellipse(w/2, h/2, w*0.42, h*0.38, 0, 0, 2 * Math.PI);
-        ctx.strokeStyle = '#ff6b35';
-        ctx.lineWidth = 4;
-        ctx.stroke();
-        
-        // Inner circle
-        ctx.beginPath();
-        ctx.arc(w/2, h/2, h*0.12, 0, 2 * Math.PI);
-        ctx.strokeStyle = '#ff6b35';
-        ctx.stroke();
-        
-        // Pitch
-        ctx.fillStyle = '#3a7a3a';
-        ctx.fillRect(w/2 - 30, h/2 - 60, 60, 120);
-        
-        // Boundary dimensions text
-        ctx.fillStyle = '#ffd966';
-        ctx.font = '12px Inter';
-        ctx.fillText(`Length: ${stadium.boundaries?.length || 160}m`, w-100, 30);
-        ctx.fillText(`Width: ${stadium.boundaries?.width || 140}m`, w-100, 50);
-        
-        // Selected area highlight
-        if (selectedPercent > 0) {
-            ctx.fillStyle = 'rgba(255,107,53,0.3)';
-            const areaHeight = h * (selectedPercent / 100);
-            ctx.fillRect(0, h - areaHeight, w, areaHeight);
-            ctx.fillStyle = '#ff6b35';
-            ctx.font = 'bold 14px Inter';
-            ctx.fillText(`${selectedPercent}% Selected`, w/2-40, h-20);
-        }
-        
-        // Draw boundary numbers (north, south, east, west)
-        ctx.fillStyle = '#ff6b35';
-        ctx.font = '12px Inter';
-        ctx.fillText('North Stand', w/2-35, 25);
-        ctx.fillText('South Stand', w/2-35, h-15);
-        ctx.fillText('East Gallery', w-70, h/2);
-        ctx.fillText('West Gallery', 15, h/2);
-    }
-
-    // Canvas drag selection handlers
-    function getMousePos(e) {
-        const rect = canvas.getBoundingClientRect();
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
-        let clientX, clientY;
-        if (e.touches) {
-            clientX = e.touches[0].clientX;
-            clientY = e.touches[0].clientY;
+        if(currentView === 'heatmap') {
+            for(let i=0; i<15; i++) { let x=Math.random()*w, y=Math.random()*h, int=Math.random(); ctx.fillStyle=int>0.7?'#e74c3c':(int>0.3?'#f39c12':'#2ecc71'); ctx.beginPath(); ctx.arc(x,y,12,0,2*Math.PI); ctx.fill(); }
+        } else if(currentView === '3d') {
+            ctx.fillStyle = '#2c3e50'; ctx.fillRect(0,0,w,h);
+            for(let i=0;i<5;i++) { ctx.fillStyle=`rgba(255,107,53,${0.3-i*0.05})`; ctx.beginPath(); ctx.moveTo(w/2,h/4+i*30); ctx.lineTo(w/4+i*15,h/2+i*15); ctx.lineTo(w*3/4-i*15,h/2+i*15); ctx.fill(); }
         } else {
-            clientX = e.clientX;
-            clientY = e.clientY;
+            ctx.fillStyle = '#1a5c2a'; ctx.fillRect(0,0,w,h);
+            ctx.beginPath(); ctx.ellipse(w/2,h/2,w*0.42,h*0.38,0,0,2*Math.PI); ctx.strokeStyle='#ff6b35'; ctx.lineWidth=3; ctx.stroke();
+            if(selectedPercent>0) { ctx.fillStyle='rgba(255,107,53,0.3)'; ctx.fillRect(0,h-h*(selectedPercent/100),w,h*(selectedPercent/100)); }
         }
-        return {
-            x: (clientX - rect.left) * scaleX,
-            y: (clientY - rect.top) * scaleY
-        };
+        let parking = Math.floor((selectedPercent/100)*200);
+        document.getElementById('parkingSpots').innerHTML = parking;
+        document.getElementById('trafficStatus').innerHTML = parking>100?'Heavy':(parking>50?'Moderate':'Light');
     }
 
-    canvas.addEventListener('mousedown', (e) => {
-        isDragging = true;
-        const pos = getMousePos(e);
-        startX = pos.x;
-        startY = pos.y;
-        canvas.style.cursor = 'grabbing';
-    });
-
-    canvas.addEventListener('mousemove', (e) => {
-        if (!isDragging) return;
-        const pos = getMousePos(e);
-        const width = Math.abs(pos.x - startX);
-        const height = Math.abs(pos.y - startY);
-        const areaPercent = Math.min(100, Math.max(5, ((width * height) / (canvas.width * canvas.height)) * 100));
-        updateSelectedPercent(Math.floor(areaPercent));
-    });
-
-    canvas.addEventListener('mouseup', () => {
-        isDragging = false;
-        canvas.style.cursor = 'crosshair';
-    });
-
-    canvas.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        isDragging = true;
-        const pos = getMousePos(e);
-        startX = pos.x;
-        startY = pos.y;
-    });
-
-    canvas.addEventListener('touchmove', (e) => {
-        e.preventDefault();
-        if (!isDragging) return;
-        const pos = getMousePos(e);
-        const width = Math.abs(pos.x - startX);
-        const height = Math.abs(pos.y - startY);
-        const areaPercent = Math.min(100, Math.max(5, ((width * height) / (canvas.width * canvas.height)) * 100));
-        updateSelectedPercent(Math.floor(areaPercent));
-    });
-
-    canvas.addEventListener('touchend', () => {
-        isDragging = false;
-    });
-
-    function updateSelectedPercent(percent) {
-        selectedPercent = percent;
-        const area = (stadium.totalArea * percent) / 100;
-        const seats = Math.floor((stadium.totalArea / 2) * (percent / 100));
-        document.getElementById('selectedPercent').innerHTML = `${percent}%`;
-        document.getElementById('selectedArea').innerHTML = `${Math.floor(area)} sq m`;
-        document.getElementById('estimatedSeats').innerHTML = `${seats.toLocaleString()} seats`;
-        document.getElementById('selectedAreaText').innerHTML = `${percent}%`;
-        
-        const multiplier = 1 + (percent / 100) * 0.3;
-        const price = Math.floor(stadium.basePrice * (percent / 100) * multiplier);
-        document.getElementById('aiMultiplier').innerHTML = `${multiplier.toFixed(1)}x`;
-        document.getElementById('aiPrice').innerHTML = `₹${price.toLocaleString()}`;
-        drawStadium();
-    }
-
-    window.selectPortion = (percent) => {
-        updateSelectedPercent(percent);
-        document.querySelectorAll('.portion-btn').forEach(btn => btn.classList.remove('selected'));
-        event.target.classList.add('selected');
+    function toggleView(view) { currentView = view; drawStadium(); document.querySelectorAll('.view-btn').forEach(btn=>btn.classList.remove('active')); event.target.classList.add('active'); document.getElementById('heatmapLegend').style.display = view==='heatmap'?'flex':'none'; document.getElementById('trafficPanel').style.display = view==='traffic'?'flex':'none'; }
+    
+    let arStream = null;
+    window.startAR = async () => {
+        try { arStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }); document.getElementById('arVideo').srcObject = arStream; document.getElementById('canvasView').style.display = 'none'; document.getElementById('arView').style.display = 'block'; document.getElementById('trafficPanel').style.display = 'none'; } catch(e) { alert('Camera access required'); }
     };
 
-    // Calendar functions
-    let currentDate = new Date();
-    let currentMonth = currentDate.getMonth();
-    let currentYear = currentDate.getFullYear();
+    function selectPortion(percent) { selectedPercent = percent; updatePrice(); drawStadium(); document.querySelectorAll('.portion-btn').forEach(btn=>btn.classList.remove('selected')); event.target.classList.add('selected'); }
+    
+    function updatePrice() {
+        let base = stadium.basePrice * (selectedPercent/100);
+        let seasonal = ([10,11,0,1].includes(new Date().getMonth())) ? 1.3 : 1.0;
+        let weekend = (selectedDate && [0,6].includes(new Date(selectedDate).getDay())) ? 1.2 : 1.0;
+        let lastMinute = selectedDate ? (Math.ceil((new Date(selectedDate)-new Date())/(1000*60*60*24))<30?1.15:1.0) : 1.0;
+        let parkingAdd = document.getElementById('vipParking')?.checked ? 2000 : 0;
+        let finalPrice = Math.floor(base * seasonal * weekend * lastMinute + parkingAdd);
+        document.getElementById('seasonalMultiplier').innerHTML = `${seasonal.toFixed(1)}x`;
+        document.getElementById('weekendMultiplier').innerHTML = `${weekend.toFixed(1)}x`;
+        document.getElementById('selectedAreaText').innerHTML = `${selectedPercent}%`;
+        document.getElementById('parkingPrice').innerHTML = parkingAdd ? `+₹${parkingAdd}` : '₹0';
+        document.getElementById('aiPrice').innerHTML = `₹${finalPrice.toLocaleString()}`;
+    }
 
+    document.getElementById('vipParking')?.addEventListener('change', updatePrice);
+
+    // Calendar
+    let currentDate = new Date(), currentMonth = currentDate.getMonth(), currentYear = currentDate.getFullYear();
     function drawCalendar() {
-        const firstDay = new Date(currentYear, currentMonth, 1).getDay();
-        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        let firstDay = new Date(currentYear, currentMonth, 1).getDay();
+        let daysInMonth = new Date(currentYear, currentMonth+1, 0).getDate();
+        let monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
         document.getElementById('currentMonth').innerHTML = `${monthNames[currentMonth]} ${currentYear}`;
-        
         let html = '';
-        for (let i = 0; i < firstDay; i++) html += '<div></div>';
-        
-        for (let d = 1; d <= daysInMonth; d++) {
-            const dateStr = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-            const isBooked = bookedDates.includes(dateStr);
-            const isSelected = selectedDate === dateStr;
-            html += `
-                <div class="calendar-day ${isBooked ? 'booked' : 'available'} ${isSelected ? 'selected' : ''}" 
-                     onclick="${!isBooked ? `selectDate('${dateStr}')` : ''}">
-                    ${d}
-                </div>
-            `;
+        for(let i=0;i<firstDay;i++) html += '<div></div>';
+        for(let d=1;d<=daysInMonth;d++) {
+            let dateStr = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            let isBooked = bookedDates.includes(dateStr);
+            let isSelected = selectedDate === dateStr;
+            html += `<div class="calendar-day ${isBooked?'booked':'available'} ${isSelected?'selected':''}" onclick="${!isBooked?`selectDate('${dateStr}')`:''}">${d}</div>`;
         }
         document.getElementById('calendarGrid').innerHTML = html;
     }
+    window.selectDate = (date) => { selectedDate = date; drawCalendar(); updatePrice(); };
+    window.changeMonth = (delta) => { currentMonth += delta; if(currentMonth<0){currentMonth=11;currentYear--;} if(currentMonth>11){currentMonth=0;currentYear++;} drawCalendar(); };
 
-    window.selectDate = (date) => {
-        selectedDate = date;
-        drawCalendar();
+    window.selectPayment = (type) => { paymentType = type; document.querySelectorAll('.payment-option').forEach(opt=>opt.classList.remove('selected')); event.target.classList.add('selected'); };
+    window.callAgent = () => { if(cityAgent?.phone) window.location.href = `tel:${cityAgent.phone}`; else alert('Agent not available'); };
+
+    window.openAISuggestModal = () => document.getElementById('aiModal').style.display = 'flex';
+    window.closeAIModal = () => document.getElementById('aiModal').style.display = 'none';
+    window.aiSuggest = () => {
+        let guests = parseInt(document.getElementById('guestCountInput').value);
+        if(!guests) { alert('Enter guest count'); return; }
+        let suggested = Math.min(100, Math.max(10, Math.ceil((guests / stadium.totalCapacity) * 100)));
+        selectPortion(suggested);
+        document.getElementById('selectedAreaText').innerHTML = `${suggested}% (Recommended for ${guests} guests)`;
+        closeAIModal();
     };
 
-    window.changeMonth = (delta) => {
-        currentMonth += delta;
-        if (currentMonth < 0) { currentMonth = 11; currentYear--; }
-        if (currentMonth > 11) { currentMonth = 0; currentYear++; }
-        drawCalendar();
+    window.dragStart = (e) => { e.dataTransfer.setData('text/plain', e.target.dataset.type); };
+    window.allowDrop = (e) => e.preventDefault();
+    window.drop = (e) => {
+        e.preventDefault(); let type = e.dataTransfer.getData('text/plain'); let div = document.createElement('div'); div.className = 'placed-item';
+        div.style.left = (e.offsetX-20)+'px'; div.style.top = (e.offsetY-15)+'px';
+        div.innerHTML = type==='stage'?'🎭 Stage':type==='food'?'🍔 Food':type==='vip'?'👑 VIP':'🅿️ Parking';
+        document.getElementById('layoutCanvas').appendChild(div);
     };
 
-    window.selectPayment = (type) => {
-        paymentType = type;
-        document.querySelectorAll('.payment-option').forEach(opt => opt.classList.remove('selected'));
-        event.target.classList.add('selected');
-    };
+    function generateQR(bookingId) { new QRCode(document.getElementById('qrCode'), { text: `https://stadiumconnect.com/verify/${bookingId}`, width: 100, height: 100 }); document.getElementById('qrSection').style.display = 'block'; }
+    window.shareInvite = () => { let phone = document.getElementById('phone').value; if(phone) window.open(`https://wa.me/${phone}?text=You're invited to my event!`, '_blank'); else alert('Enter phone'); };
 
-    window.callAgent = () => {
-        if (cityAgent && cityAgent.phone) {
-            window.location.href = `tel:${cityAgent.phone}`;
-        } else {
-            alert('Agent contact not available');
-        }
-    };
-
-    window.bookStadium = async () => {
+    window.submitBooking = async () => {
         const user = auth.currentUser;
-        if (!user) { alert('Please login first'); window.location.href = 'login.html'; return; }
-        if (selectedPercent === 0) { alert('Please select a portion of the stadium'); return; }
-        if (!selectedDate) { alert('Please select an event date'); return; }
-        
-        const totalPrice = parseInt(document.getElementById('aiPrice').innerText.replace(/[₹,]/g, ''));
-        const advanceAmount = Math.floor(totalPrice * 0.25);
-        const finalAmount = paymentType === 'full' ? totalPrice : advanceAmount;
-        
-        const bookingData = {
-            vendorId: stadium.id,
-            vendorName: stadium.name,
-            vendorCity: stadium.city,
-            category: 'stadium',
-            userId: user.uid,
-            userName: user.displayName || user.email,
-            userPhone: user.phoneNumber || '',
-            eventDate: selectedDate,
-            eventType: 'Stadium Booking',
-            eventLocation: stadium.location || stadium.city,
-            amount: totalPrice,
-            paymentType: paymentType,
-            paidAmount: finalAmount,
-            selectedPortion: `${selectedPercent}%`,
-            agentId: cityAgent?.id || '',
-            status: paymentType === 'full' ? 'confirmed' : 'partial',
-            createdAt: new Date().toISOString()
+        if(!user) { alert('Please login'); window.location.href='login.html'; return; }
+        const fullName = document.getElementById('fullName').value, phone = document.getElementById('phone').value, email = document.getElementById('email').value, city = document.getElementById('city').value;
+        const eventLocation = document.getElementById('eventLocation').value, eventDate = document.getElementById('eventDate').value, eventType = document.getElementById('eventType').value, guestCount = document.getElementById('guestCount').value;
+        if(!fullName||!phone||!email||!city||!eventLocation||!eventDate||!guestCount) { alert('Fill all fields'); return; }
+        if(selectedPercent===0) { alert('Select area'); return; }
+        if(!selectedDate) { alert('Select date'); return; }
+        let price = parseInt(document.getElementById('aiPrice').innerText.replace(/[₹,]/g,''));
+        let advance = Math.floor(price * 0.25);
+        let vip = document.getElementById('vipParking')?.checked || false;
+        let booking = {
+            vendorId: stadium.id, vendorName: stadium.name, userId: user.uid, fullName, phone, email, city, eventLocation,
+            eventDate: selectedDate, eventTime: document.getElementById('eventTime').value, eventType, guestCount: parseInt(guestCount),
+            specialRequests: document.getElementById('specialRequests').value, selectedPortion: `${selectedPercent}%`, vipParking: vip,
+            amount: price, paidAmount: paymentType==='full'?price:advance, paymentType, agentId: cityAgent?.id||'', status: paymentType==='full'?'confirmed':'partial', createdAt: new Date().toISOString()
         };
-        
-        try {
-            await addDoc(collection(db, 'bookings'), bookingData);
-            if (paymentType === 'full') {
-                alert(`✅ Booking confirmed! Amount: ₹${finalAmount.toLocaleString()}\nAgent will contact you.`);
-            } else {
-                alert(`✅ Advance payment of ₹${advanceAmount.toLocaleString()} received!\nRemaining ₹${(totalPrice - advanceAmount).toLocaleString()} to be paid 4 months before event.`);
-            }
-            window.location.href = 'dashboard.html';
-        } catch (error) {
-            alert('Booking failed: ' + error.message);
-        }
+        const docRef = await addDoc(collection(db, 'bookings'), booking);
+        generateQR(docRef.id);
+        alert(`✅ Booking confirmed! Amount: ₹${(paymentType==='full'?price:advance).toLocaleString()}\nQR entry pass ready!`);
+        window.location.href = 'dashboard.html';
     };
 
     loadStadium();
 </script>
-
 </body>
 </html>
-
 
