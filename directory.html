@@ -3,818 +3,802 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>StadiumConnect | Vendor Directory</title>
-    
-    <!-- PWA MANIFEST -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#001a4d">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="StadiumConnect">
-    
+    <title>StadiumConnect - Find Vendors & Stadiums</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
         }
 
         body {
-            background: #FFFFFF;
-            font-family: 'Poppins', 'Segoe UI', 'Inter', sans-serif;
-            min-height: 100vh;
+            background: #f8f9fa;
         }
 
-        .vendor-container {
+        /* Header */
+        .header {
+            background: white;
+            padding: 16px 24px;
             display: flex;
-            min-height: 100vh;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            position: sticky;
+            top: 0;
+            z-index: 100;
             flex-wrap: wrap;
+            gap: 15px;
         }
 
-        /* LEFT SIDE - SOLID BLACK */
-        .vendor-sidebar {
-            width: 280px;
-            background: #000000;
-            padding: 2rem 1.5rem;
-            position: fixed;
-            height: 100vh;
-            overflow-y: auto;
-            box-shadow: 5px 0 25px rgba(0, 0, 0, 0.3);
-            z-index: 10;
-        }
-
-        .sidebar-logo {
-            text-align: center;
-            margin-bottom: 2.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .sidebar-logo h2 {
-            color: #FFFFFF;
-            font-size: 1.5rem;
-            letter-spacing: 2px;
-        }
-
-        .sidebar-logo p {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 0.7rem;
-            margin-top: 0.5rem;
-        }
-
-        .category-btn {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: #FFFFFF;
-            padding: 1rem 1.2rem;
-            margin-bottom: 1rem;
-            border-radius: 1rem;
-            font-size: 1rem;
-            font-weight: 600;
+        .logo {
+            font-size: 22px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ff6b35, #ff9068);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             cursor: pointer;
-            transition: all 0.3s ease;
+        }
+
+        .location-chip {
             display: flex;
             align-items: center;
+            gap: 8px;
+            background: #f5f5f5;
+            padding: 10px 18px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+
+        .location-chip:hover {
+            background: #e8e8e8;
+        }
+
+        .nav-buttons {
+            display: flex;
             gap: 12px;
-            text-align: left;
         }
 
-        .category-btn:hover {
-            background: rgba(255, 255, 255, 0.15);
-            transform: translateX(5px);
+        .nav-buttons a {
+            text-decoration: none;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: 0.2s;
         }
 
-        .category-btn.active {
-            background: #001a4d;
-            border-color: #FFFFFF;
+        .nav-buttons a:first-child {
+            background: transparent;
+            border: 1px solid #ff6b35;
+            color: #ff6b35;
         }
 
-        .category-icon {
-            font-size: 1.5rem;
+        .nav-buttons a:first-child:hover {
+            background: #fff5f0;
         }
 
-        /* RIGHT SIDE */
-        .vendor-main {
-            flex: 1;
-            margin-left: 280px;
-            padding: 2rem;
-            background: #FFFFFF;
-            min-height: 100vh;
+        .nav-buttons a:last-child {
+            background: #ff6b35;
+            color: white;
+        }
+
+        .nav-buttons a:last-child:hover {
+            background: #e55a2b;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 50px 20px;
+            background: linear-gradient(135deg, #fff, #fef9f5);
+        }
+
+        .hero h1 {
+            font-size: 42px;
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+
+        .hero h1 span {
+            color: #ff6b35;
+        }
+
+        .hero p {
+            font-size: 16px;
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto;
         }
 
         /* Search Bar */
         .search-section {
-            max-width: 500px;
-            margin-left: auto;
-            margin-bottom: 2rem;
+            max-width: 700px;
+            margin: 0 auto 30px;
+            padding: 0 20px;
         }
 
         .search-box {
             display: flex;
-            align-items: center;
-            background: #f5f5f5;
-            border-radius: 3rem;
-            padding: 0.8rem 1.5rem;
+            background: white;
+            border-radius: 50px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            overflow: hidden;
             border: 1px solid #e0e0e0;
         }
 
         .search-box input {
             flex: 1;
+            padding: 16px 24px;
             border: none;
-            background: transparent;
-            font-size: 1rem;
             outline: none;
+            font-size: 16px;
         }
 
-        .search-icon {
-            font-size: 1.2rem;
-            color: #888;
-            margin-right: 10px;
+        .search-box button {
+            background: #ff6b35;
+            border: none;
+            padding: 0 28px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
         }
 
-        /* City Grid */
-        .cities-title {
-            font-size: 1.8rem;
+        .search-box button:hover {
+            background: #e55a2b;
+        }
+
+        /* Section Styles */
+        .section {
+            padding: 50px 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 28px;
             font-weight: 700;
-            color: #000000;
-            margin-bottom: 1.5rem;
-            border-left: 4px solid #001a4d;
-            padding-left: 1rem;
+            margin-bottom: 32px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-title span {
+            background: #ff6b35;
+            color: white;
+            font-size: 12px;
+            padding: 4px 12px;
+            border-radius: 30px;
+        }
+
+        /* Categories Grid (Vendors) */
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .category-card {
+            background: white;
+            border-radius: 20px;
+            padding: 32px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid #f0f0f0;
+        }
+
+        .category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+            border-color: #ffebe3;
+        }
+
+        .category-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .category-card h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .category-card p {
+            font-size: 13px;
+            color: #ff6b35;
+            font-weight: 500;
+        }
+
+        /* Stadiums AI Section */
+        .ai-section {
+            background: linear-gradient(135deg, #0a0a2a, #1a1a3a);
+            border-radius: 32px;
+            padding: 48px;
+            margin-bottom: 50px;
+            color: white;
+        }
+
+        .ai-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .ai-header h2 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+
+        .ai-header p {
+            color: rgba(255,255,255,0.7);
+        }
+
+        .stadiums-slider {
+            display: flex;
+            gap: 24px;
+            overflow-x: auto;
+            padding-bottom: 16px;
+            scrollbar-width: thin;
+        }
+
+        .stadiums-slider::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .stadiums-slider::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+
+        .stadiums-slider::-webkit-scrollbar-thumb {
+            background: #ff6b35;
+            border-radius: 10px;
+        }
+
+        .stadium-card {
+            min-width: 280px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 24px;
+            cursor: pointer;
+            transition: 0.3s;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .stadium-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.2);
+            border-color: #ff6b35;
+        }
+
+        .stadium-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .stadium-name {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .stadium-location {
+            font-size: 13px;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 12px;
+        }
+
+        .stadium-price {
+            font-size: 22px;
+            font-weight: 800;
+            color: #ff6b35;
+            margin-bottom: 12px;
+        }
+
+        .ai-badge {
+            display: inline-block;
+            background: rgba(255,107,53,0.3);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        /* Cities Section */
+        .cities-section {
+            background: #fef9f5;
+            border-radius: 32px;
+            padding: 48px;
+            margin-top: 20px;
+        }
+
+        .cities-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 32px;
+            text-align: center;
         }
 
         .cities-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 1.2rem;
-            margin-bottom: 2rem;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 16px;
+            margin-bottom: 40px;
         }
 
         .city-card {
-            background: #f8f9fa;
-            border: 1px solid #e8e8e8;
-            border-radius: 1rem;
-            padding: 1.2rem;
+            background: white;
+            padding: 16px;
+            border-radius: 60px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: 0.2s;
+            font-weight: 500;
+            border: 1px solid #e0e0e0;
         }
 
         .city-card:hover {
-            transform: translateY(-5px);
-            border-color: #001a4d;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-        }
-
-        .city-name {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: #001a4d;
-        }
-
-        .city-count {
-            font-size: 0.8rem;
-            color: #666;
-            margin-top: 0.3rem;
-        }
-
-        /* Vendors Section */
-        .vendors-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #000000;
-            margin: 1rem 0 1.5rem 0;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        .back-btn {
-            background: #f0f0f0;
-            border: none;
-            padding: 0.5rem 1.2rem;
-            border-radius: 2rem;
-            font-size: 0.9rem;
-            cursor: pointer;
-            font-weight: 500;
-            color: #001a4d;
-        }
-
-        .back-btn:hover {
-            background: #001a4d;
+            background: #ff6b35;
             color: white;
+            border-color: #ff6b35;
+            transform: translateY(-2px);
         }
 
-        .vendors-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .vendor-card {
-            background: #ffffff;
-            border: 1px solid #e8e8e8;
-            border-radius: 1rem;
-            padding: 1.2rem;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .vendor-card:hover {
-            border-color: #001a4d;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-            transform: translateY(-3px);
-        }
-
-        .vendor-card.active {
-            background: #001a4d;
-            border-color: #001a4d;
-        }
-
-        .vendor-card.active .vendor-name {
-            color: #FFFFFF;
-        }
-
-        .vendor-card.active .vendor-rating {
-            color: #ffd966;
-        }
-
-        .vendor-card.active .vendor-location {
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        .vendor-card.active .view-profile {
-            background: rgba(255, 255, 255, 0.2);
-            color: #FFFFFF;
-        }
-
-        .vendor-name {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: #001a4d;
-        }
-
-        .vendor-rating {
-            color: #ffb347;
-            font-size: 0.85rem;
-            margin: 0.5rem 0;
-        }
-
-        .vendor-location {
-            color: #666;
-            font-size: 0.8rem;
-            margin: 0.3rem 0;
-        }
-
-        .view-profile {
-            margin-top: 1rem;
-            padding: 0.5rem;
-            background: #f5f5f5;
-            text-align: center;
-            border-radius: 0.5rem;
-            color: #001a4d;
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-
-        .book-btn {
-            margin-top: 0.8rem;
-            padding: 0.6rem;
-            background: #001a4d;
-            text-align: center;
-            border-radius: 0.5rem;
-            color: white;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .book-btn:hover {
-            background: #000033;
-            transform: scale(1.02);
-        }
-
-        .wishlist-btn {
-            margin-top: 0.8rem;
-            padding: 0.6rem;
-            background: #ffc107;
-            color: #000;
-            text-align: center;
-            border-radius: 0.5rem;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 0.8rem;
-        }
-
-        .no-results {
-            text-align: center;
-            padding: 3rem;
-            color: #999;
-        }
-
-        /* Modal Styles */
-        .modal {
+        /* Results Section */
+        .results-section {
+            margin-top: 40px;
             display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(5px);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
         }
 
-        .modal-content {
-            background: white;
-            border-radius: 1.5rem;
-            max-width: 500px;
-            width: 90%;
-            padding: 2rem;
-            animation: modalIn 0.3s ease;
+        .results-section.active {
+            display: block;
         }
 
-        @keyframes modalIn {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        .modal-header {
+        .results-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid #001a4d;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 15px;
         }
 
-        .modal-header h3 {
-            color: #001a4d;
+        .results-header h3 {
+            font-size: 24px;
+            font-weight: 700;
         }
 
-        .close-modal {
+        .close-results {
             background: none;
             border: none;
-            font-size: 1.5rem;
+            font-size: 20px;
             cursor: pointer;
             color: #666;
         }
 
-        .form-group {
-            margin-bottom: 1rem;
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
         }
 
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: #333;
-        }
-
-        .form-group input, .form-group select, .form-group textarea {
-            width: 100%;
-            padding: 0.8rem;
-            border: 1px solid #ddd;
-            border-radius: 0.5rem;
-            font-size: 0.9rem;
-        }
-
-        .submit-booking {
-            width: 100%;
-            background: #28a745;
-            color: white;
-            border: none;
-            padding: 0.8rem;
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            font-weight: 600;
+        .result-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
             cursor: pointer;
-            margin-top: 1rem;
+            transition: 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
 
-        @media (max-width: 768px) {
-            .vendor-sidebar {
-                width: 100%;
-                position: relative;
-                height: auto;
+        .result-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+        }
+
+        .result-image {
+            height: 160px;
+            background: linear-gradient(135deg, #ff6b35, #ff9068);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+        }
+
+        .result-info {
+            padding: 20px;
+        }
+
+        .result-name {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .result-location {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .result-price {
+            font-size: 18px;
+            font-weight: 700;
+            color: #ff6b35;
+        }
+
+        .result-badge {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            margin-top: 8px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #ff6b35;
+        }
+
+        footer {
+            text-align: center;
+            padding: 32px;
+            color: #aaa;
+            border-top: 1px solid #eee;
+            margin-top: 40px;
+        }
+
+        @media (max-width: 900px) {
+            .categories-grid {
+                grid-template-columns: repeat(2, 1fr);
             }
-            .vendor-main {
-                margin-left: 0;
-                padding: 1rem;
+            .ai-section {
+                padding: 32px 24px;
             }
-            .category-btn {
-                display: inline-flex;
-                width: auto;
-                margin: 0.5rem;
+            .cities-section {
+                padding: 32px 24px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .categories-grid {
+                grid-template-columns: 1fr;
+            }
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+            .hero h1 {
+                font-size: 28px;
             }
         }
     </style>
 </head>
 <body>
 
-<div class="vendor-container">
-    <!-- LEFT SIDE - SOLID BLACK -->
-    <div class="vendor-sidebar" id="sidebarCategories">
-        <div class="sidebar-logo">
-            <h2>🏟️ STADIUMCONNECT</h2>
-            <p>Royal Vendor Partners</p>
-        </div>
+<header class="header">
+    <div class="logo" onclick="window.location.href='index.html'">STADIUM<span>CONNECT</span></div>
+    <div class="location-chip" onclick="detectLocation()">
+        <i class="fas fa-map-marker-alt"></i> <span id="locationText">Detect Location</span>
     </div>
+    <div class="nav-buttons" id="navButtons">
+        <a href="login.html">Login</a>
+        <a href="register.html">Register</a>
+    </div>
+</header>
 
-    <!-- RIGHT SIDE -->
-    <div class="vendor-main">
-        <div class="search-section">
-            <div class="search-box">
-                <span class="search-icon">🔍</span>
-                <input type="text" id="searchInput" placeholder="Search city...">
-            </div>
+<section class="hero">
+    <h1>Find the perfect <span>vendors & stadiums</span> for your event</h1>
+    <p>Discover top-rated decorators, caterers, photographers, and AI-powered stadium booking</p>
+</section>
+
+<div class="search-section">
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Search by name, city, or category...">
+        <button onclick="searchAll()"><i class="fas fa-search"></i> Search</button>
+    </div>
+</div>
+
+<!-- Vendors Section -->
+<div class="section">
+    <div class="section-title">
+        🎯 Featured Vendors
+        <span>Top Rated</span>
+    </div>
+    <div class="categories-grid">
+        <div class="category-card" onclick="filterByCategory('decorator')">
+            <div class="category-icon">🎨</div>
+            <h3>Decorators</h3>
+            <p>200+ professionals</p>
         </div>
-
-        <div id="citiesSection">
-            <div class="cities-title">📍 Select Your City</div>
-            <div class="cities-grid" id="citiesGrid"></div>
+        <div class="category-card" onclick="filterByCategory('photographer')">
+            <div class="category-icon">📸</div>
+            <h3>Photographers</h3>
+            <p>150+ professionals</p>
         </div>
-
-        <div id="vendorsSection" style="display: none;">
-            <div class="vendors-title">
-                <button class="back-btn" onclick="goBackToCities()">← Back to Cities</button>
-                <span id="vendorsTitle"></span>
-            </div>
-            <div class="vendors-grid" id="vendorsGrid"></div>
+        <div class="category-card" onclick="filterByCategory('caterer')">
+            <div class="category-icon">🍽️</div>
+            <h3>Caterers</h3>
+            <p>300+ professionals</p>
+        </div>
+        <div class="category-card" onclick="filterByCategory('bandbaja')">
+            <div class="category-icon">🎵</div>
+            <h3>Band Baja</h3>
+            <p>100+ professionals</p>
         </div>
     </div>
 </div>
 
-<!-- Booking Modal -->
-<div id="bookingModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>📅 Book This Vendor</h3>
-            <button class="close-modal" onclick="closeBookingModal()">&times;</button>
+<!-- Stadiums AI Section -->
+<div class="section">
+    <div class="ai-section">
+        <div class="ai-header">
+            <h2>🤖 AI-Powered Stadium Booking</h2>
+            <p>Select your portion, AI calculates the price | Fractional booking available</p>
         </div>
-        <form id="bookingForm">
-            <input type="hidden" id="bookingVendorId">
-            <input type="hidden" id="bookingVendorName">
-            <div class="form-group">
-                <label>Your Full Name *</label>
-                <input type="text" id="userName" required placeholder="Enter your name">
-            </div>
-            <div class="form-group">
-                <label>Your Phone Number *</label>
-                <input type="tel" id="userPhone" required placeholder="Enter your phone number">
-            </div>
-            <div class="form-group">
-                <label>Event Date *</label>
-                <input type="date" id="eventDate" required>
-            </div>
-            <div class="form-group">
-                <label>Event Type *</label>
-                <select id="eventType" required>
-                    <option value="">Select event type</option>
-                    <option value="Wedding">Wedding</option>
-                    <option value="Corporate Event">Corporate Event</option>
-                    <option value="Birthday Party">Birthday Party</option>
-                    <option value="Concert">Concert</option>
-                    <option value="Sports Event">Sports Event</option>
-                    <option value="Other">Other</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Event Location *</label>
-                <input type="text" id="eventLocation" required placeholder="Full address with city">
-            </div>
-            <div class="form-group">
-                <label>Expected Guests</label>
-                <input type="number" id="guestCount" placeholder="Number of guests">
-            </div>
-            <div class="form-group">
-                <label>Special Requests (Optional)</label>
-                <textarea id="specialRequests" rows="3" placeholder="Any special requirements..."></textarea>
-            </div>
-            <div class="form-group">
-                <label>Agent ID (if referred)</label>
-                <input type="text" id="agentId" placeholder="Enter agent ID if any">
-            </div>
-            <button type="submit" class="submit-booking">Confirm Booking →</button>
-        </form>
+        <div class="stadiums-slider" id="stadiumsSlider">
+            <div class="loading">Loading stadiums...</div>
+        </div>
     </div>
 </div>
 
-<script>
-    // ========= DATA LOADING =========
-    let categories = [];
-    let categoryDisplayNames = {};
-    let cities = [];
-    let cityDisplayNames = {};
-    let vendorsData = {};
-    let currentCategory = "";
-    let selectedCity = null;
-    let activeVendorCard = null;
+<!-- Popular Cities Section -->
+<div class="section">
+    <div class="cities-section">
+        <div class="cities-title">📍 Popular Cities</div>
+        <div class="cities-grid" id="citiesGrid"></div>
+        
+        <!-- Results Section (shows when city clicked) -->
+        <div id="resultsSection" class="results-section">
+            <div class="results-header">
+                <h3 id="resultsTitle">Results in <span id="selectedCityName"></span></h3>
+                <button class="close-results" onclick="closeResults()">✕ Close</button>
+            </div>
+            <div id="resultsGrid" class="results-grid"></div>
+        </div>
+    </div>
+</div>
 
-    function loadData() {
-        const savedCategories = localStorage.getItem('categories');
-        const savedCategoryNames = localStorage.getItem('categoryDisplayNames');
-        const savedCities = localStorage.getItem('cities');
-        const savedCityNames = localStorage.getItem('cityDisplayNames');
-        const savedVendors = localStorage.getItem('vendorsDataBackup');
-        
-        categories = savedCategories ? JSON.parse(savedCategories) : ["decorator", "caterer", "photographer", "bandbaja", "stadium"];
-        categoryDisplayNames = savedCategoryNames ? JSON.parse(savedCategoryNames) : {
-            decorator: "Decorators", caterer: "Caterers", photographer: "Photographers", 
-            bandbaja: "Band Baja", stadium: "Stadiums"
-        };
-        cities = savedCities ? JSON.parse(savedCities) : ["nagpur", "pandharkawada", "yavatmal", "adilabad", "nanded", "kinwat"];
-        cityDisplayNames = savedCityNames ? JSON.parse(savedCityNames) : {
-            nagpur: "Nagpur", pandharkawada: "Pandharkawada", yavatmal: "Yavatmal",
-            adilabad: "Adilabad", nanded: "Nanded", kinwat: "Kinwat"
-        };
-        vendorsData = savedVendors ? JSON.parse(savedVendors) : {};
-        
-        categories.forEach(cat => {
-            if (!vendorsData[cat]) vendorsData[cat] = {};
-            cities.forEach(city => {
-                if (!vendorsData[cat][city]) vendorsData[cat][city] = [];
+<footer>
+    <p>© 2025 StadiumConnect | Your Need, Our Network</p>
+</footer>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
+        authDomain: "stadiumconnect-8fecb.firebaseapp.com",
+        projectId: "stadiumconnect-8fecb",
+        storageBucket: "stadiumconnect-8fecb.firebasestorage.app",
+        messagingSenderId: "458108198578",
+        appId: "1:458108198578:web:83d83646f0e24e718b73ab"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    let allVendors = [];
+    let allStadiums = [];
+    let allCities = [];
+
+    // Load all data
+    async function loadData() {
+        try {
+            const vendorsSnap = await getDocs(collection(db, "vendors"));
+            allVendors = vendorsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+            allStadiums = allVendors.filter(v => v.category === 'stadium');
+            allVendors = allVendors.filter(v => v.category !== 'stadium');
+            
+            // Load cities
+            const citiesDoc = await getDocs(collection(db, "settings"));
+            citiesDoc.forEach(doc => {
+                if (doc.id === 'cities') allCities = doc.data().list || [];
             });
-        });
-    }
-
-    // ========= USER FUNCTIONS =========
-    function getCurrentUser() {
-        const user = localStorage.getItem('currentUser');
-        return user ? JSON.parse(user) : null;
-    }
-
-    // ========= ADD TO WISHLIST =========
-    function addToWishlistFromCard(id, name, categoryName, rating, experience, location, priceRange) {
-        const user = getCurrentUser();
-        if (!user) {
-            alert('Please login to save vendors to wishlist');
-            window.location.href = 'login.html';
-            return;
+            if (allCities.length === 0) {
+                allCities = [
+                    { name: 'Nagpur', popular: true }, { name: 'Mumbai', popular: true },
+                    { name: 'Pune', popular: true }, { name: 'Delhi', popular: true },
+                    { name: 'Bangalore', popular: true }, { name: 'Hyderabad', popular: false }
+                ];
+            }
+            
+            renderCities();
+            renderStadiums();
+            updateNav();
+        } catch (error) {
+            console.error("Error loading data:", error);
         }
-        
-        const vendor = { id, name, categoryName, rating, experience, location, priceRange };
-        let wishlist = JSON.parse(localStorage.getItem(`wishlist_${user.id}`) || '[]');
-        
-        if (wishlist.find(v => v.id === id)) {
-            alert('❤️ Vendor already in your wishlist!');
-            return;
-        }
-        
-        wishlist.push(vendor);
-        localStorage.setItem(`wishlist_${user.id}`, JSON.stringify(wishlist));
-        alert(`✅ ${name} added to wishlist!`);
     }
 
-    // ========= RENDER FUNCTIONS =========
-    function renderCategories() {
-        const sidebar = document.getElementById('sidebarCategories');
-        const logoHtml = `
-            <div class="sidebar-logo">
-                <h2>🏟️ STADIUMCONNECT</h2>
-                <p>Royal Vendor Partners</p>
+    // Render cities
+    function renderCities() {
+        const popularCities = allCities.filter(c => c.popular === true);
+        const container = document.getElementById('citiesGrid');
+        container.innerHTML = popularCities.map(city => `
+            <div class="city-card" onclick="showCityResults('${city.name}')">
+                📍 ${city.name}
             </div>
-        `;
-        
-        const categoryButtons = categories.map(cat => `
-            <button class="category-btn ${currentCategory === cat ? 'active' : ''}" data-category="${cat}" onclick="changeCategory('${cat}')">
-                <span class="category-icon">${getCategoryIcon(cat)}</span>
-                <span>${categoryDisplayNames[cat] || cat}</span>
-                ${cat === 'stadium' ? '<span style="margin-left:auto; font-size:10px; background:#ff6b35; padding:2px 6px; border-radius:20px;">AI</span>' : ''}
-            </button>
         `).join('');
-        
-        sidebar.innerHTML = logoHtml + categoryButtons;
     }
+
+    // Render stadiums slider
+    function renderStadiums() {
+        const container = document.getElementById('stadiumsSlider');
+        if (allStadiums.length === 0) {
+            container.innerHTML = '<div class="loading" style="color:white;">No stadiums available yet</div>';
+            return;
+        }
+        container.innerHTML = allStadiums.slice(0, 6).map(stadium => `
+            <div class="stadium-card" onclick="openStadium('${stadium.id}')">
+                <div class="stadium-icon">🏟️</div>
+                <div class="stadium-name">${stadium.name || 'Stadium'}</div>
+                <div class="stadium-location"><i class="fas fa-map-marker-alt"></i> ${stadium.city || 'Location'}</div>
+                <div class="stadium-price">${stadium.priceRange || 'Contact for price'}</div>
+                <div class="ai-badge">🤖 AI Fractional Booking</div>
+            </div>
+        `).join('');
+    }
+
+    // Show results for a city (vendors + stadiums)
+    window.showCityResults = (cityName) => {
+        const cityLower = cityName.toLowerCase();
+        
+        // Filter vendors in this city
+        const cityVendors = allVendors.filter(v => v.city?.toLowerCase() === cityLower);
+        // Filter stadiums in this city
+        const cityStadiums = allStadiums.filter(s => s.city?.toLowerCase() === cityLower);
+        
+        const allResults = [...cityVendors, ...cityStadiums];
+        
+        document.getElementById('selectedCityName').innerText = cityName;
+        const resultsGrid = document.getElementById('resultsGrid');
+        
+        if (allResults.length === 0) {
+            resultsGrid.innerHTML = '<div style="text-align:center; padding:40px; color:#999;">No vendors or stadiums found in this city yet.</div>';
+        } else {
+            resultsGrid.innerHTML = allResults.map(item => {
+                const isStadium = item.category === 'stadium';
+                return `
+                    <div class="result-card" onclick="${isStadium ? `openStadium('${item.id}')` : `openVendor('${item.id}')`}">
+                        <div class="result-image">${isStadium ? '🏟️' : getCategoryIcon(item.category)}</div>
+                        <div class="result-info">
+                            <div class="result-name">${item.name}</div>
+                            <div class="result-location"><i class="fas fa-map-marker-alt"></i> ${item.location || item.city}</div>
+                            <div class="result-price">${item.priceRange || 'Contact for price'}</div>
+                            <div class="result-badge">${isStadium ? '🤖 AI Fractional Booking' : item.category}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        document.getElementById('resultsSection').classList.add('active');
+        document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+    };
 
     function getCategoryIcon(category) {
-        const icons = { decorator: "🎨", caterer: "🍽️", photographer: "📸", bandbaja: "🎵", stadium: "🏟️" };
-        return icons[category] || "🏷️";
+        const icons = { decorator: '🎨', photographer: '📸', caterer: '🍽️', bandbaja: '🎵' };
+        return icons[category] || '🏷️';
     }
 
-    function renderCities() {
+    window.filterByCategory = (category) => {
+        window.location.href = `vendors.html?category=${category}`;
+    };
+
+    window.openStadium = (id) => {
+        window.location.href = `stadium-booking-3d.html?id=${id}`;
+    };
+
+    window.openVendor = (id) => {
+        window.location.href = `vendor-detail.html?id=${id}`;
+    };
+
+    window.searchAll = () => {
         const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-        const filteredCities = cities.filter(city => cityDisplayNames[city].toLowerCase().includes(searchTerm));
+        if (!searchTerm) return;
         
-        const grid = document.getElementById('citiesGrid');
-        if (filteredCities.length === 0) {
-            grid.innerHTML = '<div class="no-results">No cities found</div>';
-            return;
-        }
+        const vendorResults = allVendors.filter(v => 
+            v.name?.toLowerCase().includes(searchTerm) || 
+            v.city?.toLowerCase().includes(searchTerm) ||
+            v.category?.toLowerCase().includes(searchTerm)
+        );
+        const stadiumResults = allStadiums.filter(s => 
+            s.name?.toLowerCase().includes(searchTerm) || 
+            s.city?.toLowerCase().includes(searchTerm)
+        );
+        const allResults = [...vendorResults, ...stadiumResults];
         
-        grid.innerHTML = filteredCities.map(city => `
-            <div class="city-card" onclick="selectCity('${city}')">
-                <div class="city-name">🏟️ ${cityDisplayNames[city]}</div>
-                <div class="city-count">${vendorsData[currentCategory]?.[city]?.length || 0} vendors available</div>
-            </div>
-        `).join('');
-    }
-
-    function selectCity(city) {
-        selectedCity = city;
-        const vendors = vendorsData[currentCategory]?.[city] || [];
+        document.getElementById('selectedCityName').innerText = `"${searchTerm}"`;
+        const resultsGrid = document.getElementById('resultsGrid');
         
-        document.getElementById('citiesSection').style.display = 'none';
-        document.getElementById('vendorsSection').style.display = 'block';
-        
-        document.getElementById('vendorsTitle').innerHTML = `${categoryDisplayNames[currentCategory]} in ${cityDisplayNames[city]}`;
-        
-        const vendorsGrid = document.getElementById('vendorsGrid');
-        if (vendors.length === 0) {
-            vendorsGrid.innerHTML = '<div class="no-results">No vendors available in this city yet. Coming soon!</div>';
-            return;
-        }
-        
-        vendorsGrid.innerHTML = vendors.map((vendor, index) => {
-            // For stadiums, redirect to 3D booking page
-            const isStadium = currentCategory === 'stadium';
-            const onClickAction = isStadium ? `openStadiumBooking('${vendor.id}')` : `openVendorProfile('${currentCategory}', '${city}', ${index}, this)`;
-            
-            return `
-                <div class="vendor-card" onclick="${onClickAction}">
-                    <div class="vendor-name">${vendor.name}</div>
-                    <div class="vendor-rating">⭐ ${vendor.rating} ★ ${vendor.experience}</div>
-                    <div class="vendor-location">📍 ${vendor.location}</div>
-                    <div class="vendor-location">💰 ${vendor.priceRange}</div>
-                    <div class="view-profile">${isStadium ? '🎯 AI Fractional Booking →' : '🔍 View Full Profile →'}</div>
-                    ${!isStadium ? `
-                        <div class="button-group">
-                            <div class="book-btn" onclick="event.stopPropagation(); openBookingModal('${vendor.id}', '${vendor.name}')">📅 Book Now</div>
-                            <div class="wishlist-btn" onclick="event.stopPropagation(); addToWishlistFromCard('${vendor.id}', '${vendor.name}', '${categoryDisplayNames[currentCategory]}', '${vendor.rating}', '${vendor.experience}', '${vendor.location}', '${vendor.priceRange}')">❤️ Save</div>
+        if (allResults.length === 0) {
+            resultsGrid.innerHTML = '<div style="text-align:center; padding:40px; color:#999;">No results found.</div>';
+        } else {
+            resultsGrid.innerHTML = allResults.map(item => {
+                const isStadium = item.category === 'stadium';
+                return `
+                    <div class="result-card" onclick="${isStadium ? `openStadium('${item.id}')` : `openVendor('${item.id}')`}">
+                        <div class="result-image">${isStadium ? '🏟️' : getCategoryIcon(item.category)}</div>
+                        <div class="result-info">
+                            <div class="result-name">${item.name}</div>
+                            <div class="result-location"><i class="fas fa-map-marker-alt"></i> ${item.location || item.city}</div>
+                            <div class="result-price">${item.priceRange || 'Contact for price'}</div>
+                            <div class="result-badge">${isStadium ? '🤖 AI Fractional Booking' : item.category}</div>
                         </div>
-                    ` : ''}
-                </div>
-            `;
-        }).join('');
-    }
-
-    function openStadiumBooking(stadiumId) {
-        window.location.href = `stadium-booking-3d.html?id=${stadiumId}`;
-    }
-
-    function openVendorProfile(category, city, index, element) {
-        if (activeVendorCard) {
-            activeVendorCard.classList.remove('active');
-        }
-        element.classList.add('active');
-        activeVendorCard = element;
-        
-        const vendor = vendorsData[category][city][index];
-        
-        localStorage.setItem('selectedVendor', JSON.stringify({
-            id: vendor.id,
-            name: vendor.name,
-            experience: vendor.experience,
-            location: vendor.location,
-            priceRange: vendor.priceRange,
-            phone: vendor.phone,
-            rating: vendor.rating,
-            description: vendor.description,
-            category: category,
-            city: city,
-            categoryName: categoryDisplayNames[category] || category
-        }));
-        
-        window.location.href = 'vendor-profile.html';
-    }
-
-    // ========= BOOKING FUNCTIONS =========
-    function openBookingModal(vendorId, vendorName) {
-        const user = getCurrentUser();
-        if (!user) {
-            alert('Please login to book a vendor');
-            window.location.href = 'login.html';
-            return;
+                    </div>
+                `;
+            }).join('');
         }
         
-        document.getElementById('bookingVendorId').value = vendorId;
-        document.getElementById('bookingVendorName').value = vendorName;
-        document.getElementById('bookingModal').style.display = 'flex';
-    }
+        document.getElementById('resultsSection').classList.add('active');
+        document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+    };
 
-    function closeBookingModal() {
-        document.getElementById('bookingModal').style.display = 'none';
-        document.getElementById('bookingForm').reset();
-    }
+    window.closeResults = () => {
+        document.getElementById('resultsSection').classList.remove('active');
+        document.getElementById('searchInput').value = '';
+    };
 
-    function saveBooking(bookingData) {
-        let bookings = JSON.parse(localStorage.getItem('userBookings') || '[]');
-        bookings.push(bookingData);
-        localStorage.setItem('userBookings', JSON.stringify(bookings));
-    }
+    window.detectLocation = () => {
+        if (navigator.geolocation) {
+            document.getElementById('locationText').innerHTML = '📍 Detecting...';
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const lat = pos.coords.latitude;
+                    const lng = pos.coords.longitude;
+                    // Reverse geocoding to get city name (simplified - just show nearby)
+                    document.getElementById('locationText').innerHTML = '📍 Location Detected';
+                    setTimeout(() => {
+                        if (confirm('Show vendors and stadiums near your location?')) {
+                            window.location.href = `vendors.html?lat=${lat}&lng=${lng}`;
+                        }
+                    }, 500);
+                },
+                () => {
+                    document.getElementById('locationText').innerHTML = '📍 Detect Location';
+                    alert('Please allow location access to see nearby vendors');
+                }
+            );
+        }
+    };
 
-    function goBackToCities() {
-        document.getElementById('citiesSection').style.display = 'block';
-        document.getElementById('vendorsSection').style.display = 'none';
-        renderCities();
-        activeVendorCard = null;
-    }
-
-    function changeCategory(category) {
-        currentCategory = category;
-        selectedCity = null;
-        
-        document.querySelectorAll('.category-btn').forEach(btn => {
-            if (btn.dataset.category === category) {
-                btn.classList.add('active');
+    function updateNav() {
+        onAuthStateChanged(auth, (user) => {
+            const nav = document.getElementById('navButtons');
+            if (user) {
+                nav.innerHTML = `
+                    <a href="dashboard.html">Dashboard</a>
+                    <a href="#" onclick="logout()">Logout</a>
+                `;
             } else {
-                btn.classList.remove('active');
+                nav.innerHTML = `<a href="login.html">Login</a><a href="register.html">Register</a>`;
             }
         });
-        
-        document.getElementById('citiesSection').style.display = 'block';
-        document.getElementById('vendorsSection').style.display = 'none';
-        renderCities();
     }
 
-    // ========= EVENT LISTENERS =========
-    document.getElementById('searchInput').addEventListener('input', function() {
-        if (document.getElementById('citiesSection').style.display !== 'none') {
-            renderCities();
-        }
-    });
-    
-    document.getElementById('bookingForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const user = getCurrentUser();
-        if (!user) {
-            alert('Please login first');
-            window.location.href = 'login.html';
-            return;
-        }
-        
-        const booking = {
-            id: Date.now(),
-            userId: user.id,
-            userName: document.getElementById('userName').value,
-            userPhone: document.getElementById('userPhone').value,
-            vendorId: document.getElementById('bookingVendorId').value,
-            vendorName: document.getElementById('bookingVendorName').value,
-            eventDate: document.getElementById('eventDate').value,
-            eventType: document.getElementById('eventType').value,
-            eventLocation: document.getElementById('eventLocation').value,
-            guestCount: document.getElementById('guestCount').value,
-            specialRequests: document.getElementById('specialRequests').value,
-            agentId: document.getElementById('agentId').value,
-            status: 'pending',
-            bookedAt: new Date().toISOString()
-        };
-        
-        saveBooking(booking);
-        alert('✅ Booking request sent! Vendor will contact you soon.');
-        closeBookingModal();
-    });
-    
-    window.onclick = function(event) {
-        const modal = document.getElementById('bookingModal');
-        if (event.target === modal) {
-            closeBookingModal();
-        }
-    }
+    window.logout = () => {
+        auth.signOut();
+        window.location.href = 'index.html';
+    };
 
-    // ========= CLOUD SYNC =========
-    async function syncFromCloud() {
-        if (typeof loadVendorsFromCloud !== 'undefined') {
-            try {
-                const cloudVendors = await loadVendorsFromCloud();
-                if (Object.keys(cloudVendors).length > 0) {
-                    vendorsData = cloudVendors;
-                    localStorage.setItem('vendorsDataBackup', JSON.stringify(vendorsData));
-                    renderCategories();
-                    renderCities();
-                    console.log('✅ Synced from cloud successfully');
-                }
-            } catch (error) {
-                console.log('Cloud sync failed, using local data');
-            }
-        }
-    }
-
-    // ========= INITIALIZE =========
+    // Initialize
     loadData();
-    currentCategory = categories[0] || "decorator";
-    renderCategories();
-    renderCities();
-    syncFromCloud();
-</script>
-
-<script>
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/service-worker.js')
-        .then(reg => console.log('Service Worker registered'))
-        .catch(err => console.log('Service Worker failed', err));
-}
 </script>
 
 </body>
