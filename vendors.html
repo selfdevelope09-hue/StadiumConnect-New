@@ -6,7 +6,6 @@
     <title>Premium Vendors - StadiumConnect</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -113,6 +112,22 @@
             border-radius: 40px;
             color: white;
             font-weight: 600;
+            font-size: 14px;
+        }
+
+        .refresh-btn {
+            background: rgba(255,107,53,0.1);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 40px;
+            cursor: pointer;
+            color: var(--primary);
+            font-weight: 500;
+            transition: 0.3s;
+        }
+        .refresh-btn:hover {
+            background: var(--primary);
+            color: white;
         }
 
         /* Hero Section */
@@ -428,6 +443,24 @@
             margin-bottom: 20px;
         }
 
+        .loading-container {
+            text-align: center;
+            padding: 80px;
+            grid-column: 1/-1;
+        }
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255,107,53,0.2);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
         footer {
             text-align: center;
             padding: 32px;
@@ -455,7 +488,12 @@
         <i class="fas fa-arrow-left"></i> Back
     </button>
     <div class="logo" onclick="window.location.href='index.html'">🏟️ STADIUM<span>CONNECT</span></div>
-    <div class="stats-badge" id="vendorCountBadge">Loading...</div>
+    <div style="display: flex; gap: 12px;">
+        <button class="refresh-btn" onclick="refreshData()">
+            <i class="fas fa-sync-alt"></i> Refresh
+        </button>
+        <div class="stats-badge" id="vendorCountBadge">Loading...</div>
+    </div>
 </header>
 
 <section class="hero-vendors">
@@ -491,9 +529,9 @@
 
 <div class="vendors-premium">
     <div id="vendorsContainer" class="vendors-grid-premium">
-        <div style="text-align: center; padding: 60px; grid-column: 1/-1;">
-            <i class="fas fa-spinner fa-spin" style="font-size: 40px; color: var(--primary);"></i>
-            <p style="margin-top: 20px;">Loading vendors...</p>
+        <div class="loading-container">
+            <div class="loader"></div>
+            <p>Loading vendors from database...</p>
         </div>
     </div>
 </div>
@@ -504,7 +542,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
@@ -523,65 +561,85 @@
     let currentSearch = '';
     let currentCity = '';
 
-    // Default Vendors Data
-    const defaultVendors = [
-        { id: "v1", name: "Elegant Decorators", category: "decorator", city: "Nagpur", priceRange: "₹50,000 - ₹2,00,000", rating: 4.9, imageUrl: "", location: "Sadar, Nagpur", phone: "9876543210" },
-        { id: "v2", name: "Capture Moments Photography", category: "photographer", city: "Nagpur", priceRange: "₹30,000 - ₹1,50,000", rating: 4.8, imageUrl: "", location: "Dharampeth, Nagpur" },
-        { id: "v3", name: "Royal Caterers", category: "caterer", city: "Nagpur", priceRange: "₹500/plate", rating: 4.9, imageUrl: "", location: "Civil Lines, Nagpur" },
-        { id: "v4", name: "Rhythm Band Baja", category: "bandbaja", city: "Nagpur", priceRange: "₹40,000 - ₹1,20,000", rating: 4.7, imageUrl: "", location: "Itwari, Nagpur" },
-        { id: "v5", name: "Mumbai Decorators", category: "decorator", city: "Mumbai", priceRange: "₹80,000 - ₹3,00,000", rating: 4.9, imageUrl: "", location: "Andheri, Mumbai" },
-        { id: "v6", name: "Mumbai Photographers", category: "photographer", city: "Mumbai", priceRange: "₹50,000 - ₹2,00,000", rating: 4.8, imageUrl: "", location: "Bandra, Mumbai" },
-        { id: "v7", name: "Delhi Caterers", category: "caterer", city: "Delhi", priceRange: "₹600/plate", rating: 4.7, imageUrl: "", location: "Connaught Place, Delhi" },
-        { id: "v8", name: "Bangalore Band", category: "bandbaja", city: "Bangalore", priceRange: "₹50,000 - ₹1,50,000", rating: 4.8, imageUrl: "", location: "Indiranagar, Bangalore" },
-        { id: "v9", name: "Pune Decorators", category: "decorator", city: "Pune", priceRange: "₹60,000 - ₹2,50,000", rating: 4.8, imageUrl: "", location: "Koregaon Park, Pune" },
-        { id: "v10", name: "Chennai Caterers", category: "caterer", city: "Chennai", priceRange: "₹550/plate", rating: 4.8, imageUrl: "", location: "T Nagar, Chennai" }
-    ];
-
-    const defaultCities = [
-        { name: 'Mumbai', popular: true }, { name: 'Delhi', popular: true },
-        { name: 'Bangalore', popular: true }, { name: 'Hyderabad', popular: true },
-        { name: 'Ahmedabad', popular: true }, { name: 'Chennai', popular: true },
-        { name: 'Kolkata', popular: true }, { name: 'Pune', popular: true },
-        { name: 'Nagpur', popular: true }, { name: 'Jaipur', popular: false }
-    ];
-
-    async function loadVendors() {
+    // Firebase से LIVE DATA fetch करने का function
+    async function fetchVendorsFromFirebase() {
         try {
-            const snapshot = await getDocs(collection(db, "vendors"));
-            const allData = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-            const filteredVendors = allData.filter(v => v.category !== 'stadium');
+            console.log("📡 Fetching vendors from Firebase...");
+            const vendorsSnapshot = await getDocs(collection(db, "vendors"));
+            const allData = vendorsSnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
             
-            if (filteredVendors.length > 0) {
-                allVendors = filteredVendors;
-            } else {
-                allVendors = defaultVendors;
-            }
+            // Stadiums को exclude करें (category === 'stadium' वाले नहीं दिखेंगे)
+            const vendorsOnly = allData.filter(v => v.category !== 'stadium');
             
-            // Load cities
-            const citiesDoc = await getDocs(collection(db, "settings"));
-            let citiesLoaded = false;
-            citiesDoc.forEach(doc => {
-                if (doc.id === 'cities' && doc.data().list) {
-                    allCities = doc.data().list;
-                    citiesLoaded = true;
-                }
-            });
-            if (!citiesLoaded || allCities.length === 0) {
-                allCities = defaultCities;
-            }
-            
-            document.getElementById('vendorCountBadge').innerHTML = `🎯 ${allVendors.length} Vendors`;
-            renderVendors();
-            setupAutocomplete();
+            console.log(`✅ Found ${vendorsOnly.length} vendors in database`);
+            return vendorsOnly;
         } catch (error) {
-            console.error("Error loading vendors:", error);
-            allVendors = defaultVendors;
-            allCities = defaultCities;
-            document.getElementById('vendorCountBadge').innerHTML = `🎯 ${allVendors.length} Vendors`;
-            renderVendors();
-            setupAutocomplete();
+            console.error("❌ Error fetching vendors:", error);
+            return [];
         }
     }
+
+    // Firebase से CITIES fetch करने का function
+    async function fetchCitiesFromFirebase() {
+        try {
+            const citiesDoc = await getDocs(collection(db, "settings"));
+            let citiesList = [];
+            citiesDoc.forEach(doc => {
+                if (doc.id === 'cities' && doc.data().list) {
+                    citiesList = doc.data().list;
+                }
+            });
+            
+            // अगर cities नहीं मिलीं तो vendors से unique cities निकालें
+            if (citiesList.length === 0 && allVendors.length > 0) {
+                const uniqueCities = [...new Set(allVendors.map(v => v.city).filter(c => c))];
+                citiesList = uniqueCities.map(city => ({ name: city, popular: true }));
+            }
+            
+            console.log(`✅ Found ${citiesList.length} cities`);
+            return citiesList;
+        } catch (error) {
+            console.error("❌ Error fetching cities:", error);
+            return [];
+        }
+    }
+
+    // मुख्य load function - LIVE DATA fetch करेगा
+    async function loadAllData() {
+        // Show loading state
+        const container = document.getElementById('vendorsContainer');
+        container.innerHTML = `
+            <div class="loading-container">
+                <div class="loader"></div>
+                <p>Loading vendors from database...</p>
+            </div>
+        `;
+        
+        // Fetch vendors from Firebase
+        allVendors = await fetchVendorsFromFirebase();
+        
+        // Fetch cities from Firebase
+        allCities = await fetchCitiesFromFirebase();
+        
+        // Update stats badge
+        document.getElementById('vendorCountBadge').innerHTML = `🎯 ${allVendors.length} Vendors`;
+        
+        // Render vendors
+        renderVendors();
+        
+        // Setup autocomplete
+        setupAutocomplete();
+    }
+
+    // Refresh function - नया data fetch करेगा
+    window.refreshData = async () => {
+        showToast('🔄 Refreshing data...');
+        await loadAllData();
+        showToast('✅ Data refreshed successfully!');
+    };
 
     function getCategoryImage(category) {
         const images = {
@@ -653,9 +711,9 @@
                     <div class="vendor-rating-badge">⭐ ${vendor.rating || 4.5} ★</div>
                 </div>
                 <div class="vendor-content-premium">
-                    <div class="vendor-name-premium">${vendor.name}</div>
+                    <div class="vendor-name-premium">${vendor.name || 'Vendor'}</div>
                     <div class="vendor-category-premium">${getCategoryName(vendor.category)}</div>
-                    <div class="vendor-location-premium"><i class="fas fa-map-marker-alt"></i> ${vendor.location || vendor.city}</div>
+                    <div class="vendor-location-premium"><i class="fas fa-map-marker-alt"></i> ${vendor.location || vendor.city || 'Location not set'}</div>
                     <div class="vendor-price-premium">${vendor.priceRange || 'Contact for best price'}</div>
                     <div class="vendor-footer">
                         <span style="font-size: 12px; color: #888;"><i class="fas fa-calendar"></i> Available for booking</span>
@@ -686,21 +744,21 @@
             vendorDrop.classList.add('show');
         });
         
-        // City autocomplete
+        // City autocomplete - unique cities from vendors
+        const uniqueCities = [...new Set(allVendors.map(v => v.city).filter(c => c))];
         cityInput.addEventListener('input', function() {
             const val = this.value.toLowerCase();
             if (!val) { cityDrop.classList.remove('show'); return; }
-            const suggestions = allCities.filter(c => c.name?.toLowerCase().includes(val)).slice(0, 6);
+            const suggestions = uniqueCities.filter(c => c.toLowerCase().includes(val)).slice(0, 6);
             if (!suggestions.length) { cityDrop.classList.remove('show'); return; }
             cityDrop.innerHTML = suggestions.map(c => `
-                <div class="autocomplete-item" onclick="selectCity('${c.name}')">
-                    <i class="fas fa-city"></i> ${c.name}
+                <div class="autocomplete-item" onclick="selectCity('${c}')">
+                    <i class="fas fa-city"></i> ${c}
                 </div>
             `).join('');
             cityDrop.classList.add('show');
         });
         
-        // Close dropdowns when clicking outside
         document.addEventListener('click', (e) => {
             if (!vendorInput.contains(e.target) && !vendorDrop.contains(e.target)) vendorDrop.classList.remove('show');
             if (!cityInput.contains(e.target) && !cityDrop.contains(e.target)) cityDrop.classList.remove('show');
@@ -730,7 +788,6 @@
     window.filterByCategory = (category) => {
         currentCategory = category;
         
-        // Update active class on filter chips
         document.querySelectorAll('.filter-chip-premium').forEach(chip => {
             chip.classList.remove('active');
             if (chip.getAttribute('data-category') === category) {
@@ -748,7 +805,6 @@
         document.getElementById('vendorSearch').value = '';
         document.getElementById('citySearch').value = '';
         
-        // Reset active class on filter chips
         document.querySelectorAll('.filter-chip-premium').forEach(chip => {
             chip.classList.remove('active');
             if (chip.getAttribute('data-category') === 'all') {
@@ -763,8 +819,27 @@
         window.location.href = `vendor-detail.html?id=${id}`;
     };
     
-    // Initialize
-    loadVendors();
+    function showToast(message) {
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #28a745;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            z-index: 2000;
+            animation: slideUp 0.3s ease;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        `;
+        toast.innerHTML = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+    
+    // Initialize - LIVE DATA से load करेगा
+    loadAllData();
 </script>
 </body>
 </html>
