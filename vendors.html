@@ -8,11 +8,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background: #f8f9fa; }
+        body { background: #f5f7fb; }
 
         .header {
             background: white;
-            padding: 16px 20px;
+            padding: 16px 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -25,72 +25,16 @@
         .logo span { color: #ff6b35; }
         .back-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #ff6b35; }
 
-        /* Location Bar */
-        .location-bar {
-            background: white;
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            border-bottom: 1px solid #eee;
-            flex-wrap: wrap;
-        }
-        .location-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: #f5f5f5;
-            padding: 10px 18px;
-            border-radius: 40px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-        }
-        .location-active {
-            background: #ff6b35;
-            color: white;
-        }
-        .radius-badge {
-            background: #e8f5e9;
-            padding: 6px 12px;
-            border-radius: 30px;
-            font-size: 12px;
-            color: #2e7d32;
-        }
-
-        /* Filter Bar */
-        .filter-bar {
-            background: white;
-            padding: 12px 20px;
-            display: flex;
-            gap: 10px;
-            overflow-x: auto;
-            border-bottom: 1px solid #eee;
-        }
-        .filter-chip {
-            background: #f5f5f5;
-            padding: 8px 18px;
-            border-radius: 30px;
-            font-size: 14px;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: 0.2s;
-        }
-        .filter-chip.active {
-            background: #ff6b35;
-            color: white;
-        }
-
-        /* Search Section with Autocomplete */
+        /* Search Bar */
         .search-section {
             background: white;
-            padding: 12px 20px;
-            border-bottom: 1px solid #eee;
-            position: relative;
+            padding: 16px 24px;
+            margin-bottom: 20px;
+            border-radius: 20px;
         }
         .search-container {
             display: flex;
-            gap: 10px;
+            gap: 12px;
             flex-wrap: wrap;
         }
         .search-input-wrapper {
@@ -99,30 +43,24 @@
         }
         .search-input {
             width: 100%;
-            padding: 12px 18px;
+            padding: 12px 20px;
             border: 1px solid #ddd;
             border-radius: 40px;
             font-size: 14px;
             outline: none;
-            transition: 0.2s;
         }
-        .search-input:focus {
-            border-color: #ff6b35;
-        }
+        .search-input:focus { border-color: #ff6b35; }
         .city-input-wrapper {
             flex: 1;
             position: relative;
         }
         .city-input {
             width: 100%;
-            padding: 12px 18px;
+            padding: 12px 20px;
             border: 1px solid #ddd;
             border-radius: 40px;
             font-size: 14px;
             outline: none;
-        }
-        .city-input:focus {
-            border-color: #ff6b35;
         }
         .search-btn {
             background: #ff6b35;
@@ -133,8 +71,6 @@
             cursor: pointer;
             font-weight: 500;
         }
-        
-        /* Autocomplete Dropdown */
         .autocomplete-dropdown {
             position: absolute;
             top: 100%;
@@ -142,57 +78,67 @@
             right: 0;
             background: white;
             border: 1px solid #ddd;
-            border-radius: 12px;
+            border-radius: 16px;
             max-height: 250px;
             overflow-y: auto;
-            z-index: 1000;
+            z-index: 100;
             display: none;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            margin-top: 4px;
         }
         .autocomplete-item {
-            padding: 12px 18px;
+            padding: 12px 20px;
             cursor: pointer;
-            transition: 0.2s;
             border-bottom: 1px solid #f0f0f0;
         }
-        .autocomplete-item:hover {
-            background: #fff5f0;
+        .autocomplete-item:hover { background: #fff5f0; }
+
+        /* Filter Bar */
+        .filter-bar {
+            background: white;
+            padding: 12px 24px;
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            margin-bottom: 20px;
+            border-radius: 20px;
         }
-        .autocomplete-item strong {
-            color: #ff6b35;
+        .filter-chip {
+            background: #f5f5f5;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 14px;
+            cursor: pointer;
+            white-space: nowrap;
         }
+        .filter-chip.active { background: #ff6b35; color: white; }
 
         /* Vendors Grid */
         .vendors-grid {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
+            padding: 0 24px 24px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
         }
         .vendor-card {
             background: white;
-            border: 1px solid #eee;
             border-radius: 20px;
-            padding: 16px;
+            padding: 20px;
             display: flex;
             gap: 16px;
             cursor: pointer;
             transition: 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         }
         .vendor-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
         }
         .vendor-icon {
             width: 70px;
             height: 70px;
-            background: #fff5f0;
             border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             overflow: hidden;
+            background: #fff5f0;
         }
         .vendor-icon img {
             width: 100%;
@@ -200,409 +146,198 @@
             object-fit: cover;
         }
         .vendor-info { flex: 1; }
-        .vendor-name { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
-        .vendor-rating { display: flex; align-items: center; gap: 6px; margin: 6px 0; }
-        .stars { color: #ffb347; font-size: 12px; }
-        .vendor-location { font-size: 13px; color: #888; margin: 4px 0; }
-        .vendor-price { font-size: 14px; font-weight: 600; color: #ff6b35; margin-top: 6px; }
+        .vendor-name { font-size: 18px; font-weight: 700; margin-bottom: 4px; color: #1a1a1a; }
+        .vendor-rating { color: #ffb347; font-size: 12px; margin-bottom: 6px; }
+        .vendor-location { font-size: 13px; color: #666; margin-bottom: 4px; }
+        .vendor-price { font-size: 14px; font-weight: 600; color: #ff6b35; }
         .distance-badge {
             background: #f0f0f0;
-            padding: 4px 10px;
+            padding: 2px 8px;
             border-radius: 20px;
             font-size: 11px;
             display: inline-block;
             margin-left: 8px;
         }
+
         .loading { text-align: center; padding: 60px; color: #ff6b35; }
         .no-results { text-align: center; padding: 60px; color: #999; }
         footer { text-align: center; padding: 24px; font-size: 12px; color: #aaa; }
 
-        @media (max-width: 600px) {
-            .vendor-card { flex-direction: column; text-align: center; }
-            .vendor-icon { margin: 0 auto; }
+        @media (max-width: 768px) {
+            .vendors-grid { grid-template-columns: 1fr; padding: 0 16px 16px; }
             .search-container { flex-direction: column; }
         }
     </style>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
-            authDomain: "stadiumconnect-8fecb.firebaseapp.com",
-            projectId: "stadiumconnect-8fecb",
-            storageBucket: "stadiumconnect-8fecb.firebasestorage.app",
-            messagingSenderId: "458108198578",
-            appId: "1:458108198578:web:83d83646f0e24e718b73ab"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        let allVendors = [];
-        let allCities = [];
-        let currentLocation = null;
-        let currentCategory = 'all';
-        let currentSearchText = '';
-        let currentCityFilter = '';
-        let searchTimeout;
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const categoryParam = urlParams.get('category');
-        const cityParam = urlParams.get('city');
-        const latParam = urlParams.get('lat');
-        const lngParam = urlParams.get('lng');
-
-        // Load cities from Firebase
-        async function loadCities() {
-            try {
-                const docRef = doc(db, 'settings', 'cities');
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    allCities = docSnap.data().list || [];
-                } else {
-                    allCities = [
-                        { name: 'Nagpur', popular: true },
-                        { name: 'Mumbai', popular: true },
-                        { name: 'Pune', popular: true },
-                        { name: 'Delhi', popular: true },
-                        { name: 'Bangalore', popular: true },
-                        { name: 'Hyderabad', popular: false },
-                        { name: 'Chennai', popular: false },
-                        { name: 'Kolkata', popular: false }
-                    ];
-                }
-                // Populate city dropdown suggestions
-                updateCitySuggestions();
-            } catch (error) {
-                console.error("Error loading cities:", error);
-            }
-        }
-
-        // Load vendors
-        async function loadVendors() {
-            try {
-                const snapshot = await getDocs(collection(db, "vendors"));
-                allVendors = [];
-                snapshot.forEach(doc => {
-                    allVendors.push({ id: doc.id, ...doc.data() });
-                });
-                console.log("Loaded", allVendors.length, "vendors");
-                applyFilters();
-            } catch (error) {
-                console.error("Error loading vendors:", error);
-            }
-        }
-
-        // Autocomplete for vendor name
-        function updateVendorSuggestions() {
-            const input = document.getElementById('vendorSearchInput');
-            const dropdown = document.getElementById('vendorAutocomplete');
-            const searchText = input.value.toLowerCase();
-            
-            if (!searchText) {
-                dropdown.style.display = 'none';
-                return;
-            }
-            
-            const suggestions = allVendors
-                .filter(v => v.name?.toLowerCase().includes(searchText))
-                .slice(0, 8);
-            
-            if (suggestions.length === 0) {
-                dropdown.style.display = 'none';
-                return;
-            }
-            
-            dropdown.innerHTML = suggestions.map(v => `
-                <div class="autocomplete-item" onclick="selectVendorSuggestion('${v.name.replace(/'/g, "\\'")}')">
-                    🔍 <strong>${highlightText(v.name, searchText)}</strong><br>
-                    <small>${v.category} | ${v.city}</small>
-                </div>
-            `).join('');
-            dropdown.style.display = 'block';
-        }
-
-        // Autocomplete for city
-        function updateCitySuggestions() {
-            const input = document.getElementById('cityFilterInput');
-            const dropdown = document.getElementById('cityAutocomplete');
-            const searchText = input.value.toLowerCase();
-            
-            if (!searchText) {
-                dropdown.style.display = 'none';
-                return;
-            }
-            
-            const suggestions = allCities
-                .filter(c => c.name.toLowerCase().includes(searchText))
-                .slice(0, 8);
-            
-            if (suggestions.length === 0) {
-                dropdown.style.display = 'none';
-                return;
-            }
-            
-            dropdown.innerHTML = suggestions.map(c => `
-                <div class="autocomplete-item" onclick="selectCitySuggestion('${c.name}')">
-                    📍 <strong>${highlightText(c.name, searchText)}</strong>
-                </div>
-            `).join('');
-            dropdown.style.display = 'block';
-        }
-
-        function highlightText(text, search) {
-            if (!search) return text;
-            const regex = new RegExp(`(${search})`, 'gi');
-            return text.replace(regex, '<strong>$1</strong>');
-        }
-
-        window.selectVendorSuggestion = (name) => {
-            document.getElementById('vendorSearchInput').value = name;
-            document.getElementById('vendorAutocomplete').style.display = 'none';
-            currentSearchText = name;
-            applyFilters();
-        };
-
-        window.selectCitySuggestion = (city) => {
-            document.getElementById('cityFilterInput').value = city;
-            document.getElementById('cityAutocomplete').style.display = 'none';
-            currentCityFilter = city.toLowerCase();
-            applyFilters();
-        };
-
-        // Apply all filters
-        function applyFilters() {
-            let filtered = [...allVendors];
-            
-            // Category filter
-            if (currentCategory !== 'all') {
-                filtered = filtered.filter(v => v.category === currentCategory);
-            }
-            
-            // City filter
-            if (currentCityFilter) {
-                filtered = filtered.filter(v => v.city?.toLowerCase() === currentCityFilter);
-            }
-            
-            // Search filter (vendor name)
-            if (currentSearchText) {
-                const searchLower = currentSearchText.toLowerCase();
-                filtered = filtered.filter(v => 
-                    v.name?.toLowerCase().includes(searchLower) ||
-                    v.city?.toLowerCase().includes(searchLower)
-                );
-            }
-            
-            // Location filter (250km radius)
-            if (currentLocation) {
-                filtered = filtered.filter(v => {
-                    if (!v.lat || !v.lng) return false;
-                    const distance = calculateDistance(currentLocation.lat, currentLocation.lng, v.lat, v.lng);
-                    v.distance = Math.round(distance);
-                    return distance <= 250;
-                });
-                filtered.sort((a, b) => (a.distance || 999) - (b.distance || 999));
-            }
-            
-            renderVendors(filtered);
-        }
-
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371;
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                      Math.sin(dLon/2) * Math.sin(dLon/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            return R * c;
-        }
-
-        function renderVendors(vendors) {
-            const container = document.getElementById('vendorsContainer');
-            
-            if (vendors.length === 0) {
-                container.innerHTML = '<div class="no-results">😔 No vendors found<br><small>Try changing filters or search</small></div>';
-                return;
-            }
-            
-            container.innerHTML = vendors.map(v => `
-                <div class="vendor-card" onclick="viewVendor('${v.id}')">
-                    <div class="vendor-icon">
-                        <img src="${v.imageUrl || 'https://via.placeholder.com/70'}" alt="${v.name}" onerror="this.src='https://via.placeholder.com/70'">
-                    </div>
-                    <div class="vendor-info">
-                        <div class="vendor-name">${v.name || 'Vendor'}</div>
-                        <div class="vendor-rating">
-                            <div class="stars">${getStars(v.rating || 4.5)}</div>
-                            <span style="font-size:12px; color:#666;">${v.rating || 4.5}</span>
-                            ${v.distance ? `<span class="distance-badge">📍 ${v.distance} km away</span>` : ''}
-                        </div>
-                        <div class="vendor-location">📍 ${v.location || v.city || 'Location'}</div>
-                        <div class="vendor-price">💰 ${v.priceRange || 'Contact for price'}</div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function getStars(rating) {
-            const num = parseFloat(rating);
-            if (isNaN(num)) return '☆☆☆☆☆';
-            let stars = '';
-            for (let i = 0; i < Math.floor(num); i++) stars += '★';
-            for (let i = stars.length; i < 5; i++) stars += '☆';
-            return stars;
-        }
-
-        window.viewVendor = (id) => {
-            window.location.href = `vendor-detail.html?id=${id}`;
-        };
-
-        window.filterByCategory = (category) => {
-            currentCategory = category;
-            document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-            event.target.classList.add('active');
-            applyFilters();
-        };
-
-        window.showAllIndia = () => {
-            currentLocation = null;
-            document.getElementById('locationStatus').innerHTML = '<i class="fas fa-globe"></i> All India';
-            document.getElementById('locationStatus').classList.remove('location-active');
-            applyFilters();
-        };
-
-        window.detectLocation = () => {
-            if (navigator.geolocation) {
-                document.getElementById('locationStatus').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Detecting...';
-                navigator.geolocation.getCurrentPosition(
-                    (pos) => {
-                        currentLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-                        document.getElementById('locationStatus').innerHTML = '<i class="fas fa-check-circle"></i> 250km radius';
-                        document.getElementById('locationStatus').classList.add('location-active');
-                        applyFilters();
-                    },
-                    () => {
-                        document.getElementById('locationStatus').innerHTML = '<i class="fas fa-map-marker-alt"></i> Detect Location';
-                        alert('Please allow location access to see nearby vendors');
-                    }
-                );
-            }
-        };
-
-        window.searchVendors = () => {
-            currentSearchText = document.getElementById('vendorSearchInput').value;
-            currentCityFilter = document.getElementById('cityFilterInput').value.toLowerCase();
-            applyFilters();
-        };
-
-        // Debounced search for autocomplete
-        window.onVendorSearch = () => {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                updateVendorSuggestions();
-                currentSearchText = document.getElementById('vendorSearchInput').value;
-                applyFilters();
-            }, 200);
-        };
-
-        window.onCitySearch = () => {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                updateCitySuggestions();
-                currentCityFilter = document.getElementById('cityFilterInput').value.toLowerCase();
-                applyFilters();
-            }, 200);
-        };
-
-        // Close dropdowns on click outside
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.search-input-wrapper')) {
-                document.getElementById('vendorAutocomplete').style.display = 'none';
-            }
-            if (!e.target.closest('.city-input-wrapper')) {
-                document.getElementById('cityAutocomplete').style.display = 'none';
-            }
-        });
-
-        // Initialize
-        async function init() {
-            await loadCities();
-            await loadVendors();
-            
-            if (categoryParam) {
-                currentCategory = categoryParam;
-                document.querySelectorAll('.filter-chip').forEach(c => {
-                    if (c.dataset.filter === categoryParam) c.classList.add('active');
-                });
-            }
-            
-            if (cityParam) {
-                currentCityFilter = cityParam;
-                document.getElementById('cityFilterInput').value = cityParam;
-            }
-            
-            if (latParam && lngParam) {
-                currentLocation = { lat: parseFloat(latParam), lng: parseFloat(lngParam) };
-                document.getElementById('locationStatus').innerHTML = '<i class="fas fa-check-circle"></i> 250km radius';
-                document.getElementById('locationStatus').classList.add('location-active');
-            }
-            
-            applyFilters();
-        }
-        
-        init();
-    </script>
 </head>
 <body>
 
 <header class="header">
-    <button class="back-btn" onclick="window.location.href='home.html'">←</button>
-    <div class="logo" onclick="window.location.href='home.html'">STADIUM<span>CONNECT</span></div>
+    <button class="back-btn" onclick="window.location.href='directory.html'">←</button>
+    <div class="logo" onclick="window.location.href='index.html'">STADIUM<span>CONNECT</span></div>
     <div style="width: 40px;"></div>
 </header>
-
-<div class="location-bar">
-    <div class="location-btn" id="locationStatus" onclick="detectLocation()">
-        <i class="fas fa-map-marker-alt"></i> Detect Location
-    </div>
-    <button class="location-btn" onclick="showAllIndia()">
-        <i class="fas fa-globe"></i> All India
-    </button>
-    <span class="radius-badge">📍 250km radius</span>
-</div>
-
-<div class="filter-bar">
-    <div class="filter-chip" data-filter="all" onclick="filterByCategory('all')">All</div>
-    <div class="filter-chip" data-filter="decorator" onclick="filterByCategory('decorator')">🎨 Decorators</div>
-    <div class="filter-chip" data-filter="photographer" onclick="filterByCategory('photographer')">📸 Photographers</div>
-    <div class="filter-chip" data-filter="caterer" onclick="filterByCategory('caterer')">🍽️ Caterers</div>
-    <div class="filter-chip" data-filter="bandbaja" onclick="filterByCategory('bandbaja')">🎵 Band Baja</div>
-    <div class="filter-chip" data-filter="stadium" onclick="filterByCategory('stadium')">🏟️ Stadiums</div>
-</div>
 
 <div class="search-section">
     <div class="search-container">
         <div class="search-input-wrapper">
-            <input type="text" id="vendorSearchInput" class="search-input" placeholder="🔍 Search vendor by name..." onkeyup="onVendorSearch()">
+            <input type="text" id="vendorSearch" class="search-input" placeholder="🔍 Search by vendor name...">
             <div id="vendorAutocomplete" class="autocomplete-dropdown"></div>
         </div>
         <div class="city-input-wrapper">
-            <input type="text" id="cityFilterInput" class="city-input" placeholder="📍 Filter by city..." onkeyup="onCitySearch()">
+            <input type="text" id="citySearch" class="city-input" placeholder="📍 Filter by city...">
             <div id="cityAutocomplete" class="autocomplete-dropdown"></div>
         </div>
-        <button class="search-btn" onclick="searchVendors()">Search</button>
+        <button class="search-btn" onclick="search()">Search</button>
     </div>
+</div>
+
+<div class="filter-bar" id="filterBar">
+    <div class="filter-chip active" data-category="all" onclick="filterByCategory('all')">All</div>
+    <div class="filter-chip" data-category="decorator" onclick="filterByCategory('decorator')">🎨 Decorators</div>
+    <div class="filter-chip" data-category="photographer" onclick="filterByCategory('photographer')">📸 Photographers</div>
+    <div class="filter-chip" data-category="caterer" onclick="filterByCategory('caterer')">🍽️ Caterers</div>
+    <div class="filter-chip" data-category="bandbaja" onclick="filterByCategory('bandbaja')">🎵 Band Baja</div>
 </div>
 
 <div id="vendorsContainer" class="vendors-grid">
     <div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading vendors...</div>
 </div>
 
-<footer>© 2025 StadiumConnect | Search by vendor name or city</footer>
+<footer>© 2025 StadiumConnect | Your Need, Our Network</footer>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
+        authDomain: "stadiumconnect-8fecb.firebaseapp.com",
+        projectId: "stadiumconnect-8fecb",
+        storageBucket: "stadiumconnect-8fecb.firebasestorage.app",
+        messagingSenderId: "458108198578",
+        appId: "1:458108198578:web:83d83646f0e24e718b73ab"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    let allVendors = [];
+    let allCities = [];
+    let currentCategory = 'all';
+    let currentSearch = '';
+    let currentCity = '';
+
+    async function loadVendors() {
+        const snapshot = await getDocs(collection(db, "vendors"));
+        // Exclude stadiums
+        allVendors = snapshot.docs.map(d => ({ id: d.id, ...d.data() })).filter(v => v.category !== 'stadium');
+        
+        // Get cities for autocomplete
+        const citiesDoc = await getDocs(collection(db, "settings"));
+        citiesDoc.forEach(doc => {
+            if (doc.id === 'cities') allCities = doc.data().list || [];
+        });
+        
+        renderVendors();
+        setupAutocomplete();
+    }
+
+    function renderVendors() {
+        let filtered = [...allVendors];
+        
+        if (currentCategory !== 'all') {
+            filtered = filtered.filter(v => v.category === currentCategory);
+        }
+        if (currentSearch) {
+            filtered = filtered.filter(v => v.name?.toLowerCase().includes(currentSearch.toLowerCase()));
+        }
+        if (currentCity) {
+            filtered = filtered.filter(v => v.city?.toLowerCase() === currentCity.toLowerCase());
+        }
+        
+        const container = document.getElementById('vendorsContainer');
+        if (filtered.length === 0) {
+            container.innerHTML = '<div class="no-results">😔 No vendors found<br><small>Try changing filters or search</small></div>';
+            return;
+        }
+        
+        container.innerHTML = filtered.map(v => `
+            <div class="vendor-card" onclick="viewVendor('${v.id}')">
+                <div class="vendor-icon">
+                    <img src="${v.imageUrl || 'https://via.placeholder.com/70'}" onerror="this.src='https://via.placeholder.com/70'">
+                </div>
+                <div class="vendor-info">
+                    <div class="vendor-name">${v.name || 'Vendor'}</div>
+                    <div class="vendor-rating">⭐ ${v.rating || 4.5}</div>
+                    <div class="vendor-location">📍 ${v.location || v.city || 'Location'}</div>
+                    <div class="vendor-price">💰 ${v.priceRange || 'Contact for price'}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    window.viewVendor = (id) => {
+        window.location.href = `vendor-detail.html?id=${id}`;
+    };
+
+    window.filterByCategory = (category) => {
+        currentCategory = category;
+        document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+        event.target.classList.add('active');
+        renderVendors();
+    };
+
+    window.search = () => {
+        currentSearch = document.getElementById('vendorSearch').value;
+        currentCity = document.getElementById('citySearch').value;
+        renderVendors();
+    };
+
+    function setupAutocomplete() {
+        const vendorInput = document.getElementById('vendorSearch');
+        const cityInput = document.getElementById('citySearch');
+        const vendorDrop = document.getElementById('vendorAutocomplete');
+        const cityDrop = document.getElementById('cityAutocomplete');
+        
+        vendorInput.oninput = () => {
+            const val = vendorInput.value.toLowerCase();
+            if (!val) { vendorDrop.style.display = 'none'; return; }
+            const suggestions = allVendors.filter(v => v.name?.toLowerCase().includes(val)).slice(0, 8);
+            if (!suggestions.length) { vendorDrop.style.display = 'none'; return; }
+            vendorDrop.innerHTML = suggestions.map(v => `<div class="autocomplete-item" onclick="selectVendor('${v.name}')">🔍 ${v.name}</div>`).join('');
+            vendorDrop.style.display = 'block';
+        };
+        
+        cityInput.oninput = () => {
+            const val = cityInput.value.toLowerCase();
+            if (!val) { cityDrop.style.display = 'none'; return; }
+            const suggestions = allCities.filter(c => c.name?.toLowerCase().includes(val)).slice(0, 8);
+            if (!suggestions.length) { cityDrop.style.display = 'none'; return; }
+            cityDrop.innerHTML = suggestions.map(c => `<div class="autocomplete-item" onclick="selectCity('${c.name}')">📍 ${c.name}</div>`).join('');
+            cityDrop.style.display = 'block';
+        };
+        
+        document.addEventListener('click', (e) => {
+            if (!vendorInput.contains(e.target) && !vendorDrop.contains(e.target)) vendorDrop.style.display = 'none';
+            if (!cityInput.contains(e.target) && !cityDrop.contains(e.target)) cityDrop.style.display = 'none';
+        });
+    }
+    
+    window.selectVendor = (name) => {
+        document.getElementById('vendorSearch').value = name;
+        document.getElementById('vendorAutocomplete').style.display = 'none';
+        currentSearch = name;
+        renderVendors();
+    };
+    
+    window.selectCity = (city) => {
+        document.getElementById('citySearch').value = city;
+        document.getElementById('cityAutocomplete').style.display = 'none';
+        currentCity = city;
+        renderVendors();
+    };
+
+    loadVendors();
+</script>
 
 </body>
 </html>
-
