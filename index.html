@@ -4,18 +4,110 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StadiumConnect - Book Stadiums & Vendors</title>
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        // Google Login
+        window.googleLogin = function () {
+            signInWithRedirect(auth, provider);
+        };
+
+        // Handle redirect result
+        getRedirectResult(auth)
+            .then((result) => {
+                if (result && result.user) {
+                    console.log("User Logged In:", result.user);
+                    window.location.href = "dashboard.html"; // redirect after login
+                }
+            })
+            .catch((error) => {
+                console.error("Login Error:", error);
+            });
+    </script>
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background: #fff; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+
+        body {
+            background: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         .container { text-align: center; padding: 20px; }
-        .logo { font-size: 48px; font-weight: 800; margin-bottom: 40px; }
+
+        .logo {
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 40px;
+        }
+
         .logo span { color: #ff6b35; }
-        .buttons { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-bottom: 40px; }
-        .btn { padding: 14px 36px; border-radius: 40px; font-size: 16px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
-        .btn-login { background: transparent; border: 1.5px solid #ff6b35; color: #ff6b35; }
-        .btn-register { background: #ff6b35; border: none; color: white; }
-        .vendor-btn { background: #28a745; color: white; border: none; padding: 12px 28px; font-size: 14px; margin-top: 10px; }
+
+        .buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 14px 36px;
+            border-radius: 40px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-login {
+            background: transparent;
+            border: 1.5px solid #ff6b35;
+            color: #ff6b35;
+        }
+
+        .btn-register {
+            background: #ff6b35;
+            border: none;
+            color: white;
+        }
+
+        .btn-google {
+            background: #4285F4;
+            color: white;
+            border: none;
+            margin-top: 10px;
+        }
+
+        .vendor-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            font-size: 14px;
+            margin-top: 15px;
+        }
+
         .feature-grid {
             display: flex;
             justify-content: center;
@@ -23,36 +115,90 @@
             flex-wrap: wrap;
             margin: 40px 0;
         }
+
         .feature {
             text-align: center;
             padding: 20px;
         }
+
         .feature-icon { font-size: 32px; margin-bottom: 12px; }
-        .feature-title { font-weight: 600; margin-bottom: 4px; }
-        .feature-desc { font-size: 12px; color: #666; }
-        footer { position: fixed; bottom: 20px; left: 0; right: 0; text-align: center; font-size: 12px; color: #aaa; }
-        @media (max-width: 500px) { .logo { font-size: 32px; } .btn { padding: 10px 24px; } }
+
+        .feature-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .feature-desc {
+            font-size: 12px;
+            color: #666;
+        }
+
+        footer {
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        @media (max-width: 500px) {
+            .logo { font-size: 32px; }
+            .btn { padding: 10px 24px; }
+        }
     </style>
 </head>
+
 <body>
-    <div class="container">
-        <div class="logo">STADIUM<span>CONNECT</span></div>
-        <div class="buttons">
-            <a href="login.html" class="btn btn-login">Login</a>
-            <a href="register.html" class="btn btn-register">Register</a>
-        </div>
-        <a href="https://forms.gle/t7oc3SeNvCMbdCVX7" target="_blank" class="btn vendor-btn">Register as Vendor →</a>
-        
-        <div class="feature-grid">
-            <div class="feature"><div class="feature-icon">🏟️</div><div class="feature-title">AI Stadium Booking</div><div class="feature-desc">Fractional booking with 3D view</div></div>
-            <div class="feature"><div class="feature-icon">🎨</div><div class="feature-title">Top Vendors</div><div class="feature-desc">Decorators, Caterers & More</div></div>
-            <div class="feature"><div class="feature-icon">🤝</div><div class="feature-title">Agent Support</div><div class="feature-desc">Local agents for coordination</div></div>
-        </div>
-        
-        <footer>© 2025 StadiumConnect | Your Need, Our Network</footer>
+
+<div class="container">
+
+    <div class="logo">STADIUM<span>CONNECT</span></div>
+
+    <div class="buttons">
+        <a href="login.html" class="btn btn-login">Login</a>
+        <a href="register.html" class="btn btn-register">Register</a>
     </div>
+
+    <!-- Google Login Button -->
+    <button onclick="googleLogin()" class="btn btn-google">
+        Continue with Google
+    </button>
+
+    <!-- Vendor -->
+    <br>
+    <a href="https://forms.gle/t7oc3SeNvCMbdCVX7" target="_blank" class="btn vendor-btn">
+        Register as Vendor →
+    </a>
+
+    <div class="feature-grid">
+        <div class="feature">
+            <div class="feature-icon">🏟️</div>
+            <div class="feature-title">AI Stadium Booking</div>
+            <div class="feature-desc">Fractional booking with 3D view</div>
+        </div>
+
+        <div class="feature">
+            <div class="feature-icon">🎨</div>
+            <div class="feature-title">Top Vendors</div>
+            <div class="feature-desc">Decorators, Caterers & More</div>
+        </div>
+
+        <div class="feature">
+            <div class="feature-icon">🤝</div>
+            <div class="feature-title">Agent Support</div>
+            <div class="feature-desc">Local agents for coordination</div>
+        </div>
+    </div>
+
+    <footer>© 2025 StadiumConnect | Your Need, Our Network</footer>
+
+</div>
+
 </body>
 </html>
+
 
 
 
