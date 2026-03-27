@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendor Management - StadiumConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: #f0f2f5; }
+        
+        .header {
+            background: white;
+            padding: 16px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .logo { font-size: 22px; font-weight: 800; }
+        .logo span { color: #ff6b35; }
+        .badge { background: #ff6b35; color: white; font-size: 10px; padding: 2px 8px; border-radius: 20px; margin-left: 8px; }
+        .user-info { background: #fff5f0; padding: 8px 20px; border-radius: 40px; }
+        .logout-btn { background: #ff6b35; color: white; border: none; padding: 8px 20px; border-radius: 30px; cursor: pointer; }
+        
+        .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+        
+        .card { background: white; border-radius: 24px; padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+        .btn-primary { background: #ff6b35; color: white; border: none; padding: 10px 20px; border-radius: 30px; cursor: pointer; font-weight: 600; }
+        .btn-edit { background: #ffa502; color: white; border: none; padding: 6px 12px; border-radius: 20px; cursor: pointer; margin-right: 5px; }
+        .btn-delete { background: #ff4757; color: white; border: none; padding: 6px 12px; border-radius: 20px; cursor: pointer; }
+        .btn-copy { background: #2ed573; color: white; border: none; padding: 4px 10px; border-radius: 20px; cursor: pointer; font-size: 12px; margin-left: 5px; }
+        .btn-view { background: #1e90ff; color: white; border: none; padding: 6px 12px; border-radius: 20px; cursor: pointer; margin-right: 5px; }
+        
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 14px 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th { color: #666; font-weight: 500; font-size: 13px; text-transform: uppercase; }
+        .vendor-id { font-weight: 700; color: #ff6b35; }
+        .revenue-cell { color: #28a745; font-weight: bold; }
+        .logo-img { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; background: #f0f0f0; }
+        
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 1000; }
+        .modal-content { background: white; border-radius: 28px; padding: 32px; width: 90%; max-width: 600px; position: relative; max-height: 90vh; overflow-y: auto; }
+        .close-modal { position: absolute; right: 20px; top: 20px; font-size: 24px; cursor: pointer; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 8px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 16px; border: 1px solid #ddd; border-radius: 16px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .generated-id { background: #f8f9fa; padding: 12px; border-radius: 12px; text-align: center; margin: 10px 0; font-size: 18px; font-weight: 700; color: #ff6b35; }
+        .credentials-box { background: #f0f9ff; border-left: 4px solid #ff6b35; padding: 15px; margin: 15px 0; border-radius: 12px; }
+        .credential-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; }
+        .message { padding: 12px; border-radius: 12px; margin-bottom: 15px; display: none; text-align: center; }
+        .success { background: #d4edda; color: #155724; display: block; }
+        .error { background: #f8d7da; color: #721c24; display: block; }
+        
+        .category-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .category-decorator { background: #ffe0b3; color: #cc7b00; }
+        .category-photographer { background: #cce5ff; color: #004085; }
+        .category-caterer { background: #d4edda; color: #155724; }
+        .category-bandbaja { background: #f8d7da; color: #721c24; }
+        
+        @media (max-width: 768px) { th, td { font-size: 12px; padding: 8px; } .form-row { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="logo">STADIUM<span>CONNECT</span><span class="badge">Vendor Management</span></div>
+    <div class="user-info"><i class="fas fa-store"></i> <span id="userName"></span></div>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+</header>
+
+<div class="container">
+    <div id="message" class="message"></div>
+    
+    <!-- Category Stats Cards -->
+    <div class="stats-grid" id="statsGrid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 24px;">
+        <div class="card" style="text-align: center; padding: 20px;"><div class="stat-value" id="decoratorCount">0</div><div class="stat-label">Decorators</div></div>
+        <div class="card" style="text-align: center; padding: 20px;"><div class="stat-value" id="photographerCount">0</div><div class="stat-label">Photographers</div></div>
+        <div class="card" style="text-align: center; padding: 20px;"><div class="stat-value" id="catererCount">0</div><div class="stat-label">Caterers</div></div>
+        <div class="card" style="text-align: center; padding: 20px;"><div class="stat-value" id="bandbajaCount">0</div><div class="stat-label">Band Baja</div></div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h2><i class="fas fa-store"></i> Vendor Management</h2>
+            <button class="btn-primary" onclick="openAddVendorModal()"><i class="fas fa-plus"></i> Add New Vendor</button>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Logo</th>
+                        <th>Vendor ID</th>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>City</th>
+                        <th>Price Range</th>
+                        <th>Total Bookings</th>
+                        <th>Total Revenue (₹)</th>
+                        <th>Commission (2.5%)</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="vendorsTableBody">
+                    <tr><td colspan="10" style="text-align:center;">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Vendor Modal -->
+<div id="vendorModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal()">&times;</span>
+        <h3 id="modalTitle">Add New Vendor</h3>
+        <div id="generatedIdDisplay" class="generated-id" style="display:none;"></div>
+        <div id="credentialsDisplay" class="credentials-box" style="display:none;"></div>
+        <form id="vendorForm">
+            <input type="hidden" id="vendorEditId">
+            <div class="form-row">
+                <div class="form-group"><label>Business Name *</label><input type="text" id="vendorName" placeholder="Enter business name" required></div>
+                <div class="form-group"><label>Category *</label>
+                    <select id="vendorCategory" required>
+                        <option value="decorator">🎨 Decorator</option>
+                        <option value="photographer">📸 Photographer</option>
+                        <option value="caterer">🍽️ Caterer</option>
+                        <option value="bandbaja">🎵 Band Baja</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>City *</label><select id="vendorCity" required><option value="">Loading cities...</option></select></div>
+                <div class="form-group"><label>Price Range</label><input type="text" id="vendorPrice" placeholder="₹50,000 - ₹2,00,000"></div>
+            </div>
+            <div class="form-group"><label>Location / Address</label><input type="text" id="vendorLocation" placeholder="Full address"></div>
+            <div class="form-group"><label>Description</label><textarea id="vendorDescription" rows="2" placeholder="Describe your services..."></textarea></div>
+            <div class="form-group"><label>Contact Phone</label><input type="tel" id="vendorPhone" placeholder="Contact number"></div>
+            <div class="form-group"><label>Email</label><input type="email" id="vendorEmail" placeholder="Email address"></div>
+            <div class="form-group"><label>Logo / Profile Photo</label><input type="file" id="vendorLogo" accept="image/*"></div>
+            <div class="form-group"><label>Password *</label><input type="text" id="vendorPassword" placeholder="Default: vendor123" value="vendor123"></div>
+            <button type="button" class="btn-primary" onclick="saveVendor()" style="width:100%; margin-top:10px;">Save Vendor</button>
+        </form>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, setDoc, getDoc, query, where } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
+        authDomain: "stadiumconnect-8fecb.firebaseapp.com",
+        projectId: "stadiumconnect-8fecb",
+        storageBucket: "stadiumconnect-8fecb.appspot.com",
+        messagingSenderId: "458108198578",
+        appId: "1:458108198578:web:83d83646f0e24e718b73ab"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
+
+    // Check login
+    const adminLoggedIn = localStorage.getItem('admin');
+    const developerLoggedIn = localStorage.getItem('developer');
+    if (adminLoggedIn !== 'true' && !developerLoggedIn) {
+        window.location.href = 'admin-login.html';
+    }
+    
+    // Display user name
+    const devData = JSON.parse(localStorage.getItem('developer'));
+    document.getElementById('userName').innerText = devData ? (devData.name || devData.id) : 'Admin';
+
+    let allVendors = [];
+    let allBookings = [];
+    let allCities = [];
+
+    // ========== LOAD CITIES ==========
+    async function loadCities() {
+        try {
+            const docRef = doc(db, 'settings', 'cities');
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                allCities = docSnap.data().list || [];
+            } else {
+                allCities = [
+                    { name: 'Mumbai', popular: true }, { name: 'Delhi', popular: true },
+                    { name: 'Bangalore', popular: true }, { name: 'Hyderabad', popular: true },
+                    { name: 'Chennai', popular: true }, { name: 'Kolkata', popular: true },
+                    { name: 'Nagpur', popular: true }, { name: 'Pune', popular: true }
+                ];
+            }
+            const citySelect = document.getElementById('vendorCity');
+            citySelect.innerHTML = '<option value="">Select City</option>' + 
+                allCities.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+        } catch (error) {
+            console.error("Error loading cities:", error);
+        }
+    }
+
+    // ========== CALCULATE VENDOR STATS ==========
+    function calculateCommission(amount) {
+        const price = parseInt(String(amount).replace(/[₹,]/g, '')) || 0;
+        return Math.floor(price * 0.025);
+    }
+
+    function getVendorStats(vendorId) {
+        const vendorBookings = allBookings.filter(b => 
+            b.vendorId === vendorId && 
+            (b.status === 'confirmed' || b.status === 'completed')
+        );
+        const totalRevenue = vendorBookings.reduce((sum, b) => {
+            const price = parseInt(String(b.amount).replace(/[₹,]/g, '')) || 0;
+            return sum + price;
+        }, 0);
+        const totalCommission = calculateCommission(totalRevenue);
+        return { bookingsCount: vendorBookings.length, totalRevenue, totalCommission };
+    }
+
+    // ========== UPLOAD IMAGE ==========
+    async function uploadImage(file, path) {
+        if (!file) return null;
+        try {
+            const storageRef = ref(storage, path + Date.now() + '_' + file.name);
+            await uploadBytes(storageRef, file);
+            return await getDownloadURL(storageRef);
+        } catch(e) { return null; }
+    }
+
+    // ========== LOAD VENDORS ==========
+    async function loadVendors() {
+        const vendorsSnap = await getDocs(collection(db, "vendors"));
+        allVendors = [];
+        vendorsSnap.forEach(doc => {
+            const data = doc.data();
+            if (data.category !== 'stadium') {
+                allVendors.push({ id: doc.id, ...data });
+            }
+        });
+        
+        const bookingsSnap = await getDocs(collection(db, "bookings"));
+        allBookings = bookingsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        
+        updateCategoryStats();
+        renderVendors();
+    }
+
+    function updateCategoryStats() {
+        const decorators = allVendors.filter(v => v.category === 'decorator').length;
+        const photographers = allVendors.filter(v => v.category === 'photographer').length;
+        const caterers = allVendors.filter(v => v.category === 'caterer').length;
+        const bandbaja = allVendors.filter(v => v.category === 'bandbaja').length;
+        
+        document.getElementById('decoratorCount').innerHTML = decorators;
+        document.getElementById('photographerCount').innerHTML = photographers;
+        document.getElementById('catererCount').innerHTML = caterers;
+        document.getElementById('bandbajaCount').innerHTML = bandbaja;
+    }
+
+    function getCategoryBadgeClass(category) {
+        const classes = {
+            decorator: 'category-decorator',
+            photographer: 'category-photographer',
+            caterer: 'category-caterer',
+            bandbaja: 'category-bandbaja'
+        };
+        return classes[category] || '';
+    }
+
+    function getCategoryIcon(category) {
+        const icons = {
+            decorator: '🎨',
+            photographer: '📸',
+            caterer: '🍽️',
+            bandbaja: '🎵'
+        };
+        return icons[category] || '🏷️';
+    }
+
+    function getCategoryName(category) {
+        const names = {
+            decorator: 'Decorator',
+            photographer: 'Photographer',
+            caterer: 'Caterer',
+            bandbaja: 'Band Baja'
+        };
+        return names[category] || category;
+    }
+
+    function renderVendors() {
+        const tbody = document.getElementById('vendorsTableBody');
+        if (!allVendors.length) {
+            tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;">No vendors found</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = allVendors.map(vendor => {
+            const stats = getVendorStats(vendor.id);
+            return `
+                <tr>
+                    <td><img src="${vendor.imageUrl || 'https://via.placeholder.com/40'}" class="logo-img" onerror="this.src='https://via.placeholder.com/40'"></td>
+                    <td class="vendor-id">${vendor.vendorId || vendor.id.slice(-8)}</td>
+                    <td><strong>${vendor.name || '-'}</strong></td>
+                    <td><span class="category-badge ${getCategoryBadgeClass(vendor.category)}">${getCategoryIcon(vendor.category)} ${getCategoryName(vendor.category)}</span></td>
+                    <td>${vendor.city || '-'}</td>
+                    <td>${vendor.priceRange || 'Contact for quote'}</td>
+                    <td>${stats.bookingsCount}</td>
+                    <td class="revenue-cell">₹${stats.totalRevenue.toLocaleString()}</td>
+                    <td class="revenue-cell">₹${stats.totalCommission.toLocaleString()}</td>
+                    <td>
+                        <button class="btn-view" onclick="viewVendorDetails('${vendor.id}')">View</button>
+                        <button class="btn-edit" onclick="editVendor('${vendor.id}')">Edit</button>
+                        <button class="btn-delete" onclick="deleteVendor('${vendor.id}')">Del</button>
+                        <button class="btn-copy" onclick="copyCredentials('${vendor.vendorId || vendor.id}', '${vendor.password || 'vendor123'}')">Copy</button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    // ========== GENERATE VENDOR ID ==========
+    async function generateVendorId() {
+        const count = allVendors.length + 1;
+        const categories = { decorator: 'DEC', photographer: 'PHO', caterer: 'CAT', bandbaja: 'BAN' };
+        const category = document.getElementById('vendorCategory').value;
+        const prefix = categories[category] || 'VEN';
+        return `${prefix}${String(count).padStart(4, '0')}`;
+    }
+
+    function generateRandomPassword() {
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+        let pass = '';
+        for(let i = 0; i < 8; i++) pass += chars[Math.floor(Math.random() * chars.length)];
+        return pass;
+    }
+
+    // ========== VENDOR CRUD ==========
+    window.openAddVendorModal = async () => {
+        document.getElementById('modalTitle').innerText = 'Add New Vendor';
+        document.getElementById('vendorEditId').value = '';
+        const newId = await generateVendorId();
+        document.getElementById('generatedIdDisplay').innerHTML = `<i class="fas fa-id-card"></i> Vendor ID: <strong>${newId}</strong>`;
+        document.getElementById('generatedIdDisplay').style.display = 'block';
+        document.getElementById('credentialsDisplay').style.display = 'none';
+        document.getElementById('vendorName').value = '';
+        document.getElementById('vendorCategory').value = 'decorator';
+        document.getElementById('vendorCity').value = '';
+        document.getElementById('vendorPrice').value = '';
+        document.getElementById('vendorLocation').value = '';
+        document.getElementById('vendorDescription').value = '';
+        document.getElementById('vendorPhone').value = '';
+        document.getElementById('vendorEmail').value = '';
+        document.getElementById('vendorLogo').value = '';
+        document.getElementById('vendorPassword').value = generateRandomPassword();
+        document.getElementById('vendorModal').style.display = 'flex';
+    };
+
+    window.viewVendorDetails = (id) => {
+        const vendor = allVendors.find(v => v.id === id);
+        if (vendor) {
+            const stats = getVendorStats(id);
+            alert(`📦 ${vendor.name}\n🏷️ Category: ${getCategoryName(vendor.category)}\n📍 ${vendor.city}\n📅 Bookings: ${stats.bookingsCount}\n💰 Revenue: ₹${stats.totalRevenue.toLocaleString()}\n💸 Commission: ₹${stats.totalCommission.toLocaleString()}\n🔑 Vendor ID: ${vendor.vendorId || vendor.id}`);
+        }
+    };
+
+    window.editVendor = async (id) => {
+        const vendor = allVendors.find(v => v.id === id);
+        if (!vendor) return;
+        document.getElementById('modalTitle').innerText = 'Edit Vendor';
+        document.getElementById('vendorEditId').value = vendor.id;
+        document.getElementById('generatedIdDisplay').style.display = 'none';
+        document.getElementById('credentialsDisplay').style.display = 'none';
+        document.getElementById('vendorName').value = vendor.name || '';
+        document.getElementById('vendorCategory').value = vendor.category || 'decorator';
+        document.getElementById('vendorCity').value = vendor.city || '';
+        document.getElementById('vendorPrice').value = vendor.priceRange || '';
+        document.getElementById('vendorLocation').value = vendor.location || '';
+        document.getElementById('vendorDescription').value = vendor.description || '';
+        document.getElementById('vendorPhone').value = vendor.phone || '';
+        document.getElementById('vendorEmail').value = vendor.email || '';
+        document.getElementById('vendorPassword').value = '';
+        document.getElementById('vendorModal').style.display = 'flex';
+    };
+
+    window.deleteVendor = async (id) => {
+        if (confirm(`Delete vendor? This will also delete all associated bookings.`)) {
+            // Delete all bookings for this vendor
+            const bookingsQuery = query(collection(db, "bookings"), where("vendorId", "==", id));
+            const bookingsSnap = await getDocs(bookingsQuery);
+            bookingsSnap.forEach(async (bookingDoc) => {
+                await deleteDoc(doc(db, "bookings", bookingDoc.id));
+            });
+            // Delete vendor
+            await deleteDoc(doc(db, 'vendors', id));
+            showMessage('Vendor deleted!', 'success');
+            loadVendors();
+        }
+    };
+
+    window.copyCredentials = (vendorId, password) => {
+        const credentials = `Vendor ID: ${vendorId}\nPassword: ${password}\nLogin URL: vendor-login.html`;
+        navigator.clipboard.writeText(credentials);
+        showMessage('Credentials copied to clipboard!', 'success');
+    };
+
+    window.saveVendor = async () => {
+        const isEdit = document.getElementById('vendorEditId').value;
+        const vendorId = isEdit ? null : await generateVendorId();
+        const password = document.getElementById('vendorPassword').value || generateRandomPassword();
+        
+        const data = {
+            name: document.getElementById('vendorName').value,
+            category: document.getElementById('vendorCategory').value,
+            city: document.getElementById('vendorCity').value,
+            priceRange: document.getElementById('vendorPrice').value,
+            location: document.getElementById('vendorLocation').value,
+            description: document.getElementById('vendorDescription').value,
+            phone: document.getElementById('vendorPhone').value,
+            email: document.getElementById('vendorEmail').value,
+            password: password,
+            updatedAt: new Date().toISOString()
+        };
+        
+        if (!data.name || !data.city) {
+            showMessage('Name and City are required!', 'error');
+            return;
+        }
+        
+        // Upload logo if selected
+        const logoFile = document.getElementById('vendorLogo').files[0];
+        if (logoFile) {
+            data.imageUrl = await uploadImage(logoFile, 'vendors/');
+        }
+        
+        if (isEdit) {
+            // Keep existing vendorId
+            const existingVendor = allVendors.find(v => v.id === isEdit);
+            if (existingVendor && existingVendor.vendorId) {
+                data.vendorId = existingVendor.vendorId;
+            }
+            await updateDoc(doc(db, 'vendors', isEdit), data);
+            showMessage('Vendor updated!', 'success');
+        } else {
+            data.vendorId = vendorId;
+            data.createdAt = new Date().toISOString();
+            await addDoc(collection(db, 'vendors'), data);
+            showMessage(`✅ Vendor added! ID: ${vendorId} | Password: ${password}`, 'success');
+            
+            // Show credentials for copying
+            document.getElementById('credentialsDisplay').innerHTML = `
+                <h4><i class="fas fa-key"></i> Login Credentials (Share with Vendor)</h4>
+                <div class="credential-item">
+                    <strong>Vendor ID:</strong> ${vendorId}
+                    <button class="btn-copy" onclick="copyCredentials('${vendorId}', '${password}')">Copy</button>
+                </div>
+                <div class="credential-item">
+                    <strong>Password:</strong> ${password}
+                    <button class="btn-copy" onclick="copyCredentials('${vendorId}', '${password}')">Copy</button>
+                </div>
+                <div class="credential-item">
+                    <strong>Login URL:</strong> vendor-login.html
+                </div>
+            `;
+            document.getElementById('credentialsDisplay').style.display = 'block';
+            document.getElementById('generatedIdDisplay').style.display = 'none';
+        }
+        closeModal();
+        loadVendors();
+    };
+
+    function showMessage(msg, type) {
+        const msgDiv = document.getElementById('message');
+        msgDiv.className = `message ${type}`;
+        msgDiv.innerText = msg;
+        msgDiv.style.display = 'block';
+        setTimeout(() => msgDiv.style.display = 'none', 4000);
+    }
+
+    window.closeModal = () => {
+        document.getElementById('vendorModal').style.display = 'none';
+    };
+
+    window.logout = () => {
+        localStorage.removeItem('admin');
+        localStorage.removeItem('developer');
+        window.location.href = 'index.html';
+    };
+
+    // Initialize
+    loadCities();
+    loadVendors();
+</script>
+</body>
+</html>
