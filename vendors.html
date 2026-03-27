@@ -24,6 +24,7 @@
             --light: #ffffff;
             --gray: #f8f9fa;
             --dark-gray: #2d2d44;
+            --success: #28a745;
         }
 
         body {
@@ -230,10 +231,10 @@
             z-index: 1000;
             box-shadow: 0 10px 30px rgba(0,0,0,0.15);
             display: none;
-            animation: fadeInDown 0.2s ease;
         }
         .autocomplete-dropdown.show {
             display: block;
+            animation: fadeInDown 0.2s ease;
         }
         @keyframes fadeInDown {
             from { opacity: 0; transform: translateY(-10px); }
@@ -268,6 +269,8 @@
             overflow-x: auto;
             padding-bottom: 10px;
             scrollbar-width: thin;
+            justify-content: center;
+            flex-wrap: wrap;
         }
         .filter-scroll::-webkit-scrollbar {
             height: 4px;
@@ -355,6 +358,7 @@
             border-radius: 30px;
             font-size: 12px;
             font-weight: 600;
+            color: #ffb347;
         }
         .vendor-content-premium {
             padding: 20px;
@@ -384,8 +388,8 @@
             gap: 6px;
         }
         .vendor-price-premium {
-            font-size: 20px;
-            font-weight: 800;
+            font-size: 18px;
+            font-weight: 700;
             color: var(--primary);
             margin: 12px 0;
         }
@@ -409,53 +413,6 @@
         }
         .book-now-btn:hover {
             transform: scale(1.05);
-        }
-
-        /* Skeleton Loading */
-        .skeleton-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 25px;
-        }
-        .skeleton-card {
-            background: white;
-            border-radius: 28px;
-            overflow: hidden;
-            animation: pulse 1.5s infinite;
-        }
-        .skeleton-image {
-            height: 200px;
-            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-        }
-        .skeleton-content {
-            padding: 20px;
-        }
-        .skeleton-title {
-            height: 24px;
-            background: #f0f0f0;
-            border-radius: 8px;
-            margin-bottom: 12px;
-            width: 70%;
-        }
-        .skeleton-text {
-            height: 16px;
-            background: #f0f0f0;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            width: 90%;
-        }
-        .skeleton-price {
-            height: 28px;
-            background: #f0f0f0;
-            border-radius: 8px;
-            margin-top: 12px;
-            width: 50%;
-        }
-        @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
         }
 
         .no-results-premium {
@@ -485,7 +442,7 @@
             .search-card { flex-direction: column; border-radius: 30px; padding: 16px; }
             .search-btn { padding: 14px; }
             .vendors-grid-premium { grid-template-columns: 1fr; }
-            .vendor-image-premium { height: 180px; }
+            .filter-scroll { justify-content: flex-start; }
         }
     </style>
 </head>
@@ -534,10 +491,9 @@
 
 <div class="vendors-premium">
     <div id="vendorsContainer" class="vendors-grid-premium">
-        <div class="skeleton-grid">
-            <div class="skeleton-card"><div class="skeleton-image"></div><div class="skeleton-content"><div class="skeleton-title"></div><div class="skeleton-text"></div><div class="skeleton-text"></div><div class="skeleton-price"></div></div></div>
-            <div class="skeleton-card"><div class="skeleton-image"></div><div class="skeleton-content"><div class="skeleton-title"></div><div class="skeleton-text"></div><div class="skeleton-text"></div><div class="skeleton-price"></div></div></div>
-            <div class="skeleton-card"><div class="skeleton-image"></div><div class="skeleton-content"><div class="skeleton-title"></div><div class="skeleton-text"></div><div class="skeleton-text"></div><div class="skeleton-price"></div></div></div>
+        <div style="text-align: center; padding: 60px; grid-column: 1/-1;">
+            <i class="fas fa-spinner fa-spin" style="font-size: 40px; color: var(--primary);"></i>
+            <p style="margin-top: 20px;">Loading vendors...</p>
         </div>
     </div>
 </div>
@@ -548,7 +504,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
@@ -567,37 +523,51 @@
     let currentSearch = '';
     let currentCity = '';
 
+    // Default Vendors Data
     const defaultVendors = [
         { id: "v1", name: "Elegant Decorators", category: "decorator", city: "Nagpur", priceRange: "₹50,000 - ₹2,00,000", rating: 4.9, imageUrl: "", location: "Sadar, Nagpur", phone: "9876543210" },
         { id: "v2", name: "Capture Moments Photography", category: "photographer", city: "Nagpur", priceRange: "₹30,000 - ₹1,50,000", rating: 4.8, imageUrl: "", location: "Dharampeth, Nagpur" },
         { id: "v3", name: "Royal Caterers", category: "caterer", city: "Nagpur", priceRange: "₹500/plate", rating: 4.9, imageUrl: "", location: "Civil Lines, Nagpur" },
         { id: "v4", name: "Rhythm Band Baja", category: "bandbaja", city: "Nagpur", priceRange: "₹40,000 - ₹1,20,000", rating: 4.7, imageUrl: "", location: "Itwari, Nagpur" },
         { id: "v5", name: "Mumbai Decorators", category: "decorator", city: "Mumbai", priceRange: "₹80,000 - ₹3,00,000", rating: 4.9, imageUrl: "", location: "Andheri, Mumbai" },
-        { id: "v6", name: "Mumbai Photographers", category: "photographer", city: "Mumbai", priceRange: "₹50,000 - ₹2,00,000", rating: 4.8, imageUrl: "", location: "Bandra, Mumbai" }
+        { id: "v6", name: "Mumbai Photographers", category: "photographer", city: "Mumbai", priceRange: "₹50,000 - ₹2,00,000", rating: 4.8, imageUrl: "", location: "Bandra, Mumbai" },
+        { id: "v7", name: "Delhi Caterers", category: "caterer", city: "Delhi", priceRange: "₹600/plate", rating: 4.7, imageUrl: "", location: "Connaught Place, Delhi" },
+        { id: "v8", name: "Bangalore Band", category: "bandbaja", city: "Bangalore", priceRange: "₹50,000 - ₹1,50,000", rating: 4.8, imageUrl: "", location: "Indiranagar, Bangalore" },
+        { id: "v9", name: "Pune Decorators", category: "decorator", city: "Pune", priceRange: "₹60,000 - ₹2,50,000", rating: 4.8, imageUrl: "", location: "Koregaon Park, Pune" },
+        { id: "v10", name: "Chennai Caterers", category: "caterer", city: "Chennai", priceRange: "₹550/plate", rating: 4.8, imageUrl: "", location: "T Nagar, Chennai" }
+    ];
+
+    const defaultCities = [
+        { name: 'Mumbai', popular: true }, { name: 'Delhi', popular: true },
+        { name: 'Bangalore', popular: true }, { name: 'Hyderabad', popular: true },
+        { name: 'Ahmedabad', popular: true }, { name: 'Chennai', popular: true },
+        { name: 'Kolkata', popular: true }, { name: 'Pune', popular: true },
+        { name: 'Nagpur', popular: true }, { name: 'Jaipur', popular: false }
     ];
 
     async function loadVendors() {
         try {
             const snapshot = await getDocs(collection(db, "vendors"));
             const allData = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-            allVendors = allData.filter(v => v.category !== 'stadium');
+            const filteredVendors = allData.filter(v => v.category !== 'stadium');
             
-            if (allVendors.length === 0) {
+            if (filteredVendors.length > 0) {
+                allVendors = filteredVendors;
+            } else {
                 allVendors = defaultVendors;
             }
             
+            // Load cities
             const citiesDoc = await getDocs(collection(db, "settings"));
+            let citiesLoaded = false;
             citiesDoc.forEach(doc => {
-                if (doc.id === 'cities') allCities = doc.data().list || [];
+                if (doc.id === 'cities' && doc.data().list) {
+                    allCities = doc.data().list;
+                    citiesLoaded = true;
+                }
             });
-            if (allCities.length === 0) {
-                allCities = [
-                    { name: 'Mumbai', popular: true }, { name: 'Delhi', popular: true },
-                    { name: 'Bangalore', popular: true }, { name: 'Hyderabad', popular: true },
-                    { name: 'Ahmedabad', popular: true }, { name: 'Chennai', popular: true },
-                    { name: 'Kolkata', popular: true }, { name: 'Pune', popular: true },
-                    { name: 'Nagpur', popular: true }, { name: 'Jaipur', popular: false }
-                ];
+            if (!citiesLoaded || allCities.length === 0) {
+                allCities = defaultCities;
             }
             
             document.getElementById('vendorCountBadge').innerHTML = `🎯 ${allVendors.length} Vendors`;
@@ -606,21 +576,57 @@
         } catch (error) {
             console.error("Error loading vendors:", error);
             allVendors = defaultVendors;
+            allCities = defaultCities;
             document.getElementById('vendorCountBadge').innerHTML = `🎯 ${allVendors.length} Vendors`;
             renderVendors();
             setupAutocomplete();
         }
     }
 
+    function getCategoryImage(category) {
+        const images = {
+            decorator: 'https://images.unsplash.com/photo-1464366400600-4538e07f8e47?w=400&h=300&fit=crop',
+            photographer: 'https://images.unsplash.com/photo-1452587925148-ce544e77e70d?w=400&h=300&fit=crop',
+            caterer: 'https://images.unsplash.com/photo-1555244162-803834f70033?w=400&h=300&fit=crop',
+            bandbaja: 'https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=300&fit=crop'
+        };
+        return images[category] || 'https://via.placeholder.com/400x300?text=Vendor';
+    }
+
+    function getCategoryIcon(category) {
+        const icons = {
+            decorator: '🎨',
+            photographer: '📸',
+            caterer: '🍽️',
+            bandbaja: '🎵'
+        };
+        return icons[category] || '🏷️';
+    }
+
+    function getCategoryName(category) {
+        const names = {
+            decorator: 'Wedding Decorator',
+            photographer: 'Event Photographer',
+            caterer: 'Premium Caterer',
+            bandbaja: 'Live Entertainment'
+        };
+        return names[category] || category;
+    }
+
     function renderVendors() {
         let filtered = [...allVendors];
         
+        // Apply category filter
         if (currentCategory !== 'all') {
             filtered = filtered.filter(v => v.category === currentCategory);
         }
+        
+        // Apply search filter
         if (currentSearch) {
             filtered = filtered.filter(v => v.name?.toLowerCase().includes(currentSearch.toLowerCase()));
         }
+        
+        // Apply city filter
         if (currentCity) {
             filtered = filtered.filter(v => v.city?.toLowerCase() === currentCity.toLowerCase());
         }
@@ -639,35 +645,25 @@
             return;
         }
         
-        container.innerHTML = filtered.map(v => `
-            <div class="vendor-card-premium" data-aos="fade-up" onclick="viewVendor('${v.id}')">
+        container.innerHTML = filtered.map(vendor => `
+            <div class="vendor-card-premium" onclick="viewVendor('${vendor.id}')">
                 <div class="vendor-image-premium">
-                    <img src="${v.imageUrl || getCategoryImage(v.category)}" onerror="this.src='${getCategoryImage(v.category)}'">
-                    <div class="vendor-badge">${v.category === 'decorator' ? '🎨 Decorator' : v.category === 'photographer' ? '📸 Photographer' : v.category === 'caterer' ? '🍽️ Caterer' : '🎵 Band Baja'}</div>
-                    <div class="vendor-rating-badge">⭐ ${v.rating || 4.5} ★</div>
+                    <img src="${vendor.imageUrl || getCategoryImage(vendor.category)}" onerror="this.src='${getCategoryImage(vendor.category)}'">
+                    <div class="vendor-badge">${getCategoryIcon(vendor.category)} ${vendor.category === 'decorator' ? 'Decorator' : vendor.category === 'photographer' ? 'Photographer' : vendor.category === 'caterer' ? 'Caterer' : 'Band Baja'}</div>
+                    <div class="vendor-rating-badge">⭐ ${vendor.rating || 4.5} ★</div>
                 </div>
                 <div class="vendor-content-premium">
-                    <div class="vendor-name-premium">${v.name}</div>
-                    <div class="vendor-category-premium">${v.category === 'decorator' ? 'Wedding Decor' : v.category === 'photographer' ? 'Event Photography' : v.category === 'caterer' ? 'Premium Catering' : 'Live Entertainment'}</div>
-                    <div class="vendor-location-premium"><i class="fas fa-map-marker-alt"></i> ${v.location || v.city}</div>
-                    <div class="vendor-price-premium">${v.priceRange || 'Contact for best price'}</div>
+                    <div class="vendor-name-premium">${vendor.name}</div>
+                    <div class="vendor-category-premium">${getCategoryName(vendor.category)}</div>
+                    <div class="vendor-location-premium"><i class="fas fa-map-marker-alt"></i> ${vendor.location || vendor.city}</div>
+                    <div class="vendor-price-premium">${vendor.priceRange || 'Contact for best price'}</div>
                     <div class="vendor-footer">
                         <span style="font-size: 12px; color: #888;"><i class="fas fa-calendar"></i> Available for booking</span>
-                        <button class="book-now-btn" onclick="event.stopPropagation(); viewVendor('${v.id}')">Book Now →</button>
+                        <button class="book-now-btn" onclick="event.stopPropagation(); viewVendor('${vendor.id}')">Book Now →</button>
                     </div>
                 </div>
             </div>
         `).join('');
-    }
-
-    function getCategoryImage(category) {
-        const images = {
-            decorator: 'https://images.unsplash.com/photo-1464366400600-4538e07f8e47?w=400&h=300&fit=crop',
-            photographer: 'https://images.unsplash.com/photo-1452587925148-ce544e77e70d?w=400&h=300&fit=crop',
-            caterer: 'https://images.unsplash.com/photo-1555244162-803834f70033?w=400&h=300&fit=crop',
-            bandbaja: 'https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=300&fit=crop'
-        };
-        return images[category] || 'https://via.placeholder.com/400x300?text=Vendor';
     }
 
     function setupAutocomplete() {
@@ -676,21 +672,23 @@
         const vendorDrop = document.getElementById('vendorAutocomplete');
         const cityDrop = document.getElementById('cityAutocomplete');
         
-        vendorInput.addEventListener('input', () => {
-            const val = vendorInput.value.toLowerCase();
+        // Vendor autocomplete
+        vendorInput.addEventListener('input', function() {
+            const val = this.value.toLowerCase();
             if (!val) { vendorDrop.classList.remove('show'); return; }
             const suggestions = allVendors.filter(v => v.name?.toLowerCase().includes(val)).slice(0, 6);
             if (!suggestions.length) { vendorDrop.classList.remove('show'); return; }
             vendorDrop.innerHTML = suggestions.map(v => `
-                <div class="autocomplete-item" onclick="selectVendor('${v.name}')">
+                <div class="autocomplete-item" onclick="selectVendor('${v.name.replace(/'/g, "\\'")}')">
                     <i class="fas fa-store"></i> ${v.name} <span style="margin-left: auto; font-size: 12px; color: #ff6b35;">${v.city}</span>
                 </div>
             `).join('');
             vendorDrop.classList.add('show');
         });
         
-        cityInput.addEventListener('input', () => {
-            const val = cityInput.value.toLowerCase();
+        // City autocomplete
+        cityInput.addEventListener('input', function() {
+            const val = this.value.toLowerCase();
             if (!val) { cityDrop.classList.remove('show'); return; }
             const suggestions = allCities.filter(c => c.name?.toLowerCase().includes(val)).slice(0, 6);
             if (!suggestions.length) { cityDrop.classList.remove('show'); return; }
@@ -702,6 +700,7 @@
             cityDrop.classList.add('show');
         });
         
+        // Close dropdowns when clicking outside
         document.addEventListener('click', (e) => {
             if (!vendorInput.contains(e.target) && !vendorDrop.contains(e.target)) vendorDrop.classList.remove('show');
             if (!cityInput.contains(e.target) && !cityDrop.contains(e.target)) cityDrop.classList.remove('show');
@@ -730,8 +729,15 @@
     
     window.filterByCategory = (category) => {
         currentCategory = category;
-        document.querySelectorAll('.filter-chip-premium').forEach(c => c.classList.remove('active'));
-        event.target.classList.add('active');
+        
+        // Update active class on filter chips
+        document.querySelectorAll('.filter-chip-premium').forEach(chip => {
+            chip.classList.remove('active');
+            if (chip.getAttribute('data-category') === category) {
+                chip.classList.add('active');
+            }
+        });
+        
         renderVendors();
     };
     
@@ -741,8 +747,15 @@
         currentCity = '';
         document.getElementById('vendorSearch').value = '';
         document.getElementById('citySearch').value = '';
-        document.querySelectorAll('.filter-chip-premium').forEach(c => c.classList.remove('active'));
-        document.querySelector('.filter-chip-premium[data-category="all"]').classList.add('active');
+        
+        // Reset active class on filter chips
+        document.querySelectorAll('.filter-chip-premium').forEach(chip => {
+            chip.classList.remove('active');
+            if (chip.getAttribute('data-category') === 'all') {
+                chip.classList.add('active');
+            }
+        });
+        
         renderVendors();
     };
     
@@ -750,8 +763,8 @@
         window.location.href = `vendor-detail.html?id=${id}`;
     };
     
+    // Initialize
     loadVendors();
 </script>
-
 </body>
 </html>
