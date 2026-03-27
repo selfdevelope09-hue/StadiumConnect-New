@@ -1,207 +1,478 @@
-<script>
-/* ------------------ FIREBASE INIT ------------------ */
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Stadium Booking - StadiumConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: #0a0a0a; color: #fff; }
 
-/* ------------------ GLOBAL STATE ------------------ */
-let stadiumData = { name: "Default Stadium", basePrice: 150000, city: "Nagpur" };
-let currentPercent = 0;
-let selectedDate = null;
-let currentMonth = new Date().getMonth();
-let currentYear = new Date().getFullYear();
-let agentInfo = null;
+        .header {
+            background: rgba(0,0,0,0.95);
+            padding: 16px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,107,53,0.3);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .logo { font-size: 22px; font-weight: 800; background: linear-gradient(135deg, #fff, #ff6b35); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .back-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #ff6b35; }
 
-/* ------------------ SAFE PARSE ------------------ */
-function safePrice(val) {
-    if (!val) return 150000;
-    return parseInt(val.toString().replace(/[^0-9]/g, '')) || 150000;
-}
+        .container { max-width: 1200px; margin: 0 auto; padding: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
 
-/* ------------------ ADMIN SYNC ------------------ */
-function syncFromAdmin() {
-    const stId = new URLSearchParams(window.location.search).get('id') || 'stadium_1';
+        /* Left Panel */
+        .visual-panel { background: #1a1a2e; border-radius: 28px; padding: 24px; position: sticky; top: 100px; }
+        .stadium-canvas { background: #0a0a2a; border-radius: 20px; height: 400px; position: relative; overflow: hidden; }
+        canvas { width: 100%; height: 100%; display: block; cursor: pointer; }
+        .selection-info { margin-top: 20px; padding: 16px; background: rgba(255,255,255,0.1); border-radius: 16px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 15px; }
+        .selection-percentage { font-size: 28px; font-weight: 800; color: #ff6b35; }
 
-    db.collection("vendors").doc(stId).onSnapshot((doc) => {
-        if (!doc.exists) return;
+        /* Right Panel */
+        .booking-panel { background: rgba(255,255,255,0.05); border-radius: 28px; padding: 28px; border: 1px solid rgba(255,255,255,0.1); max-height: 85vh; overflow-y: auto; }
+        .stadium-name { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+        .stadium-location { color: #aaa; margin-bottom: 24px; }
 
-        stadiumData = doc.data();
-        stadiumData.basePrice = safePrice(stadiumData.priceRange);
+        .portion-buttons { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin: 24px 0; }
+        .portion-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); padding: 14px; border-radius: 16px; text-align: center; cursor: pointer; transition: 0.2s; }
+        .portion-btn.selected { background: #ff6b35; border-color: #ff6b35; }
 
-        document.getElementById('stName').innerText = stadiumData.name || "Unknown Stadium";
-        document.getElementById('stLoc').innerText = stadiumData.city || "Unknown City";
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 8px; color: #ccc; font-size: 13px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 14px 16px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 16px; color: white; font-size: 15px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 
-        updatePricingLogic();
-    });
+        .calendar-section { margin: 24px 0; }
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 8px; }
+        .calendar-day { text-align: center; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 12px; cursor: pointer; font-size: 13px; }
+        .calendar-day.available { background: rgba(46,125,50,0.3); border: 1px solid #2e7d32; }
+        .calendar-day.booked { background: rgba(211,47,47,0.3); border: 1px solid #d32f2f; cursor: not-allowed; opacity: 0.5; }
+        .calendar-day.selected { background: #ff6b35; }
 
-    db.collection("agents").onSnapshot((snap) => {
-        let found = false;
+        .price-calculator { background: rgba(255,107,53,0.1); border-radius: 20px; padding: 20px; margin: 20px 0; text-align: center; }
+        .price-amount { font-size: 36px; font-weight: 800; color: #ff6b35; }
 
+        .payment-options { display: flex; gap: 12px; margin: 20px 0; }
+        .payment-option { flex: 1; padding: 14px; background: rgba(255,255,255,0.1); border-radius: 16px; text-align: center; cursor: pointer; }
+        .payment-option.selected { background: #ff6b35; }
+        .payment-option small { display: block; font-size: 10px; color: #aaa; }
+
+        .book-btn { width: 100%; background: #ff6b35; color: white; border: none; padding: 18px; border-radius: 50px; font-size: 18px; font-weight: 700; cursor: pointer; margin-top: 20px; transition: 0.2s; }
+        .agent-card { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 16px; margin-top: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .call-agent { background: #28a745; border: none; padding: 10px 20px; border-radius: 30px; cursor: pointer; }
+
+        @media (max-width: 900px) { .container { grid-template-columns: 1fr; } .visual-panel { position: relative; top: 0; } .form-row { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <button class="back-btn" onclick="window.location.href='stadium-booking.html'">←</button>
+    <div class="logo">STADIUM<span>CONNECT</span></div>
+    <div style="width: 40px;"></div>
+</header>
+
+<div class="container">
+    <!-- LEFT PANEL - Stadium Visual -->
+    <div class="visual-panel">
+        <div class="stadium-canvas">
+            <canvas id="stadiumCanvas" width="500" height="400"></canvas>
+        </div>
+        <div class="selection-info">
+            <div>
+                <div class="selection-percentage" id="selectedPercent">0%</div>
+                <div class="selection-area">Selected Area</div>
+            </div>
+            <div>
+                <div class="selection-percentage" id="estimatedSeats">0</div>
+                <div class="selection-area">Estimated Seats</div>
+            </div>
+            <div>
+                <i class="fas fa-mouse-pointer"></i> Click on area to select
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT PANEL - Booking Form -->
+    <div class="booking-panel">
+        <div class="stadium-name" id="stadiumName">Vidarbha Cricket Stadium</div>
+        <div class="stadium-location"><i class="fas fa-map-marker-alt"></i> <span id="stadiumLocation">Nagpur</span></div>
+
+        <!-- Portion Selection Buttons -->
+        <div class="portion-buttons">
+            <div class="portion-btn" onclick="selectPortion(25)">25%</div>
+            <div class="portion-btn" onclick="selectPortion(50)">50%</div>
+            <div class="portion-btn" onclick="selectPortion(75)">75%</div>
+            <div class="portion-btn" onclick="selectPortion(100)">Full Stadium</div>
+        </div>
+
+        <!-- Booking Form -->
+        <form id="bookingForm">
+            <div class="form-row">
+                <div class="form-group"><label>Full Name *</label><input type="text" id="fullName" required placeholder="Enter your full name"></div>
+                <div class="form-group"><label>Phone Number *</label><input type="tel" id="phone" required placeholder="10 digit mobile number"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Email *</label><input type="email" id="email" required placeholder="Email address"></div>
+                <div class="form-group"><label>City *</label><input type="text" id="city" required placeholder="Your city"></div>
+            </div>
+            <div class="form-group"><label>Event Location / Address *</label><input type="text" id="eventLocation" required placeholder="Full address where event will be held"></div>
+            <div class="form-row">
+                <div class="form-group"><label>Event Date *</label><input type="date" id="eventDate" required></div>
+                <div class="form-group"><label>Event Time</label>
+                    <select id="eventTime">
+                        <option>Morning (6am-12pm)</option>
+                        <option>Afternoon (12pm-6pm)</option>
+                        <option>Evening (6pm-12am)</option>
+                        <option>Full Day</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Event Type *</label>
+                    <select id="eventType" required>
+                        <option>Wedding</option>
+                        <option>Corporate Event</option>
+                        <option>Concert</option>
+                        <option>Sports Match</option>
+                        <option>Birthday Party</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Expected Guests</label><input type="number" id="guestCount" placeholder="Number of guests"></div>
+            </div>
+            <div class="form-group"><label>Special Requests</label><textarea id="specialRequests" rows="2" placeholder="Any special requirements..."></textarea></div>
+        </form>
+
+        <!-- Date Calendar -->
+        <div class="calendar-section">
+            <div class="calendar-header">
+                <button onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button>
+                <span id="currentMonth">March 2025</span>
+                <button onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button>
+            </div>
+            <div class="calendar-grid" id="calendarGrid"></div>
+        </div>
+
+        <!-- Price Calculator (Fixed - No Multiplier) -->
+        <div class="price-calculator">
+            <div style="font-size: 14px; color: #aaa; margin-bottom: 8px;">Total Price</div>
+            <div class="price-amount" id="priceAmount">₹0</div>
+            <div style="font-size: 12px; margin-top: 8px;" id="priceDetail">Select area to see price</div>
+        </div>
+
+        <!-- Payment Options -->
+        <div class="payment-options">
+            <div class="payment-option selected" onclick="selectPayment('full')">
+                <strong>Full Payment</strong><br>
+                <small>Pay 100% now</small>
+            </div>
+            <div class="payment-option" onclick="selectPayment('advance')">
+                <strong>4 Months Advance</strong><br>
+                <small>Pay 25% now</small>
+            </div>
+        </div>
+
+        <button class="book-btn" onclick="submitBooking()"><i class="fas fa-credit-card"></i> Confirm Booking →</button>
+
+        <!-- Agent Card -->
+        <div class="agent-card" id="agentCard">
+            <div>
+                <strong>📞 Local Agent</strong><br>
+                <span id="agentName">Loading...</span><br>
+                <span id="agentCity">-</span>
+            </div>
+            <button class="call-agent" onclick="callAgent()"><i class="fas fa-phone-alt"></i> Call Agent</button>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getFirestore, doc, getDoc, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
+        authDomain: "stadiumconnect-8fecb.firebaseapp.com",
+        projectId: "stadiumconnect-8fecb",
+        storageBucket: "stadiumconnect-8fecb.firebasestorage.app",
+        messagingSenderId: "458108198578",
+        appId: "1:458108198578:web:83d83646f0e24e718b73ab"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const stadiumId = urlParams.get('id');
+
+    let stadium = { name: "Vidarbha Cricket Stadium", city: "Nagpur", basePrice: 50000, totalArea: 45000 };
+    let selectedPercent = 50;
+    let selectedDate = null;
+    let paymentType = 'full';
+    let bookedDates = [];
+    let cityAgent = null;
+
+    // Canvas and drawing
+    const canvas = document.getElementById('stadiumCanvas');
+    const ctx = canvas.getContext('2d');
+    let areas = [
+        { x: 0.1, y: 0.1, w: 0.8, h: 0.3, percent: 25, name: "North Stand" },
+        { x: 0.1, y: 0.4, w: 0.8, h: 0.2, percent: 30, name: "Center East" },
+        { x: 0.1, y: 0.65, w: 0.8, h: 0.25, percent: 35, name: "South Stand" },
+        { x: 0.05, y: 0.2, w: 0.1, h: 0.6, percent: 10, name: "VIP Box" }
+    ];
+
+    function drawStadium() {
+        const w = canvas.width, h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+        
+        // Ground
+        ctx.fillStyle = '#1a5c2a';
+        ctx.fillRect(0, 0, w, h);
+        
+        // Boundary
+        ctx.beginPath();
+        ctx.ellipse(w/2, h/2, w*0.44, h*0.42, 0, 0, 2 * Math.PI);
+        ctx.strokeStyle = '#ff6b35';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        
+        // Center circle
+        ctx.beginPath();
+        ctx.arc(w/2, h/2, 25, 0, 2 * Math.PI);
+        ctx.strokeStyle = '#ff6b35';
+        ctx.stroke();
+        
+        // Draw areas
+        areas.forEach(area => {
+            let x = area.x * w, y = area.y * h, width = area.w * w, height = area.h * h;
+            ctx.fillStyle = 'rgba(255,107,53,0.2)';
+            ctx.fillRect(x, y, width, height);
+            ctx.strokeStyle = '#ff6b35';
+            ctx.strokeRect(x, y, width, height);
+            ctx.fillStyle = '#ffd966';
+            ctx.font = '10px Inter';
+            ctx.fillText(`${area.percent}%`, x + 5, y + 15);
+        });
+        
+        // Highlight selected area
+        if (selectedPercent > 0) {
+            ctx.fillStyle = 'rgba(255,107,53,0.4)';
+            let selectedArea = areas.find(a => a.percent === selectedPercent);
+            if (selectedArea) {
+                let x = selectedArea.x * w, y = selectedArea.y * h, width = selectedArea.w * w, height = selectedArea.h * h;
+                ctx.fillRect(x, y, width, height);
+            } else {
+                let height = h * (selectedPercent / 100);
+                ctx.fillRect(0, h - height, w, height);
+            }
+        }
+    }
+
+    function selectPortion(percent) {
+        selectedPercent = percent;
+        document.querySelectorAll('.portion-btn').forEach(btn => btn.classList.remove('selected'));
+        event.target.classList.add('selected');
+        updatePrice();
+        drawStadium();
+        let seats = Math.floor((stadium.totalArea / 2) * (selectedPercent / 100));
+        document.getElementById('selectedPercent').innerHTML = `${selectedPercent}%`;
+        document.getElementById('estimatedSeats').innerHTML = seats.toLocaleString();
+    }
+
+    function updatePrice() {
+        let price = Math.floor(stadium.basePrice * (selectedPercent / 100));
+        document.getElementById('priceAmount').innerHTML = `₹${price.toLocaleString()}`;
+        document.getElementById('priceDetail').innerHTML = `${selectedPercent}% of stadium selected`;
+    }
+
+    // Load stadium data
+    async function loadStadium() {
+        if (stadiumId) {
+            const docSnap = await getDoc(doc(db, 'vendors', stadiumId));
+            if (docSnap.exists()) {
+                stadium = { id: docSnap.id, ...docSnap.data() };
+                stadium.basePrice = parseInt(stadium.priceRange?.replace(/[^0-9]/g, '')) || 50000;
+                document.getElementById('stadiumName').innerText = stadium.name;
+                document.getElementById('stadiumLocation').innerText = stadium.city;
+                document.getElementById('basePrice').innerHTML = `₹${stadium.basePrice.toLocaleString()}`;
+            }
+        }
+        await loadBookedDates();
+        await loadCityAgent();
+        drawStadium();
+        drawCalendar();
+        updatePrice();
+        selectPortion(50);
+    }
+
+    async function loadBookedDates() {
+        const snap = await getDocs(collection(db, "bookings"));
+        bookedDates = snap.docs.filter(d => d.data().vendorId === stadium.id).map(d => d.data().eventDate);
+    }
+
+    async function loadCityAgent() {
+        const snap = await getDocs(collection(db, "agents"));
         snap.forEach(d => {
-            const data = d.data();
-            if (!found && data.city?.toLowerCase() === stadiumData.city?.toLowerCase()) {
-                agentInfo = { ...data, id: d.id };
-                document.getElementById('agName').innerText = data.name;
-                found = true;
+            if (d.data().city?.toLowerCase() === stadium.city?.toLowerCase()) {
+                cityAgent = { id: d.id, ...d.data() };
             }
         });
+        if (cityAgent) {
+            document.getElementById('agentName').innerHTML = cityAgent.name || cityAgent.id;
+            document.getElementById('agentCity').innerHTML = cityAgent.city || '-';
+        } else {
+            document.getElementById('agentCard').innerHTML = '<div>No agent assigned to this city yet</div>';
+        }
+    }
 
-        if (!found) {
-            document.getElementById('agName').innerText = "No Agent Available";
+    // Calendar functions
+    let currentDate = new Date();
+    let currentMonth = currentDate.getMonth();
+    let currentYear = currentDate.getFullYear();
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+    function drawCalendar() {
+        const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+        document.getElementById('currentMonth').innerHTML = `${monthNames[currentMonth]} ${currentYear}`;
+        
+        let html = '';
+        for (let i = 0; i < firstDay; i++) html += '<div></div>';
+        
+        for (let d = 1; d <= daysInMonth; d++) {
+            const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            const isBooked = bookedDates.includes(dateStr);
+            const isSelected = selectedDate === dateStr;
+            html += `
+                <div class="calendar-day ${isBooked ? 'booked' : 'available'} ${isSelected ? 'selected' : ''}" 
+                     onclick="${!isBooked ? `selectDate('${dateStr}')` : ''}">
+                    ${d}
+                </div>
+            `;
+        }
+        document.getElementById('calendarGrid').innerHTML = html;
+    }
+
+    window.selectDate = (date) => {
+        selectedDate = date;
+        drawCalendar();
+        document.getElementById('eventDate').value = date;
+    };
+
+    window.changeMonth = (delta) => {
+        currentMonth += delta;
+        if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+        if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+        drawCalendar();
+    };
+
+    window.selectPayment = (type) => {
+        paymentType = type;
+        document.querySelectorAll('.payment-option').forEach(opt => opt.classList.remove('selected'));
+        event.target.classList.add('selected');
+    };
+
+    window.callAgent = () => {
+        if (cityAgent && cityAgent.phone) {
+            window.location.href = `tel:${cityAgent.phone}`;
+        } else {
+            alert('Agent contact not available');
+        }
+    };
+
+    window.submitBooking = async () => {
+        const user = auth.currentUser;
+        if (!user) { alert('Please login first'); window.location.href = 'login.html'; return; }
+        
+        const fullName = document.getElementById('fullName').value;
+        const phone = document.getElementById('phone').value;
+        const email = document.getElementById('email').value;
+        const city = document.getElementById('city').value;
+        const eventLocation = document.getElementById('eventLocation').value;
+        const eventDate = document.getElementById('eventDate').value;
+        const eventType = document.getElementById('eventType').value;
+        
+        if (!fullName || !phone || !email || !city || !eventLocation || !eventDate) {
+            alert('Please fill all required fields');
+            return;
+        }
+        
+        const price = Math.floor(stadium.basePrice * (selectedPercent / 100));
+        const advanceAmount = Math.floor(price * 0.25);
+        const finalAmount = paymentType === 'full' ? price : advanceAmount;
+        
+        const bookingData = {
+            vendorId: stadium.id,
+            vendorName: stadium.name,
+            vendorCity: stadium.city,
+            category: 'stadium',
+            userId: user.uid,
+            userName: fullName,
+            userPhone: phone,
+            userEmail: email,
+            userCity: city,
+            eventLocation: eventLocation,
+            eventDate: eventDate,
+            eventTime: document.getElementById('eventTime').value,
+            eventType: eventType,
+            guestCount: document.getElementById('guestCount').value || 0,
+            specialRequests: document.getElementById('specialRequests').value,
+            selectedPortion: `${selectedPercent}%`,
+            amount: price,
+            paidAmount: finalAmount,
+            paymentType: paymentType,
+            agentId: cityAgent?.id || '',
+            status: paymentType === 'full' ? 'confirmed' : 'partial',
+            createdAt: new Date().toISOString()
+        };
+        
+        try {
+            await addDoc(collection(db, 'bookings'), bookingData);
+            alert(`✅ Booking confirmed!\nStadium: ${stadium.name}\nDate: ${eventDate}\nAmount: ₹${finalAmount.toLocaleString()}\n\nAgent will contact you soon.`);
+            window.location.href = 'dashboard.html';
+        } catch (error) {
+            alert('Booking failed: ' + error.message);
+        }
+    };
+
+    // Canvas click handler
+    canvas.addEventListener('click', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const x = (e.clientX - rect.left) * scaleX;
+        const y = (e.clientY - rect.top) * scaleY;
+        const w = canvas.width, h = canvas.height;
+        
+        let clickedPercent = null;
+        for (let area of areas) {
+            let ax = area.x * w, ay = area.y * h, aw = area.w * w, ah = area.h * h;
+            if (x >= ax && x <= ax + aw && y >= ay && y <= ay + ah) {
+                clickedPercent = area.percent;
+                break;
+            }
+        }
+        
+        if (clickedPercent) {
+            selectPortion(clickedPercent);
+        } else {
+            let percent = Math.floor((1 - (y / h)) * 100);
+            percent = Math.min(100, Math.max(10, percent));
+            selectPortion(percent);
         }
     });
-}
 
-/* ------------------ CANVAS ENGINE ------------------ */
-const canvas = document.getElementById('stadiumCanvas');
-const ctx = canvas.getContext('2d');
-
-function renderCanvas() {
-    const w = canvas.offsetWidth;
-    const h = canvas.offsetHeight;
-
-    canvas.width = w;
-    canvas.height = h;
-
-    ctx.clearRect(0, 0, w, h);
-
-    ctx.fillStyle = '#081c08';
-    ctx.fillRect(0, 0, w, h);
-
-    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
-    for (let i = 0; i < w; i += 25) {
-        ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, h); ctx.stroke();
-    }
-
-    ctx.strokeStyle = '#ff6b35';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.ellipse(w/2, h/2, w*0.4, h*0.35, 0, 0, Math.PI*2);
-    ctx.stroke();
-
-    if (currentPercent > 0) {
-        const angle = (currentPercent / 100) * (Math.PI * 2);
-
-        ctx.fillStyle = 'rgba(255,107,53,0.4)';
-        ctx.beginPath();
-        ctx.moveTo(w/2, h/2);
-        ctx.arc(w/2, h/2, w*0.4, 0, angle);
-        ctx.fill();
-    }
-}
-
-/* ------------------ PORTION SELECT ------------------ */
-function selectPortion(p, el) {
-    currentPercent = p;
-
-    document.querySelectorAll('.p-btn').forEach(b => b.classList.remove('active'));
-    if (el) el.classList.add('active');
-
-    renderCanvas();
-    updatePricingLogic();
-}
-
-/* FIX CLICK */
-document.querySelectorAll('.p-btn').forEach(btn => {
-    btn.onclick = function() {
-        selectPortion(parseInt(this.innerText), this);
-    };
-});
-
-/* ------------------ CALENDAR ------------------ */
-function renderCalendar() {
-    const grid = document.getElementById('calendar');
-    grid.innerHTML = '';
-
-    const days = new Date(currentYear, currentMonth + 1, 0).getDate();
-
-    for (let i = 1; i <= days; i++) {
-        const dateStr = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
-
-        const day = document.createElement('div');
-        day.className = 'cal-day';
-        day.innerText = i;
-
-        if (selectedDate === dateStr) day.classList.add('selected');
-
-        day.onclick = () => {
-            selectedDate = dateStr;
-            renderCalendar();
-            updatePricingLogic();
-        };
-
-        grid.appendChild(day);
-    }
-}
-
-/* ------------------ PRICING ------------------ */
-function updatePricingLogic() {
-    let multiplier = 1;
-
-    if (selectedDate) {
-        const d = new Date(selectedDate);
-        if ([0,6].includes(d.getDay())) multiplier = 1.2;
-    }
-
-    const base = stadiumData.basePrice * (currentPercent / 100);
-    const final = Math.floor(base * multiplier + 2500);
-
-    document.getElementById('pBase').innerText = '₹' + Math.floor(base).toLocaleString();
-    document.getElementById('pTotal').innerText = '₹' + final.toLocaleString();
-    document.getElementById('displayPercent').innerText = currentPercent + '%';
-    document.getElementById('displaySurge').innerText = multiplier + 'x';
-}
-
-/* ------------------ VALIDATION ------------------ */
-function isValid() {
-    const name = custName.value.trim();
-    const phone = custPhone.value.trim();
-
-    return name.length > 2 && phone.length >= 10 && selectedDate && currentPercent > 0;
-}
-
-/* ------------------ BOOKING ------------------ */
-async function processFinalBooking() {
-    if (!isValid()) {
-        alert("Complete details first!");
-        return;
-    }
-
-    const btn = document.querySelector('.btn-book');
-    btn.innerText = "Processing...";
-    btn.disabled = true;
-
-    try {
-        await db.collection("bookings").add({
-            customerName: custName.value,
-            customerPhone: custPhone.value,
-            customerEmail: custEmail.value,
-            stadiumId: stadiumData.name,
-            portion: currentPercent,
-            eventDate: selectedDate,
-            amount: document.getElementById('pTotal').innerText,
-            agentId: agentInfo?.id || null,
-            createdAt: new Date()
-        });
-
-        alert("🔥 Booking Confirmed!");
-    } catch (e) {
-        alert("Error: " + e.message);
-    }
-
-    btn.innerText = "CONFIRM BOOKING";
-    btn.disabled = false;
-}
-
-/* ------------------ INIT ------------------ */
-window.onload = () => {
-    syncFromAdmin();
-    renderCanvas();
-    renderCalendar();
-
-    setInterval(() => {
-        viewerCount.innerText = Math.floor(Math.random()*10)+10;
-    }, 3000);
-};
-
-window.onresize = renderCanvas;
+    loadStadium();
 </script>
+
+</body>
+</html>
