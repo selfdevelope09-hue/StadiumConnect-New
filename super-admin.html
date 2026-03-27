@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Super Admin - StadiumConnect</title>
+    <title>Super Admin Dashboard - StadiumConnect</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -11,7 +11,6 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background: #f0f2f5; overflow-x: hidden; }
         
-        /* Header */
         .header {
             background: white;
             padding: 16px 30px;
@@ -26,16 +25,12 @@
             gap: 15px;
         }
         .logo { font-size: 22px; font-weight: 800; background: linear-gradient(135deg, #ff6b35, #ff9068); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .commission-badge { background: #ff6b35; color: white; padding: 5px 12px; border-radius: 30px; font-size: 12px; font-weight: 600; }
         .user-info { background: #fff5f0; padding: 8px 20px; border-radius: 40px; }
         .logout-btn { background: #ff6b35; color: white; border: none; padding: 8px 20px; border-radius: 30px; cursor: pointer; }
         
-        /* Dashboard Layout */
-        .dashboard-container {
-            display: flex;
-            min-height: calc(100vh - 80px);
-        }
+        .dashboard-container { display: flex; min-height: calc(100vh - 80px); }
         
-        /* Sidebar */
         .sidebar {
             width: 280px;
             background: white;
@@ -64,19 +59,11 @@
         }
         .sidebar-item i { width: 24px; font-size: 18px; }
         
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            padding: 24px;
-            overflow-x: auto;
-        }
-        
-        /* Panel */
+        .main-content { flex: 1; padding: 24px; overflow-x: auto; }
         .panel { display: none; animation: fadeIn 0.3s ease; }
         .panel.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* Cards */
         .card {
             background: white;
             border-radius: 24px;
@@ -86,7 +73,7 @@
         }
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 20px;
             margin-bottom: 24px;
         }
@@ -95,32 +82,34 @@
             border-radius: 20px;
             padding: 20px;
             text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border: 1px solid #f0f0f0;
         }
         .stat-value { font-size: 32px; font-weight: 800; color: #ff6b35; }
+        .stat-label { color: #666; font-size: 14px; margin-top: 5px; }
         
-        /* Tables */
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 14px 12px; text-align: left; border-bottom: 1px solid #eee; }
-        th { color: #666; font-weight: 500; font-size: 13px; text-transform: uppercase; }
-        .rank-badge {
-            display: inline-block;
-            width: 28px; height: 28px;
-            background: #ff6b35; color: white;
-            border-radius: 50%;
-            text-align: center; line-height: 28px;
-            font-size: 12px; font-weight: 700;
+        th { color: #666; font-weight: 600; font-size: 13px; text-transform: uppercase; background: #fafafa; }
+        tr:hover { background: #fafafa; }
+        
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
         }
-        .rank-1 { background: #ffd700; color: #000; }
-        .rank-2 { background: #c0c0c0; color: #000; }
-        .rank-3 { background: #cd7f32; color: #fff; }
+        .status-confirmed { background: #d4edda; color: #155724; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-cancelled { background: #f8d7da; color: #721c24; }
+        .status-partial { background: #d1ecf1; color: #0c5460; }
         
-        /* Buttons */
         .btn-primary { background: #ff6b35; color: white; border: none; padding: 10px 20px; border-radius: 30px; cursor: pointer; font-weight: 600; margin-bottom: 16px; }
-        .btn-edit { background: #ffc107; color: #000; border: none; padding: 6px 12px; border-radius: 20px; cursor: pointer; margin-right: 5px; }
-        .btn-delete { background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 20px; cursor: pointer; }
-        .btn-view { background: #17a2b8; color: white; border: none; padding: 6px 12px; border-radius: 20px; cursor: pointer; margin-right: 5px; }
+        .btn-edit { background: #ffc107; color: #000; border: none; padding: 6px 12px; border-radius: 20px; cursor: pointer; margin-right: 5px; font-size: 12px; }
+        .btn-delete { background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 20px; cursor: pointer; font-size: 12px; }
+        .btn-view { background: #17a2b8; color: white; border: none; padding: 6px 12px; border-radius: 20px; cursor: pointer; margin-right: 5px; font-size: 12px; }
+        .btn-confirm { background: #28a745; color: white; border: none; padding: 6px 12px; border-radius: 20px; cursor: pointer; margin-right: 5px; font-size: 12px; }
         
-        /* Search */
         .search-input {
             padding: 10px 16px;
             border: 1px solid #ddd;
@@ -130,7 +119,6 @@
             margin-bottom: 16px;
         }
         
-        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -146,7 +134,7 @@
             border-radius: 28px;
             padding: 28px;
             width: 90%;
-            max-width: 650px;
+            max-width: 700px;
             max-height: 85vh;
             overflow-y: auto;
         }
@@ -156,35 +144,17 @@
         .form-group input, .form-group select, .form-group textarea {
             width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 12px;
         }
-        .photo-grid {
-            display: flex;
-            flex-wrap: wrap;
+        
+        .customer-detail-row {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
             gap: 12px;
-            margin: 16px 0;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
         }
-        .photo-item {
-            width: 100px; height: 100px;
-            border-radius: 12px;
-            overflow: hidden;
-            position: relative;
-            border: 2px solid #eee;
-        }
-        .photo-item img { width: 100%; height: 100%; object-fit: cover; }
-        .photo-item .remove {
-            position: absolute; top: 5px; right: 5px;
-            background: red; color: white;
-            border: none; border-radius: 50%;
-            width: 22px; height: 22px;
-            cursor: pointer;
-        }
-        .upload-btn {
-            background: #f0f0f0;
-            border: 1px dashed #ccc;
-            padding: 12px 20px;
-            border-radius: 12px;
-            cursor: pointer;
-            text-align: center;
-        }
+        .detail-label { font-weight: 600; color: #ff6b35; }
+        
+        .chart-container { height: 300px; margin-top: 20px; }
         
         @media (max-width: 768px) {
             .sidebar { width: 80px; }
@@ -197,189 +167,134 @@
 <body>
 
 <header class="header">
-    <div class="logo">STADIUM<span>CONNECT</span> <span style="background:#ff6b35; color:white; font-size:10px; padding:2px 8px; border-radius:20px;">SUPER ADMIN</span></div>
-    <div class="user-info"><i class="fas fa-crown"></i> <span id="adminName"></span></div>
+    <div class="logo">STADIUM<span>CONNECT</span> <span class="commission-badge"><i class="fas fa-percent"></i> 12.5% Commission</span></div>
+    <div class="user-info"><i class="fas fa-crown"></i> <span id="adminName">Super Admin</span></div>
     <button class="logout-btn" onclick="logout()">Logout</button>
 </header>
 
 <div class="dashboard-container">
-    <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-item active" onclick="switchPanel('dashboard')"><i class="fas fa-chart-line"></i> <span>Dashboard</span></div>
-        <div class="sidebar-item" onclick="switchPanel('vendors')"><i class="fas fa-store"></i> <span>Vendors</span></div>
         <div class="sidebar-item" onclick="switchPanel('stadiums')"><i class="fas fa-football-ball"></i> <span>Stadiums</span></div>
+        <div class="sidebar-item" onclick="switchPanel('vendors')"><i class="fas fa-store"></i> <span>Other Vendors</span></div>
         <div class="sidebar-item" onclick="switchPanel('agents')"><i class="fas fa-user-tie"></i> <span>Agents</span></div>
-        <div class="sidebar-item" onclick="switchPanel('bookings')"><i class="fas fa-calendar-check"></i> <span>Bookings</span></div>
+        <div class="sidebar-item" onclick="switchPanel('bookings')"><i class="fas fa-calendar-check"></i> <span>All Bookings</span></div>
         <div class="sidebar-item" onclick="switchPanel('analytics')"><i class="fas fa-chart-bar"></i> <span>Analytics</span></div>
-        <div class="sidebar-item" onclick="switchPanel('categories')"><i class="fas fa-tags"></i> <span>Categories</span></div>
+        <div class="sidebar-item" onclick="switchPanel('commission')"><i class="fas fa-coins"></i> <span>Commission Report</span></div>
         <div class="sidebar-item" onclick="switchPanel('cities')"><i class="fas fa-city"></i> <span>Cities</span></div>
     </div>
 
     <div class="main-content">
-        <!-- ==================== DASHBOARD PANEL ==================== -->
+        <!-- DASHBOARD PANEL -->
         <div id="dashboardPanel" class="panel active">
             <div class="stats-grid" id="dashboardStats"></div>
             <div class="card">
-                <h3>🏆 Top Vendors by Earnings</h3>
-                <div style="overflow-x:auto;"><table id="topVendorsTable"><thead><th>Rank</th><th>Vendor</th><th>City</th><th>Earnings</th><th>Bookings</th></thead><tbody id="topVendorsBody"></tbody></table></div>
+                <h3><i class="fas fa-trophy"></i> 🏆 Top Performing Stadiums</h3>
+                <div style="overflow-x:auto;"><table id="topStadiumsTable"><thead><tr><th>Rank</th><th>Stadium</th><th>City</th><th>Total Bookings</th><th>Revenue (₹)</th><th>Commission (₹)</th></tr></thead><tbody id="topStadiumsBody"></tbody></table></div>
             </div>
             <div class="card">
-                <h3>🏟️ Featured Stadiums</h3>
-                <div style="overflow-x:auto;"><table id="featuredStadiumsTable"><thead><th>Stadium</th><th>City</th><th>Capacity</th><th>Price</th><th>Status</th></thead><tbody id="featuredStadiumsBody"></tbody></table></div>
+                <h3><i class="fas fa-clock"></i> 📋 Recent Bookings</h3>
+                <div style="overflow-x:auto;"><table><thead><tr><th>Booking ID</th><th>Customer</th><th>Stadium/Vendor</th><th>Date</th><th>Amount</th><th>Commission</th><th>Status</th><th>Action</th></tr></thead><tbody id="recentBookingsBody"></tbody></table></div>
             </div>
         </div>
 
-        <!-- ==================== VENDORS PANEL ==================== -->
-        <div id="vendorsPanel" class="panel">
-            <div class="card">
-                <h3>📦 Vendor Management</h3>
-                <input type="text" id="vendorSearch" class="search-input" placeholder="🔍 Search by city or name..." onkeyup="searchVendors()">
-                <button class="btn-primary" onclick="openAddVendorModal()"><i class="fas fa-plus"></i> Add Vendor</button>
-                <div style="overflow-x:auto;"><table id="vendorsTable"><thead><th>ID</th><th>Logo</th><th>Name</th><th>Category</th><th>City</th><th>Earnings</th><th>Actions</th></thead><tbody id="vendorsTableBody"></tbody></table></div>
-            </div>
-        </div>
-
-        <!-- ==================== STADIUMS PANEL ==================== -->
+        <!-- STADIUMS PANEL -->
         <div id="stadiumsPanel" class="panel">
             <div class="card">
                 <h3>🏟️ Stadium Management</h3>
                 <input type="text" id="stadiumSearch" class="search-input" placeholder="🔍 Search by name or city..." onkeyup="searchStadiums()">
                 <button class="btn-primary" onclick="openAddStadiumModal()"><i class="fas fa-plus"></i> Add Stadium</button>
-                <div style="overflow-x:auto;"><table id="stadiumsTable"><thead><th>Image</th><th>Name</th><th>City</th><th>Capacity</th><th>Price</th><th>Type</th><th>Actions</th></thead><tbody id="stadiumsTableBody"></tbody></table></div>
+                <div style="overflow-x:auto;"><table id="stadiumsTable"><thead><tr><th>Image</th><th>Name</th><th>City</th><th>Capacity</th><th>Price/Day</th><th>Total Bookings</th><th>Total Revenue</th><th>Actions</th></tr></thead><tbody id="stadiumsTableBody"></tbody></table></div>
             </div>
         </div>
 
-        <!-- ==================== AGENTS PANEL ==================== -->
+        <!-- VENDORS PANEL (Other Vendors) -->
+        <div id="vendorsPanel" class="panel">
+            <div class="card">
+                <h3>📦 Other Vendors (Decorators, Photographers, Caterers, etc.)</h3>
+                <input type="text" id="vendorSearch" class="search-input" placeholder="🔍 Search by name or city..." onkeyup="searchVendors()">
+                <button class="btn-primary" onclick="openAddVendorModal()"><i class="fas fa-plus"></i> Add Vendor</button>
+                <div style="overflow-x:auto;"><table id="vendorsTable"><thead><tr><th>Logo</th><th>Name</th><th>Category</th><th>City</th><th>Bookings</th><th>Revenue</th><th>Commission</th><th>Actions</th></tr></thead><tbody id="vendorsTableBody"></tbody></table></div>
+            </div>
+        </div>
+
+        <!-- AGENTS PANEL -->
         <div id="agentsPanel" class="panel">
             <div class="card">
                 <h3>🤝 Agent Management</h3>
                 <input type="text" id="agentSearch" class="search-input" placeholder="🔍 Search by city..." onkeyup="searchAgents()">
                 <button class="btn-primary" onclick="openAddAgentModal()"><i class="fas fa-plus"></i> Add Agent</button>
-                <div style="overflow-x:auto;"><table id="agentsTable"><thead><th>ID</th><th>Name</th><th>Phone</th><th>City</th><th>Revenue</th><th>Commission</th><th>Actions</th></thead><tbody id="agentsTableBody"></tbody></table></div>
+                <div style="overflow-x:auto;"><table id="agentsTable"><thead><tr><th>Agent Name</th><th>Phone</th><th>City</th><th>Bookings Handled</th><th>Total Sales (₹)</th><th>Commission Earned (₹)</th><th>Actions</th></tr></thead><tbody id="agentsTableBody"></tbody></table></div>
             </div>
         </div>
 
-        <!-- ==================== BOOKINGS PANEL ==================== -->
+        <!-- BOOKINGS PANEL -->
         <div id="bookingsPanel" class="panel">
             <div class="card">
-                <h3>📋 All Bookings</h3>
-                <input type="text" id="bookingSearch" class="search-input" placeholder="🔍 Search by vendor or customer..." onkeyup="searchBookings()">
-                <div style="overflow-x:auto;"><table id="bookingsTable"><thead><th>ID</th><th>Customer</th><th>Vendor</th><th>Agent</th><th>Amount</th><th>Status</th><th>Actions</th></thead><tbody id="bookingsTableBody"></tbody></table></div>
+                <h3>📋 All Bookings - Complete Customer Details</h3>
+                <input type="text" id="bookingSearch" class="search-input" placeholder="🔍 Search by customer, vendor, or booking ID..." onkeyup="searchBookings()">
+                <div style="overflow-x:auto;"><table id="bookingsTable"><thead><tr><th>ID</th><th>Customer Name</th><th>Phone</th><th>Email</th><th>Stadium/Vendor</th><th>Event Date</th><th>Event Type</th><th>Amount</th><th>Commission</th><th>Status</th><th>Actions</th></tr></thead><tbody id="bookingsTableBody"></tbody></table></div>
             </div>
         </div>
 
-        <!-- ==================== ANALYTICS PANEL ==================== -->
+        <!-- ANALYTICS PANEL -->
         <div id="analyticsPanel" class="panel">
             <div class="stats-grid" id="analyticsStats"></div>
             <div class="card">
-                <h3>📊 Revenue by Category</h3>
-                <div id="categoryChartContainer" style="height: 300px;"><canvas id="categoryRevenueChart"></canvas></div>
+                <h3>📊 Revenue Trend (Last 6 Months)</h3>
+                <div class="chart-container"><canvas id="revenueTrendChart"></canvas></div>
             </div>
             <div class="card">
-                <h3>📈 Monthly Booking Trend</h3>
-                <div id="trendChartContainer" style="height: 300px;"><canvas id="monthlyTrendChart"></canvas></div>
+                <h3>🏟️ Stadium vs Other Vendors Revenue</h3>
+                <div class="chart-container"><canvas id="categoryRevenueChart"></canvas></div>
+            </div>
+            <div class="card">
+                <h3>📈 Top Cities by Revenue</h3>
+                <div class="chart-container"><canvas id="cityRevenueChart"></canvas></div>
             </div>
         </div>
 
-        <!-- ==================== CATEGORIES PANEL ==================== -->
-        <div id="categoriesPanel" class="panel">
+        <!-- COMMISSION REPORT PANEL -->
+        <div id="commissionPanel" class="panel">
             <div class="card">
-                <h3>🏷️ Categories</h3>
-                <button class="btn-primary" onclick="openAddCategoryModal()"><i class="fas fa-plus"></i> Add Category</button>
-                <div id="categoriesList"></div>
+                <h3><i class="fas fa-coins"></i> Commission Report (12.5% of All Bookings)</h3>
+                <div class="stats-grid" id="commissionStats"></div>
+                <div style="overflow-x:auto;"><table id="commissionTable"><thead><tr><th>Booking ID</th><th>Customer</th><th>Vendor/Stadium</th><th>Booking Amount</th><th>Commission (12.5%)</th><th>Status</th><th>Date</th></tr></thead><tbody id="commissionTableBody"></tbody></table></div>
             </div>
         </div>
 
-        <!-- ==================== CITIES PANEL ==================== -->
+        <!-- CITIES PANEL -->
         <div id="citiesPanel" class="panel">
             <div class="card">
-                <h3>📍 Cities</h3>
+                <h3>📍 Manage Cities</h3>
                 <button class="btn-primary" onclick="openAddCityModal()"><i class="fas fa-plus"></i> Add City</button>
-                <div id="citiesList"></div>
+                <div id="citiesList" style="margin-top: 20px;"></div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- ==================== VENDOR MODAL ==================== -->
-<div id="vendorModal" class="modal">
+<!-- Customer Detail Modal -->
+<div id="customerDetailModal" class="modal">
     <div class="modal-content">
-        <span class="close-modal" onclick="closeModal('vendorModal')">&times;</span>
-        <h3 id="vendorModalTitle">Add Vendor</h3>
-        <input type="hidden" id="vendorEditId">
-        <div class="form-group"><label>Vendor ID</label><input type="text" id="vendorId" placeholder="Auto-generated"></div>
-        <div class="form-group"><label>Business Name *</label><input type="text" id="vendorName"></div>
-        <div class="form-group"><label>Category *</label><select id="vendorCategory"><option>decorator</option><option>photographer</option><option>caterer</option><option>bandbaja</option></select></div>
-        <div class="form-group"><label>City *</label><input type="text" id="vendorCity"></div>
-        <div class="form-group"><label>Location</label><input type="text" id="vendorLocation"></div>
-        <div class="form-group"><label>Price Range</label><input type="text" id="vendorPrice"></div>
-        <div class="form-group"><label>Phone</label><input type="tel" id="vendorPhone"></div>
-        <div class="form-group"><label>Agent Phone</label><input type="tel" id="vendorAgentPhone"></div>
-        <div class="form-group"><label>Password</label><input type="text" id="vendorPassword" value="vendor123"></div>
-        <div class="form-group"><label>Description</label><textarea id="vendorDescription" rows="2"></textarea></div>
-        <div class="form-group"><label>Logo / Profile Photo</label><input type="file" id="vendorLogo" accept="image/*" onchange="previewVendorLogo(this)"><img id="vendorLogoPreview" style="width:80px; height:80px; border-radius:12px; margin-top:8px; display:none;"></div>
-        <div class="form-group"><label>Work Photos (Multiple)</label><input type="file" id="vendorWorkPhotos" accept="image/*" multiple onchange="previewVendorWorkPhotos(this)"><div id="vendorWorkPhotosPreview" class="photo-grid"></div></div>
-        <button onclick="saveVendor()" style="background:#28a745; color:white; border:none; padding:12px; width:100%; border-radius:30px;">Save Vendor</button>
-    </div>
-</div>
-
-<!-- ==================== STADIUM MODAL ==================== -->
-<div id="stadiumModal" class="modal">
-    <div class="modal-content">
-        <span class="close-modal" onclick="closeModal('stadiumModal')">&times;</span>
-        <h3 id="stadiumModalTitle">Add Stadium</h3>
-        <input type="hidden" id="stadiumEditId">
-        <div class="form-group"><label>Stadium Name *</label><input type="text" id="stadiumName"></div>
-        <div class="form-group"><label>City *</label><input type="text" id="stadiumCity"></div>
-        <div class="form-group"><label>Capacity</label><input type="number" id="stadiumCapacity" placeholder="Number of seats"></div>
-        <div class="form-group"><label>Base Price (per day) *</label><input type="number" id="stadiumPrice"></div>
-        <div class="form-group"><label>Type</label><select id="stadiumType"><option value="cricket">Cricket</option><option value="football">Football</option><option value="multipurpose">Multipurpose</option></select></div>
-        <div class="form-group"><label>Location / Address</label><input type="text" id="stadiumLocation"></div>
-        <div class="form-group"><label>Amenities (comma separated)</label><input type="text" id="stadiumAmenities" placeholder="Floodlights, Parking, WiFi"></div>
-        <div class="form-group"><label>Description</label><textarea id="stadiumDescription" rows="2"></textarea></div>
-        <div class="form-group"><label>Stadium Photos (Multiple)</label><input type="file" id="stadiumPhotos" accept="image/*" multiple onchange="previewStadiumPhotos(this)"><div id="stadiumPhotosPreview" class="photo-grid"></div></div>
-        <div class="form-group"><label>Video Tour URL (YouTube)</label><input type="url" id="stadiumVideo" placeholder="https://youtube.com/..."></div>
-        <div class="form-group"><label>3D Model URL (Optional)</label><input type="url" id="stadium3DModel" placeholder="https://..."></div>
-        <button onclick="saveStadium()" style="background:#28a745; color:white; border:none; padding:12px; width:100%; border-radius:30px;">Save Stadium</button>
-    </div>
-</div>
-
-<!-- ==================== AGENT MODAL ==================== -->
-<div id="agentModal" class="modal">
-    <div class="modal-content"><span class="close-modal" onclick="closeModal('agentModal')">&times;</span>
-        <h3 id="agentModalTitle">Add Agent</h3>
-        <input type="hidden" id="agentEditId">
-        <div class="form-group"><label>Agent ID</label><input type="text" id="agentId" placeholder="Auto-generated"></div>
-        <div class="form-group"><label>Full Name *</label><input type="text" id="agentName"></div>
-        <div class="form-group"><label>Phone *</label><input type="tel" id="agentPhone"></div>
-        <div class="form-group"><label>City *</label><input type="text" id="agentCity"></div>
-        <div class="form-group"><label>Email</label><input type="email" id="agentEmail"></div>
-        <div class="form-group"><label>Password</label><input type="text" id="agentPassword" value="agent123"></div>
-        <div class="form-group"><label>Monthly Target (₹)</label><input type="number" id="agentTarget" value="50000"></div>
-        <button onclick="saveAgent()" style="background:#28a745; width:100%; margin-top:10px;">Save Agent</button>
-    </div>
-</div>
-
-<!-- ==================== CATEGORY MODAL ==================== -->
-<div id="categoryModal" class="modal">
-    <div class="modal-content"><span class="close-modal" onclick="closeModal('categoryModal')">&times;</span>
-        <h3>Add Category</h3><input type="text" id="catName" placeholder="Category Name"><input type="text" id="catIcon" placeholder="Icon Emoji">
-        <button onclick="saveCategory()" style="background:#28a745; width:100%; margin-top:10px;">Save</button>
-    </div>
-</div>
-
-<!-- ==================== CITY MODAL ==================== -->
-<div id="cityModal" class="modal">
-    <div class="modal-content"><span class="close-modal" onclick="closeModal('cityModal')">&times;</span>
-        <h3>Add City</h3><input type="text" id="cityName" placeholder="City Name"><label><input type="checkbox" id="cityPopular"> Show in Popular Cities</label>
-        <button onclick="saveCity()" style="background:#28a745; width:100%; margin-top:10px;">Save</button>
+        <span class="close-modal" onclick="closeModal('customerDetailModal')">&times;</span>
+        <h3><i class="fas fa-user-circle"></i> Customer Details</h3>
+        <div id="customerDetailsContainer"></div>
+        <div style="margin-top: 20px;">
+            <h4>Booking Details</h4>
+            <div id="bookingDetailsContainer"></div>
+        </div>
+        <div style="margin-top: 20px; display: flex; gap: 10px;">
+            <button onclick="updateBookingStatus('confirmed')" class="btn-confirm">✓ Confirm Booking</button>
+            <button onclick="updateBookingStatus('cancelled')" class="btn-delete">✗ Cancel Booking</button>
+        </div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js";
+    import { getFirestore, collection, getDocs, updateDoc, deleteDoc, doc, setDoc, query, where } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getStorage } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
@@ -392,147 +307,314 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const storage = getStorage(app);
-    const IMGBB_API_KEY = "459b0b4e8a9c6fcceaffd15320a6fdbd";
-
-    if (localStorage.getItem('admin') !== 'true') window.location.href = 'admin-login.html';
-    document.getElementById('adminName').innerText = 'Super Admin';
-
-    let vendors = [], stadiums = [], agents = [], bookings = [], categories = [], cities = [];
-    let editingVendorId = null, editingStadiumId = null, editingAgentId = null;
-    let tempVendorPhotos = [], tempStadiumPhotos = [];
-
-    // ==================== UPLOAD FUNCTIONS ====================
-    async function uploadToImgBB(file) {
-        const formData = new FormData(); formData.append('image', file); formData.append('key', IMGBB_API_KEY);
-        const res = await fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: formData });
-        const data = await res.json();
-        return data.success ? data.data.url : null;
+    
+    const COMMISSION_RATE = 0.125; // 12.5%
+    
+    let allStadiums = [], allVendors = [], allAgents = [], allBookings = [], allCities = [];
+    let currentSelectedBooking = null;
+    
+    function calculateCommission(amount) {
+        let numAmount = parseInt(String(amount).replace(/[₹,]/g, '')) || 0;
+        return Math.floor(numAmount * COMMISSION_RATE);
     }
-
-    async function uploadMultipleImages(files) { let urls = []; for (let f of files) { let url = await uploadToImgBB(f); if(url) urls.push(url); } return urls; }
-
-    // ==================== PREVIEW FUNCTIONS ====================
-    window.previewVendorLogo = (input) => { if(input.files[0]){ const r=new FileReader(); r.onload=e=>{ document.getElementById('vendorLogoPreview').src=e.target.result; document.getElementById('vendorLogoPreview').style.display='block'; }; r.readAsDataURL(input.files[0]); } };
-    window.previewVendorWorkPhotos = (input) => { const container=document.getElementById('vendorWorkPhotosPreview'); container.innerHTML=''; Array.from(input.files).forEach(f=>{ const r=new FileReader(); r.onload=e=>{ const div=document.createElement('div'); div.className='photo-item'; div.innerHTML=`<img src="${e.target.result}"><button class="remove" onclick="this.parentElement.remove()">×</button>`; container.appendChild(div); }; r.readAsDataURL(f); }); };
-    window.previewStadiumPhotos = (input) => { const container=document.getElementById('stadiumPhotosPreview'); container.innerHTML=''; Array.from(input.files).forEach(f=>{ const r=new FileReader(); r.onload=e=>{ const div=document.createElement('div'); div.className='photo-item'; div.innerHTML=`<img src="${e.target.result}"><button class="remove" onclick="this.parentElement.remove()">×</button>`; container.appendChild(div); }; r.readAsDataURL(f); }); };
-
-    // ==================== LOAD DATA ====================
-    async function loadAll() {
-        const [vendorsSnap, stadiumsSnap, agentsSnap, bookingsSnap, categoriesSnap] = await Promise.all([
-            getDocs(collection(db, "vendors")), getDocs(collection(db, "vendors")), getDocs(collection(db, "agents")),
-            getDocs(collection(db, "bookings")), getDocs(collection(db, "categories"))
-        ]);
-        vendors = vendorsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-        stadiums = stadiumsSnap.docs.filter(d => d.data().category === 'stadium').map(d => ({ id: d.id, ...d.data() }));
-        agents = agentsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-        bookings = bookingsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-        categories = categoriesSnap.docs.map(d => ({ id: d.id, ...d.data() })).filter(c => !c.deleted);
+    
+    async function loadAllData() {
+        const vendorsSnap = await getDocs(collection(db, "vendors"));
+        const agentsSnap = await getDocs(collection(db, "agents"));
+        const bookingsSnap = await getDocs(collection(db, "bookings"));
+        
+        allVendors = vendorsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        allStadiums = allVendors.filter(v => v.category === 'stadium' || v.type === 'stadium');
+        allAgents = agentsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        allBookings = bookingsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
         
         const citiesDoc = await getDocs(collection(db, "settings"));
-        citiesDoc.forEach(d => { if(d.id === 'cities') cities = d.data().list || []; });
+        citiesDoc.forEach(d => { if(d.id === 'cities') allCities = d.data().list || []; });
         
-        updateDashboard(); renderVendors(); renderStadiums(); renderAgents(); renderBookings(); renderCategories(); renderCities(); renderAnalytics();
+        updateDashboard();
+        renderStadiums();
+        renderVendors();
+        renderAgents();
+        renderBookings();
+        renderAnalytics();
+        renderCommissionReport();
+        renderCities();
     }
-
-    function calculateCommission(amt) { return Math.floor((parseInt(String(amt).replace(/[₹,]/g, '')) || 0) * 0.025); }
-    function getVendorEarnings(id) { return bookings.filter(b => b.vendorId === id && (b.status==='confirmed'||b.status==='completed')).reduce((s,b)=>s+(parseInt(String(b.amount).replace(/[₹,]/g,''))||0),0); }
-    function getStadiumBookings(id) { return bookings.filter(b => b.vendorId === id).length; }
-
+    
+    function getVendorBookings(vendorId) {
+        return allBookings.filter(b => b.vendorId === vendorId);
+    }
+    
+    function getVendorRevenue(vendorId) {
+        return getVendorBookings(vendorId).filter(b => b.status === 'confirmed' || b.status === 'completed')
+            .reduce((sum, b) => sum + (parseInt(String(b.amount).replace(/[₹,]/g, '')) || 0), 0);
+    }
+    
     function updateDashboard() {
-        const totalRevenue = bookings.filter(b=>b.status==='confirmed'||b.status==='completed').reduce((s,b)=>s+(parseInt(String(b.amount).replace(/[₹,]/g,''))||0),0);
+        const confirmedBookings = allBookings.filter(b => b.status === 'confirmed' || b.status === 'completed');
+        const totalRevenue = confirmedBookings.reduce((sum, b) => sum + (parseInt(String(b.amount).replace(/[₹,]/g, '')) || 0), 0);
+        const totalCommission = confirmedBookings.reduce((sum, b) => sum + calculateCommission(b.amount), 0);
+        
         document.getElementById('dashboardStats').innerHTML = `
-            <div class="stat-card"><div class="stat-value">${vendors.length}</div><div>Total Vendors</div></div>
-            <div class="stat-card"><div class="stat-value">${stadiums.length}</div><div>Stadiums</div></div>
-            <div class="stat-card"><div class="stat-value">${agents.length}</div><div>Agents</div></div>
-            <div class="stat-card"><div class="stat-value">${bookings.length}</div><div>Bookings</div></div>
-            <div class="stat-card"><div class="stat-value">₹${totalRevenue.toLocaleString()}</div><div>Revenue</div></div>`;
+            <div class="stat-card"><div class="stat-value">${allStadiums.length}</div><div class="stat-label">Stadiums</div></div>
+            <div class="stat-card"><div class="stat-value">${allVendors.filter(v => v.category !== 'stadium').length}</div><div class="stat-label">Other Vendors</div></div>
+            <div class="stat-card"><div class="stat-value">${allAgents.length}</div><div class="stat-label">Agents</div></div>
+            <div class="stat-card"><div class="stat-value">${allBookings.length}</div><div class="stat-label">Total Bookings</div></div>
+            <div class="stat-card"><div class="stat-value">₹${totalRevenue.toLocaleString()}</div><div class="stat-label">Total Revenue</div></div>
+            <div class="stat-card"><div class="stat-value">₹${totalCommission.toLocaleString()}</div><div class="stat-label">Total Commission (12.5%)</div></div>
+        `;
         
-        const topVendors = vendors.map(v=>({...v, earnings:getVendorEarnings(v.id)})).sort((a,b)=>b.earnings-a.earnings).slice(0,5);
-        document.getElementById('topVendorsBody').innerHTML = topVendors.map((v,i)=>`<tr><td><span class="rank-badge ${i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':''}">${i+1}</span></td><td>${v.name}</td><td>${v.city}</td><td>₹${v.earnings.toLocaleString()}</td><td>${bookings.filter(b=>b.vendorId===v.id).length}</td></tr>`).join('');
+        const stadiumRevenue = allStadiums.map(s => ({
+            ...s,
+            bookings: getVendorBookings(s.id).filter(b => b.status === 'confirmed' || b.status === 'completed'),
+            revenue: getVendorRevenue(s.id)
+        })).sort((a, b) => b.revenue - a.revenue).slice(0, 5);
         
-        document.getElementById('featuredStadiumsBody').innerHTML = stadiums.slice(0,5).map(s=>`<tr><td>${s.name}</td><td>${s.city}</td><td>${s.capacity?.toLocaleString()||'-'}</td><td>${s.priceRange||'-'}</td><td><span style="color:#28a745;">Active</span></td></tr>`).join('');
+        document.getElementById('topStadiumsBody').innerHTML = stadiumRevenue.map((s, i) => `
+            <tr>
+                <td><span class="rank-badge">${i+1}</span></td>
+                <td><strong>${s.name || s.businessName}</strong></td>
+                <td>${s.city || '-'}</td>
+                <td>${s.bookings.length}</td>
+                <td>₹${s.revenue.toLocaleString()}</td>
+                <td>₹${calculateCommission(s.revenue).toLocaleString()}</td>
+            </tr>
+        `).join('');
+        
+        const recent = [...allBookings].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 8);
+        document.getElementById('recentBookingsBody').innerHTML = recent.map(b => `
+            <tr>
+                <td>${b.id?.slice(-8) || '-'}</td>
+                <td>${b.userName || b.customerName || '-'}</td>
+                <td>${b.vendorName || b.stadiumName || '-'}</td>
+                <td>${b.eventDate || b.date || '-'}</td>
+                <td>₹${(parseInt(String(b.amount).replace(/[₹,]/g,''))||0).toLocaleString()}</td>
+                <td>₹${calculateCommission(b.amount).toLocaleString()}</td>
+                <td><span class="status-badge status-${b.status === 'confirmed' ? 'confirmed' : b.status === 'cancelled' ? 'cancelled' : 'pending'}">${b.status || 'pending'}</span></td>
+                <td><button class="btn-view" onclick="viewCustomerDetails('${b.id}')">View</button></td>
+            </tr>
+        `).join('');
     }
-
-    function renderVendors() { const search=document.getElementById('vendorSearch').value.toLowerCase(); let filtered=vendors.filter(v=>v.category!=='stadium'&&(!search||v.city?.toLowerCase().includes(search)||v.name?.toLowerCase().includes(search))); document.getElementById('vendorsTableBody').innerHTML=filtered.map(v=>`<tr><td>${v.vendorId||v.id.slice(-6)}</td><td><img src="${v.imageUrl||'https://via.placeholder.com/40'}" style="width:40px;height:40px;border-radius:8px;"></td><td><strong>${v.name}</strong></td><td>${v.category}</td><td>${v.city}</td><td>₹${getVendorEarnings(v.id).toLocaleString()}</td><td><button class="btn-edit" onclick="editVendor('${v.id}')">Edit</button><button class="btn-delete" onclick="deleteVendor('${v.id}')">Del</button></td></tr>`).join(''); }
     
-    function renderStadiums() { const search=document.getElementById('stadiumSearch').value.toLowerCase(); let filtered=stadiums.filter(s=>!search||s.name?.toLowerCase().includes(search)||s.city?.toLowerCase().includes(search)); document.getElementById('stadiumsTableBody').innerHTML=filtered.map(s=>`<tr><td><img src="${s.imageUrl||'https://via.placeholder.com/40'}" style="width:40px;height:40px;border-radius:8px;"></td><td><strong>${s.name}</strong></td><td>${s.city}</td><td>${s.capacity?.toLocaleString()||'-'}</td><td>${s.priceRange||'-'}</td><td>${s.type||'cricket'}</td><td><button class="btn-edit" onclick="editStadium('${s.id}')">Edit</button><button class="btn-delete" onclick="deleteStadium('${s.id}')">Del</button></td></tr>`).join(''); }
+    function renderStadiums() {
+        const search = document.getElementById('stadiumSearch')?.value.toLowerCase() || '';
+        const filtered = allStadiums.filter(s => !search || s.name?.toLowerCase().includes(search) || s.city?.toLowerCase().includes(search));
+        document.getElementById('stadiumsTableBody').innerHTML = filtered.map(s => {
+            const bookings = getVendorBookings(s.id);
+            const confirmedBookings = bookings.filter(b => b.status === 'confirmed' || b.status === 'completed');
+            const revenue = confirmedBookings.reduce((sum, b) => sum + (parseInt(String(b.amount).replace(/[₹,]/g,''))||0), 0);
+            return `<tr>
+                <td><img src="${s.imageUrl || 'https://via.placeholder.com/40'}" style="width:50px;height:50px;border-radius:10px;object-fit:cover;"></td>
+                <td><strong>${s.name || s.businessName}</strong></td>
+                <td>${s.city || '-'}</td>
+                <td>${s.capacity?.toLocaleString() || '-'}</td>
+                <td>₹${(s.basePrice || s.priceRange?.replace(/[^0-9]/g,'') || 50000).toLocaleString()}</td>
+                <td>${bookings.length}</td>
+                <td>₹${revenue.toLocaleString()}</td>
+                <td><button class="btn-edit" onclick="editStadium('${s.id}')">Edit</button><button class="btn-delete" onclick="deleteItem('vendors','${s.id}')">Del</button></td>
+            </tr>`;
+        }).join('');
+    }
     
-    function renderAgents() { const search=document.getElementById('agentSearch').value.toLowerCase(); let filtered=agents.filter(a=>!search||a.city?.toLowerCase().includes(search)); let totalCommissions=filtered.map(a=>({...a,commission:bookings.filter(b=>b.agentId===a.id&&(b.status==='confirmed'||b.status==='completed')).reduce((s,b)=>s+calculateCommission(b.amount),0)})); document.getElementById('agentsTableBody').innerHTML=totalCommissions.map(a=>`<tr><td>${a.id}</td><td>${a.name}</td><td>${a.phone}</td><td>${a.city}</td><td>₹${bookings.filter(b=>b.agentId===a.id).reduce((s,b)=>s+(parseInt(String(b.amount).replace(/[₹,]/g,''))||0),0).toLocaleString()}</td><td>₹${a.commission.toLocaleString()}</td><td><button class="btn-edit" onclick="editAgent('${a.id}')">Edit</button><button class="btn-delete" onclick="deleteAgent('${a.id}')">Del</button></td></tr>`).join(''); }
+    function renderVendors() {
+        const search = document.getElementById('vendorSearch')?.value.toLowerCase() || '';
+        const otherVendors = allVendors.filter(v => v.category !== 'stadium' && (!search || v.name?.toLowerCase().includes(search) || v.city?.toLowerCase().includes(search)));
+        document.getElementById('vendorsTableBody').innerHTML = otherVendors.map(v => {
+            const revenue = getVendorRevenue(v.id);
+            const bookings = getVendorBookings(v.id);
+            return `<tr>
+                <td><img src="${v.imageUrl || 'https://via.placeholder.com/40'}" style="width:40px;height:40px;border-radius:8px;"></td>
+                <td><strong>${v.name || v.businessName}</strong></td>
+                <td>${v.category || '-'}</td>
+                <td>${v.city || '-'}</td>
+                <td>${bookings.length}</td>
+                <td>₹${revenue.toLocaleString()}</td>
+                <td>₹${calculateCommission(revenue).toLocaleString()}</td>
+                <td><button class="btn-edit" onclick="editVendor('${v.id}')">Edit</button><button class="btn-delete" onclick="deleteItem('vendors','${v.id}')">Del</button></td>
+            </tr>`;
+        }).join('');
+    }
     
-    function renderBookings() { const search=document.getElementById('bookingSearch').value.toLowerCase(); let filtered=bookings.filter(b=>!search||b.vendorName?.toLowerCase().includes(search)||b.userName?.toLowerCase().includes(search)); document.getElementById('bookingsTableBody').innerHTML=filtered.map(b=>`<tr><td>${b.id.slice(-6)}<td>${b.userName}<td>${b.vendorName}<td>${b.agentId||'-'}<td>${b.amount}<td><span class="status-badge">${b.status}</span><td><button class="btn-edit" onclick="updateBooking('${b.id}','confirmed')">Confirm</button><button class="btn-delete" onclick="updateBooking('${b.id}','cancelled')">Cancel</button></tr>`).join(''); }
+    function renderAgents() {
+        const search = document.getElementById('agentSearch')?.value.toLowerCase() || '';
+        const filtered = allAgents.filter(a => !search || a.city?.toLowerCase().includes(search) || a.name?.toLowerCase().includes(search));
+        document.getElementById('agentsTableBody').innerHTML = filtered.map(a => {
+            const agentBookings = allBookings.filter(b => b.agentId === a.id && (b.status === 'confirmed' || b.status === 'completed'));
+            const totalSales = agentBookings.reduce((sum, b) => sum + (parseInt(String(b.amount).replace(/[₹,]/g,''))||0), 0);
+            const commissionEarned = agentBookings.reduce((sum, b) => sum + calculateCommission(b.amount), 0);
+            return `<tr>
+                <td><strong>${a.name || a.fullName}</strong></td>
+                <td>${a.phone || '-'}</td>
+                <td>${a.city || '-'}</td>
+                <td>${agentBookings.length}</td>
+                <td>₹${totalSales.toLocaleString()}</td>
+                <td>₹${commissionEarned.toLocaleString()}</td>
+                <td><button class="btn-edit" onclick="editAgent('${a.id}')">Edit</button><button class="btn-delete" onclick="deleteItem('agents','${a.id}')">Del</button></td>
+            </tr>`;
+        }).join('');
+    }
     
-    function renderCategories() { document.getElementById('categoriesList').innerHTML = categories.map(c=>`<div style="display:flex; justify-content:space-between; padding:12px; border-bottom:1px solid #eee;"><span>${c.icon||'🏷️'} ${c.name}</span><button class="btn-delete" onclick="deleteCategory('${c.id}')">Delete</button></div>`).join(''); }
-    function renderCities() { document.getElementById('citiesList').innerHTML = cities.map(c=>`<div style="display:flex; justify-content:space-between; padding:12px; border-bottom:1px solid #eee;"><span>📍 ${c.name} ${c.popular?'⭐':''}</span><button class="btn-delete" onclick="deleteCity('${c.name}')">Delete</button></div>`).join(''); }
+    function renderBookings() {
+        const search = document.getElementById('bookingSearch')?.value.toLowerCase() || '';
+        const filtered = allBookings.filter(b => !search || b.userName?.toLowerCase().includes(search) || b.vendorName?.toLowerCase().includes(search) || b.id?.toLowerCase().includes(search));
+        document.getElementById('bookingsTableBody').innerHTML = filtered.map(b => `
+            <tr>
+                <td>${b.id?.slice(-8)}</td>
+                <td><strong>${b.userName || b.customerName || '-'}</strong></td>
+                <td>${b.userPhone || b.phone || '-'}</td>
+                <td>${b.userEmail || b.email || '-'}</td>
+                <td>${b.vendorName || b.stadiumName || '-'}</td>
+                <td>${b.eventDate || b.date || '-'}</td>
+                <td>${b.eventType || '-'}</td>
+                <td>₹${(parseInt(String(b.amount).replace(/[₹,]/g,''))||0).toLocaleString()}</td>
+                <td>₹${calculateCommission(b.amount).toLocaleString()}</td>
+                <td><span class="status-badge status-${b.status === 'confirmed' ? 'confirmed' : b.status === 'cancelled' ? 'cancelled' : 'pending'}">${b.status || 'pending'}</span></td>
+                <td><button class="btn-view" onclick="viewCustomerDetails('${b.id}')">Full Details</button></td>
+            </tr>
+        `).join('');
+    }
+    
+    window.viewCustomerDetails = async (bookingId) => {
+        const booking = allBookings.find(b => b.id === bookingId);
+        if (!booking) return;
+        currentSelectedBooking = booking;
+        
+        document.getElementById('customerDetailsContainer').innerHTML = `
+            <div class="customer-detail-row"><div class="detail-label">Full Name:</div><div>${booking.userName || booking.customerName || '-'}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">Phone Number:</div><div>${booking.userPhone || booking.phone || '-'}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">Email:</div><div>${booking.userEmail || booking.email || '-'}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">City:</div><div>${booking.userCity || booking.city || '-'}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">User ID:</div><div>${booking.userId || '-'}</div></div>
+        `;
+        
+        document.getElementById('bookingDetailsContainer').innerHTML = `
+            <div class="customer-detail-row"><div class="detail-label">Booking ID:</div><div>${booking.id}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">Vendor/Stadium:</div><div>${booking.vendorName || booking.stadiumName}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">Event Location:</div><div>${booking.eventLocation || '-'}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">Event Date:</div><div>${booking.eventDate || booking.date}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">Event Time:</div><div>${booking.eventTime || '-'}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">Event Type:</div><div>${booking.eventType || '-'}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">Guests Count:</div><div>${booking.guestCount || booking.expectedGuests || '-'}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">Selected Portion:</div><div>${booking.selectedPortion || '100%'}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">Booking Amount:</div><div>₹${(parseInt(String(booking.amount).replace(/[₹,]/g,''))||0).toLocaleString()}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">Paid Amount:</div><div>₹${(parseInt(String(booking.paidAmount).replace(/[₹,]/g,''))||0).toLocaleString()}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">Payment Type:</div><div>${booking.paymentType || 'full'}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">Special Requests:</div><div>${booking.specialRequests || '-'}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">Status:</div><div><span class="status-badge status-${booking.status === 'confirmed' ? 'confirmed' : booking.status === 'cancelled' ? 'cancelled' : 'pending'}">${booking.status || 'pending'}</span></div></div>
+            <div class="customer-detail-row"><div class="detail-label">Created At:</div><div>${new Date(booking.createdAt).toLocaleString()}</div></div>
+        `;
+        
+        openModal('customerDetailModal');
+    };
+    
+    window.updateBookingStatus = async (status) => {
+        if (currentSelectedBooking) {
+            await updateDoc(doc(db, 'bookings', currentSelectedBooking.id), { status });
+            loadAllData();
+            closeModal('customerDetailModal');
+        }
+    };
     
     function renderAnalytics() {
-        const confirmedBookings=bookings.filter(b=>b.status==='confirmed'||b.status==='completed');
-        const revenue=confirmedBookings.reduce((s,b)=>s+(parseInt(String(b.amount).replace(/[₹,]/g,''))||0),0);
-        document.getElementById('analyticsStats').innerHTML=`<div class="stat-card"><div class="stat-value">₹${revenue.toLocaleString()}</div><div>Total Revenue</div></div><div class="stat-card"><div class="stat-value">${bookings.length}</div><div>Total Bookings</div></div><div class="stat-card"><div class="stat-value">${confirmedBookings.length}</div><div>Completed</div></div><div class="stat-card"><div class="stat-value">${vendors.length}</div><div>Active Vendors</div></div>`;
+        const confirmed = allBookings.filter(b => b.status === 'confirmed' || b.status === 'completed');
+        const totalRev = confirmed.reduce((s,b) => s + (parseInt(String(b.amount).replace(/[₹,]/g,''))||0), 0);
+        document.getElementById('analyticsStats').innerHTML = `
+            <div class="stat-card"><div class="stat-value">₹${totalRev.toLocaleString()}</div><div class="stat-label">Total Revenue</div></div>
+            <div class="stat-card"><div class="stat-value">${confirmed.length}</div><div class="stat-label">Completed Bookings</div></div>
+            <div class="stat-card"><div class="stat-value">${allStadiums.length}</div><div class="stat-label">Stadiums</div></div>
+            <div class="stat-card"><div class="stat-value">${allAgents.length}</div><div class="stat-label">Agents</div></div>
+        `;
         
-        const categoryRevenue={}; vendors.forEach(v=>{if(v.category!=='stadium'){let rev=bookings.filter(b=>b.vendorId===v.id&&(b.status==='confirmed'||b.status==='completed')).reduce((s,b)=>s+(parseInt(String(b.amount).replace(/[₹,]/g,''))||0),0); if(rev>0) categoryRevenue[v.category]=(categoryRevenue[v.category]||0)+rev;}});
-        new Chart(document.getElementById('categoryRevenueChart'),{type:'doughnut',data:{labels:Object.keys(categoryRevenue),datasets:[{data:Object.values(categoryRevenue),backgroundColor:['#ff6b35','#ffa502','#2ed573','#1e90ff']}]}});
+        const monthlyData = {};
+        confirmed.forEach(b => {
+            if (b.createdAt) {
+                const date = new Date(b.createdAt);
+                const key = `${date.getFullYear()}-${date.getMonth()+1}`;
+                monthlyData[key] = (monthlyData[key] || 0) + (parseInt(String(b.amount).replace(/[₹,]/g,''))||0);
+            }
+        });
+        const sortedMonths = Object.keys(monthlyData).sort().slice(-6);
+        new Chart(document.getElementById('revenueTrendChart'), { type: 'line', data: { labels: sortedMonths, datasets: [{ label: 'Revenue (₹)', data: sortedMonths.map(m => monthlyData[m]), borderColor: '#ff6b35', tension: 0.3, fill: true, backgroundColor: 'rgba(255,107,53,0.1)' }] } });
         
-        const monthly={}; confirmedBookings.forEach(b=>{if(b.createdAt){let m=new Date(b.createdAt).toLocaleString('default',{month:'short'}); monthly[m]=(monthly[m]||0)+(parseInt(String(b.amount).replace(/[₹,]/g,''))||0);}});
-        new Chart(document.getElementById('monthlyTrendChart'),{type:'line',data:{labels:Object.keys(monthly),datasets:[{label:'Revenue (₹)',data:Object.values(monthly),borderColor:'#ff6b35',fill:true}]}});
+        const stadiumRev = allStadiums.reduce((s,b) => s + getVendorRevenue(b.id), 0);
+        const otherRev = allVendors.filter(v => v.category !== 'stadium').reduce((s,v) => s + getVendorRevenue(v.id), 0);
+        new Chart(document.getElementById('categoryRevenueChart'), { type: 'doughnut', data: { labels: ['Stadiums', 'Other Vendors'], datasets: [{ data: [stadiumRev, otherRev], backgroundColor: ['#ff6b35', '#28a745'] }] } });
+        
+        const cityRevenue = {};
+        confirmed.forEach(b => {
+            const city = b.vendorCity || b.city;
+            if (city) cityRevenue[city] = (cityRevenue[city] || 0) + (parseInt(String(b.amount).replace(/[₹,]/g,''))||0);
+        });
+        const topCities = Object.entries(cityRevenue).sort((a,b) => b[1] - a[1]).slice(0, 5);
+        new Chart(document.getElementById('cityRevenueChart'), { type: 'bar', data: { labels: topCities.map(c => c[0]), datasets: [{ label: 'Revenue (₹)', data: topCities.map(c => c[1]), backgroundColor: '#ff6b35' }] } });
     }
-
-    // ==================== CRUD FUNCTIONS ====================
-    window.updateBooking = async (id, status) => { await updateDoc(doc(db, 'bookings', id), { status }); loadAll(); };
-    window.deleteVendor = async (id) => { if(confirm('Delete?')) await deleteDoc(doc(db, 'vendors', id)); loadAll(); };
-    window.deleteStadium = async (id) => { if(confirm('Delete?')) await deleteDoc(doc(db, 'vendors', id)); loadAll(); };
-    window.deleteAgent = async (id) => { if(confirm('Delete?')) await deleteDoc(doc(db, 'agents', id)); loadAll(); };
-    window.deleteCategory = async (id) => { await setDoc(doc(db, 'categories', id), { deleted: true }); loadAll(); };
-    window.deleteCity = async (name) => { let newList = cities.filter(c => c.name !== name); await setDoc(doc(db, 'settings', 'cities'), { list: newList }); loadAll(); };
-
-    window.editVendor = (id) => { let v=vendors.find(v=>v.id===id); if(v){ editingVendorId=id; document.getElementById('vendorModalTitle').innerText='Edit Vendor'; document.getElementById('vendorEditId').value=v.id; document.getElementById('vendorId').value=v.vendorId||''; document.getElementById('vendorName').value=v.name||''; document.getElementById('vendorCategory').value=v.category||''; document.getElementById('vendorCity').value=v.city||''; document.getElementById('vendorLocation').value=v.location||''; document.getElementById('vendorPrice').value=v.priceRange||''; document.getElementById('vendorPhone').value=v.phone||''; document.getElementById('vendorAgentPhone').value=v.agentPhone||''; document.getElementById('vendorPassword').value=''; document.getElementById('vendorDescription').value=v.description||''; if(v.imageUrl) document.getElementById('vendorLogoPreview').src=v.imageUrl; openModal('vendorModal'); } };
     
-    window.editStadium = (id) => { let s=stadiums.find(s=>s.id===id); if(s){ editingStadiumId=id; document.getElementById('stadiumModalTitle').innerText='Edit Stadium'; document.getElementById('stadiumEditId').value=s.id; document.getElementById('stadiumName').value=s.name||''; document.getElementById('stadiumCity').value=s.city||''; document.getElementById('stadiumCapacity').value=s.capacity||''; document.getElementById('stadiumPrice').value=s.basePrice||''; document.getElementById('stadiumType').value=s.type||'cricket'; document.getElementById('stadiumLocation').value=s.location||''; document.getElementById('stadiumAmenities').value=s.amenities?.join(', ')||''; document.getElementById('stadiumDescription').value=s.description||''; document.getElementById('stadiumVideo').value=s.videoUrl||''; document.getElementById('stadium3DModel').value=s.model3dUrl||''; openModal('stadiumModal'); } };
+    function renderCommissionReport() {
+        const confirmed = allBookings.filter(b => b.status === 'confirmed' || b.status === 'completed');
+        const totalCommission = confirmed.reduce((s,b) => s + calculateCommission(b.amount), 0);
+        document.getElementById('commissionStats').innerHTML = `
+            <div class="stat-card"><div class="stat-value">${confirmed.length}</div><div class="stat-label">Commissionable Bookings</div></div>
+            <div class="stat-card"><div class="stat-value">₹${totalCommission.toLocaleString()}</div><div class="stat-label">Total Commission (12.5%)</div></div>
+        `;
+        document.getElementById('commissionTableBody').innerHTML = confirmed.slice(0, 20).map(b => `
+            <tr>
+                <td>${b.id?.slice(-8)}</td>
+                <td>${b.userName || b.customerName || '-'}</td>
+                <td>${b.vendorName || b.stadiumName || '-'}</td>
+                <td>₹${(parseInt(String(b.amount).replace(/[₹,]/g,''))||0).toLocaleString()}</td>
+                <td>₹${calculateCommission(b.amount).toLocaleString()}</td>
+                <td><span class="status-badge status-confirmed">${b.status}</span></td>
+                <td>${b.eventDate || b.createdAt?.split('T')[0] || '-'}</td>
+            </tr>
+        `).join('');
+    }
     
-    window.editAgent = (id) => { let a=agents.find(a=>a.id===id); if(a){ editingAgentId=id; document.getElementById('agentModalTitle').innerText='Edit Agent'; document.getElementById('agentEditId').value=a.id; document.getElementById('agentId').value=a.id; document.getElementById('agentName').value=a.name||''; document.getElementById('agentPhone').value=a.phone||''; document.getElementById('agentCity').value=a.city||''; document.getElementById('agentEmail').value=a.email||''; document.getElementById('agentPassword').value=''; document.getElementById('agentTarget').value=a.target||50000; openModal('agentModal'); } };
+    function renderCities() {
+        document.getElementById('citiesList').innerHTML = (allCities || []).map(c => `
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #eee;">
+                <span><i class="fas fa-location-dot"></i> <strong>${c.name}</strong> ${c.popular ? '<span style="color:#ff6b35;">⭐ Popular</span>' : ''}</span>
+                <button class="btn-delete" onclick="deleteCity('${c.name}')">Delete</button>
+            </div>
+        `).join('');
+    }
     
-    window.saveVendor = async () => {
-        let data={ name:document.getElementById('vendorName').value, category:document.getElementById('vendorCategory').value, city:document.getElementById('vendorCity').value, location:document.getElementById('vendorLocation').value, priceRange:document.getElementById('vendorPrice').value, phone:document.getElementById('vendorPhone').value, agentPhone:document.getElementById('vendorAgentPhone').value, description:document.getElementById('vendorDescription').value, updatedAt:new Date().toISOString() };
-        let pwd=document.getElementById('vendorPassword').value; if(pwd) data.password=pwd;
-        let logoFile=document.getElementById('vendorLogo').files[0]; if(logoFile) data.imageUrl=await uploadToImgBB(logoFile);
-        let workPhotos=document.getElementById('vendorWorkPhotos').files; if(workPhotos.length) data.photos=await uploadMultipleImages(Array.from(workPhotos));
-        if(editingVendorId) await updateDoc(doc(db,'vendors',editingVendorId), data);
-        else { data.createdAt=new Date().toISOString(); data.vendorId=document.getElementById('vendorId').value||`VEN${Date.now().toString().slice(-8)}`; await addDoc(collection(db,'vendors'), data); }
-        closeModal('vendorModal'); loadAll();
+    window.deleteCity = async (name) => {
+        const newList = allCities.filter(c => c.name !== name);
+        await setDoc(doc(db, 'settings', 'cities'), { list: newList });
+        loadAllData();
     };
     
-    window.saveStadium = async () => {
-        let data={ name:document.getElementById('stadiumName').value, category:'stadium', city:document.getElementById('stadiumCity').value, capacity:parseInt(document.getElementById('stadiumCapacity').value)||0, basePrice:parseInt(document.getElementById('stadiumPrice').value)||0, type:document.getElementById('stadiumType').value, location:document.getElementById('stadiumLocation').value, amenities:document.getElementById('stadiumAmenities').value.split(',').map(a=>a.trim()), description:document.getElementById('stadiumDescription').value, videoUrl:document.getElementById('stadiumVideo').value, model3dUrl:document.getElementById('stadium3DModel').value, priceRange:`₹${parseInt(document.getElementById('stadiumPrice').value||0).toLocaleString()}/day`, updatedAt:new Date().toISOString() };
-        let photos=document.getElementById('stadiumPhotos').files; if(photos.length) data.photos=await uploadMultipleImages(Array.from(photos));
-        if(editingStadiumId) await updateDoc(doc(db,'vendors',editingStadiumId), data);
-        else { data.createdAt=new Date().toISOString(); await addDoc(collection(db,'vendors'), data); }
-        closeModal('stadiumModal'); loadAll();
+    window.deleteItem = async (collection, id) => {
+        if (confirm('Delete this item?')) {
+            await deleteDoc(doc(db, collection, id));
+            loadAllData();
+        }
     };
     
-    window.saveAgent = async () => {
-        let id=document.getElementById('agentEditId').value||document.getElementById('agentId').value||`AG${Date.now().toString().slice(-8)}`;
-        let data={ id, name:document.getElementById('agentName').value, phone:document.getElementById('agentPhone').value, city:document.getElementById('agentCity').value, email:document.getElementById('agentEmail').value||'', target:parseInt(document.getElementById('agentTarget').value)||50000, updatedAt:new Date().toISOString() };
-        let pwd=document.getElementById('agentPassword').value; if(pwd) data.password=pwd;
-        if(editingAgentId) await updateDoc(doc(db,'agents',editingAgentId), data);
-        else { data.createdAt=new Date().toISOString(); await setDoc(doc(db,'agents',id), data); }
-        closeModal('agentModal'); loadAll();
+    window.searchStadiums = () => renderStadiums();
+    window.searchVendors = () => renderVendors();
+    window.searchAgents = () => renderAgents();
+    window.searchBookings = () => renderBookings();
+    
+    window.switchPanel = (panel) => {
+        document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+        event.target.closest('.sidebar-item').classList.add('active');
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        document.getElementById(panel + 'Panel').classList.add('active');
     };
     
-    window.saveCategory = async () => { let name=document.getElementById('catName').value; if(!name) return; let id=name.toLowerCase().replace(/\s/g,''); await setDoc(doc(db,'categories',id),{id,name,icon:document.getElementById('catIcon').value||'🏷️'}); closeModal('categoryModal'); loadAll(); };
-    window.saveCity = async () => { let name=document.getElementById('cityName').value; if(!name) return; let newList=[...cities,{name,popular:document.getElementById('cityPopular').checked}]; await setDoc(doc(db,'settings','cities'),{list:newList}); closeModal('cityModal'); loadAll(); };
+    window.openAddStadiumModal = () => alert('Add Stadium - Implement form similar to previous');
+    window.openAddVendorModal = () => alert('Add Vendor - Implement form');
+    window.openAddAgentModal = () => alert('Add Agent - Implement form');
+    window.openAddCityModal = () => alert('Add City - Implement form');
+    window.editStadium = (id) => alert('Edit Stadium: ' + id);
+    window.editVendor = (id) => alert('Edit Vendor: ' + id);
+    window.editAgent = (id) => alert('Edit Agent: ' + id);
+    window.closeModal = (id) => document.getElementById(id).style.display = 'none';
+    window.openModal = (id) => document.getElementById(id).style.display = 'flex';
+    window.logout = () => { localStorage.removeItem('admin'); window.location.href = 'admin-login.html'; };
     
-    window.openAddVendorModal = () => { editingVendorId=null; document.getElementById('vendorModalTitle').innerText='Add Vendor'; document.getElementById('vendorForm')?.reset(); document.getElementById('vendorLogoPreview').style.display='none'; document.getElementById('vendorWorkPhotosPreview').innerHTML=''; openModal('vendorModal'); };
-    window.openAddStadiumModal = () => { editingStadiumId=null; document.getElementById('stadiumModalTitle').innerText='Add Stadium'; document.getElementById('stadiumForm')?.reset(); document.getElementById('stadiumPhotosPreview').innerHTML=''; openModal('stadiumModal'); };
-    window.openAddAgentModal = () => { editingAgentId=null; document.getElementById('agentModalTitle').innerText='Add Agent'; document.getElementById('agentForm')?.reset(); openModal('agentModal'); };
-    window.openAddCategoryModal = () => { document.getElementById('catName').value=''; document.getElementById('catIcon').value=''; openModal('categoryModal'); };
-    window.openAddCityModal = () => { document.getElementById('cityName').value=''; document.getElementById('cityPopular').checked=false; openModal('cityModal'); };
-    
-    window.searchVendors = () => renderVendors(); window.searchStadiums = () => renderStadiums(); window.searchAgents = () => renderAgents(); window.searchBookings = () => renderBookings();
-    window.switchPanel = (panel) => { document.querySelectorAll('.sidebar-item').forEach(i=>i.classList.remove('active')); event.target.closest('.sidebar-item').classList.add('active'); document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active')); document.getElementById(panel+'Panel').classList.add('active'); };
-    window.closeModal = (id) => document.getElementById(id).style.display='none';
-    window.openModal = (id) => document.getElementById(id).style.display='flex';
-    window.logout = () => { localStorage.removeItem('admin'); window.location.href='admin-login.html'; };
-    
-    loadAll();
+    loadAllData();
 </script>
 </body>
 </html>
