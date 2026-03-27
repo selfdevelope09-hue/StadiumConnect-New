@@ -32,6 +32,35 @@
         .feature-desc { font-size: 12px; color: #666; }
         footer { position: fixed; bottom: 20px; left: 0; right: 0; text-align: center; font-size: 12px; color: #aaa; }
         
+        /* Google Button */
+        .google-btn {
+            background: white;
+            border: 1.5px solid #ddd;
+            padding: 12px 30px;
+            border-radius: 40px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+        .google-btn:hover {
+            border-color: #ff6b35;
+            background: #fff5f0;
+        }
+        .google-btn img {
+            width: 20px;
+            height: 20px;
+        }
+        .or-divider {
+            margin: 15px 0;
+            color: #999;
+            font-size: 14px;
+        }
+        
         /* Loading */
         .loading-overlay {
             position: fixed;
@@ -77,10 +106,20 @@
 <body>
     <div class="container">
         <div class="logo">STADIUM<span>CONNECT</span></div>
+        
+        <!-- Google Sign-In Button -->
+        <button class="google-btn" id="googleSignInBtn">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+            Continue with Google
+        </button>
+        
+        <div class="or-divider">────────── OR ──────────</div>
+        
         <div class="buttons">
             <a href="login.html" class="btn btn-login">Login</a>
             <a href="register.html" class="btn btn-register">Register</a>
         </div>
+        
         <a href="https://forms.gle/t7oc3SeNvCMbdCVX7" target="_blank" class="vendor-btn">Register as Vendor →</a>
         
         <div class="feature-grid">
@@ -126,7 +165,7 @@
             document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
         }
         
-        // Check if already logged in
+        // Agar user already logged in hai toh direct dashboard pe bhejo
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 localStorage.setItem('userLoggedIn', 'true');
@@ -136,7 +175,7 @@
             }
         });
         
-        // Handle redirect result (for APK)
+        // Handle redirect result (APK ke liye important)
         getRedirectResult(auth).then((result) => {
             if (result && result.user) {
                 window.location.href = 'super-admin-dashboard.html';
@@ -145,60 +184,32 @@
             console.log('Redirect error:', error);
         });
         
-        // Add Google Sign-In button to page
-        const buttonsDiv = document.querySelector('.buttons');
-        const googleBtn = document.createElement('button');
-        googleBtn.innerHTML = '🔐 Sign in with Google';
-        googleBtn.style.cssText = `
-            background: white;
-            border: 1.5px solid #ff6b35;
-            color: #ff6b35;
-            padding: 14px 36px;
-            border-radius: 40px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-bottom: 20px;
-            width: 100%;
-            max-width: 280px;
-        `;
-        
-        googleBtn.onclick = async () => {
+        // Google Sign-In Button Click
+        document.getElementById('googleSignInBtn').onclick = async () => {
             setLoading(true);
             try {
-                // Try popup first
+                // Pehle popup try karo
                 const result = await signInWithPopup(auth, provider);
                 if (result.user) {
                     window.location.href = 'super-admin-dashboard.html';
                 }
             } catch (error) {
-                // If popup fails (APK/WebView), use redirect
-                if (error.code === 'auth/popup-blocked' || error.message.includes('popup')) {
+                console.log('Popup error:', error);
+                // Agar popup fail ho (APK/WebView mein) toh redirect method use karo
+                if (error.code === 'auth/popup-blocked' || error.message.includes('popup') || error.message.includes('cross-origin')) {
                     showToast('Redirecting to Google...', false);
                     await signInWithRedirect(auth, provider);
                 } else {
                     setLoading(false);
-                    showToast(error.message, true);
+                    showToast(error.message || 'Login failed', true);
                 }
             }
         };
         
-        // Insert Google button at the top
-        const container = document.querySelector('.container');
-        const firstChild = container.firstChild;
-        const googleDiv = document.createElement('div');
-        googleDiv.style.marginBottom = '20px';
-        googleDiv.appendChild(googleBtn);
-        container.insertBefore(googleDiv, firstChild);
-        
-        // Add OR divider
-        const orDiv = document.createElement('div');
-        orDiv.style.cssText = 'margin: 15px 0; color: #999; font-size: 14px;';
-        orDiv.innerHTML = '────────── OR ──────────';
-        container.insertBefore(orDiv, document.querySelector('.buttons'));
-        
-        console.log('✅ Index loaded - APK compatible');
+        console.log('✅ Index page loaded - APK compatible');
+        console.log('📍 After login, redirect to: super-admin-dashboard.html');
     </script>
 </body>
 </html>
+
 
