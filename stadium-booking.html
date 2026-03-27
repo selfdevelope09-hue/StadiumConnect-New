@@ -261,10 +261,13 @@
             font-size: 14px;
         }
 
-        /* Gallery */
+        /* Gallery Styles */
+        .gallery-container {
+            position: relative;
+        }
         .main-image {
             width: 100%;
-            height: 220px;
+            height: 250px;
             border-radius: 24px;
             object-fit: cover;
             margin-bottom: 15px;
@@ -281,6 +284,10 @@
             margin-bottom: 20px;
             overflow-x: auto;
             padding-bottom: 10px;
+            scrollbar-width: thin;
+        }
+        .stadium-gallery::-webkit-scrollbar {
+            height: 4px;
         }
         .gallery-img {
             width: 80px;
@@ -295,8 +302,101 @@
             transform: scale(1.05);
             border-color: var(--primary);
         }
+        .gallery-img.active {
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(255,107,53,0.5);
+        }
 
-        /* Portion Buttons */
+        /* Lightbox Modal for Zoom */
+        .lightbox-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .lightbox-modal.active {
+            display: flex;
+        }
+        .lightbox-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+        }
+        .lightbox-image {
+            max-width: 100%;
+            max-height: 90vh;
+            object-fit: contain;
+            border-radius: 12px;
+        }
+        .lightbox-close {
+            position: absolute;
+            top: -40px;
+            right: -40px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            font-size: 28px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .lightbox-close:hover {
+            background: var(--primary);
+            transform: scale(1.1);
+        }
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.5);
+            border: none;
+            color: white;
+            font-size: 40px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .lightbox-nav:hover {
+            background: var(--primary);
+        }
+        .lightbox-prev {
+            left: -70px;
+        }
+        .lightbox-next {
+            right: -70px;
+        }
+        .lightbox-counter {
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.6);
+            padding: 5px 15px;
+            border-radius: 30px;
+            font-size: 14px;
+        }
+        @media (max-width: 768px) {
+            .lightbox-prev { left: 10px; }
+            .lightbox-next { right: 10px; }
+            .lightbox-close { top: 10px; right: 10px; }
+            .lightbox-nav { width: 40px; height: 40px; font-size: 24px; }
+        }
+
+        /* Rest of the styles remain same */
         .portion-buttons {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -327,7 +427,6 @@
             color: var(--dark);
         }
 
-        /* Form Styles */
         .form-group {
             margin-bottom: 18px;
         }
@@ -369,7 +468,6 @@
             gap: 15px;
         }
 
-        /* Weather Widget */
         .weather-widget {
             background: rgba(255,107,53,0.1);
             border-radius: 20px;
@@ -382,7 +480,6 @@
             flex-wrap: wrap;
         }
 
-        /* Booking Summary */
         .booking-summary {
             background: rgba(255,107,53,0.1);
             border-radius: 20px;
@@ -404,7 +501,6 @@
             border-top: 2px solid var(--primary);
         }
 
-        /* Price Calculator */
         .price-calculator {
             background: linear-gradient(135deg, rgba(255,107,53,0.15), rgba(255,107,53,0.05));
             border-radius: 24px;
@@ -419,7 +515,6 @@
             color: var(--primary);
         }
 
-        /* Payment Options */
         .payment-options {
             display: flex;
             gap: 12px;
@@ -479,7 +574,6 @@
             box-shadow: 0 10px 30px rgba(255,107,53,0.4);
         }
 
-        /* Agent Card */
         .agent-card {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 20px;
@@ -505,7 +599,6 @@
             transform: scale(1.05);
         }
 
-        /* Calendar */
         .calendar-section {
             margin: 24px 0;
         }
@@ -542,7 +635,6 @@
             background: var(--primary);
         }
 
-        /* Toast */
         .toast {
             position: fixed;
             bottom: 30px;
@@ -629,9 +721,22 @@
             <div class="rating" id="stadiumRating">⭐ 4.8 ★</div>
         </div>
 
-        <!-- Main Image & Gallery -->
-        <img id="mainImage" class="main-image" src="https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=800&h=400&fit=crop" alt="Stadium">
-        <div class="stadium-gallery" id="galleryContainer"></div>
+        <!-- Main Image & Gallery with Lightbox -->
+        <div class="gallery-container">
+            <img id="mainImage" class="main-image" src="https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=800&h=400&fit=crop" alt="Stadium" onclick="openLightbox(0)">
+            <div class="stadium-gallery" id="galleryContainer"></div>
+        </div>
+
+        <!-- Lightbox Modal for Zoom & Swipe -->
+        <div id="lightboxModal" class="lightbox-modal" onclick="closeLightboxOnBackground(event)">
+            <div class="lightbox-content">
+                <img id="lightboxImage" class="lightbox-image" src="" alt="">
+                <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+                <button class="lightbox-nav lightbox-prev" onclick="prevImage()">‹</button>
+                <button class="lightbox-nav lightbox-next" onclick="nextImage()">›</button>
+                <div id="lightboxCounter" class="lightbox-counter"></div>
+            </div>
+        </div>
 
         <!-- Portion Buttons -->
         <div class="portion-buttons">
@@ -747,10 +852,87 @@
     let bookedDates = [];
     let cityAgent = null;
     let isFavorite = false;
+    let galleryImages = [];
+    let currentImageIndex = 0;
 
     const canvas = document.getElementById('stadiumCanvas');
     const ctx = canvas.getContext('2d');
     let isDragging = false;
+
+    // ========== GALLERY LIGHTBOX FUNCTIONS ==========
+    window.openLightbox = (index) => {
+        currentImageIndex = index;
+        const lightbox = document.getElementById('lightboxModal');
+        const lightboxImage = document.getElementById('lightboxImage');
+        const counter = document.getElementById('lightboxCounter');
+        
+        if (galleryImages.length > 0) {
+            lightboxImage.src = galleryImages[currentImageIndex];
+            counter.innerHTML = `${currentImageIndex + 1} / ${galleryImages.length}`;
+            lightbox.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+    };
+
+    window.closeLightbox = () => {
+        document.getElementById('lightboxModal').classList.remove('active');
+        document.body.style.overflow = '';
+    };
+
+    window.closeLightboxOnBackground = (e) => {
+        if (e.target === document.getElementById('lightboxModal')) {
+            closeLightbox();
+        }
+    };
+
+    window.prevImage = () => {
+        if (galleryImages.length > 0) {
+            currentImageIndex = (currentImageIndex - 1 + galleryImages.length) % galleryImages.length;
+            document.getElementById('lightboxImage').src = galleryImages[currentImageIndex];
+            document.getElementById('lightboxCounter').innerHTML = `${currentImageIndex + 1} / ${galleryImages.length}`;
+        }
+    };
+
+    window.nextImage = () => {
+        if (galleryImages.length > 0) {
+            currentImageIndex = (currentImageIndex + 1) % galleryImages.length;
+            document.getElementById('lightboxImage').src = galleryImages[currentImageIndex];
+            document.getElementById('lightboxCounter').innerHTML = `${currentImageIndex + 1} / ${galleryImages.length}`;
+        }
+    };
+
+    // Add keyboard navigation
+    document.addEventListener('keydown', (e) => {
+        const lightbox = document.getElementById('lightboxModal');
+        if (lightbox.classList.contains('active')) {
+            if (e.key === 'ArrowLeft') {
+                prevImage();
+            } else if (e.key === 'ArrowRight') {
+                nextImage();
+            } else if (e.key === 'Escape') {
+                closeLightbox();
+            }
+        }
+    });
+
+    // Add touch swipe support
+    let touchStartX = 0;
+    let touchEndX = 0;
+    document.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+    });
+    document.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        const lightbox = document.getElementById('lightboxModal');
+        if (lightbox.classList.contains('active')) {
+            if (touchEndX < touchStartX - 50) {
+                nextImage();
+            }
+            if (touchEndX > touchStartX + 50) {
+                prevImage();
+            }
+        }
+    });
 
     function drawStadiumWithPortion(percent) {
         const w = canvas.width, h = canvas.height;
@@ -791,7 +973,6 @@
         document.getElementById('priceAmount').innerHTML = `₹${totalPrice.toLocaleString()}`;
         document.getElementById('priceDetail').innerHTML = `${selectedPercent}% · Base: ₹${basePriceCalc.toLocaleString()} + GST(18%): ₹${gst.toLocaleString()}`;
         
-        // Update summary
         document.getElementById('summaryStadium').innerHTML = stadium.name;
         document.getElementById('summaryPortion').innerHTML = `${selectedPercent}%`;
         document.getElementById('summarySeats').innerHTML = estimatedSeatsCount.toLocaleString();
@@ -868,11 +1049,13 @@
                 document.getElementById('stadiumRating').innerHTML = `⭐ ${stadium.rating} ★`;
                 document.getElementById('mainImage').src = stadium.imageUrl;
                 
-                // Gallery
+                // Build gallery images array
+                galleryImages = [stadium.imageUrl, ...(stadium.gallery || [])];
+                
+                // Render gallery
                 const galleryContainer = document.getElementById('galleryContainer');
-                const allImages = [stadium.imageUrl, ...(stadium.gallery || [])];
-                galleryContainer.innerHTML = allImages.slice(0, 5).map(img => `
-                    <img class="gallery-img" src="${img}" onclick="document.getElementById('mainImage').src='${img}'">
+                galleryContainer.innerHTML = galleryImages.map((img, idx) => `
+                    <img class="gallery-img ${idx === 0 ? 'active' : ''}" src="${img}" onclick="changeMainImage(${idx})">
                 `).join('');
             }
         }
@@ -882,6 +1065,15 @@
         drawCalendar();
         setupWeather();
     }
+
+    window.changeMainImage = (index) => {
+        currentImageIndex = index;
+        document.getElementById('mainImage').src = galleryImages[index];
+        document.querySelectorAll('.gallery-img').forEach((img, i) => {
+            if (i === index) img.classList.add('active');
+            else img.classList.remove('active');
+        });
+    };
 
     async function loadBookedDates() {
         const q = query(collection(db, "bookings"), where("vendorId", "==", stadiumId));
