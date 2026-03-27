@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendor Management - StadiumConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: #f0f2f5; padding: 20px; }
+        .header { background: white; padding: 16px 24px; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+        .logo { font-size: 22px; font-weight: 800; }
+        .logo span { color: #ff6b35; }
+        .card { background: white; border-radius: 24px; padding: 24px; margin-bottom: 24px; }
+        .search-section { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 20px; }
+        .search-input { flex: 1; padding: 12px 20px; border: 1px solid #ddd; border-radius: 40px; font-size: 15px; }
+        .filter-select { padding: 12px 20px; border: 1px solid #ddd; border-radius: 40px; background: white; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 14px 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th { color: #666; font-weight: 500; }
+        .rank-badge { display: inline-block; width: 30px; height: 30px; background: #ff6b35; color: white; border-radius: 50%; text-align: center; line-height: 30px; font-weight: 700; }
+        .rank-1 { background: #ffd700; color: #000; }
+        .rank-2 { background: #c0c0c0; color: #000; }
+        .rank-3 { background: #cd7f32; color: #fff; }
+        .vendor-name { color: #ff6b35; cursor: pointer; text-decoration: underline; }
+        .btn-edit { background: #ffc107; color: #000; border: none; padding: 6px 12px; border-radius: 20px; cursor: pointer; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 1000; }
+        .modal-content { background: white; border-radius: 28px; padding: 28px; width: 90%; max-width: 550px; max-height: 85vh; overflow-y: auto; }
+        .close { float: right; font-size: 24px; cursor: pointer; }
+        .form-group { margin-bottom: 15px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 12px; }
+        @media (max-width: 768px) { th, td { font-size: 12px; padding: 8px; } }
+    </style>
+</head>
+<body>
+<div class="header">
+    <div class="logo">STADIUM<span>CONNECT</span> <span style="background:#ff6b35; color:white; padding:2px 8px; border-radius:20px; font-size:12px;">Vendor Admin</span></div>
+    <button onclick="logout()" style="background:#ff6b35; color:white; border:none; padding:8px 20px; border-radius:30px;">Logout</button>
+</div>
+
+<div class="card">
+    <h2>📦 Vendor Management</h2>
+    <div class="search-section">
+        <input type="text" id="citySearch" class="search-input" placeholder="🔍 Search by city... (e.g., Nagpur, Mumbai)" onkeyup="searchByCity()">
+        <select id="categoryFilter" class="filter-select" onchange="filterByCategory()">
+            <option value="all">All Categories</option>
+            <option value="decorator">Decorator</option>
+            <option value="photographer">Photographer</option>
+            <option value="caterer">Caterer</option>
+            <option value="bandbaja">Band Baja</option>
+            <option value="stadium">Stadium</option>
+        </select>
+    </div>
+    <div style="overflow-x: auto;">
+        <table id="vendorsTable">
+            <thead><tr><th>Rank</th><th>Vendor ID</th><th>Name</th><th>City</th><th>Category</th><th>Earnings (₹)</th><th>Bookings</th><th>Actions</th></tr></thead>
+            <tbody id="vendorsTableBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<div id="vendorModal" class="modal">
+    <div class="modal-content"><span class="close" onclick="closeModal()">&times;</span>
+        <h3 id="modalTitle">Edit Vendor</h3>
+        <input type="hidden" id="vendorDocId">
+        <div class="form-group"><label>Vendor ID</label><input type="text" id="vendorId" readonly></div>
+        <div class="form-group"><label>Name</label><input type="text" id="vendorName"></div>
+        <div class="form-group"><label>Category</label><select id="vendorCategory"><option>decorator</option><option>photographer</option><option>caterer</option><option>bandbaja</option><option>stadium</option></select></div>
+        <div class="form-group"><label>City</label><input type="text" id="vendorCity"></div>
+        <div class="form-group"><label>Location</label><input type="text" id="vendorLocation"></div>
+        <div class="form-group"><label>Price Range</label><input type="text" id="vendorPrice"></div>
+        <div class="form-group"><label>Phone</label><input type="tel" id="vendorPhone"></div>
+        <div class="form-group"><label>Agent Phone</label><input type="tel" id="vendorAgentPhone"></div>
+        <div class="form-group"><label>Password</label><input type="text" id="vendorPassword" placeholder="Leave blank to keep current"></div>
+        <div class="form-group"><label>Description</label><textarea id="vendorDescription" rows="2"></textarea></div>
+        <button onclick="saveVendor()" style="background:#28a745; color:white; border:none; padding:10px; width:100%; border-radius:30px;">Save Changes</button>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
+        authDomain: "stadiumconnect-8fecb.firebaseapp.com",
+        projectId: "stadiumconnect-8fecb",
+        storageBucket: "stadiumconnect-8fecb.firebasestorage.app",
+        messagingSenderId: "458108198578",
+        appId: "1:458108198578:web:83d83646f0e24e718b73ab"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    if (localStorage.getItem('admin') !== 'true') window.location.href = 'admin-login.html';
+
+    let vendors = [], bookings = [];
+
+    async function loadData() {
+        const vendorsSnap = await getDocs(collection(db, "vendors"));
+        vendors = vendorsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        const bookingsSnap = await getDocs(collection(db, "bookings"));
+        bookings = bookingsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderVendors();
+    }
+
+    function getVendorStats(vendorId) {
+        const vendorBookings = bookings.filter(b => b.vendorId === vendorId && (b.status === 'confirmed' || b.status === 'completed'));
+        const earnings = vendorBookings.reduce((s, b) => s + (parseInt(String(b.amount).replace(/[₹,]/g, '')) || 0), 0);
+        return { bookings: vendorBookings.length, earnings };
+    }
+
+    function renderVendors() {
+        const citySearch = document.getElementById('citySearch').value.toLowerCase();
+        const categoryFilter = document.getElementById('categoryFilter').value;
+        
+        let filtered = vendors.filter(v => {
+            if (citySearch && !v.city?.toLowerCase().includes(citySearch)) return false;
+            if (categoryFilter !== 'all' && v.category !== categoryFilter) return false;
+            return true;
+        });
+        
+        const withStats = filtered.map(v => ({ ...v, ...getVendorStats(v.id) })).sort((a,b) => b.earnings - a.earnings);
+        
+        const tbody = document.getElementById('vendorsTableBody');
+        tbody.innerHTML = withStats.map((v, i) => `
+            <tr>
+                <td><span class="rank-badge ${i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':''}">${i+1}</span></td>
+                <td><strong>${v.vendorId || v.id.slice(-8)}</strong></td>
+                <td class="vendor-name" onclick="editVendor('${v.id}')">${v.name || '-'}</td>
+                <td>${v.city || '-'}</td>
+                <td>${v.category || '-'}</td>
+                <td>₹${v.earnings.toLocaleString()}</td>
+                <td>${v.bookings}</td>
+                <td><button class="btn-edit" onclick="editVendor('${v.id}')">Edit</button></td>
+            </tr>
+        `).join('');
+    }
+
+    window.searchByCity = () => renderVendors();
+    window.filterByCategory = () => renderVendors();
+
+    window.editVendor = (id) => {
+        const vendor = vendors.find(v => v.id === id);
+        if (!vendor) return;
+        document.getElementById('vendorDocId').value = vendor.id;
+        document.getElementById('vendorId').value = vendor.vendorId || vendor.id.slice(-8);
+        document.getElementById('vendorName').value = vendor.name || '';
+        document.getElementById('vendorCategory').value = vendor.category || '';
+        document.getElementById('vendorCity').value = vendor.city || '';
+        document.getElementById('vendorLocation').value = vendor.location || '';
+        document.getElementById('vendorPrice').value = vendor.priceRange || '';
+        document.getElementById('vendorPhone').value = vendor.phone || '';
+        document.getElementById('vendorAgentPhone').value = vendor.agentPhone || '';
+        document.getElementById('vendorPassword').value = '';
+        document.getElementById('vendorDescription').value = vendor.description || '';
+        document.getElementById('vendorModal').style.display = 'flex';
+    };
+
+    window.saveVendor = async () => {
+        const id = document.getElementById('vendorDocId').value;
+        const data = {
+            name: document.getElementById('vendorName').value,
+            category: document.getElementById('vendorCategory').value,
+            city: document.getElementById('vendorCity').value,
+            location: document.getElementById('vendorLocation').value,
+            priceRange: document.getElementById('vendorPrice').value,
+            phone: document.getElementById('vendorPhone').value,
+            agentPhone: document.getElementById('vendorAgentPhone').value,
+            description: document.getElementById('vendorDescription').value,
+            updatedAt: new Date().toISOString()
+        };
+        const pwd = document.getElementById('vendorPassword').value;
+        if (pwd) data.password = pwd;
+        await updateDoc(doc(db, 'vendors', id), data);
+        alert('Vendor updated!');
+        closeModal();
+        loadData();
+    };
+
+    window.closeModal = () => document.getElementById('vendorModal').style.display = 'none';
+    window.logout = () => { localStorage.removeItem('admin'); window.location.href = 'admin-login.html'; };
+    
+    loadData();
+</script>
+</body>
+</html>
