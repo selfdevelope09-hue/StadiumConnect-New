@@ -2,240 +2,139 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>StadiumConnect AI | Ultra Pro Admin & Booking</title>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StadiumConnect | AI Pro Booking Engine</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        :root {
-            --primary: #ff6b35;
-            --primary-glow: rgba(255, 107, 53, 0.4);
-            --bg-dark: #050505;
-            --card-bg: #111118;
-            --glass: rgba(255, 255, 255, 0.03);
-            --border: rgba(255, 255, 255, 0.1);
-        }
-
+        :root { --primary: #ff6b35; --bg: #050505; --card: #111118; --border: rgba(255,255,255,0.1); }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { background: var(--bg-dark); color: #fff; overflow-x: hidden; }
+        body { background: var(--bg); color: #fff; overflow-x: hidden; }
 
-        /* --- Header --- */
-        .sc-header {
-            padding: 20px 40px;
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(20px);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-        .sc-logo { font-size: 24px; font-weight: 800; letter-spacing: -1px; }
-        .sc-logo span { color: var(--primary); }
-        .live-indicator { background: rgba(255,0,0,0.1); color: #ff4757; padding: 6px 15px; border-radius: 50px; font-size: 12px; font-weight: 700; border: 1px solid rgba(255,0,0,0.2); }
+        .header { padding: 15px 30px; background: rgba(0,0,0,0.9); display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 1000; }
+        .logo { font-size: 22px; font-weight: 800; color: #fff; }
+        .logo span { color: var(--primary); }
 
-        /* --- Layout --- */
-        .master-wrapper {
-            max-width: 1600px;
-            margin: 0 auto;
-            padding: 40px;
-            display: grid;
-            grid-template-columns: 1fr 450px;
-            gap: 40px;
-        }
+        .wrapper { max-width: 1500px; margin: 0 auto; padding: 30px; display: grid; grid-template-columns: 1fr 450px; gap: 30px; }
 
-        /* --- Left: Visualizer --- */
-        .visualizer-card {
-            background: var(--card-bg);
-            border-radius: 35px;
-            padding: 30px;
-            border: 1px solid var(--border);
-            height: fit-content;
-            position: sticky;
-            top: 120px;
-        }
-        .viz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-        .viz-tabs { display: flex; gap: 10px; background: #000; padding: 5px; border-radius: 50px; }
-        .v-tab { padding: 10px 20px; border-radius: 40px; border: none; background: transparent; color: #777; cursor: pointer; font-size: 12px; font-weight: 700; transition: 0.3s; }
-        .v-tab.active { background: var(--primary); color: #fff; }
+        /* Left Visualizer */
+        .viz-card { background: var(--card); border-radius: 25px; padding: 25px; border: 1px solid var(--border); height: fit-content; position: sticky; top: 100px; }
+        .canvas-area { width: 100%; height: 400px; background: #000; border-radius: 20px; position: relative; overflow: hidden; border: 1px solid var(--border); }
+        #stadiumCanvas { width: 100%; height: 100%; }
 
-        .stadium-viewport {
-            width: 100%;
-            height: 500px;
-            background: #000;
-            border-radius: 25px;
-            position: relative;
-            overflow: hidden;
-            border: 1px solid var(--border);
-            cursor: crosshair;
-        }
-        #mainCanvas { width: 100%; height: 100%; }
+        /* Right Panel */
+        .booking-card { background: rgba(255,255,255,0.03); border-radius: 25px; padding: 25px; border: 1px solid var(--border); }
+        h3 { margin-bottom: 20px; color: var(--primary); font-size: 18px; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* --- Right: Booking Panel --- */
-        .booking-sidebar {
-            background: var(--glass);
-            border-radius: 35px;
-            padding: 35px;
-            border: 1px solid var(--border);
-            backdrop-filter: blur(10px);
-        }
-        .st-info h1 { font-size: 32px; font-weight: 800; margin-bottom: 10px; }
-        .st-info p { color: #888; margin-bottom: 30px; font-size: 14px; }
+        /* Form Fields */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        .input-box { width: 100%; background: #000; border: 1px solid var(--border); padding: 12px 15px; border-radius: 12px; color: #fff; outline: none; margin-bottom: 10px; }
+        .input-box:focus { border-color: var(--primary); }
 
-        /* --- Form Elements --- */
-        .input-group { margin-bottom: 20px; }
-        .input-group label { display: block; margin-bottom: 8px; font-size: 12px; color: var(--primary); font-weight: 700; text-transform: uppercase; }
-        .sc-input { width: 100%; background: #000; border: 1px solid var(--border); padding: 15px 20px; border-radius: 18px; color: #fff; outline: none; transition: 0.3s; }
-        .sc-input:focus { border-color: var(--primary); box-shadow: 0 0 20px var(--primary-glow); }
+        /* Portion Selection */
+        .portion-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+        .p-btn { background: #000; border: 1px solid var(--border); padding: 12px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.3s; font-weight: 600; }
+        .p-btn.active { background: var(--primary); border-color: var(--primary); }
 
-        /* --- Portion Grid --- */
-        .portion-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 30px; }
-        .p-box { background: #000; border: 1px solid var(--border); padding: 15px; border-radius: 18px; text-align: center; cursor: pointer; transition: 0.3s; }
-        .p-box.active { background: var(--primary); border-color: var(--primary); transform: scale(1.05); }
+        /* Drag & Drop Planner */
+        .planner { background: #000; padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px dashed var(--border); }
+        .items { display: flex; gap: 10px; margin-bottom: 15px; }
+        .chip { background: var(--primary); padding: 6px 15px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: grab; }
+        .drop-zone { height: 120px; background: rgba(255,255,255,0.02); border-radius: 12px; position: relative; border: 1px solid var(--border); }
+        .placed { position: absolute; background: #fff; color: #000; padding: 4px 10px; border-radius: 8px; font-size: 10px; font-weight: 800; cursor: move; }
 
-        /* --- AI Layout Planner --- */
-        .ai-planner { background: #000; padding: 25px; border-radius: 25px; margin-bottom: 30px; border: 1px dashed var(--border); }
-        .palette { display: flex; gap: 10px; margin-bottom: 20px; }
-        .drag-obj { background: var(--primary); padding: 8px 15px; border-radius: 12px; font-size: 12px; font-weight: 700; cursor: grab; }
-        .drop-zone { height: 150px; background: rgba(255,255,255,0.02); border-radius: 15px; position: relative; border: 1px solid var(--border); }
-        .placed-obj { position: absolute; background: #fff; color: #000; padding: 5px 12px; border-radius: 10px; font-size: 11px; font-weight: 800; cursor: move; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        /* Calendar */
+        .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+        .day { padding: 10px; background: #000; border-radius: 8px; text-align: center; cursor: pointer; font-size: 11px; border: 1px solid var(--border); }
+        .day.selected { background: var(--primary); color: #fff; }
+        .day.booked { opacity: 0.2; cursor: not-allowed; }
 
-        /* --- Dynamic Pricing --- */
-        .price-card { background: linear-gradient(135deg, #1a1a2e, #0a0a0a); padding: 30px; border-radius: 25px; border: 1px solid var(--primary); margin-bottom: 30px; }
-        .price-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; color: #aaa; }
-        .final-price { font-size: 42px; font-weight: 800; color: var(--primary); margin-top: 10px; }
+        /* Pricing & Action */
+        .price-box { background: linear-gradient(135deg, #1a1a2e, #000); padding: 20px; border-radius: 20px; border: 1px solid var(--primary); margin-top: 20px; }
+        .price-row { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 14px; opacity: 0.8; }
+        .final-amt { font-size: 32px; font-weight: 800; color: var(--primary); margin-top: 5px; }
 
-        /* --- Calendar --- */
-        .cal-wrapper { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-top: 15px; }
-        .cal-day { padding: 12px; background: #000; border-radius: 12px; text-align: center; cursor: pointer; font-size: 12px; border: 1px solid var(--border); }
-        .cal-day.active { border-color: #2ed573; color: #2ed573; }
-        .cal-day.selected { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .btn-main { width: 100%; padding: 18px; border-radius: 40px; border: none; background: var(--primary); color: #fff; font-size: 16px; font-weight: 800; cursor: pointer; margin-top: 15px; box-shadow: 0 10px 20px rgba(255,107,53,0.3); }
 
-        /* --- Buttons --- */
-        .btn-confirm { width: 100%; padding: 22px; border-radius: 50px; border: none; background: var(--primary); color: #fff; font-size: 18px; font-weight: 800; cursor: pointer; box-shadow: 0 15px 40px var(--primary-glow); transition: 0.3s; }
-        .btn-confirm:hover { transform: translateY(-5px); box-shadow: 0 20px 50px var(--primary-glow); }
-
-        /* --- Agent Card --- */
-        .agent-bar { display: flex; align-items: center; gap: 15px; background: #000; padding: 15px; border-radius: 20px; margin-top: 30px; }
-        .call-btn { background: #2ed573; color: #fff; border: none; padding: 10px 20px; border-radius: 50px; font-weight: 700; cursor: pointer; margin-left: auto; }
-
-        @media (max-width: 1200px) { .master-wrapper { grid-template-columns: 1fr; } .visualizer-card { position: relative; top: 0; } }
+        @media (max-width: 1000px) { .wrapper { grid-template-columns: 1fr; } .viz-card { position: relative; top: 0; } }
     </style>
 </head>
 <body>
 
-<header class="sc-header">
-    <div class="sc-logo">STADIUM<span>CONNECT</span></div>
-    <div class="live-indicator"><i class="fas fa-eye"></i> 14 People Viewing Now</div>
+<header class="header">
+    <div class="logo">STADIUM<span>CONNECT</span></div>
+    <div id="liveView" style="font-size: 12px; color: #666;">🔵 12 Experts Online</div>
 </header>
 
-<div class="master-wrapper">
-    <div class="visualizer-card">
-        <div class="viz-header">
-            <h3>AI Field Visualizer</h3>
-            <div class="viz-tabs">
-                <button class="v-tab active" onclick="setView('2d')">2D MAP</button>
-                <button class="v-tab" onclick="setView('3d')">3D RENDER</button>
-                <button class="v-tab" onclick="setView('heat')">HEATMAP</button>
-            </div>
+<div class="wrapper">
+    <div class="viz-card">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+            <h3>AI Space Blueprint</h3>
+            <span id="areaTag" style="color: var(--primary); font-weight: 800;">0% Selected</span>
         </div>
-
-        <div class="stadium-viewport" id="viewport">
-            <canvas id="mainCanvas"></canvas>
-            <div id="arLayer" style="display:none; position:absolute; inset:0; background:#000;">
-                <video id="arVideo" style="width:100%; height:100%; object-fit:cover;" autoplay playsinline></video>
-            </div>
+        <div class="canvas-area">
+            <canvas id="stadiumCanvas"></canvas>
         </div>
-
-        <div style="display: flex; justify-content: space-between; margin-top: 20px;">
-            <div id="areaStats">
-                <span style="color:var(--primary); font-weight:800; font-size:24px;" id="statPercent">0%</span>
-                <p style="font-size:12px; color:#666;">Total Area Selected</p>
-            </div>
-            <div id="seatStats" style="text-align: right;">
-                <span style="color:#fff; font-weight:800; font-size:24px;" id="statSeats">0</span>
-                <p style="font-size:12px; color:#666;">Estimated Capacity</p>
-            </div>
+        <div style="margin-top: 15px; display: flex; justify-content: space-between; font-size: 12px; color: #888;">
+            <span><i class="fas fa-info-circle"></i> Drag items to plan layout</span>
+            <span id="capacityTag">Capacity: 0 guests</span>
         </div>
     </div>
 
-    <div class="booking-sidebar">
-        <div class="st-info">
-            <h1 id="stName">Nagpur City Stadium</h1>
-            <p id="stLoc"><i class="fas fa-map-marker-alt"></i> Wardha Road, Nagpur</p>
+    <div class="booking-card">
+        <h3>Customer Details</h3>
+        <div class="form-grid">
+            <input type="text" id="custName" class="input-box" placeholder="Full Name">
+            <input type="tel" id="custPhone" class="input-box" placeholder="Phone Number">
+        </div>
+        <input type="email" id="custEmail" class="input-box" placeholder="Email Address">
+        <input type="text" id="custLoc" class="input-box" placeholder="Event Venue / Address">
+
+        <h3>Select Portion</h3>
+        <div class="portion-grid">
+            <div class="p-btn" onclick="updateArea(25)">25%</div>
+            <div class="p-btn" onclick="updateArea(50)">50%</div>
+            <div class="p-btn" onclick="updateArea(75)">75%</div>
+            <div class="p-btn" onclick="updateArea(100)">FULL</div>
         </div>
 
-        <div class="input-group">
-            <label>Customer Name</label>
-            <input type="text" class="sc-input" id="cName" placeholder="Enter your full name">
-        </div>
-
-        <div class="input-group">
-            <label>Event Type</label>
-            <select class="sc-input" id="eType">
-                <option value="cricket">Cricket Match</option>
-                <option value="wedding">Mega Wedding</option>
-                <option value="concert">Musical Concert</option>
-                <option value="corporate">Corporate Sports</option>
-            </select>
-        </div>
-
-        <div class="input-group">
-            <label>Select Ground Portion</label>
-            <div class="portion-grid">
-                <div class="p-box" onclick="setPortion(25)">25%</div>
-                <div class="p-box" onclick="setPortion(50)">50%</div>
-                <div class="p-box" onclick="setPortion(75)">75%</div>
-                <div class="p-box" onclick="setPortion(100)">Full</div>
+        <h3>Layout Planner</h3>
+        <div class="planner">
+            <div class="items">
+                <div class="chip" draggable="true" ondragstart="drag(event)" id="stage">Stage</div>
+                <div class="chip" draggable="true" ondragstart="drag(event)" id="food">Food</div>
+                <div class="chip" draggable="true" ondragstart="drag(event)" id="vip">VIP</div>
+            </div>
+            <div class="drop-zone" id="dropZone" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <p id="dropHint" style="text-align:center; padding-top:50px; font-size:10px; opacity:0.3;">Drop items here</p>
             </div>
         </div>
 
-        <div class="ai-planner">
-            <label style="color:var(--primary); font-size:12px; font-weight:800; margin-bottom:10px; display:block;">AI LAYOUT DESIGNER</label>
-            <div class="palette">
-                <div class="drag-obj" draggable="true" ondragstart="onDragStart(event)" data-type="STAGE">Stage</div>
-                <div class="drag-obj" draggable="true" ondragstart="onDragStart(event)" data-type="FOOD">Food</div>
-                <div class="drag-obj" draggable="true" ondragstart="onDragStart(event)" data-type="VIP">VIP</div>
-            </div>
-            <div class="drop-zone" id="dropZone" ondragover="onDragOver(event)" ondrop="onDrop(event)">
-                <p style="text-align:center; color:#333; padding-top:60px; font-size:10px;">Drag elements here</p>
-            </div>
+        <h3>Event Date</h3>
+        <div class="cal-header">
+            <button onclick="changeMonth(-1)" style="background:none; border:none; color:#fff; cursor:pointer;"><i class="fas fa-chevron-left"></i></button>
+            <strong id="monthYear">March 2025</strong>
+            <button onclick="changeMonth(1)" style="background:none; border:none; color:#fff; cursor:pointer;"><i class="fas fa-chevron-right"></i></button>
+        </div>
+        <div class="cal-grid" id="calendar"></div>
+
+        <div class="price-box">
+            <div class="price-row"><span>Portion Rent</span><span id="basePrice">₹0</span></div>
+            <div class="price-row"><span>AI Surge (Dynamic)</span><span id="surgePrice">1.0x</span></div>
+            <div class="final-amt" id="totalPrice">₹0</div>
         </div>
 
-        <div class="input-group">
-            <label>Available Dates</label>
-            <div class="cal-wrapper" id="calGrid"></div>
-        </div>
-
-        <div class="price-card">
-            <div class="price-row"><span>Ground Rent</span><span id="pBase">₹0</span></div>
-            <div class="price-row"><span>AI Surge (Weekend)</span><span id="pSurge">1.0x</span></div>
-            <div class="price-row"><span>Taxes & Fees</span><span>₹1,500</span></div>
-            <div class="final-price" id="pTotal">₹0</div>
-        </div>
-
-        <button class="btn-confirm" onclick="initiateBooking()">CONFIRM BOOKING <i class="fas fa-arrow-right"></i></button>
-
-        <div class="agent-bar">
-            <img src="https://ui-avatars.com/api/?name=Agent&background=ff6b35&color=fff" style="width:40px; border-radius:50%;">
-            <div>
-                <p style="font-size:12px; font-weight:700;">Local Area Agent</p>
-                <p style="font-size:10px; color:#666;">Nagpur Hub - Online</p>
-            </div>
-            <button class="call-btn" onclick="callAgent()"><i class="fas fa-phone"></i> Call</button>
-        </div>
+        <button class="btn-main" onclick="confirmBooking()">CONFIRM BOOKING →</button>
     </div>
 </div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, doc, getDoc, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
-    // Firebase (Apka Config Same Rahega)
+<script>
+    // --- FIREBASE CONFIG ---
     const firebaseConfig = {
         apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
         authDomain: "stadiumconnect-8fecb.firebaseapp.com",
@@ -244,184 +143,165 @@
         messagingSenderId: "458108198578",
         appId: "1:458108198578:web:83d83646f0e24e718b73ab"
     };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    // --- State ---
-    let selectedPortion = 0;
+    // --- STATE ---
+    let currentArea = 0;
     let selectedDate = null;
-    let currentView = '2d';
-    let basePrice = 120000; // 1.2 Lakh approx
-    let stadiumId = new URLSearchParams(window.location.search).get('id');
+    let stadiumBasePrice = 150000;
+    let currentMonth = new Date().getMonth();
+    let currentYear = new Date().getFullYear();
 
-    // --- Canvas Engine ---
-    const canvas = document.getElementById('mainCanvas');
+    // --- CANVAS ---
+    const canvas = document.getElementById('stadiumCanvas');
     const ctx = canvas.getContext('2d');
 
-    function initVisualizer() {
+    function drawStadium() {
         canvas.width = canvas.offsetWidth;
         canvas.height = canvas.offsetHeight;
-        drawStadium();
-    }
-
-    function drawStadium() {
         const w = canvas.width;
         const h = canvas.height;
         ctx.clearRect(0,0,w,h);
 
-        // Grass Background
+        // Ground
         ctx.fillStyle = '#0a1a0a';
         ctx.fillRect(0,0,w,h);
 
-        // Stadium Shape
-        ctx.strokeStyle = 'rgba(255,107,53,0.3)';
-        ctx.lineWidth = 2;
+        // Oval
+        ctx.strokeStyle = 'rgba(255,107,53,0.4)';
+        ctx.lineWidth = 3;
         ctx.beginPath();
         ctx.ellipse(w/2, h/2, w*0.4, h*0.35, 0, 0, Math.PI*2);
         ctx.stroke();
 
-        // If Portion Selected
-        if(selectedPortion > 0) {
+        if(currentArea > 0) {
             ctx.fillStyle = 'rgba(255,107,53,0.3)';
-            const angle = (selectedPortion / 100) * (Math.PI * 2);
+            const angle = (currentArea / 100) * (Math.PI * 2);
             ctx.beginPath();
             ctx.moveTo(w/2, h/2);
             ctx.arc(w/2, h/2, w*0.4, 0, angle);
             ctx.closePath();
             ctx.fill();
-            
-            // AI Label
-            ctx.fillStyle = '#fff';
-            ctx.font = 'bold 12px Plus Jakarta Sans';
-            ctx.fillText(`${selectedPortion}% Area High-Capacity`, w/2 - 50, h/2 + 100);
-        }
-
-        // 3D Render Mock
-        if(currentView === '3d') {
-            ctx.fillStyle = 'rgba(255,255,255,0.05)';
-            ctx.fillRect(0,0,w,h);
-            ctx.fillStyle = '#ff6b35';
-            ctx.fillText("3D VIRTUAL RENDER ACTIVE", 20, 30);
         }
     }
 
-    // --- Interaction Functions (Global and Module) ---
-    window.setPortion = (p) => {
-        selectedPortion = p;
-        document.querySelectorAll('.p-box').forEach(el => el.classList.remove('active'));
+    // --- AREA LOGIC ---
+    function updateArea(val) {
+        currentArea = val;
+        document.querySelectorAll('.p-btn').forEach(b => b.classList.remove('active'));
         event.target.classList.add('active');
-        updatePricing();
+        document.getElementById('areaTag').innerText = val + '% Selected';
+        document.getElementById('capacityTag').innerText = 'Capacity: ' + (val * 500) + ' guests';
+        
+        const price = (stadiumBasePrice * (val/100));
+        document.getElementById('basePrice').innerText = '₹' + price.toLocaleString();
+        document.getElementById('totalPrice').innerText = '₹' + price.toLocaleString();
         drawStadium();
-        
-        document.getElementById('statPercent').innerText = p + '%';
-        document.getElementById('statSeats').innerText = (p * 450).toLocaleString();
     }
 
-    window.setView = (v) => {
-        currentView = v;
-        document.querySelectorAll('.v-tab').forEach(el => el.classList.remove('active'));
-        event.target.classList.add('active');
-        
-        if(v === 'heat') {
-            // Simulated Heatmap
-            drawStadium();
-            ctx.fillStyle = 'rgba(255,0,0,0.4)';
-            ctx.beginPath(); ctx.arc(canvas.width/2, canvas.height/2, 50, 0, Math.PI*2); ctx.fill();
-        } else {
-            drawStadium();
-        }
+    // --- CALENDAR LOGIC ---
+    function changeMonth(dir) {
+        currentMonth += dir;
+        if(currentMonth < 0) { currentMonth = 11; currentYear--; }
+        if(currentMonth > 11) { currentMonth = 0; currentYear++; }
+        renderCalendar();
     }
 
-    function updatePricing() {
-        const calculated = (basePrice * (selectedPortion/100));
-        document.getElementById('pBase').innerText = '₹' + calculated.toLocaleString();
-        document.getElementById('pTotal').innerText = '₹' + (calculated + 1500).toLocaleString();
-    }
-
-    // --- Drag and Drop ---
-    window.onDragStart = (e) => {
-        e.dataTransfer.setData("text/plain", e.target.dataset.type);
-    }
-
-    window.onDragOver = (e) => {
-        e.preventDefault();
-    }
-
-    window.onDrop = (e) => {
-        e.preventDefault();
-        const type = e.dataTransfer.getData("text/plain");
-        const dropZone = document.getElementById('dropZone');
-        const rect = dropZone.getBoundingClientRect();
-        
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-
-        const el = document.createElement('div');
-        el.className = 'placed-obj';
-        el.style.left = x + 'px';
-        el.style.top = y + 'px';
-        el.innerText = type;
-        
-        // Remove on click
-        el.onclick = () => el.remove();
-        
-        dropZone.appendChild(el);
-    }
-
-    // --- Calendar ---
     function renderCalendar() {
-        const grid = document.getElementById('calGrid');
+        const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        document.getElementById('monthYear').innerText = months[currentMonth] + " " + currentYear;
+        
+        const grid = document.getElementById('calendar');
         grid.innerHTML = '';
-        for(let i=1; i<=21; i++) {
+        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+        
+        for(let i=1; i<=daysInMonth; i++) {
             const day = document.createElement('div');
-            day.className = 'cal-day active';
-            day.innerText = i + ' Mar';
+            day.className = 'day';
+            day.innerText = i;
+            const dateStr = `${currentYear}-${currentMonth+1}-${i}`;
+            
+            if(selectedDate === dateStr) day.classList.add('selected');
+            
             day.onclick = () => {
-                document.querySelectorAll('.cal-day').forEach(d => d.classList.remove('selected'));
-                day.classList.add('selected');
-                selectedDate = `2025-03-${i}`;
+                selectedDate = dateStr;
+                renderCalendar();
             };
             grid.appendChild(day);
         }
     }
 
-    // --- Final Booking ---
-    window.initiateBooking = async () => {
-        const name = document.getElementById('cName').value;
-        if(!name || !selectedDate || selectedPortion === 0) {
-            alert("Bhai, Details puri bharo!");
+    // --- DRAG & DROP FIX ---
+    function allowDrop(ev) { ev.preventDefault(); }
+    
+    function drag(ev) { ev.dataTransfer.setData("text", ev.target.id); }
+
+    function drop(ev) {
+        ev.preventDefault();
+        const data = ev.dataTransfer.getData("text");
+        const dropZone = document.getElementById('dropZone');
+        const rect = dropZone.getBoundingClientRect();
+        
+        // Remove hint
+        document.getElementById('dropHint').style.display = 'none';
+
+        const newItem = document.createElement('div');
+        newItem.className = 'placed';
+        newItem.innerText = data.toUpperCase();
+        
+        // Calculate relative position inside the box
+        const x = ev.clientX - rect.left - 20; 
+        const y = ev.clientY - rect.top - 10;
+        
+        newItem.style.left = x + 'px';
+        newItem.style.top = y + 'px';
+        
+        newItem.onclick = function() { this.remove(); };
+        dropZone.appendChild(newItem);
+    }
+
+    // --- SUBMISSION ---
+    async function confirmBooking() {
+        const name = document.getElementById('custName').value;
+        const phone = document.getElementById('custPhone').value;
+        const loc = document.getElementById('custLoc').value;
+
+        if(!name || !phone || !selectedDate || currentArea === 0) {
+            alert("Bhai, saari details bhariye!");
             return;
         }
 
-        const bookingData = {
+        const data = {
             customerName: name,
-            stadiumId: stadiumId || 'st-001',
-            portion: selectedPortion,
+            customerPhone: phone,
+            venue: loc,
             date: selectedDate,
-            amount: document.getElementById('pTotal').innerText,
+            portion: currentArea + '%',
+            amount: document.getElementById('totalPrice').innerText,
             status: 'pending',
             createdAt: new Date().toISOString()
         };
 
         try {
-            await addDoc(collection(db, "bookings"), bookingData);
-            alert("Booking Request Sent! Agent will call you shortly.");
-            window.location.href = 'dashboard.html';
-        } catch (e) {
+            await db.collection("bookings").add(data);
+            alert("✅ Booking Success! Agent will call you.");
+            window.location.href = "dashboard.html";
+        } catch(e) {
             alert("Error: " + e.message);
         }
     }
 
-    window.callAgent = () => {
-        window.location.href = "tel:9100000000";
-    }
-
-    // Init
+    // --- INITIALIZE ---
     window.onload = () => {
-        initVisualizer();
+        drawStadium();
         renderCalendar();
-    }
+        // Simulation Viewer Count
+        setInterval(() => {
+            const count = Math.floor(Math.random() * 10) + 5;
+            document.getElementById('liveView').innerText = `🔵 ${count} Experts Online`;
+        }, 5000);
+    };
 </script>
 
 </body>
