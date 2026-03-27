@@ -3,36 +3,164 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Vendors - StadiumConnect</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>Premium Vendors - StadiumConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background: #f5f7fb; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
 
+        :root {
+            --primary: #ff6b35;
+            --primary-dark: #e55a2b;
+            --primary-light: #ff9068;
+            --dark: #0a0a2a;
+            --darker: #050517;
+            --light: #ffffff;
+            --gray: #f8f9fa;
+            --dark-gray: #2d2d44;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fb 0%, #eef2f7 100%);
+            min-height: 100vh;
+        }
+
+        /* Animated Background */
+        .bg-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        .bg-particles::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(255,107,53,0.05) 0%, transparent 50%);
+            animation: pulse 10s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+
+        /* Header Premium */
         .header {
-            background: white;
-            padding: 16px 24px;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            padding: 16px 32px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid rgba(255,107,53,0.2);
             position: sticky;
             top: 0;
-            z-index: 100;
+            z-index: 1000;
+            flex-wrap: wrap;
+            gap: 15px;
+            animation: slideDown 0.5s ease;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.05);
         }
-        .logo { font-size: 20px; font-weight: 800; cursor: pointer; }
-        .logo span { color: #ff6b35; }
-        .back-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #ff6b35; }
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
 
-        /* Search Bar */
-        .search-section {
-            background: white;
-            padding: 16px 24px;
-            margin-bottom: 20px;
-            border-radius: 20px;
+        .logo {
+            font-size: 24px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #ff6b35, #ff9068);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            cursor: pointer;
+            transition: 0.3s;
         }
-        .search-container {
+        .logo:hover { transform: scale(1.05); }
+
+        .back-btn {
+            background: rgba(255,107,53,0.1);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            color: var(--primary);
+            font-weight: 600;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .back-btn:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateX(-3px);
+        }
+
+        .stats-badge {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            padding: 8px 20px;
+            border-radius: 40px;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Hero Section */
+        .hero-vendors {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            padding: 40px 32px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-vendors::before {
+            content: '🎨📸🍽️🎵';
+            position: absolute;
+            font-size: 120px;
+            right: -30px;
+            bottom: -40px;
+            opacity: 0.1;
+            pointer-events: none;
+        }
+        .hero-vendors h1 {
+            font-size: 42px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 12px;
+            animation: fadeInUp 0.6s ease;
+        }
+        .hero-vendors p {
+            color: rgba(255,255,255,0.9);
+            font-size: 16px;
+            animation: fadeInUp 0.6s ease 0.2s both;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Search Section Premium */
+        .search-premium {
+            max-width: 1200px;
+            margin: -30px auto 30px;
+            padding: 0 20px;
+            position: relative;
+            z-index: 10;
+        }
+        .search-card {
+            background: white;
+            border-radius: 60px;
+            padding: 8px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             display: flex;
             gap: 12px;
             flex-wrap: wrap;
@@ -43,171 +171,384 @@
         }
         .search-input {
             width: 100%;
-            padding: 12px 20px;
-            border: 1px solid #ddd;
-            border-radius: 40px;
-            font-size: 14px;
+            padding: 16px 24px;
+            border: none;
+            border-radius: 50px;
+            font-size: 15px;
             outline: none;
+            background: #f5f5f5;
+            transition: 0.3s;
         }
-        .search-input:focus { border-color: #ff6b35; }
+        .search-input:focus {
+            background: white;
+            box-shadow: 0 0 0 2px var(--primary);
+        }
         .city-input-wrapper {
             flex: 1;
             position: relative;
         }
         .city-input {
             width: 100%;
-            padding: 12px 20px;
-            border: 1px solid #ddd;
-            border-radius: 40px;
-            font-size: 14px;
+            padding: 16px 24px;
+            border: none;
+            border-radius: 50px;
+            font-size: 15px;
             outline: none;
+            background: #f5f5f5;
+            transition: 0.3s;
+        }
+        .city-input:focus {
+            background: white;
+            box-shadow: 0 0 0 2px var(--primary);
         }
         .search-btn {
-            background: #ff6b35;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
             color: white;
             border: none;
-            padding: 0 24px;
-            border-radius: 40px;
+            padding: 0 32px;
+            border-radius: 50px;
             cursor: pointer;
-            font-weight: 500;
+            font-weight: 700;
+            transition: 0.3s;
         }
+        .search-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(255,107,53,0.4);
+        }
+
+        /* Autocomplete Dropdown */
         .autocomplete-dropdown {
             position: absolute;
             top: 100%;
             left: 0;
             right: 0;
             background: white;
-            border: 1px solid #ddd;
-            border-radius: 16px;
-            max-height: 250px;
+            border-radius: 20px;
+            margin-top: 8px;
+            max-height: 300px;
             overflow-y: auto;
-            z-index: 100;
+            z-index: 1000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
             display: none;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            animation: fadeInDown 0.2s ease;
+        }
+        .autocomplete-dropdown.show {
+            display: block;
+        }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         .autocomplete-item {
-            padding: 12px 20px;
+            padding: 14px 20px;
             cursor: pointer;
+            transition: 0.2s;
             border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
-        .autocomplete-item:hover { background: #fff5f0; }
+        .autocomplete-item:hover {
+            background: #fff5f0;
+        }
+        .autocomplete-item i {
+            color: var(--primary);
+            width: 24px;
+        }
 
-        /* Filter Bar */
-        .filter-bar {
-            background: white;
-            padding: 12px 24px;
+        /* Filter Bar Premium */
+        .filter-premium {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        .filter-scroll {
             display: flex;
             gap: 12px;
             overflow-x: auto;
-            margin-bottom: 20px;
-            border-radius: 20px;
+            padding-bottom: 10px;
+            scrollbar-width: thin;
         }
-        .filter-chip {
-            background: #f5f5f5;
-            padding: 8px 20px;
-            border-radius: 30px;
-            font-size: 14px;
-            cursor: pointer;
-            white-space: nowrap;
+        .filter-scroll::-webkit-scrollbar {
+            height: 4px;
         }
-        .filter-chip.active { background: #ff6b35; color: white; }
-
-        /* Vendors Grid */
-        .vendors-grid {
-            padding: 0 24px 24px;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 20px;
-        }
-        .vendor-card {
+        .filter-chip-premium {
             background: white;
-            border-radius: 20px;
-            padding: 20px;
-            display: flex;
-            gap: 16px;
+            padding: 12px 28px;
+            border-radius: 50px;
+            font-weight: 600;
             cursor: pointer;
-            transition: 0.2s;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: all 0.3s;
+            white-space: nowrap;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid #e0e0e0;
         }
-        .vendor-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        .filter-chip-premium:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
         }
-        .vendor-icon {
-            width: 70px;
-            height: 70px;
-            border-radius: 16px;
+        .filter-chip-premium.active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 5px 15px rgba(255,107,53,0.3);
+        }
+
+        /* Vendors Grid Premium */
+        .vendors-premium {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .vendors-grid-premium {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+        .vendor-card-premium {
+            background: white;
+            border-radius: 28px;
             overflow: hidden;
-            background: #fff5f0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            animation: fadeInUp 0.5s ease;
         }
-        .vendor-icon img {
+        .vendor-card-premium:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(255,107,53,0.15);
+        }
+        .vendor-image-premium {
+            height: 200px;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, #fff5f0, #ffe8e0);
+        }
+        .vendor-image-premium img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            transition: 0.5s;
         }
-        .vendor-info { flex: 1; }
-        .vendor-name { font-size: 18px; font-weight: 700; margin-bottom: 4px; color: #1a1a1a; }
-        .vendor-rating { color: #ffb347; font-size: 12px; margin-bottom: 6px; }
-        .vendor-location { font-size: 13px; color: #666; margin-bottom: 4px; }
-        .vendor-price { font-size: 14px; font-weight: 600; color: #ff6b35; }
-        .distance-badge {
-            background: #f0f0f0;
-            padding: 2px 8px;
+        .vendor-card-premium:hover .vendor-image-premium img {
+            transform: scale(1.05);
+        }
+        .vendor-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+        }
+        .vendor-rating-badge {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+            padding: 5px 10px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .vendor-content-premium {
+            padding: 20px;
+        }
+        .vendor-name-premium {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 6px;
+            color: #1a1a1a;
+        }
+        .vendor-category-premium {
+            display: inline-block;
+            background: rgba(255,107,53,0.1);
+            color: var(--primary);
+            padding: 4px 12px;
             border-radius: 20px;
             font-size: 11px;
-            display: inline-block;
-            margin-left: 8px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        .vendor-location-premium {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .vendor-price-premium {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 12px 0;
+        }
+        .vendor-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #f0f0f0;
+        }
+        .book-now-btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .book-now-btn:hover {
+            transform: scale(1.05);
         }
 
-        .loading { text-align: center; padding: 60px; color: #ff6b35; }
-        .no-results { text-align: center; padding: 60px; color: #999; }
-        footer { text-align: center; padding: 24px; font-size: 12px; color: #aaa; }
+        /* Skeleton Loading */
+        .skeleton-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+        .skeleton-card {
+            background: white;
+            border-radius: 28px;
+            overflow: hidden;
+            animation: pulse 1.5s infinite;
+        }
+        .skeleton-image {
+            height: 200px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+        .skeleton-content {
+            padding: 20px;
+        }
+        .skeleton-title {
+            height: 24px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            width: 70%;
+        }
+        .skeleton-text {
+            height: 16px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            width: 90%;
+        }
+        .skeleton-price {
+            height: 28px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            margin-top: 12px;
+            width: 50%;
+        }
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        .no-results-premium {
+            text-align: center;
+            padding: 80px;
+            background: white;
+            border-radius: 40px;
+            grid-column: 1/-1;
+        }
+        .no-results-premium i {
+            font-size: 60px;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 32px;
+            background: white;
+            margin-top: 60px;
+            border-top: 1px solid #eee;
+            color: #666;
+        }
 
         @media (max-width: 768px) {
-            .vendors-grid { grid-template-columns: 1fr; padding: 0 16px 16px; }
-            .search-container { flex-direction: column; }
+            .hero-vendors h1 { font-size: 28px; }
+            .search-card { flex-direction: column; border-radius: 30px; padding: 16px; }
+            .search-btn { padding: 14px; }
+            .vendors-grid-premium { grid-template-columns: 1fr; }
+            .vendor-image-premium { height: 180px; }
         }
     </style>
 </head>
 <body>
 
+<div class="bg-particles"></div>
+
 <header class="header">
-    <button class="back-btn" onclick="window.location.href='directory.html'">←</button>
-    <div class="logo" onclick="window.location.href='index.html'">STADIUM<span>CONNECT</span></div>
-    <div style="width: 40px;"></div>
+    <button class="back-btn" onclick="window.location.href='directory.html'">
+        <i class="fas fa-arrow-left"></i> Back
+    </button>
+    <div class="logo" onclick="window.location.href='index.html'">🏟️ STADIUM<span>CONNECT</span></div>
+    <div class="stats-badge" id="vendorCountBadge">Loading...</div>
 </header>
 
-<div class="search-section">
-    <div class="search-container">
+<section class="hero-vendors">
+    <h1>✨ Premium Vendors</h1>
+    <p>Discover the best decorators, photographers, caterers & entertainment for your dream event</p>
+</section>
+
+<div class="search-premium">
+    <div class="search-card">
         <div class="search-input-wrapper">
-            <input type="text" id="vendorSearch" class="search-input" placeholder="🔍 Search by vendor name...">
+            <input type="text" id="vendorSearch" class="search-input" placeholder="🔍 Search by vendor name..." autocomplete="off">
             <div id="vendorAutocomplete" class="autocomplete-dropdown"></div>
         </div>
         <div class="city-input-wrapper">
-            <input type="text" id="citySearch" class="city-input" placeholder="📍 Filter by city...">
+            <input type="text" id="citySearch" class="city-input" placeholder="📍 Filter by city..." autocomplete="off">
             <div id="cityAutocomplete" class="autocomplete-dropdown"></div>
         </div>
-        <button class="search-btn" onclick="search()">Search</button>
+        <button class="search-btn" onclick="performSearch()">
+            <i class="fas fa-search"></i> Search
+        </button>
     </div>
 </div>
 
-<div class="filter-bar" id="filterBar">
-    <div class="filter-chip active" data-category="all" onclick="filterByCategory('all')">All</div>
-    <div class="filter-chip" data-category="decorator" onclick="filterByCategory('decorator')">🎨 Decorators</div>
-    <div class="filter-chip" data-category="photographer" onclick="filterByCategory('photographer')">📸 Photographers</div>
-    <div class="filter-chip" data-category="caterer" onclick="filterByCategory('caterer')">🍽️ Caterers</div>
-    <div class="filter-chip" data-category="bandbaja" onclick="filterByCategory('bandbaja')">🎵 Band Baja</div>
+<div class="filter-premium">
+    <div class="filter-scroll" id="filterScroll">
+        <div class="filter-chip-premium active" data-category="all" onclick="filterByCategory('all')">✨ All Vendors</div>
+        <div class="filter-chip-premium" data-category="decorator" onclick="filterByCategory('decorator')">🎨 Decorators</div>
+        <div class="filter-chip-premium" data-category="photographer" onclick="filterByCategory('photographer')">📸 Photographers</div>
+        <div class="filter-chip-premium" data-category="caterer" onclick="filterByCategory('caterer')">🍽️ Caterers</div>
+        <div class="filter-chip-premium" data-category="bandbaja" onclick="filterByCategory('bandbaja')">🎵 Band Baja</div>
+    </div>
 </div>
 
-<div id="vendorsContainer" class="vendors-grid">
-    <div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading vendors...</div>
+<div class="vendors-premium">
+    <div id="vendorsContainer" class="vendors-grid-premium">
+        <div class="skeleton-grid">
+            <div class="skeleton-card"><div class="skeleton-image"></div><div class="skeleton-content"><div class="skeleton-title"></div><div class="skeleton-text"></div><div class="skeleton-text"></div><div class="skeleton-price"></div></div></div>
+            <div class="skeleton-card"><div class="skeleton-image"></div><div class="skeleton-content"><div class="skeleton-title"></div><div class="skeleton-text"></div><div class="skeleton-text"></div><div class="skeleton-price"></div></div></div>
+            <div class="skeleton-card"><div class="skeleton-image"></div><div class="skeleton-content"><div class="skeleton-title"></div><div class="skeleton-text"></div><div class="skeleton-text"></div><div class="skeleton-price"></div></div></div>
+        </div>
+    </div>
 </div>
 
-<footer>© 2025 StadiumConnect | Your Need, Our Network</footer>
+<footer>
+    <p>© 2025 StadiumConnect | Your Need, Our Network | Premium Vendor Marketplace</p>
+</footer>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
@@ -226,19 +567,49 @@
     let currentSearch = '';
     let currentCity = '';
 
+    const defaultVendors = [
+        { id: "v1", name: "Elegant Decorators", category: "decorator", city: "Nagpur", priceRange: "₹50,000 - ₹2,00,000", rating: 4.9, imageUrl: "", location: "Sadar, Nagpur", phone: "9876543210" },
+        { id: "v2", name: "Capture Moments Photography", category: "photographer", city: "Nagpur", priceRange: "₹30,000 - ₹1,50,000", rating: 4.8, imageUrl: "", location: "Dharampeth, Nagpur" },
+        { id: "v3", name: "Royal Caterers", category: "caterer", city: "Nagpur", priceRange: "₹500/plate", rating: 4.9, imageUrl: "", location: "Civil Lines, Nagpur" },
+        { id: "v4", name: "Rhythm Band Baja", category: "bandbaja", city: "Nagpur", priceRange: "₹40,000 - ₹1,20,000", rating: 4.7, imageUrl: "", location: "Itwari, Nagpur" },
+        { id: "v5", name: "Mumbai Decorators", category: "decorator", city: "Mumbai", priceRange: "₹80,000 - ₹3,00,000", rating: 4.9, imageUrl: "", location: "Andheri, Mumbai" },
+        { id: "v6", name: "Mumbai Photographers", category: "photographer", city: "Mumbai", priceRange: "₹50,000 - ₹2,00,000", rating: 4.8, imageUrl: "", location: "Bandra, Mumbai" }
+    ];
+
     async function loadVendors() {
-        const snapshot = await getDocs(collection(db, "vendors"));
-        // Exclude stadiums
-        allVendors = snapshot.docs.map(d => ({ id: d.id, ...d.data() })).filter(v => v.category !== 'stadium');
-        
-        // Get cities for autocomplete
-        const citiesDoc = await getDocs(collection(db, "settings"));
-        citiesDoc.forEach(doc => {
-            if (doc.id === 'cities') allCities = doc.data().list || [];
-        });
-        
-        renderVendors();
-        setupAutocomplete();
+        try {
+            const snapshot = await getDocs(collection(db, "vendors"));
+            const allData = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+            allVendors = allData.filter(v => v.category !== 'stadium');
+            
+            if (allVendors.length === 0) {
+                allVendors = defaultVendors;
+            }
+            
+            const citiesDoc = await getDocs(collection(db, "settings"));
+            citiesDoc.forEach(doc => {
+                if (doc.id === 'cities') allCities = doc.data().list || [];
+            });
+            if (allCities.length === 0) {
+                allCities = [
+                    { name: 'Mumbai', popular: true }, { name: 'Delhi', popular: true },
+                    { name: 'Bangalore', popular: true }, { name: 'Hyderabad', popular: true },
+                    { name: 'Ahmedabad', popular: true }, { name: 'Chennai', popular: true },
+                    { name: 'Kolkata', popular: true }, { name: 'Pune', popular: true },
+                    { name: 'Nagpur', popular: true }, { name: 'Jaipur', popular: false }
+                ];
+            }
+            
+            document.getElementById('vendorCountBadge').innerHTML = `🎯 ${allVendors.length} Vendors`;
+            renderVendors();
+            setupAutocomplete();
+        } catch (error) {
+            console.error("Error loading vendors:", error);
+            allVendors = defaultVendors;
+            document.getElementById('vendorCountBadge').innerHTML = `🎯 ${allVendors.length} Vendors`;
+            renderVendors();
+            setupAutocomplete();
+        }
     }
 
     function renderVendors() {
@@ -255,42 +626,49 @@
         }
         
         const container = document.getElementById('vendorsContainer');
+        
         if (filtered.length === 0) {
-            container.innerHTML = '<div class="no-results">😔 No vendors found<br><small>Try changing filters or search</small></div>';
+            container.innerHTML = `
+                <div class="no-results-premium">
+                    <i class="fas fa-search"></i>
+                    <h3>No vendors found</h3>
+                    <p>Try changing your search or filter criteria</p>
+                    <button onclick="resetFilters()" style="margin-top: 20px; background: var(--primary); color: white; border: none; padding: 10px 30px; border-radius: 30px; cursor: pointer;">Reset Filters</button>
+                </div>
+            `;
             return;
         }
         
         container.innerHTML = filtered.map(v => `
-            <div class="vendor-card" onclick="viewVendor('${v.id}')">
-                <div class="vendor-icon">
-                    <img src="${v.imageUrl || 'https://via.placeholder.com/70'}" onerror="this.src='https://via.placeholder.com/70'">
+            <div class="vendor-card-premium" data-aos="fade-up" onclick="viewVendor('${v.id}')">
+                <div class="vendor-image-premium">
+                    <img src="${v.imageUrl || getCategoryImage(v.category)}" onerror="this.src='${getCategoryImage(v.category)}'">
+                    <div class="vendor-badge">${v.category === 'decorator' ? '🎨 Decorator' : v.category === 'photographer' ? '📸 Photographer' : v.category === 'caterer' ? '🍽️ Caterer' : '🎵 Band Baja'}</div>
+                    <div class="vendor-rating-badge">⭐ ${v.rating || 4.5} ★</div>
                 </div>
-                <div class="vendor-info">
-                    <div class="vendor-name">${v.name || 'Vendor'}</div>
-                    <div class="vendor-rating">⭐ ${v.rating || 4.5}</div>
-                    <div class="vendor-location">📍 ${v.location || v.city || 'Location'}</div>
-                    <div class="vendor-price">💰 ${v.priceRange || 'Contact for price'}</div>
+                <div class="vendor-content-premium">
+                    <div class="vendor-name-premium">${v.name}</div>
+                    <div class="vendor-category-premium">${v.category === 'decorator' ? 'Wedding Decor' : v.category === 'photographer' ? 'Event Photography' : v.category === 'caterer' ? 'Premium Catering' : 'Live Entertainment'}</div>
+                    <div class="vendor-location-premium"><i class="fas fa-map-marker-alt"></i> ${v.location || v.city}</div>
+                    <div class="vendor-price-premium">${v.priceRange || 'Contact for best price'}</div>
+                    <div class="vendor-footer">
+                        <span style="font-size: 12px; color: #888;"><i class="fas fa-calendar"></i> Available for booking</span>
+                        <button class="book-now-btn" onclick="event.stopPropagation(); viewVendor('${v.id}')">Book Now →</button>
+                    </div>
                 </div>
             </div>
         `).join('');
     }
 
-    window.viewVendor = (id) => {
-        window.location.href = `vendor-detail.html?id=${id}`;
-    };
-
-    window.filterByCategory = (category) => {
-        currentCategory = category;
-        document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-        event.target.classList.add('active');
-        renderVendors();
-    };
-
-    window.search = () => {
-        currentSearch = document.getElementById('vendorSearch').value;
-        currentCity = document.getElementById('citySearch').value;
-        renderVendors();
-    };
+    function getCategoryImage(category) {
+        const images = {
+            decorator: 'https://images.unsplash.com/photo-1464366400600-4538e07f8e47?w=400&h=300&fit=crop',
+            photographer: 'https://images.unsplash.com/photo-1452587925148-ce544e77e70d?w=400&h=300&fit=crop',
+            caterer: 'https://images.unsplash.com/photo-1555244162-803834f70033?w=400&h=300&fit=crop',
+            bandbaja: 'https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=300&fit=crop'
+        };
+        return images[category] || 'https://via.placeholder.com/400x300?text=Vendor';
+    }
 
     function setupAutocomplete() {
         const vendorInput = document.getElementById('vendorSearch');
@@ -298,44 +676,80 @@
         const vendorDrop = document.getElementById('vendorAutocomplete');
         const cityDrop = document.getElementById('cityAutocomplete');
         
-        vendorInput.oninput = () => {
+        vendorInput.addEventListener('input', () => {
             const val = vendorInput.value.toLowerCase();
-            if (!val) { vendorDrop.style.display = 'none'; return; }
-            const suggestions = allVendors.filter(v => v.name?.toLowerCase().includes(val)).slice(0, 8);
-            if (!suggestions.length) { vendorDrop.style.display = 'none'; return; }
-            vendorDrop.innerHTML = suggestions.map(v => `<div class="autocomplete-item" onclick="selectVendor('${v.name}')">🔍 ${v.name}</div>`).join('');
-            vendorDrop.style.display = 'block';
-        };
+            if (!val) { vendorDrop.classList.remove('show'); return; }
+            const suggestions = allVendors.filter(v => v.name?.toLowerCase().includes(val)).slice(0, 6);
+            if (!suggestions.length) { vendorDrop.classList.remove('show'); return; }
+            vendorDrop.innerHTML = suggestions.map(v => `
+                <div class="autocomplete-item" onclick="selectVendor('${v.name}')">
+                    <i class="fas fa-store"></i> ${v.name} <span style="margin-left: auto; font-size: 12px; color: #ff6b35;">${v.city}</span>
+                </div>
+            `).join('');
+            vendorDrop.classList.add('show');
+        });
         
-        cityInput.oninput = () => {
+        cityInput.addEventListener('input', () => {
             const val = cityInput.value.toLowerCase();
-            if (!val) { cityDrop.style.display = 'none'; return; }
-            const suggestions = allCities.filter(c => c.name?.toLowerCase().includes(val)).slice(0, 8);
-            if (!suggestions.length) { cityDrop.style.display = 'none'; return; }
-            cityDrop.innerHTML = suggestions.map(c => `<div class="autocomplete-item" onclick="selectCity('${c.name}')">📍 ${c.name}</div>`).join('');
-            cityDrop.style.display = 'block';
-        };
+            if (!val) { cityDrop.classList.remove('show'); return; }
+            const suggestions = allCities.filter(c => c.name?.toLowerCase().includes(val)).slice(0, 6);
+            if (!suggestions.length) { cityDrop.classList.remove('show'); return; }
+            cityDrop.innerHTML = suggestions.map(c => `
+                <div class="autocomplete-item" onclick="selectCity('${c.name}')">
+                    <i class="fas fa-city"></i> ${c.name}
+                </div>
+            `).join('');
+            cityDrop.classList.add('show');
+        });
         
         document.addEventListener('click', (e) => {
-            if (!vendorInput.contains(e.target) && !vendorDrop.contains(e.target)) vendorDrop.style.display = 'none';
-            if (!cityInput.contains(e.target) && !cityDrop.contains(e.target)) cityDrop.style.display = 'none';
+            if (!vendorInput.contains(e.target) && !vendorDrop.contains(e.target)) vendorDrop.classList.remove('show');
+            if (!cityInput.contains(e.target) && !cityDrop.contains(e.target)) cityDrop.classList.remove('show');
         });
     }
-    
+
     window.selectVendor = (name) => {
         document.getElementById('vendorSearch').value = name;
-        document.getElementById('vendorAutocomplete').style.display = 'none';
+        document.getElementById('vendorAutocomplete').classList.remove('show');
         currentSearch = name;
         renderVendors();
     };
     
     window.selectCity = (city) => {
         document.getElementById('citySearch').value = city;
-        document.getElementById('cityAutocomplete').style.display = 'none';
+        document.getElementById('cityAutocomplete').classList.remove('show');
         currentCity = city;
         renderVendors();
     };
-
+    
+    window.performSearch = () => {
+        currentSearch = document.getElementById('vendorSearch').value;
+        currentCity = document.getElementById('citySearch').value;
+        renderVendors();
+    };
+    
+    window.filterByCategory = (category) => {
+        currentCategory = category;
+        document.querySelectorAll('.filter-chip-premium').forEach(c => c.classList.remove('active'));
+        event.target.classList.add('active');
+        renderVendors();
+    };
+    
+    window.resetFilters = () => {
+        currentCategory = 'all';
+        currentSearch = '';
+        currentCity = '';
+        document.getElementById('vendorSearch').value = '';
+        document.getElementById('citySearch').value = '';
+        document.querySelectorAll('.filter-chip-premium').forEach(c => c.classList.remove('active'));
+        document.querySelector('.filter-chip-premium[data-category="all"]').classList.add('active');
+        renderVendors();
+    };
+    
+    window.viewVendor = (id) => {
+        window.location.href = `vendor-detail.html?id=${id}`;
+    };
+    
     loadVendors();
 </script>
 
