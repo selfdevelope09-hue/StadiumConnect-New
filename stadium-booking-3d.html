@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>AI Stadium Booking - StadiumConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: #0a0a0a; color: #fff; }
+        
+        .header {
+            background: rgba(0,0,0,0.95);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,107,53,0.3);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .logo { font-size: 22px; font-weight: 800; background: linear-gradient(135deg, #fff, #ff6b35); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .back-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #ff6b35; }
+        
+        .container { max-width: 1200px; margin: 0 auto; padding: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+        
+        /* 3D Canvas */
+        .canvas-container {
+            background: #1a1a2e;
+            border-radius: 24px;
+            overflow: hidden;
+            position: relative;
+        }
+        #stadiumCanvas {
+            width: 100%;
+            height: 500px;
+            display: block;
+        }
+        .canvas-overlay {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.7);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 12px;
+        }
+        
+        /* Booking Panel */
+        .booking-panel {
+            background: rgba(255,255,255,0.05);
+            border-radius: 24px;
+            padding: 24px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .stadium-name {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        .stadium-location {
+            color: #aaa;
+            margin-bottom: 24px;
+        }
+        
+        /* Portion Selection */
+        .portion-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin: 24px 0;
+        }
+        .portion-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 14px;
+            border-radius: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .portion-btn.selected {
+            background: #ff6b35;
+            border-color: #ff6b35;
+        }
+        .portion-btn:hover {
+            background: rgba(255,107,53,0.5);
+        }
+        .portion-name { font-weight: 600; margin-bottom: 4px; }
+        .portion-area { font-size: 12px; color: #aaa; }
+        
+        /* AI Price Calculator */
+        .price-calculator {
+            background: rgba(255,107,53,0.1);
+            border-radius: 20px;
+            padding: 20px;
+            margin: 24px 0;
+            border: 1px solid rgba(255,107,53,0.3);
+        }
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .ai-price {
+            font-size: 32px;
+            font-weight: 800;
+            color: #ff6b35;
+        }
+        
+        .book-btn {
+            width: 100%;
+            background: #ff6b35;
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .book-btn:hover { background: #e55a2b; transform: scale(1.02); }
+        
+        .info-text {
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+            margin-top: 16px;
+        }
+        
+        @media (max-width: 900px) {
+            .container { grid-template-columns: 1fr; }
+            #stadiumCanvas { height: 400px; }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+<header class="header">
+    <button class="back-btn" onclick="window.location.href='stadium-booking.html'">←</button>
+    <div class="logo">STADIUM<span>CONNECT</span></div>
+    <div style="width: 40px;"></div>
+</header>
+
+<div class="container">
+    <!-- 3D Canvas -->
+    <div class="canvas-container">
+        <canvas id="stadiumCanvas" width="600" height="500"></canvas>
+        <div class="canvas-overlay">
+            <i class="fas fa-mouse-pointer"></i> Click & Drag to select portion | 🤖 AI Spatial Projection
+        </div>
+    </div>
+    
+    <!-- Booking Panel -->
+    <div class="booking-panel">
+        <div class="stadium-name" id="stadiumName">Vidarbha Cricket Stadium</div>
+        <div class="stadium-location"><i class="fas fa-map-marker-alt"></i> <span id="stadiumLocation">Nagpur</span></div>
+        
+        <div class="portion-grid" id="portionGrid">
+            <div class="portion-btn" data-area="25" onclick="selectPortion('North Stand', 25)">
+                <div class="portion-name">North Stand</div>
+                <div class="portion-area">25% Area | 5,000 seats</div>
+            </div>
+            <div class="portion-btn" data-area="30" onclick="selectPortion('South Stand', 30)">
+                <div class="portion-name">South Stand</div>
+                <div class="portion-area">30% Area | 6,000 seats</div>
+            </div>
+            <div class="portion-btn" data-area="35" onclick="selectPortion('East Gallery', 35)">
+                <div class="portion-name">East Gallery</div>
+                <div class="portion-area">35% Area | 7,000 seats</div>
+            </div>
+            <div class="portion-btn" data-area="40" onclick="selectPortion('West Gallery', 40)">
+                <div class="portion-name">West Gallery</div>
+                <div class="portion-area">40% Area | 8,000 seats</div>
+            </div>
+            <div class="portion-btn" data-area="50" onclick="selectPortion('VIP Box', 50)">
+                <div class="portion-name">VIP Box</div>
+                <div class="portion-area">50% Area | Premium View</div>
+            </div>
+            <div class="portion-btn" data-area="100" onclick="selectPortion('Full Stadium', 100)">
+                <div class="portion-name">Full Stadium</div>
+                <div class="portion-area">100% Area | Entire Venue</div>
+            </div>
+        </div>
+        
+        <div class="price-calculator">
+            <div class="price-row">
+                <span>Base Price (Full Stadium)</span>
+                <span id="basePrice">₹50,000</span>
+            </div>
+            <div class="price-row">
+                <span>Selected Portion</span>
+                <span id="selectedPortion">None</span>
+            </div>
+            <div class="price-row">
+                <span>Area Percentage</span>
+                <span id="areaPercent">0%</span>
+            </div>
+            <div class="price-row">
+                <span>AI Multiplier</span>
+                <span id="aiMultiplier">1.0x</span>
+            </div>
+            <div class="price-row" style="border-top: 1px solid rgba(255,255,255,0.2); padding-top: 12px; margin-top: 8px;">
+                <span><strong>AI Calculated Price</strong></span>
+                <span class="ai-price" id="aiPrice">₹0</span>
+            </div>
+        </div>
+        
+        <button class="book-btn" onclick="bookStadium()">
+            <i class="fas fa-credit-card"></i> Book Now with AI →
+        </button>
+        <div class="info-text">
+            🤖 AI dynamically adjusts pricing based on demand and portion selection
+        </div>
+    </div>
+</div>
+
+<script>
+    // Stadium data
+    let stadium = {
+        id: null,
+        name: "Vidarbha Cricket Stadium",
+        location: "Nagpur",
+        basePrice: 50000,
+        totalArea: 45000
+    };
+    
+    let selectedPortion = null;
+    let selectedArea = 0;
+    
+    // Get stadium ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const stadiumId = urlParams.get('id');
+    
+    if (stadiumId) {
+        // Load stadium data from Firebase (will be implemented)
+        console.log("Loading stadium:", stadiumId);
+    }
+    
+    // 3D Canvas Setup
+    const canvas = document.getElementById('stadiumCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    function drawStadium() {
+        const w = canvas.width, h = canvas.height;
+        
+        // Background
+        ctx.fillStyle = '#1a1a2e';
+        ctx.fillRect(0, 0, w, h);
+        
+        // Stadium outline (oval)
+        ctx.beginPath();
+        ctx.ellipse(w/2, h/2, w*0.4, h*0.35, 0, 0, 2 * Math.PI);
+        ctx.strokeStyle = '#ff6b35';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        
+        // Field
+        ctx.fillStyle = '#2d5a2c';
+        ctx.fillRect(w*0.2, h*0.3, w*0.6, h*0.4);
+        
+        // Center circle
+        ctx.beginPath();
+        ctx.arc(w/2, h/2, h*0.1, 0, 2 * Math.PI);
+        ctx.fillStyle = '#2d5a2c';
+        ctx.fill();
+        ctx.strokeStyle = '#ff6b35';
+        ctx.stroke();
+        
+        // Draw fractional sections (highlight based on selection)
+        // North Stand (top)
+        if (selectedArea > 0 && selectedArea <= 50) {
+            ctx.fillStyle = 'rgba(255,107,53,0.4)';
+            ctx.fillRect(w*0.2, h*0.2, w*0.6, h*0.15);
+        }
+        
+        // South Stand (bottom)
+        if (selectedArea > 50 && selectedArea <= 100) {
+            ctx.fillStyle = 'rgba(255,107,53,0.4)';
+            ctx.fillRect(w*0.2, h*0.65, w*0.6, h*0.15);
+        }
+        
+        // Labels
+        ctx.fillStyle = '#ff6b35';
+        ctx.font = 'bold 14px Inter';
+        ctx.fillText('North Stand (25%)', w*0.35, h*0.25);
+        ctx.fillText('South Stand (30%)', w*0.35, h*0.7);
+        ctx.fillText('East Gallery (35%)', w*0.05, h*0.45);
+        ctx.fillText('West Gallery (40%)', w*0.75, h*0.45);
+        ctx.fillText('VIP Box (50%)', w*0.4, h*0.5);
+        
+        // AI Projection - Virtual Stage
+        if (selectedArea > 0) {
+            ctx.fillStyle = 'rgba(255,107,53,0.6)';
+            ctx.fillRect(w*0.35, h*0.55, w*0.3, h*0.1);
+            ctx.fillStyle = '#ff6b35';
+            ctx.font = '12px Inter';
+            ctx.fillText('🎭 AI Projected Stage', w*0.38, h*0.6);
+            ctx.fillText(`👥 Seating Capacity: ${Math.floor(stadium.totalArea * (selectedArea/100))}`, w*0.38, h*0.63);
+        }
+    }
+    
+    function selectPortion(name, areaPercent) {
+        selectedPortion = name;
+        selectedArea = areaPercent;
+        
+        // Update UI
+        document.querySelectorAll('.portion-btn').forEach(btn => btn.classList.remove('selected'));
+        event.target.closest('.portion-btn').classList.add('selected');
+        
+        document.getElementById('selectedPortion').innerHTML = `${name} (${areaPercent}%)`;
+        document.getElementById('areaPercent').innerHTML = `${areaPercent}%`;
+        
+        // AI Price Calculation
+        const basePrice = stadium.basePrice;
+        const multiplier = 1 + (areaPercent / 100) * 0.5;
+        const aiPrice = Math.floor(basePrice * (areaPercent / 100) * multiplier);
+        
+        document.getElementById('aiMultiplier').innerHTML = `${multiplier.toFixed(1)}x`;
+        document.getElementById('aiPrice').innerHTML = `₹${aiPrice.toLocaleString()}`;
+        
+        // Redraw canvas with selection
+        drawStadium();
+    }
+    
+    function bookStadium() {
+        if (!selectedPortion) {
+            alert('Please select a portion of the stadium to book');
+            return;
+        }
+        
+        const price = document.getElementById('aiPrice').innerText;
+        alert(`✅ Booking request sent for ${stadium.name}\nSelected: ${selectedPortion} (${selectedArea}%)\nAI Price: ${price}\n\nAgent will contact you shortly!`);
+    }
+    
+    // Initial draw
+    drawStadium();
+    
+    // Set base price display
+    document.getElementById('basePrice').innerHTML = `₹${stadium.basePrice.toLocaleString()}`;
+    document.getElementById('aiPrice').innerHTML = `₹${stadium.basePrice.toLocaleString()}`;
+</script>
+
+</body>
+</html>
