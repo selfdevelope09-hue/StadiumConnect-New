@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Stadiums - StadiumConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: #0a0a0a; color: #fff; }
+        
+        .header {
+            background: rgba(0,0,0,0.95);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,107,53,0.3);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        .logo { font-size: 22px; font-weight: 800; background: linear-gradient(135deg, #fff, #ff6b35); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .back-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #ff6b35; }
+        
+        .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+        
+        /* Search & Filter */
+        .search-section {
+            margin-bottom: 32px;
+        }
+        .search-box {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .search-input {
+            flex: 2;
+            padding: 14px 24px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 50px;
+            color: white;
+            font-size: 16px;
+        }
+        .filter-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .filter-chip {
+            padding: 8px 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 30px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 14px;
+        }
+        .filter-chip.active, .filter-chip:hover {
+            background: #ff6b35;
+            color: white;
+        }
+        
+        /* Stadium Grid */
+        .stadiums-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 24px;
+        }
+        .stadium-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 24px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: 0.3s;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .stadium-card:hover {
+            transform: translateY(-5px);
+            border-color: #ff6b35;
+            box-shadow: 0 10px 30px rgba(255,107,53,0.2);
+        }
+        .stadium-preview {
+            height: 200px;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .stadium-preview canvas {
+            width: 100%;
+            height: 100%;
+        }
+        .ai-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: #ff6b35;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .stadium-info {
+            padding: 20px;
+        }
+        .stadium-name {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .stadium-location {
+            color: #aaa;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+        .stadium-price {
+            font-size: 24px;
+            font-weight: 800;
+            color: #ff6b35;
+            margin-bottom: 12px;
+        }
+        .features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .feature {
+            background: rgba(255,255,255,0.1);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+        }
+        
+        .loading { text-align: center; padding: 60px; color: #ff6b35; }
+        
+        @media (max-width: 768px) {
+            .stadiums-grid { grid-template-columns: 1fr; }
+            .search-box { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <button class="back-btn" onclick="window.location.href='directory.html'">←</button>
+    <div class="logo">STADIUM<span>CONNECT</span></div>
+    <div style="width: 40px;"></div>
+</header>
+
+<div class="container">
+    <h1 style="margin-bottom: 8px;">🏟️ AI-Powered Stadium Booking</h1>
+    <p style="color: #aaa; margin-bottom: 32px;">Select your portion, AI calculates the price</p>
+    
+    <div class="search-section">
+        <div class="search-box">
+            <input type="text" id="searchStadium" class="search-input" placeholder="Search stadium by name or city...">
+        </div>
+        <div class="filter-group">
+            <div class="filter-chip active" data-filter="all" onclick="filterStadiums('all')">All</div>
+            <div class="filter-chip" data-filter="cricket" onclick="filterStadiums('cricket')">🏏 Cricket</div>
+            <div class="filter-chip" data-filter="football" onclick="filterStadiums('football')">⚽ Football</div>
+            <div class="filter-chip" data-filter="multipurpose" onclick="filterStadiums('multipurpose')">🎯 Multipurpose</div>
+        </div>
+    </div>
+    
+    <div id="stadiumsGrid" class="stadiums-grid">
+        <div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading stadiums...</div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
+        authDomain: "stadiumconnect-8fecb.firebaseapp.com",
+        projectId: "stadiumconnect-8fecb",
+        storageBucket: "stadiumconnect-8fecb.firebasestorage.app",
+        messagingSenderId: "458108198578",
+        appId: "1:458108198578:web:83d83646f0e24e718b73ab"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    let allStadiums = [];
+    let currentFilter = 'all';
+    let currentSearch = '';
+
+    async function loadStadiums() {
+        const q = query(collection(db, "vendors"), where("category", "==", "stadium"));
+        const snapshot = await getDocs(q);
+        allStadiums = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderStadiums();
+    }
+
+    function renderStadiums() {
+        let filtered = [...allStadiums];
+        
+        if (currentFilter !== 'all') {
+            filtered = filtered.filter(s => s.type === currentFilter);
+        }
+        if (currentSearch) {
+            filtered = filtered.filter(s => 
+                s.name?.toLowerCase().includes(currentSearch.toLowerCase()) ||
+                s.city?.toLowerCase().includes(currentSearch.toLowerCase())
+            );
+        }
+        
+        const grid = document.getElementById('stadiumsGrid');
+        if (filtered.length === 0) {
+            grid.innerHTML = '<div class="loading">No stadiums found</div>';
+            return;
+        }
+        
+        grid.innerHTML = filtered.map(stadium => `
+            <div class="stadium-card" onclick="openStadium('${stadium.id}')">
+                <div class="stadium-preview">
+                    <canvas id="preview-${stadium.id}" width="350" height="200" style="width:100%; height:100%;"></canvas>
+                    <div class="ai-badge">🤖 AI Ready</div>
+                </div>
+                <div class="stadium-info">
+                    <div class="stadium-name">${stadium.name || 'Stadium'}</div>
+                    <div class="stadium-location"><i class="fas fa-map-marker-alt"></i> ${stadium.location || stadium.city || 'Location'}</div>
+                    <div class="stadium-price">${stadium.priceRange || 'Contact for price'}</div>
+                    <div class="features">
+                        <span class="feature">🎯 Fractional Booking</span>
+                        <span class="feature">📐 3D Wireframe</span>
+                        <span class="feature">⚡ Dynamic Pricing</span>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+        
+        // Draw preview canvases
+        filtered.forEach(stadium => {
+            drawStadiumPreview(stadium.id);
+        });
+    }
+    
+    function drawStadiumPreview(id) {
+        const canvas = document.getElementById(`preview-${id}`);
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width, h = canvas.height;
+        
+        // Draw stadium outline
+        ctx.fillStyle = '#1a1a2e';
+        ctx.fillRect(0, 0, w, h);
+        
+        // Draw field
+        ctx.fillStyle = '#2d5a2c';
+        ctx.fillRect(w*0.1, h*0.2, w*0.8, h*0.6);
+        
+        // Draw center circle
+        ctx.beginPath();
+        ctx.arc(w/2, h/2, h*0.12, 0, 2 * Math.PI);
+        ctx.fillStyle = '#2d5a2c';
+        ctx.fill();
+        ctx.strokeStyle = '#ff6b35';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        
+        // Draw sections (fractional areas)
+        ctx.fillStyle = 'rgba(255,107,53,0.3)';
+        ctx.fillRect(w*0.1, h*0.2, w*0.25, h*0.3);
+        ctx.fillStyle = 'rgba(255,107,53,0.5)';
+        ctx.fillRect(w*0.65, h*0.5, w*0.25, h*0.3);
+        
+        ctx.fillStyle = '#ff6b35';
+        ctx.font = 'bold 12px Arial';
+        ctx.fillText('Select Your Portion', w/2-60, h-20);
+    }
+
+    window.filterStadiums = (filter) => {
+        currentFilter = filter;
+        document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+        event.target.classList.add('active');
+        renderStadiums();
+    };
+    
+    window.openStadium = (id) => {
+        window.location.href = `stadium-booking-3d.html?id=${id}`;
+    };
+    
+    document.getElementById('searchStadium').addEventListener('input', (e) => {
+        currentSearch = e.target.value;
+        renderStadiums();
+    });
+    
+    loadStadiums();
+</script>
+
+</body>
+</html>
