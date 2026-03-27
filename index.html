@@ -2,20 +2,123 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>StadiumConnect - Book Stadiums & Vendors</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background: #fff; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
-        .container { text-align: center; padding: 20px; }
-        .logo { font-size: 48px; font-weight: 800; margin-bottom: 40px; }
+        .container { text-align: center; padding: 20px; max-width: 500px; margin: 0 auto; }
+        .logo { font-size: 48px; font-weight: 800; margin-bottom: 20px; }
         .logo span { color: #ff6b35; }
-        .buttons { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-bottom: 40px; }
+        
+        /* Google Button */
+        .google-btn {
+            background: white;
+            border: 1.5px solid #ddd;
+            padding: 12px 30px;
+            border-radius: 40px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin: 20px 0;
+            transition: all 0.3s;
+            width: 100%;
+            justify-content: center;
+        }
+        .google-btn:hover {
+            border-color: #ff6b35;
+            background: #fff5f0;
+        }
+        .google-btn img {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .or-divider {
+            margin: 20px 0;
+            color: #999;
+            font-size: 14px;
+            position: relative;
+        }
+        .or-divider::before,
+        .or-divider::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            width: 45%;
+            height: 1px;
+            background: #e0e0e0;
+        }
+        .or-divider::before { left: 0; }
+        .or-divider::after { right: 0; }
+        
+        /* Email Form */
+        .email-form {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 24px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 13px;
+            color: #333;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 30px;
+            font-size: 14px;
+            outline: none;
+            transition: 0.2s;
+        }
+        .form-group input:focus {
+            border-color: #ff6b35;
+        }
+        .email-submit-btn {
+            background: #ff6b35;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 40px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .email-submit-btn:hover {
+            background: #e55a2a;
+        }
+        .toggle-form {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        .toggle-form a {
+            color: #ff6b35;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .buttons { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
         .btn { padding: 14px 36px; border-radius: 40px; font-size: 16px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
         .btn-login { background: transparent; border: 1.5px solid #ff6b35; color: #ff6b35; }
         .btn-register { background: #ff6b35; border: none; color: white; }
-        .vendor-btn { background: #28a745; color: white; border: none; padding: 12px 28px; font-size: 14px; margin-top: 10px; }
+        .vendor-btn { background: #28a745; color: white; border: none; padding: 12px 28px; font-size: 14px; margin-top: 10px; display: inline-block; text-decoration: none; border-radius: 40px; cursor: pointer; }
+        
         .feature-grid {
             display: flex;
             justify-content: center;
@@ -23,25 +126,105 @@
             flex-wrap: wrap;
             margin: 40px 0;
         }
-        .feature {
-            text-align: center;
-            padding: 20px;
-        }
+        .feature { text-align: center; padding: 20px; }
         .feature-icon { font-size: 32px; margin-bottom: 12px; }
         .feature-title { font-weight: 600; margin-bottom: 4px; }
         .feature-desc { font-size: 12px; color: #666; }
-        footer { position: fixed; bottom: 20px; left: 0; right: 0; text-align: center; font-size: 12px; color: #aaa; }
+        footer { margin-top: 40px; text-align: center; font-size: 12px; color: #aaa; }
+        
+        /* Loading & Toast */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #fff;
+            border-top-color: #ff6b35;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 14px;
+            display: none;
+            z-index: 1001;
+        }
+        .toast.error { background: #dc3545; }
+        
         @media (max-width: 500px) { .logo { font-size: 32px; } .btn { padding: 10px 24px; } }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="logo">STADIUM<span>CONNECT</span></div>
-        <div class="buttons">
-            <a href="login.html" class="btn btn-login">Login</a>
-            <a href="register.html" class="btn btn-register">Register</a>
+        
+        <!-- Google Sign-In Button -->
+        <button class="google-btn" id="googleSignInBtn">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+            Continue with Google
+        </button>
+        
+        <div class="or-divider">OR</div>
+        
+        <!-- Email Form - Default Login -->
+        <div class="email-form" id="emailForm">
+            <h3 style="text-align: center; margin-bottom: 20px;">🔐 Login with Email</h3>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="loginEmail" placeholder="you@example.com">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="loginPassword" placeholder="••••••••">
+            </div>
+            <button class="email-submit-btn" id="loginBtn">Login</button>
+            <div class="toggle-form">
+                Don't have an account? <a id="showRegisterBtn">Create new account</a>
+            </div>
         </div>
-        <a href="https://forms.gle/t7oc3SeNvCMbdCVX7" target="_blank" class="btn vendor-btn">Register as Vendor →</a>
+        
+        <!-- Register Form - Hidden Initially -->
+        <div class="email-form" id="registerForm" style="display: none;">
+            <h3 style="text-align: center; margin-bottom: 20px;">📝 Create Account</h3>
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="regName" placeholder="John Doe">
+            </div>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="regEmail" placeholder="you@example.com">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="regPassword" placeholder="•••••••• (min 6 characters)">
+            </div>
+            <button class="email-submit-btn" id="registerBtn">Create Account</button>
+            <div class="toggle-form">
+                Already have an account? <a id="showLoginBtn">Back to Login</a>
+            </div>
+        </div>
+        
+        <a href="https://forms.gle/t7oc3SeNvCMbdCVX7" target="_blank" class="vendor-btn">Register as Vendor →</a>
         
         <div class="feature-grid">
             <div class="feature"><div class="feature-icon">🏟️</div><div class="feature-title">AI Stadium Booking</div><div class="feature-desc">Fractional booking with 3D view</div></div>
@@ -51,6 +234,175 @@
         
         <footer>© 2025 StadiumConnect | Your Need, Our Network</footer>
     </div>
+    
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+    <div id="toast" class="toast"></div>
+
+    <script type="module">
+        import { 
+            auth, 
+            signInWithGoogle, 
+            handleRedirectResult, 
+            onAuthStateChanged,
+            saveUserToLocalStorage,
+            signUpWithEmail,
+            loginWithEmail,
+            signOut
+        } from './firebase-config.js';
+        
+        // DOM Elements
+        const googleBtn = document.getElementById('googleSignInBtn');
+        const loginBtn = document.getElementById('loginBtn');
+        const registerBtn = document.getElementById('registerBtn');
+        const showRegisterBtn = document.getElementById('showRegisterBtn');
+        const showLoginBtn = document.getElementById('showLoginBtn');
+        const loginForm = document.getElementById('emailForm');
+        const registerForm = document.getElementById('registerForm');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const toast = document.getElementById('toast');
+        
+        // Toast Function
+        function showToast(msg, isError = false) {
+            toast.textContent = msg;
+            toast.className = `toast ${isError ? 'error' : ''}`;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+        
+        function setLoading(show) {
+            loadingOverlay.style.display = show ? 'flex' : 'none';
+        }
+        
+        // Redirect to home page
+        function goToHome() {
+            window.location.href = 'home.html';
+        }
+        
+        // ============= EMAIL LOGIN =============
+        loginBtn.onclick = async () => {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!email || !password) {
+                showToast('Please enter email and password', true);
+                return;
+            }
+            
+            setLoading(true);
+            const result = await loginWithEmail(email, password);
+            setLoading(false);
+            
+            if (result.success) {
+                saveUserToLocalStorage(result.user);
+                showToast(`Welcome back ${result.user.displayName || result.user.email}!`);
+                setTimeout(goToHome, 1500);
+            } else {
+                let errorMsg = 'Login failed';
+                if (result.error?.code === 'auth/invalid-credential') {
+                    errorMsg = 'Invalid email or password';
+                } else if (result.error?.code === 'auth/user-not-found') {
+                    errorMsg = 'Account not found. Please register first.';
+                } else if (result.error?.code === 'auth/wrong-password') {
+                    errorMsg = 'Wrong password';
+                } else {
+                    errorMsg = result.error?.message || 'Login failed';
+                }
+                showToast(errorMsg, true);
+            }
+        };
+        
+        // ============= EMAIL REGISTRATION =============
+        registerBtn.onclick = async () => {
+            const name = document.getElementById('regName').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const password = document.getElementById('regPassword').value;
+            
+            if (!name || !email || !password) {
+                showToast('Please fill all fields', true);
+                return;
+            }
+            
+            if (password.length < 6) {
+                showToast('Password must be at least 6 characters', true);
+                return;
+            }
+            
+            setLoading(true);
+            const result = await signUpWithEmail(email, password, name);
+            setLoading(false);
+            
+            if (result.success) {
+                saveUserToLocalStorage(result.user);
+                showToast(`Welcome ${name}! Account created successfully.`);
+                setTimeout(goToHome, 1500);
+            } else {
+                let errorMsg = 'Registration failed';
+                if (result.error?.code === 'auth/email-already-in-use') {
+                    errorMsg = 'Email already registered. Please login.';
+                } else if (result.error?.code === 'auth/invalid-email') {
+                    errorMsg = 'Invalid email address';
+                } else {
+                    errorMsg = result.error?.message || 'Registration failed';
+                }
+                showToast(errorMsg, true);
+            }
+        };
+        
+        // ============= GOOGLE SIGN-IN (APK Compatible) =============
+        googleBtn.onclick = async () => {
+            setLoading(true);
+            const result = await signInWithGoogle();
+            
+            if (result.success === true) {
+                saveUserToLocalStorage(result.user);
+                showToast(`Welcome ${result.user.displayName || 'User'}!`);
+                setTimeout(goToHome, 1500);
+            } else if (result.success === 'redirect') {
+                // Redirecting to Google, no action needed
+                console.log('Redirecting to Google...');
+            } else if (result.error) {
+                setLoading(false);
+                showToast(result.error.message || 'Google Sign-In failed', true);
+            }
+        };
+        
+        // ============= TOGGLE FORMS =============
+        showRegisterBtn.onclick = () => {
+            loginForm.style.display = 'none';
+            registerForm.style.display = 'block';
+        };
+        
+        showLoginBtn.onclick = () => {
+            registerForm.style.display = 'none';
+            loginForm.style.display = 'block';
+        };
+        
+        // ============= HANDLE REDIRECT RESULT (APK) =============
+        async function checkRedirectResult() {
+            const result = await handleRedirectResult();
+            if (result.success) {
+                saveUserToLocalStorage(result.user);
+                showToast(`Welcome ${result.user.displayName || 'User'}!`);
+                setTimeout(goToHome, 1000);
+            }
+        }
+        checkRedirectResult();
+        
+        // ============= CHECK IF ALREADY LOGGED IN =============
+        onAuthStateChanged(auth, (user) => {
+            if (user && window.location.pathname.includes('index.html')) {
+                saveUserToLocalStorage(user);
+                goToHome();
+            }
+        });
+        
+        console.log('✅ Index page loaded with Email/Google Sign-In');
+        console.log('📍 After login, redirect to: home.html');
+    </script>
 </body>
 </html>
 
