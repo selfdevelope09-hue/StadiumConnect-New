@@ -79,6 +79,41 @@
         
         .logo-img { width: 80px; height: 80px; border-radius: 12px; object-fit: cover; margin-top: 10px; }
         
+        /* Image Upload Styles */
+        .image-upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-bottom: 15px;
+        }
+        .image-upload-area:hover { border-color: #ff6b35; background: #fff5f0; }
+        .image-preview { margin-top: 15px; display: flex; flex-wrap: wrap; gap: 12px; }
+        .preview-item {
+            width: 100px;
+            height: 100px;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            border: 2px solid #eee;
+        }
+        .preview-item img { width: 100%; height: 100%; object-fit: cover; }
+        .preview-item .remove-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: red;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
         .toast {
             position: fixed;
             bottom: 30px;
@@ -114,8 +149,8 @@
     <div class="stats-grid" id="statsGrid">
         <div class="stat-card"><div class="stat-value" id="totalBookings">0</div><div class="stat-label">Total Bookings</div></div>
         <div class="stat-card"><div class="stat-value" id="confirmedBookings">0</div><div class="stat-label">Confirmed</div></div>
-        <div class="stat-card"><div class="stat-value" id="totalRevenue">₹0</div><div class="stat-label">Total Revenue</div></div>
-        <div class="stat-card"><div class="stat-value" id="totalCommission">₹0</div><div class="stat-label">Your Commission (2.5%)</div></div>
+        <div class="stat-card"><div class="stat-value" id="totalRevenue">₹0</div><div class="stat-label">Total Revenue (After 15% Commission)</div></div>
+        <div class="stat-card"><div class="stat-value" id="totalCommission">₹0</div><div class="stat-label">Platform Commission (15%)</div></div>
     </div>
 
     <!-- Earnings Chart -->
@@ -124,7 +159,7 @@
         <canvas id="earningsChart" style="max-height: 300px;"></canvas>
     </div>
 
-    <!-- Edit Vendor Details -->
+    <!-- Edit Vendor Details with Logo Upload -->
     <div class="card">
         <h3><i class="fas fa-edit"></i> Edit Your Profile</h3>
         <div class="form-row">
@@ -141,15 +176,23 @@
             <div class="form-group"><label>Contact Phone</label><input type="tel" id="vendorPhone"></div>
             <div class="form-group"><label>Email</label><input type="email" id="vendorEmail"></div>
         </div>
+        
+        <!-- Logo Upload Section -->
         <div class="form-group">
-            <label>Logo / Profile Photo</label>
-            <input type="file" id="vendorLogo" accept="image/*">
-            <div id="logoPreview" class="logo-img"></div>
+            <label><i class="fas fa-image"></i> Logo / Profile Photo</label>
+            <div class="image-upload-area" onclick="document.getElementById('vendorLogoInput').click()">
+                <i class="fas fa-cloud-upload-alt" style="font-size: 32px; color: #ff6b35;"></i>
+                <p>Click to upload logo</p>
+                <small style="color:#666;">PNG, JPG, JPEG (Max 5MB)</small>
+            </div>
+            <input type="file" id="vendorLogoInput" accept="image/*" style="display:none;" onchange="previewLogo(this)">
+            <div id="logoPreviewArea" class="image-preview"></div>
         </div>
+        
         <button class="btn-primary" onclick="updateVendor()"><i class="fas fa-save"></i> Update Profile</button>
     </div>
 
-    <!-- Recent Bookings -->
+    <!-- Recent Bookings - Customer details hidden, Agent phone shown -->
     <div class="card">
         <h3><i class="fas fa-bookings"></i> Recent Bookings</h3>
         <div style="overflow-x:auto;">
@@ -158,16 +201,17 @@
                     <tr>
                         <th>Booking ID</th>
                         <th>Customer Name</th>
-                        <th>Phone</th>
+                        <th>Event Location</th>
                         <th>Event Date</th>
-                        <th>Amount</th>
-                        <th>Your Commission</th>
+                        <th>Booking Amount</th>
+                        <th>Your Earnings (After 15%)</th>
+                        <th>Contact Agent</th>
                         <th>Status</th>
                     </thead>
                 <tbody id="bookingsTableBody">
-                    <tr><td colspan="7" style="text-align:center;">Loading bookings...<br><i class="fas fa-spinner fa-spin"></i> Please wait</td></tr>
+                    <tr><td colspan="8" style="text-align:center;">Loading bookings...<br><i class="fas fa-spinner fa-spin"></i> Please wait</td></tr>
                 </tbody>
-             </table>
+              </table>
         </div>
     </div>
 </div>
@@ -195,11 +239,22 @@
     
     let vendor = null;
     let allBookings = [];
+    let allAgents = [];
     let earningsChart = null;
+    let tempLogoFile = null;
 
-    function calculateCommission(amount) {
+    // Commission Rate: 15% platform commission
+    const PLATFORM_COMMISSION = 0.15;
+    
+    function calculateVendorEarnings(amount) {
         const price = parseInt(String(amount).replace(/[₹,]/g, '')) || 0;
-        return Math.floor(price * 0.025);
+        // Vendor gets 85% after 15% commission
+        return Math.floor(price * (1 - PLATFORM_COMMISSION));
+    }
+    
+    function calculatePlatformCommission(amount) {
+        const price = parseInt(String(amount).replace(/[₹,]/g, '')) || 0;
+        return Math.floor(price * PLATFORM_COMMISSION);
     }
 
     function showToast(msg, isError = false) {
@@ -211,6 +266,23 @@
         setTimeout(() => toast.remove(), 3000);
     }
 
+    // Load all agents for city mapping
+    async function loadAgents() {
+        try {
+            const agentsSnap = await getDocs(collection(db, "agents"));
+            allAgents = agentsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        } catch(e) {
+            console.error("Error loading agents:", e);
+        }
+    }
+
+    // Get agent phone by city
+    function getAgentPhoneByCity(city) {
+        if (!city) return "Not available";
+        const agent = allAgents.find(a => a.city?.toLowerCase() === city.toLowerCase());
+        return agent?.phone || "No agent assigned";
+    }
+
     async function loadVendor() {
         if (!vendorId) {
             showToast('Invalid access. Please login again.', true);
@@ -219,6 +291,8 @@
         }
         
         try {
+            await loadAgents();
+            
             const docSnap = await getDoc(doc(db, 'vendors', vendorId));
             if (docSnap.exists()) {
                 vendor = { id: docSnap.id, ...docSnap.data() };
@@ -244,7 +318,12 @@
                 
                 // Show logo preview
                 if (vendor.imageUrl) {
-                    document.getElementById('logoPreview').innerHTML = `<img src="${vendor.imageUrl}" style="width:80px;height:80px;border-radius:12px;object-fit:cover;">`;
+                    document.getElementById('logoPreviewArea').innerHTML = `
+                        <div class="preview-item">
+                            <img src="${vendor.imageUrl}">
+                            <button class="remove-btn" onclick="removeLogo()">×</button>
+                        </div>
+                    `;
                 }
                 
                 await loadBookings();
@@ -264,7 +343,6 @@
         try {
             console.log("Loading bookings for vendor ID:", vendorId);
             
-            // Simple query - get all bookings where vendorId matches
             const bookingsRef = collection(db, "bookings");
             const q = query(bookingsRef, where("vendorId", "==", vendorId));
             const snapshot = await getDocs(q);
@@ -281,21 +359,24 @@
             
             const tableBody = document.getElementById('bookingsTableBody');
             if (allBookings.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;">📭 No bookings yet. Bookings will appear here when customers book your services.</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">📭 No bookings yet. Bookings will appear here when customers book your services.</td></tr>';
                 return;
             }
             
             tableBody.innerHTML = allBookings.map(b => {
                 const amount = parseInt(String(b.amount).replace(/[₹,]/g, '')) || 0;
-                const commission = calculateCommission(amount);
+                const vendorEarnings = calculateVendorEarnings(amount);
+                const agentPhone = getAgentPhoneByCity(b.vendorCity || vendor?.city);
+                
                 return `
                     <tr>
                         <td>${b.id.slice(-8)}</td>
                         <td><strong>${b.userName || b.customerName || '-'}</strong></td>
-                        <td>${b.userPhone || b.phone || '-'}</td>
+                        <td>${b.eventLocation || b.location || '-'}</td>
                         <td>${b.eventDate || b.date || '-'}</td>
                         <td>₹${amount.toLocaleString()}</td>
-                        <td class="revenue-cell">₹${commission.toLocaleString()}</td>
+                        <td class="revenue-cell">₹${vendorEarnings.toLocaleString()}</td>
+                        <td><a href="tel:${agentPhone}" style="color:#ff6b35; text-decoration:none;"><i class="fas fa-phone-alt"></i> ${agentPhone}</a></td>
                         <td><span class="status-badge status-${b.status || 'pending'}">${b.status || 'pending'}</span></td>
                     </tr>
                 `;
@@ -303,20 +384,21 @@
             
         } catch(error) {
             console.error("Error loading bookings:", error);
-            document.getElementById('bookingsTableBody').innerHTML = '<tr><td colspan="7" style="text-align:center;">❌ Error loading bookings. Please refresh the page.</td></tr>';
+            document.getElementById('bookingsTableBody').innerHTML = '<tr><td colspan="8" style="text-align:center;">❌ Error loading bookings. Please refresh the page.</td></tr>';
             showToast('Error loading bookings', true);
         }
     }
     
     function updateStats() {
         const confirmedBookings = allBookings.filter(b => b.status === 'confirmed');
-        const totalRevenue = confirmedBookings.reduce((sum, b) => sum + (parseInt(String(b.amount).replace(/[₹,]/g,''))||0), 0);
-        const totalCommission = calculateCommission(totalRevenue);
+        const totalRevenueBeforeCommission = confirmedBookings.reduce((sum, b) => sum + (parseInt(String(b.amount).replace(/[₹,]/g,''))||0), 0);
+        const vendorTotalEarnings = calculateVendorEarnings(totalRevenueBeforeCommission);
+        const platformCommission = calculatePlatformCommission(totalRevenueBeforeCommission);
         
         document.getElementById('totalBookings').innerHTML = allBookings.length;
         document.getElementById('confirmedBookings').innerHTML = confirmedBookings.length;
-        document.getElementById('totalRevenue').innerHTML = `₹${totalRevenue.toLocaleString()}`;
-        document.getElementById('totalCommission').innerHTML = `₹${totalCommission.toLocaleString()}`;
+        document.getElementById('totalRevenue').innerHTML = `₹${vendorTotalEarnings.toLocaleString()}`;
+        document.getElementById('totalCommission').innerHTML = `₹${platformCommission.toLocaleString()}`;
     }
     
     function renderChart() {
@@ -325,7 +407,9 @@
         confirmed.forEach(b => {
             if(b.createdAt) {
                 let m = new Date(b.createdAt).toLocaleString('default', {month:'short'});
-                monthly[m] = (monthly[m]||0) + (parseInt(String(b.amount).replace(/[₹,]/g,''))||0);
+                const amount = parseInt(String(b.amount).replace(/[₹,]/g,'')) || 0;
+                const vendorEarnings = calculateVendorEarnings(amount);
+                monthly[m] = (monthly[m]||0) + vendorEarnings;
             }
         });
         
@@ -336,7 +420,7 @@
             data: {
                 labels: Object.keys(monthly).length ? Object.keys(monthly) : ['No Data'],
                 datasets: [{
-                    label: 'Revenue (₹)',
+                    label: 'Your Earnings (₹)',
                     data: Object.keys(monthly).length ? Object.values(monthly) : [0],
                     borderColor: '#ff6b35',
                     backgroundColor: 'rgba(255,107,53,0.1)',
@@ -347,6 +431,32 @@
             options: { responsive: true, maintainAspectRatio: true }
         });
     }
+    
+    // Logo Upload Functions
+    window.previewLogo = function(input) {
+        const previewArea = document.getElementById('logoPreviewArea');
+        previewArea.innerHTML = '';
+        
+        if (input.files && input.files[0]) {
+            tempLogoFile = input.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewArea.innerHTML = `
+                    <div class="preview-item">
+                        <img src="${e.target.result}">
+                        <button class="remove-btn" onclick="removeLogo()">×</button>
+                    </div>
+                `;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    };
+    
+    window.removeLogo = function() {
+        tempLogoFile = null;
+        document.getElementById('logoPreviewArea').innerHTML = '';
+        document.getElementById('vendorLogoInput').value = '';
+    };
     
     async function uploadImage(file, path) {
         if(!file) return null;
@@ -370,10 +480,10 @@
         };
         
         // Upload logo if selected
-        const logoFile = document.getElementById('vendorLogo').files[0];
-        if(logoFile) {
-            const logoUrl = await uploadImage(logoFile, 'vendors/logos');
+        if(tempLogoFile) {
+            const logoUrl = await uploadImage(tempLogoFile, 'vendors/logos');
             if(logoUrl) data.imageUrl = logoUrl;
+            tempLogoFile = null;
         }
         
         await updateDoc(doc(db, 'vendors', vendorId), data);
