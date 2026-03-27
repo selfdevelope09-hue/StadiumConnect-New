@@ -42,12 +42,10 @@
         th { color: #666; font-weight: 500; font-size: 13px; text-transform: uppercase; }
         .stadium-id { font-weight: 700; color: #ff6b35; }
         .revenue-cell { color: #28a745; font-weight: bold; }
-        .progress-bar { width: 100px; background: #e0e0e0; border-radius: 10px; height: 6px; overflow: hidden; display: inline-block; margin-right: 5px; }
-        .progress-fill { background: #ff6b35; height: 100%; border-radius: 10px; }
         .logo-img { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; background: #f0f0f0; }
         
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 1000; }
-        .modal-content { background: white; border-radius: 28px; padding: 32px; width: 90%; max-width: 600px; position: relative; max-height: 90vh; overflow-y: auto; }
+        .modal-content { background: white; border-radius: 28px; padding: 32px; width: 90%; max-width: 700px; position: relative; max-height: 90vh; overflow-y: auto; }
         .close-modal { position: absolute; right: 20px; top: 20px; font-size: 24px; cursor: pointer; }
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; font-weight: 600; margin-bottom: 8px; }
@@ -59,6 +57,42 @@
         .message { padding: 12px; border-radius: 12px; margin-bottom: 15px; display: none; text-align: center; }
         .success { background: #d4edda; color: #155724; display: block; }
         .error { background: #f8d7da; color: #721c24; display: block; }
+        
+        /* Image Upload Styles */
+        .image-upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-bottom: 15px;
+        }
+        .image-upload-area:hover { border-color: #ff6b35; background: #fff5f0; }
+        .image-preview { margin-top: 15px; display: flex; flex-wrap: wrap; gap: 12px; }
+        .preview-item {
+            width: 100px;
+            height: 100px;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            border: 2px solid #eee;
+        }
+        .preview-item img { width: 100%; height: 100%; object-fit: cover; }
+        .preview-item .remove-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: red;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .upload-progress { font-size: 12px; color: #ff6b35; margin-top: 5px; }
         
         @media (max-width: 768px) { th, td { font-size: 12px; padding: 8px; } .form-row { grid-template-columns: 1fr; } }
     </style>
@@ -92,12 +126,11 @@
                         <th>Price/Day</th>
                         <th>Total Bookings</th>
                         <th>Total Revenue (₹)</th>
-                        <th>Progress</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody id="stadiumsTableBody">
-                    <tr><td colspan="11" style="text-align:center;">Loading...</td></tr>
+                    <tr><td colspan="10" style="text-align:center;">Loading...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -128,7 +161,33 @@
             <div class="form-group"><label>Description</label><textarea id="stadiumDescription" rows="2" placeholder="Stadium description..."></textarea></div>
             <div class="form-group"><label>Amenities (comma separated)</label><input type="text" id="stadiumAmenities" placeholder="Floodlights, Parking, WiFi, CCTV"></div>
             <div class="form-group"><label>Blocked Dates (Match days)</label><input type="text" id="blockedDates" placeholder="2024-12-25, 2024-12-31"></div>
-            <div class="form-group"><label>Stadium Logo</label><input type="file" id="stadiumLogo" accept="image/*"></div>
+            
+            <!-- Logo Upload Section -->
+            <div class="form-group">
+                <label><i class="fas fa-image"></i> Stadium Logo</label>
+                <div class="image-upload-area" onclick="document.getElementById('stadiumLogoInput').click()">
+                    <i class="fas fa-cloud-upload-alt" style="font-size: 32px; color: #ff6b35;"></i>
+                    <p>Click to upload logo</p>
+                    <small style="color:#666;">PNG, JPG, JPEG (Max 5MB)</small>
+                </div>
+                <input type="file" id="stadiumLogoInput" accept="image/*" style="display:none;" onchange="previewLogo(this)">
+                <div id="logoPreviewArea" class="image-preview"></div>
+                <div id="logoUploadProgress" class="upload-progress"></div>
+            </div>
+            
+            <!-- Gallery Photos Upload Section -->
+            <div class="form-group">
+                <label><i class="fas fa-images"></i> Gallery Photos (Multiple)</label>
+                <div class="image-upload-area" onclick="document.getElementById('stadiumGalleryInput').click()">
+                    <i class="fas fa-plus-circle" style="font-size: 32px; color: #ff6b35;"></i>
+                    <p>Click to upload gallery photos</p>
+                    <small style="color:#666;">You can select multiple photos</small>
+                </div>
+                <input type="file" id="stadiumGalleryInput" accept="image/*" multiple style="display:none;" onchange="previewGallery(this)">
+                <div id="galleryPreviewArea" class="image-preview"></div>
+                <div id="galleryUploadProgress" class="upload-progress"></div>
+            </div>
+            
             <div class="form-group"><label>Password *</label><input type="text" id="stadiumPassword" placeholder="Default: stadium123" value="stadium123"></div>
             <button type="button" class="btn-primary" onclick="saveStadium()" style="width:100%; margin-top:10px;">Save Stadium</button>
         </form>
@@ -137,8 +196,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, setDoc, getDoc, query, where } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js";
+    import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, getDoc, query, where } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
@@ -150,7 +208,9 @@
     };
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const storage = getStorage(app);
+
+    // ImgBB API Key
+    const IMGBB_API_KEY = "459b0b4e8a9c6fcceaffd15320a6fdbd";
 
     // Check login
     const adminLoggedIn = localStorage.getItem('admin');
@@ -166,6 +226,103 @@
     let allStadiums = [];
     let allBookings = [];
     let allCities = [];
+    let tempLogoFile = null;
+    let tempGalleryFiles = [];
+
+    // ========== ImgBB Upload Function ==========
+    async function uploadToImgBB(file) {
+        if (!file) return null;
+        
+        return new Promise((resolve, reject) => {
+            const formData = new FormData();
+            formData.append('image', file);
+            formData.append('key', IMGBB_API_KEY);
+            
+            fetch('https://api.imgbb.com/1/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    resolve(data.data.url);
+                } else {
+                    reject(new Error('Upload failed'));
+                }
+            })
+            .catch(error => {
+                reject(error);
+            });
+        });
+    }
+
+    // ========== Preview Functions ==========
+    window.previewLogo = function(input) {
+        const previewArea = document.getElementById('logoPreviewArea');
+        previewArea.innerHTML = '';
+        
+        if (input.files && input.files[0]) {
+            tempLogoFile = input.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewArea.innerHTML = `
+                    <div class="preview-item">
+                        <img src="${e.target.result}">
+                        <button class="remove-btn" onclick="removeLogo()">×</button>
+                    </div>
+                `;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    };
+
+    window.previewGallery = function(input) {
+        const previewArea = document.getElementById('galleryPreviewArea');
+        previewArea.innerHTML = '';
+        tempGalleryFiles = Array.from(input.files);
+        
+        tempGalleryFiles.forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewArea.innerHTML += `
+                    <div class="preview-item" data-index="${index}">
+                        <img src="${e.target.result}">
+                        <button class="remove-btn" onclick="removeGalleryPhoto(${index})">×</button>
+                    </div>
+                `;
+            };
+            reader.readAsDataURL(file);
+        });
+    };
+
+    window.removeLogo = function() {
+        tempLogoFile = null;
+        document.getElementById('logoPreviewArea').innerHTML = '';
+        document.getElementById('stadiumLogoInput').value = '';
+    };
+
+    window.removeGalleryPhoto = function(index) {
+        tempGalleryFiles.splice(index, 1);
+        const previewArea = document.getElementById('galleryPreviewArea');
+        const newFiles = tempGalleryFiles;
+        previewArea.innerHTML = '';
+        newFiles.forEach((file, newIndex) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewArea.innerHTML += `
+                    <div class="preview-item" data-index="${newIndex}">
+                        <img src="${e.target.result}">
+                        <button class="remove-btn" onclick="removeGalleryPhoto(${newIndex})">×</button>
+                    </div>
+                `;
+            };
+            reader.readAsDataURL(file);
+        });
+        // Update input files
+        const dt = new DataTransfer();
+        newFiles.forEach(f => dt.items.add(f));
+        document.getElementById('stadiumGalleryInput').files = dt.files;
+    };
 
     // ========== LOAD CITIES ==========
     async function loadCities() {
@@ -203,16 +360,6 @@
         return { bookingsCount: stadiumBookings.length, totalRevenue };
     }
 
-    // ========== UPLOAD IMAGE ==========
-    async function uploadImage(file, path) {
-        if (!file) return null;
-        try {
-            const storageRef = ref(storage, path + Date.now() + '_' + file.name);
-            await uploadBytes(storageRef, file);
-            return await getDownloadURL(storageRef);
-        } catch(e) { return null; }
-    }
-
     // ========== LOAD STADIUMS ==========
     async function loadStadiums() {
         const vendorsSnap = await getDocs(collection(db, "vendors"));
@@ -233,14 +380,12 @@
     function renderStadiums() {
         const tbody = document.getElementById('stadiumsTableBody');
         if (!allStadiums.length) {
-            tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;">No stadiums found</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;">No stadiums found</td></tr>';
             return;
         }
         
         tbody.innerHTML = allStadiums.map(stadium => {
             const stats = getStadiumStats(stadium.id);
-            const target = stadium.targetRevenue || 500000;
-            const progress = Math.min(100, (stats.totalRevenue / target) * 100);
             return `
                 <tr>
                     <td><img src="${stadium.imageUrl || 'https://via.placeholder.com/40'}" class="logo-img" onerror="this.src='https://via.placeholder.com/40'"></td>
@@ -252,10 +397,6 @@
                     <td>₹${(stadium.basePrice || 50000).toLocaleString()}</td>
                     <td>${stats.bookingsCount}</td>
                     <td class="revenue-cell">₹${stats.totalRevenue.toLocaleString()}</td>
-                    <td>
-                        <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div>
-                        ${Math.floor(progress)}%
-                    </td>
                     <td>
                         <button class="btn-view" onclick="viewStadiumDetails('${stadium.id}')">View</button>
                         <button class="btn-edit" onclick="editStadium('${stadium.id}')">Edit</button>
@@ -297,8 +438,16 @@
         document.getElementById('stadiumDescription').value = '';
         document.getElementById('stadiumAmenities').value = '';
         document.getElementById('blockedDates').value = '';
-        document.getElementById('stadiumLogo').value = '';
         document.getElementById('stadiumPassword').value = generateRandomPassword();
+        
+        // Clear image previews
+        tempLogoFile = null;
+        tempGalleryFiles = [];
+        document.getElementById('logoPreviewArea').innerHTML = '';
+        document.getElementById('galleryPreviewArea').innerHTML = '';
+        document.getElementById('stadiumLogoInput').value = '';
+        document.getElementById('stadiumGalleryInput').value = '';
+        
         document.getElementById('stadiumModal').style.display = 'flex';
     };
 
@@ -327,18 +476,39 @@
         document.getElementById('stadiumAmenities').value = (stadium.amenities || []).join(', ');
         document.getElementById('blockedDates').value = (stadium.blockedDates || []).join(', ');
         document.getElementById('stadiumPassword').value = '';
+        
+        // Show existing images
+        if (stadium.imageUrl) {
+            document.getElementById('logoPreviewArea').innerHTML = `
+                <div class="preview-item">
+                    <img src="${stadium.imageUrl}">
+                    <button class="remove-btn" onclick="removeLogo()">×</button>
+                </div>
+            `;
+        }
+        if (stadium.gallery && stadium.gallery.length) {
+            const previewArea = document.getElementById('galleryPreviewArea');
+            previewArea.innerHTML = '';
+            stadium.gallery.forEach((url, i) => {
+                previewArea.innerHTML += `
+                    <div class="preview-item">
+                        <img src="${url}">
+                        <button class="remove-btn" onclick="removeExistingGalleryPhoto(${i})">×</button>
+                    </div>
+                `;
+            });
+        }
+        
         document.getElementById('stadiumModal').style.display = 'flex';
     };
 
     window.deleteStadium = async (id) => {
         if (confirm(`Delete stadium? This will also delete all associated bookings.`)) {
-            // Delete all bookings for this stadium
             const bookingsQuery = query(collection(db, "bookings"), where("vendorId", "==", id));
             const bookingsSnap = await getDocs(bookingsQuery);
             bookingsSnap.forEach(async (bookingDoc) => {
                 await deleteDoc(doc(db, "bookings", bookingDoc.id));
             });
-            // Delete stadium
             await deleteDoc(doc(db, 'vendors', id));
             showMessage('Stadium deleted!', 'success');
             loadStadiums();
@@ -376,10 +546,45 @@
             return;
         }
         
-        // Upload logo if selected
-        const logoFile = document.getElementById('stadiumLogo').files[0];
-        if (logoFile) {
-            data.imageUrl = await uploadImage(logoFile, 'stadiums/');
+        // Upload logo to ImgBB if selected
+        if (tempLogoFile) {
+            const progressDiv = document.getElementById('logoUploadProgress');
+            progressDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading logo...';
+            try {
+                const logoUrl = await uploadToImgBB(tempLogoFile);
+                if (logoUrl) data.imageUrl = logoUrl;
+                progressDiv.innerHTML = '<i class="fas fa-check-circle"></i> Logo uploaded!';
+                setTimeout(() => progressDiv.innerHTML = '', 2000);
+            } catch(e) {
+                progressDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Upload failed';
+                console.error(e);
+            }
+        }
+        
+        // Upload gallery photos to ImgBB
+        if (tempGalleryFiles.length > 0) {
+            const progressDiv = document.getElementById('galleryUploadProgress');
+            progressDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading gallery photos...';
+            const galleryUrls = [];
+            for (let i = 0; i < tempGalleryFiles.length; i++) {
+                try {
+                    const url = await uploadToImgBB(tempGalleryFiles[i]);
+                    if (url) galleryUrls.push(url);
+                    progressDiv.innerHTML = `Uploaded ${i+1}/${tempGalleryFiles.length}`;
+                } catch(e) {
+                    console.error("Gallery upload error:", e);
+                }
+            }
+            if (galleryUrls.length > 0) {
+                if (isEdit) {
+                    const existingStadium = allStadiums.find(s => s.id === isEdit);
+                    data.gallery = [...(existingStadium?.gallery || []), ...galleryUrls];
+                } else {
+                    data.gallery = galleryUrls;
+                }
+            }
+            progressDiv.innerHTML = '<i class="fas fa-check-circle"></i> Gallery uploaded!';
+            setTimeout(() => progressDiv.innerHTML = '', 2000);
         }
         
         if (isEdit) {
@@ -396,23 +601,11 @@
             await addDoc(collection(db, 'vendors'), data);
             showMessage(`✅ Stadium added! ID: ${loginId} | Password: ${password}`, 'success');
             
-            // Show credentials for copying
             document.getElementById('credentialsDisplay').innerHTML = `
                 <h4><i class="fas fa-key"></i> Login Credentials (Share with Owner)</h4>
-                <div class="credential-item">
-                    <strong>Stadium ID:</strong> ${loginId}
-                    <button class="btn-copy" onclick="copyCredentials('${loginId}', '${password}')">Copy</button>
-                </div>
-                <div class="credential-item">
-                    <strong>Password:</strong> ${password}
-                    <button class="btn-copy" onclick="copyCredentials('${loginId}', '${password}')">Copy</button>
-                </div>
-                <div class="credential-item">
-                    <strong>Login URL:</strong> owner-login.html
-                </div>
-                <div class="credential-item">
-                    <strong>Dashboard URL:</strong> owner-dashboard.html?id=${loginId}
-                </div>
+                <div class="credential-item"><strong>Stadium ID:</strong> ${loginId}<button class="btn-copy" onclick="copyCredentials('${loginId}', '${password}')">Copy</button></div>
+                <div class="credential-item"><strong>Password:</strong> ${password}<button class="btn-copy" onclick="copyCredentials('${loginId}', '${password}')">Copy</button></div>
+                <div class="credential-item"><strong>Login URL:</strong> owner-login.html</div>
             `;
             document.getElementById('credentialsDisplay').style.display = 'block';
             document.getElementById('generatedIdDisplay').style.display = 'none';
@@ -445,3 +638,4 @@
 </script>
 </body>
 </html>
+
