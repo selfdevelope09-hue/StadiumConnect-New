@@ -23,11 +23,14 @@
             z-index: 100;
             flex-wrap: wrap;
             gap: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
-        .logo { font-size: 22px; font-weight: 800; background: linear-gradient(135deg, #ff6b35, #ff9068); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .logo { font-size: 24px; font-weight: 800; background: linear-gradient(135deg, #ff6b35, #ff9068); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .commission-badge { background: #ff6b35; color: white; padding: 5px 12px; border-radius: 30px; font-size: 12px; font-weight: 600; }
-        .refresh-btn { background: #28a745; color: white; border: none; padding: 8px 20px; border-radius: 30px; cursor: pointer; margin-right: 10px; }
-        .logout-btn { background: #ff6b35; color: white; border: none; padding: 8px 20px; border-radius: 30px; cursor: pointer; }
+        .refresh-btn { background: #28a745; color: white; border: none; padding: 8px 20px; border-radius: 30px; cursor: pointer; margin-right: 10px; transition: 0.3s; }
+        .refresh-btn:hover { transform: scale(1.02); }
+        .logout-btn { background: #ff6b35; color: white; border: none; padding: 8px 20px; border-radius: 30px; cursor: pointer; transition: 0.3s; }
+        .logout-btn:hover { transform: scale(1.02); }
         
         .dashboard-container { display: flex; min-height: calc(100vh - 80px); }
         
@@ -70,7 +73,10 @@
             padding: 24px;
             margin-bottom: 24px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: 0.3s;
         }
+        .card:hover { box-shadow: 0 5px 20px rgba(0,0,0,0.08); }
+        
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -83,7 +89,9 @@
             padding: 20px;
             text-align: center;
             border: 1px solid #f0f0f0;
+            transition: 0.3s;
         }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
         .stat-value { font-size: 32px; font-weight: 800; color: #ff6b35; }
         .stat-label { color: #666; font-size: 14px; margin-top: 5px; }
         
@@ -102,13 +110,16 @@
         .status-confirmed { background: #d4edda; color: #155724; }
         .status-pending { background: #fff3cd; color: #856404; }
         .status-cancelled { background: #f8d7da; color: #721c24; }
+        .status-partial { background: #d1ecf1; color: #0c5460; }
         
-        .btn-primary { background: #ff6b35; color: white; border: none; padding: 10px 20px; border-radius: 30px; cursor: pointer; font-weight: 600; margin-bottom: 16px; }
-        .btn-edit { background: #ffc107; color: #000; border: none; padding: 6px 12px; border-radius: 20px; cursor: pointer; margin-right: 5px; font-size: 12px; }
-        .btn-delete { background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 20px; cursor: pointer; font-size: 12px; }
-        .btn-view { background: #17a2b8; color: white; border: none; padding: 6px 12px; border-radius: 20px; cursor: pointer; margin-right: 5px; font-size: 12px; }
-        .btn-confirm { background: #28a745; color: white; border: none; padding: 6px 12px; border-radius: 20px; cursor: pointer; margin-right: 5px; font-size: 12px; }
-        .btn-copy { background: #6c757d; color: white; border: none; padding: 4px 10px; border-radius: 15px; cursor: pointer; font-size: 11px; margin-left: 8px; }
+        .btn-primary { background: #ff6b35; color: white; border: none; padding: 10px 20px; border-radius: 30px; cursor: pointer; font-weight: 600; margin-bottom: 16px; transition: 0.3s; }
+        .btn-primary:hover { transform: scale(1.02); background: #e55a2b; }
+        .btn-edit { background: #ffc107; color: #000; border: none; padding: 6px 12px; border-radius: 20px; cursor: pointer; margin-right: 5px; font-size: 12px; transition: 0.3s; }
+        .btn-delete { background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 20px; cursor: pointer; font-size: 12px; transition: 0.3s; }
+        .btn-view { background: #17a2b8; color: white; border: none; padding: 6px 12px; border-radius: 20px; cursor: pointer; margin-right: 5px; font-size: 12px; transition: 0.3s; }
+        .btn-confirm { background: #28a745; color: white; border: none; padding: 6px 12px; border-radius: 20px; cursor: pointer; margin-right: 5px; font-size: 12px; transition: 0.3s; }
+        .btn-copy { background: #6c757d; color: white; border: none; padding: 4px 10px; border-radius: 15px; cursor: pointer; font-size: 11px; margin-left: 8px; transition: 0.3s; }
+        .btn-edit:hover, .btn-delete:hover, .btn-view:hover, .btn-confirm:hover, .btn-copy:hover { transform: scale(1.05); }
         
         .search-input {
             padding: 10px 16px;
@@ -138,7 +149,8 @@
             max-height: 85vh;
             overflow-y: auto;
         }
-        .close-modal { float: right; font-size: 24px; cursor: pointer; }
+        .close-modal { float: right; font-size: 24px; cursor: pointer; transition: 0.3s; }
+        .close-modal:hover { color: #ff6b35; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; font-weight: 600; margin-bottom: 6px; }
         .form-group input, .form-group select, .form-group textarea {
@@ -159,6 +171,51 @@
             align-items: center;
             padding: 8px 0;
             border-bottom: 1px solid #eee;
+        }
+        
+        .customer-detail-row {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .detail-label { font-weight: 600; color: #ff6b35; }
+        
+        .chart-container { height: 300px; margin-top: 20px; }
+        
+        .image-upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-bottom: 15px;
+        }
+        .image-upload-area:hover { border-color: #ff6b35; background: #fff5f0; }
+        .image-preview { margin-top: 15px; display: flex; flex-wrap: wrap; gap: 12px; }
+        .preview-item {
+            width: 100px;
+            height: 100px;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            border: 2px solid #eee;
+        }
+        .preview-item img { width: 100%; height: 100%; object-fit: cover; }
+        .preview-item .remove-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: red;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            font-size: 12px;
         }
         
         .toast {
@@ -213,8 +270,8 @@
         <!-- DASHBOARD PANEL -->
         <div id="dashboardPanel" class="panel active">
             <div class="stats-grid" id="dashboardStats"></div>
-            <div class="card"><h3>🏆 Top Performing Stadiums</h3><div style="overflow-x:auto;"><table id="topStadiumsTable"><thead><th>Rank</th><th>Stadium</th><th>City</th><th>Bookings</th><th>Revenue</th><th>Commission</th></thead><tbody id="topStadiumsBody"></tbody></table></div></div>
-            <div class="card"><h3>📋 Recent Bookings</h3><div style="overflow-x:auto;"><table id="recentBookingsTable"><thead><th>ID</th><th>Customer</th><th>Stadium</th><th>Date</th><th>Amount</th><th>Status</th><th>Action</th></thead><tbody id="recentBookingsBody"></tbody></table></div></div>
+            <div class="card"><h3>🏆 Top Performing Stadiums</h3><div style="overflow-x:auto;"><table id="topStadiumsTable"><thead><th>Rank</th><th>Stadium</th><th>City</th><th>Bookings</th><th>Revenue</th><th>Commission</th></thead><tbody id="topStadiumsBody"></tbody>}</div></div>
+            <div class="card"><h3>📋 Recent Bookings</h3><div style="overflow-x:auto;"><table id="recentBookingsTable"><thead><th>ID</th><th>Customer</th><th>Stadium</th><th>Date</th><th>Amount</th><th>Status</th><th>Action</th></thead><tbody id="recentBookingsBody"></tbody>}</div></div>
         </div>
 
         <!-- STADIUMS PANEL -->
@@ -222,7 +279,7 @@
             <div class="card"><h3>🏟️ Stadium Management</h3>
                 <input type="text" id="stadiumSearch" class="search-input" placeholder="🔍 Search by name or city..." onkeyup="filterStadiums()">
                 <button class="btn-primary" onclick="openAddStadiumModal()"><i class="fas fa-plus"></i> Add Stadium</button>
-                <div style="overflow-x:auto;"><table id="stadiumsTable"><thead><th>Logo</th><th>Name</th><th>City</th><th>Price</th><th>Bookings</th><th>Revenue</th><th>Login ID</th><th>Actions</th></thead><tbody id="stadiumsTableBody"></tbody></table></div>
+                <div style="overflow-x:auto;"><table id="stadiumsTable"><thead><th>Logo</th><th>Name</th><th>City</th><th>Price</th><th>Bookings</th><th>Revenue</th><th>Login ID</th><th>Actions</th></thead><tbody id="stadiumsTableBody"></tbody>}</div>
             </div>
         </div>
 
@@ -231,7 +288,7 @@
             <div class="card"><h3>📦 Other Vendors</h3>
                 <input type="text" id="vendorSearch" class="search-input" placeholder="🔍 Search by name or city..." onkeyup="filterVendors()">
                 <button class="btn-primary" onclick="openAddVendorModal()"><i class="fas fa-plus"></i> Add Vendor</button>
-                <div style="overflow-x:auto;"><table id="vendorsTable"><thead><th>Logo</th><th>Name</th><th>Category</th><th>City</th><th>Bookings</th><th>Revenue</th><th>Actions</th></thead><tbody id="vendorsTableBody"></tbody></table></div>
+                <div style="overflow-x:auto;"><table id="vendorsTable"><thead><th>Logo</th><th>Name</th><th>Category</th><th>City</th><th>Bookings</th><th>Revenue</th><th>Actions</th></thead><tbody id="vendorsTableBody"></tbody>}</div>
             </div>
         </div>
 
@@ -240,29 +297,30 @@
             <div class="card"><h3>🤝 Agent Management</h3>
                 <input type="text" id="agentSearch" class="search-input" placeholder="🔍 Search by city or name..." onkeyup="filterAgents()">
                 <button class="btn-primary" onclick="openAddAgentModal()"><i class="fas fa-plus"></i> Add Agent</button>
-                <div style="overflow-x:auto;"><table id="agentsTable"><thead><th>Name</th><th>Phone</th><th>City</th><th>Bookings</th><th>Sales</th><th>Commission</th><th>Actions</th></thead><tbody id="agentsTableBody"></tbody></table></div>
+                <div style="overflow-x:auto;"><table id="agentsTable"><thead><th>Name</th><th>Phone</th><th>City</th><th>Bookings</th><th>Sales</th><th>Commission (2.5%)</th><th>Actions</th></thead><tbody id="agentsTableBody"></tbody>}</div>
             </div>
         </div>
 
         <!-- BOOKINGS PANEL -->
         <div id="bookingsPanel" class="panel">
-            <div class="card"><h3>📋 All Bookings</h3>
+            <div class="card"><h3>📋 All Bookings - Complete Customer Details</h3>
                 <input type="text" id="bookingSearch" class="search-input" placeholder="🔍 Search by customer or vendor..." onkeyup="filterBookings()">
-                <div style="overflow-x:auto;"><table id="bookingsTable"><thead><th>ID</th><th>Customer</th><th>Phone</th><th>Vendor</th><th>Date</th><th>Amount</th><th>Commission</th><th>Status</th><th>Actions</th></thead><tbody id="bookingsTableBody"></tbody></table></div>
+                <div style="overflow-x:auto;"><table id="bookingsTable"><thead><th>ID</th><th>Customer</th><th>Phone</th><th>Vendor</th><th>Date</th><th>Amount</th><th>Commission</th><th>Status</th><th>Actions</th></thead><tbody id="bookingsTableBody"></tbody>}</div>
             </div>
         </div>
 
         <!-- ANALYTICS PANEL -->
         <div id="analyticsPanel" class="panel">
             <div class="stats-grid" id="analyticsStats"></div>
-            <div class="card"><h3>📊 Revenue Trend</h3><div class="chart-container"><canvas id="revenueTrendChart"></canvas></div></div>
-            <div class="card"><h3>🏟️ Category Revenue</h3><div class="chart-container"><canvas id="categoryRevenueChart"></canvas></div></div>
+            <div class="card"><h3>📊 Revenue Trend (Last 6 Months)</h3><div class="chart-container"><canvas id="revenueTrendChart"></canvas></div></div>
+            <div class="card"><h3>🏟️ Stadium vs Other Vendors Revenue</h3><div class="chart-container"><canvas id="categoryRevenueChart"></canvas></div></div>
             <div class="card"><h3>📈 Top Cities by Revenue</h3><div class="chart-container"><canvas id="cityRevenueChart"></canvas></div></div>
+            <div class="card"><h3>📅 Monthly Booking Trend</h3><div class="chart-container"><canvas id="monthlyBookingChart"></canvas></div></div>
         </div>
 
         <!-- COMMISSION PANEL -->
         <div id="commissionPanel" class="panel">
-            <div class="card"><h3>💰 Commission Report (12.5%)</h3><div class="stats-grid" id="commissionStats"></div><div style="overflow-x:auto;"><table id="commissionTable"><thead><th>Booking ID</th><th>Customer</th><th>Vendor</th><th>Amount</th><th>Commission</th><th>Status</th><th>Date</th></thead><tbody id="commissionTableBody"></tbody></table></div></div>
+            <div class="card"><h3>💰 Commission Report (12.5% Platform Commission)</h3><div class="stats-grid" id="commissionStats"></div><div style="overflow-x:auto;"><table id="commissionTable"><thead><th>Booking ID</th><th>Customer</th><th>Vendor</th><th>Amount</th><th>Commission</th><th>Status</th><th>Date</th></thead><tbody id="commissionTableBody"></tbody>}</div></div>
         </div>
 
         <!-- CITIES PANEL -->
@@ -293,7 +351,19 @@
         <div class="form-group"><label>Description</label><textarea id="stadiumDescription" rows="2"></textarea></div>
         <div class="form-group"><label>Amenities</label><input type="text" id="stadiumAmenities" placeholder="Floodlights, Parking, WiFi"></div>
         <div class="form-group"><label>Blocked Dates</label><input type="text" id="blockedDates" placeholder="2024-12-25, 2024-12-31"></div>
-        <div class="form-group"><label>Stadium Logo</label><input type="file" id="stadiumLogo" accept="image/*"></div>
+        
+        <!-- Logo Upload -->
+        <div class="form-group">
+            <label><i class="fas fa-image"></i> Stadium Logo</label>
+            <div class="image-upload-area" onclick="document.getElementById('stadiumLogoInput').click()">
+                <i class="fas fa-cloud-upload-alt" style="font-size: 32px; color: #ff6b35;"></i>
+                <p>Click to upload logo</p>
+                <small>PNG, JPG, JPEG (Max 5MB)</small>
+            </div>
+            <input type="file" id="stadiumLogoInput" accept="image/*" style="display:none;" onchange="previewStadiumLogo(this)">
+            <div id="stadiumLogoPreview" class="image-preview"></div>
+        </div>
+        
         <div id="credentialsDisplay" class="credentials-box" style="display:none;"></div>
         <button onclick="saveStadium()" class="btn-primary" style="width:100%; margin-top:10px;">Save Stadium</button>
     </div>
@@ -352,7 +422,7 @@
 <div id="customerModal" class="modal">
     <div class="modal-content">
         <span class="close-modal" onclick="closeModal('customerModal')">&times;</span>
-        <h3>👤 Customer Details</h3>
+        <h3>👤 Complete Customer & Booking Details</h3>
         <div id="customerDetailsContainer"></div>
         <div style="margin-top:20px;"><h4>📋 Booking Details</h4><div id="bookingDetailsContainer"></div></div>
         <div style="margin-top:20px; display:flex; gap:10px;">
@@ -364,7 +434,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, updateDoc, deleteDoc, doc, addDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, updateDoc, deleteDoc, doc, addDoc, setDoc, query, where } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
     import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js";
 
     const firebaseConfig = {
@@ -381,8 +451,10 @@
     const storage = getStorage(app);
     
     const COMMISSION_RATE = 0.125;
+    const AGENT_COMMISSION_RATE = 0.025;
     let allStadiums = [], allVendors = [], allAgents = [], allBookings = [], allCities = [];
     let currentSelectedBooking = null;
+    let stadiumTempLogo = null;
     
     function showToast(msg, isError = false) {
         const toast = document.createElement('div');
@@ -415,6 +487,19 @@
         } catch(e) { return null; }
     }
     
+    window.previewStadiumLogo = function(input) {
+        const previewArea = document.getElementById('stadiumLogoPreview');
+        previewArea.innerHTML = '';
+        if(input.files && input.files[0]) {
+            stadiumTempLogo = input.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewArea.innerHTML = `<div class="preview-item"><img src="${e.target.result}"><button class="remove-btn" onclick="document.getElementById('stadiumLogoPreview').innerHTML=''; stadiumTempLogo=null;">×</button></div>`;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    };
+    
     async function loadAllData() {
         try {
             const vendorsSnap = await getDocs(collection(db, "vendors"));
@@ -429,7 +514,7 @@
             
             const citiesDoc = await getDocs(collection(db, "settings"));
             citiesDoc.forEach(d => { if(d.id === 'cities') allCities = d.data().list || []; });
-            if(allCities.length === 0) allCities = [{name:"Mumbai",popular:true},{name:"Delhi",popular:true},{name:"Nagpur",popular:true},{name:"Bangalore",popular:true}];
+            if(allCities.length === 0) allCities = [{name:"Mumbai",popular:true},{name:"Delhi",popular:true},{name:"Nagpur",popular:true},{name:"Bangalore",popular:true},{name:"Chennai",popular:true},{name:"Kolkata",popular:true}];
             
             updateDashboard();
             renderStadiums();
@@ -445,6 +530,7 @@
     function getVendorBookings(id) { return allBookings.filter(b => b.vendorId === id); }
     function getVendorRevenue(id) { return getVendorBookings(id).filter(b => b.status === 'confirmed').reduce((s,b) => s + (Number(b.amount) || 0), 0); }
     function calcCommission(amt) { return Math.floor((Number(amt) || 0) * COMMISSION_RATE); }
+    function calcAgentCommission(amt) { return Math.floor((Number(amt) || 0) * AGENT_COMMISSION_RATE); }
     
     function updateDashboard() {
         const confirmed = allBookings.filter(b => b.status === 'confirmed');
@@ -458,7 +544,7 @@
             <div class="stat-card"><div class="stat-value">₹${calcCommission(totalRev).toLocaleString()}</div><div class="stat-label">Commission</div></div>`;
         
         const top = [...allStadiums].sort((a,b)=>getVendorRevenue(b.id)-getVendorRevenue(a.id)).slice(0,5);
-        document.getElementById('topStadiumsBody').innerHTML = top.map((s,i)=>`<tr><td>${i+1}</td><td><strong>${s.name}</strong></td><td>${s.city}</td><td>${getVendorBookings(s.id).length}</td><td>₹${getVendorRevenue(s.id).toLocaleString()}</td><td>₹${calcCommission(getVendorRevenue(s.id)).toLocaleString()}</td></tr>`).join('');
+        document.getElementById('topStadiumsBody').innerHTML = top.map((s,i)=>`<tr><td>${i+1}</td><td><strong>${s.name}</strong></td><td>${s.city}</td><td>${getVendorBookings(s.id).length} <td>₹${getVendorRevenue(s.id).toLocaleString()} <td>₹${calcCommission(getVendorRevenue(s.id)).toLocaleString()} 记载`).join('');
         
         const recent = [...allBookings].sort((a,b)=>new Date(b.createdAt) - new Date(a.createdAt)).slice(0,6);
         document.getElementById('recentBookingsBody').innerHTML = recent.map(b=>`<tr><td>${b.id?.slice(-6)}</td><td>${b.userName}</td><td>${b.vendorName}</td><td>${b.eventDate}</td><td>₹${(Number(b.amount)||0).toLocaleString()}</td><td><span class="status-badge status-${b.status}">${b.status}</span></td><td><button class="btn-view" onclick="viewCustomerDetails('${b.id}')">View</button></td></tr>`).join('');
@@ -468,16 +554,11 @@
         const search = document.getElementById('stadiumSearch')?.value.toLowerCase() || '';
         let filtered = allStadiums.filter(s => !search || s.name?.toLowerCase().includes(search) || s.city?.toLowerCase().includes(search));
         document.getElementById('stadiumsTableBody').innerHTML = filtered.map(s => `
-            <tr>
-                <td><img src="${s.imageUrl || 'https://via.placeholder.com/40'}" style="width:40px;height:40px;border-radius:8px;"></td>
-                <td><strong>${s.name}</strong></td>
-                <td>${s.city}</td>
-                <td>₹${(s.basePrice || 50000).toLocaleString()}</td>
-                <td>${getVendorBookings(s.id).length}</td>
-                <td>₹${getVendorRevenue(s.id).toLocaleString()}</td>
-                <td><code>${s.loginId || '-'}</code> <button class="btn-copy" onclick="copyText('${s.loginId}')">Copy</button></td>
-                <td><button class="btn-edit" onclick="editStadium('${s.id}')">Edit</button> <button class="btn-delete" onclick="deleteItem('vendors','${s.id}')">Del</button></td>
-            </tr>
+            <tr><td><img src="${s.imageUrl || 'https://via.placeholder.com/40'}" style="width:40px;height:40px;border-radius:8px;"></td>
+            <td><strong>${s.name}</strong></td><td>${s.city}</td><td>₹${(s.basePrice || 50000).toLocaleString()}</td>
+            <td>${getVendorBookings(s.id).length}</td><td>₹${getVendorRevenue(s.id).toLocaleString()}</td>
+            <td><code>${s.loginId || '-'}</code> <button class="btn-copy" onclick="copyText('${s.loginId}')">Copy</button></td>
+            <td><button class="btn-edit" onclick="editStadium('${s.id}')">Edit</button> <button class="btn-delete" onclick="deleteItem('vendors','${s.id}')">Del</button></td></tr>
         `).join('');
     }
     
@@ -504,8 +585,9 @@
         
         if(!data.name || !data.city) { showToast("Please fill Name and City", true); return; }
         
-        const logoFile = document.getElementById('stadiumLogo').files[0];
-        if(logoFile) data.imageUrl = await uploadImage(logoFile, 'stadiums/');
+        if(stadiumTempLogo) {
+            data.imageUrl = await uploadImage(stadiumTempLogo, 'stadiums/');
+        }
         
         if(isEdit) {
             await updateDoc(doc(db, 'vendors', isEdit), data);
@@ -514,11 +596,7 @@
             data.createdAt = new Date().toISOString();
             await addDoc(collection(db, 'vendors'), data);
             showToast(`✅ Stadium added! ID: ${loginId}, Password: ${password}`);
-            document.getElementById('credentialsDisplay').innerHTML = `
-                <h4>📋 Login Credentials</h4>
-                <div class="credential-item"><strong>Login ID:</strong> ${loginId} <button class="btn-copy" onclick="copyText('${loginId}')">Copy</button></div>
-                <div class="credential-item"><strong>Password:</strong> ${password} <button class="btn-copy" onclick="copyText('${password}')">Copy</button></div>
-                <div class="credential-item"><strong>Owner Login:</strong> <a href="owner-login.html" target="_blank">owner-login.html</a></div>`;
+            document.getElementById('credentialsDisplay').innerHTML = `<h4>📋 Login Credentials</h4><div class="credential-item"><strong>Login ID:</strong> ${loginId}<button class="btn-copy" onclick="copyText('${loginId}')">Copy</button></div><div class="credential-item"><strong>Password:</strong> ${password}<button class="btn-copy" onclick="copyText('${password}')">Copy</button></div><div class="credential-item"><strong>Owner Login:</strong> owner-login.html</div>`;
             document.getElementById('credentialsDisplay').style.display = 'block';
         }
         closeModal('stadiumModal');
@@ -603,6 +681,7 @@
     window.deleteCity = async (name) => {
         const newList = allCities.filter(c => c.name !== name);
         await setDoc(doc(db, 'settings', 'cities'), { list: newList });
+        showToast('City deleted!');
         loadAllData();
     };
     
@@ -646,15 +725,26 @@
         if(!booking) return;
         currentSelectedBooking = booking;
         document.getElementById('customerDetailsContainer').innerHTML = `
-            <div><strong>Name:</strong> ${booking.userName}</div>
-            <div><strong>Phone:</strong> ${booking.userPhone}</div>
-            <div><strong>Email:</strong> ${booking.userEmail}</div>
-            <div><strong>City:</strong> ${booking.userCity}</div>`;
+            <div class="customer-detail-row"><div class="detail-label">Full Name:</div><div>${booking.userName || '-'}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">Phone Number:</div><div>${booking.userPhone || '-'}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">Email:</div><div>${booking.userEmail || '-'}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">City:</div><div>${booking.userCity || '-'}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">Address:</div><div>${booking.eventLocation || '-'}</div></div>`;
         document.getElementById('bookingDetailsContainer').innerHTML = `
-            <div><strong>Vendor:</strong> ${booking.vendorName}</div>
-            <div><strong>Date:</strong> ${booking.eventDate}</div>
-            <div><strong>Amount:</strong> ₹${(Number(booking.amount)||0).toLocaleString()}</div>
-            <div><strong>Portion:</strong> ${booking.selectedPortion || '100%'}</div>`;
+            <div class="customer-detail-row"><div class="detail-label">Booking ID:</div><div>${booking.id}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">Vendor:</div><div>${booking.vendorName}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">Event Date:</div><div>${booking.eventDate}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">Event Time:</div><div>${booking.eventTime || '-'}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">Event Type:</div><div>${booking.eventType || '-'}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">Guests Count:</div><div>${booking.guestCount || '-'}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">Selected Portion:</div><div>${booking.selectedPortion || '100%'}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">Base Amount:</div><div>₹${(booking.baseAmount || Number(booking.amount)||0).toLocaleString()}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">GST (18%):</div><div>₹${(booking.gst || 0).toLocaleString()}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">Total Amount:</div><div>₹${(Number(booking.amount)||0).toLocaleString()}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">Paid Amount:</div><div>₹${(Number(booking.paidAmount)||0).toLocaleString()}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">Payment Type:</div><div>${booking.paymentType || 'full'}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">Special Requests:</div><div>${booking.specialRequests || '-'}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">Status:</div><div><span class="status-badge status-${booking.status}">${booking.status}</span></div></div>`;
         openModal('customerModal');
     };
     
@@ -677,15 +767,12 @@
         const search = document.getElementById('bookingSearch')?.value.toLowerCase() || '';
         let filtered = allBookings.filter(b => !search || b.userName?.toLowerCase().includes(search) || b.vendorName?.toLowerCase().includes(search));
         document.getElementById('bookingsTableBody').innerHTML = filtered.map(b => `
-            <tr>
-                <td>${b.id?.slice(-8)}</td><td><strong>${b.userName}</strong></td><td>${b.userPhone}</td><td>${b.vendorName}</td>
-                <td>${b.eventDate}</td><td>₹${(Number(b.amount)||0).toLocaleString()}</td>
-                <td>₹${calcCommission(b.amount).toLocaleString()}</td>
-                <td><span class="status-badge status-${b.status}">${b.status}</span></td>
-                <td><button class="btn-view" onclick="viewCustomerDetails('${b.id}')">View</button>
-                ${b.status !== 'confirmed' ? `<button class="btn-confirm" onclick="updateBookingStatusDirect('${b.id}','confirmed')">Confirm</button>` : ''}
-                ${b.status !== 'cancelled' ? `<button class="btn-delete" onclick="updateBookingStatusDirect('${b.id}','cancelled')">Cancel</button>` : ''}</td>
-             </tr>
+            <tr><td>${b.id?.slice(-8)}</td><td><strong>${b.userName}</strong></td><td>${b.userPhone}</td><td>${b.vendorName}</td>
+            <td>${b.eventDate}</td><td>₹${(Number(b.amount)||0).toLocaleString()}</td><td>₹${calcCommission(b.amount).toLocaleString()}</td>
+            <td><span class="status-badge status-${b.status}">${b.status}</span></td>
+            <td><button class="btn-view" onclick="viewCustomerDetails('${b.id}')">Full Details</button>
+            ${b.status !== 'confirmed' ? `<button class="btn-confirm" onclick="updateBookingStatusDirect('${b.id}','confirmed')">Confirm</button>` : ''}
+            ${b.status !== 'cancelled' ? `<button class="btn-delete" onclick="updateBookingStatusDirect('${b.id}','cancelled')">Cancel</button>` : ''}</td></tr>
         `).join('');
     }
     
@@ -707,7 +794,7 @@
             const agentBookings = allBookings.filter(b => b.agentId === a.id && b.status === 'confirmed');
             const sales = agentBookings.reduce((s,b) => s + (Number(b.amount)||0), 0);
             return `<tr><td><strong>${a.name}</strong></td><td>${a.phone}</td><td>${a.city}</td>
-            <td>${agentBookings.length}</td><td>₹${sales.toLocaleString()}</td><td>₹${calcCommission(sales).toLocaleString()}</td>
+            <td>${agentBookings.length}</td><td>₹${sales.toLocaleString()}</td><td>₹${calcAgentCommission(sales).toLocaleString()}</td>
             <td><button class="btn-edit" onclick="editAgent('${a.id}')">Edit</button> <button class="btn-delete" onclick="deleteItem('agents','${a.id}')">Del</button></td></tr>`;
         }).join('');
     }
@@ -715,10 +802,9 @@
     function renderAnalytics() {
         const confirmed = allBookings.filter(b => b.status === 'confirmed');
         const totalRev = confirmed.reduce((s,b) => s + (Number(b.amount)||0), 0);
-        document.getElementById('analyticsStats').innerHTML = `
-            <div class="stat-card"><div class="stat-value">₹${totalRev.toLocaleString()}</div><div class="stat-label">Revenue</div></div>
-            <div class="stat-card"><div class="stat-value">${confirmed.length}</div><div class="stat-label">Confirmed</div></div>
-            <div class="stat-card"><div class="stat-value">${allStadiums.length}</div><div class="stat-label">Stadiums</div></div>`;
+        document.getElementById('analyticsStats').innerHTML = `<div class="stat-card"><div class="stat-value">₹${totalRev.toLocaleString()}</div><div class="stat-label">Revenue</div></div>
+        <div class="stat-card"><div class="stat-value">${confirmed.length}</div><div class="stat-label">Confirmed</div></div>
+        <div class="stat-card"><div class="stat-value">${allStadiums.length}</div><div class="stat-label">Stadiums</div></div>`;
         
         const monthly = {};
         confirmed.forEach(b => { if(b.createdAt) { let m = new Date(b.createdAt).toLocaleString('default',{month:'short'}); monthly[m] = (monthly[m]||0) + (Number(b.amount)||0); } });
@@ -731,6 +817,10 @@
         const cityRev = {};
         confirmed.forEach(b => { if(b.vendorCity) cityRev[b.vendorCity] = (cityRev[b.vendorCity]||0) + (Number(b.amount)||0); });
         new Chart(document.getElementById('cityRevenueChart'), { type:'bar', data:{ labels:Object.keys(cityRev).slice(0,5), datasets:[{ label:'Revenue', data:Object.values(cityRev).slice(0,5), backgroundColor:'#ff6b35' }] } });
+        
+        const monthlyBookings = {};
+        confirmed.forEach(b => { if(b.createdAt) { let m = new Date(b.createdAt).toLocaleString('default',{month:'short'}); monthlyBookings[m] = (monthlyBookings[m]||0) + 1; } });
+        new Chart(document.getElementById('monthlyBookingChart'), { type:'line', data:{ labels:Object.keys(monthlyBookings), datasets:[{ label:'Bookings Count', data:Object.values(monthlyBookings), borderColor:'#28a745' }] } });
     }
     
     function renderCommission() {
@@ -742,7 +832,7 @@
     }
     
     function renderCities() {
-        document.getElementById('citiesList').innerHTML = (allCities||[]).map(c => `<div style="display:flex; justify-content:space-between; padding:12px; border-bottom:1px solid #eee;"><span>📍 ${c.name} ${c.popular ? '⭐' : ''}</span><button class="btn-delete" onclick="deleteCity('${c.name}')">Delete</button></div>`).join('');
+        document.getElementById('citiesList').innerHTML = (allCities||[]).map(c => `<div style="display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #eee;"><span>📍 ${c.name} ${c.popular ? '⭐' : ''}</span><button class="btn-delete" onclick="deleteCity('${c.name}')">Delete</button></div>`).join('');
     }
     
     window.copyText = (text) => { navigator.clipboard.writeText(text); showToast('Copied!'); };
@@ -764,7 +854,8 @@
         document.getElementById('stadiumDescription').value = '';
         document.getElementById('stadiumAmenities').value = '';
         document.getElementById('blockedDates').value = '';
-        document.getElementById('stadiumLogo').value = '';
+        document.getElementById('stadiumLogoPreview').innerHTML = '';
+        stadiumTempLogo = null;
         document.getElementById('credentialsDisplay').style.display = 'none';
         openModal('stadiumModal');
     };
