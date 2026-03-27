@@ -109,6 +109,7 @@
         .btn-delete { background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 20px; cursor: pointer; font-size: 12px; }
         .btn-view { background: #17a2b8; color: white; border: none; padding: 6px 12px; border-radius: 20px; cursor: pointer; margin-right: 5px; font-size: 12px; }
         .btn-confirm { background: #28a745; color: white; border: none; padding: 6px 12px; border-radius: 20px; cursor: pointer; margin-right: 5px; font-size: 12px; }
+        .btn-copy { background: #6c757d; color: white; border: none; padding: 4px 10px; border-radius: 15px; cursor: pointer; font-size: 11px; margin-left: 8px; }
         
         .search-input {
             padding: 10px 16px;
@@ -134,7 +135,7 @@
             border-radius: 28px;
             padding: 28px;
             width: 90%;
-            max-width: 700px;
+            max-width: 800px;
             max-height: 85vh;
             overflow-y: auto;
         }
@@ -144,23 +145,62 @@
         .form-group input, .form-group select, .form-group textarea {
             width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 12px;
         }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         
-        .customer-detail-row {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 12px;
-            padding: 10px 0;
+        .credentials-box {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 4px solid #ff6b35;
+        }
+        .credential-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
             border-bottom: 1px solid #eee;
         }
-        .detail-label { font-weight: 600; color: #ff6b35; }
         
-        .chart-container { height: 300px; margin-top: 20px; }
+        .photo-grid {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .photo-item {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            border: 2px solid #eee;
+        }
+        .photo-item img { width: 100%; height: 100%; object-fit: cover; }
+        .photo-item .remove { position: absolute; top: 2px; right: 2px; background: red; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 10px; }
+        
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #28a745;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            z-index: 2000;
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
         
         @media (max-width: 768px) {
             .sidebar { width: 80px; }
             .sidebar-item span { display: none; }
             .sidebar-item i { font-size: 22px; }
             .stats-grid { grid-template-columns: 1fr; }
+            .form-row { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -178,9 +218,9 @@
         <div class="sidebar-item" onclick="switchPanel('stadiums')"><i class="fas fa-football-ball"></i> <span>Stadiums</span></div>
         <div class="sidebar-item" onclick="switchPanel('vendors')"><i class="fas fa-store"></i> <span>Other Vendors</span></div>
         <div class="sidebar-item" onclick="switchPanel('agents')"><i class="fas fa-user-tie"></i> <span>Agents</span></div>
-        <div class="sidebar-item" onclick="switchPanel('bookings')"><i class="fas fa-calendar-check"></i> <span>All Bookings</span></div>
+        <div class="sidebar-item" onclick="switchPanel('bookings')"><i class="fas fa-calendar-check"></i> <span>Bookings</span></div>
         <div class="sidebar-item" onclick="switchPanel('analytics')"><i class="fas fa-chart-bar"></i> <span>Analytics</span></div>
-        <div class="sidebar-item" onclick="switchPanel('commission')"><i class="fas fa-coins"></i> <span>Commission Report</span></div>
+        <div class="sidebar-item" onclick="switchPanel('commission')"><i class="fas fa-coins"></i> <span>Commission</span></div>
         <div class="sidebar-item" onclick="switchPanel('cities')"><i class="fas fa-city"></i> <span>Cities</span></div>
     </div>
 
@@ -188,33 +228,27 @@
         <!-- DASHBOARD PANEL -->
         <div id="dashboardPanel" class="panel active">
             <div class="stats-grid" id="dashboardStats"></div>
-            <div class="card">
-                <h3><i class="fas fa-trophy"></i> 🏆 Top Performing Stadiums</h3>
-                <div style="overflow-x:auto;"><table id="topStadiumsTable"><thead><tr><th>Rank</th><th>Stadium</th><th>City</th><th>Total Bookings</th><th>Revenue (₹)</th><th>Commission (₹)</th></tr></thead><tbody id="topStadiumsBody"></tbody></table></div>
-            </div>
-            <div class="card">
-                <h3><i class="fas fa-clock"></i> 📋 Recent Bookings</h3>
-                <div style="overflow-x:auto;"><table><thead><tr><th>Booking ID</th><th>Customer</th><th>Stadium/Vendor</th><th>Date</th><th>Amount</th><th>Commission</th><th>Status</th><th>Action</th></tr></thead><tbody id="recentBookingsBody"></tbody></table></div>
-            </div>
+            <div class="card"><h3>🏆 Top Stadiums</h3><div style="overflow-x:auto;"><table id="topStadiumsTable"><thead><th>Rank</th><th>Stadium</th><th>City</th><th>Bookings</th><th>Revenue</th><th>Commission</th></thead><tbody id="topStadiumsBody"></tbody></table></div></div>
+            <div class="card"><h3>📋 Recent Bookings</h3><div style="overflow-x:auto;"><table><thead><th>ID</th><th>Customer</th><th>Stadium</th><th>Amount</th><th>Status</th><th>Action</th></thead><tbody id="recentBookingsBody"></tbody></table></div></div>
         </div>
 
         <!-- STADIUMS PANEL -->
         <div id="stadiumsPanel" class="panel">
             <div class="card">
                 <h3>🏟️ Stadium Management</h3>
-                <input type="text" id="stadiumSearch" class="search-input" placeholder="🔍 Search by name or city..." onkeyup="searchStadiums()">
+                <input type="text" id="stadiumSearch" class="search-input" placeholder="Search..." onkeyup="searchStadiums()">
                 <button class="btn-primary" onclick="openAddStadiumModal()"><i class="fas fa-plus"></i> Add Stadium</button>
-                <div style="overflow-x:auto;"><table id="stadiumsTable"><thead><tr><th>Image</th><th>Name</th><th>City</th><th>Capacity</th><th>Price/Day</th><th>Total Bookings</th><th>Total Revenue</th><th>Actions</th></tr></thead><tbody id="stadiumsTableBody"></tbody></table></div>
+                <div style="overflow-x:auto;"><table id="stadiumsTable"><thead><th>Logo</th><th>Name</th><th>City</th><th>Capacity</th><th>Price</th><th>Bookings</th><th>Revenue</th><th>Login ID</th><th>Actions</th></thead><tbody id="stadiumsTableBody"></tbody></table></div>
             </div>
         </div>
 
-        <!-- VENDORS PANEL (Other Vendors) -->
+        <!-- VENDORS PANEL -->
         <div id="vendorsPanel" class="panel">
             <div class="card">
-                <h3>📦 Other Vendors (Decorators, Photographers, Caterers, etc.)</h3>
-                <input type="text" id="vendorSearch" class="search-input" placeholder="🔍 Search by name or city..." onkeyup="searchVendors()">
+                <h3>📦 Other Vendors</h3>
+                <input type="text" id="vendorSearch" class="search-input" placeholder="Search..." onkeyup="searchVendors()">
                 <button class="btn-primary" onclick="openAddVendorModal()"><i class="fas fa-plus"></i> Add Vendor</button>
-                <div style="overflow-x:auto;"><table id="vendorsTable"><thead><tr><th>Logo</th><th>Name</th><th>Category</th><th>City</th><th>Bookings</th><th>Revenue</th><th>Commission</th><th>Actions</th></tr></thead><tbody id="vendorsTableBody"></tbody></table></div>
+                <div style="overflow-x:auto;"><table id="vendorsTable"><thead><th>Logo</th><th>Name</th><th>Category</th><th>City</th><th>Bookings</th><th>Revenue</th><th>Actions</th></thead><tbody id="vendorsTableBody"></tbody></table></div>
             </div>
         </div>
 
@@ -222,55 +256,115 @@
         <div id="agentsPanel" class="panel">
             <div class="card">
                 <h3>🤝 Agent Management</h3>
-                <input type="text" id="agentSearch" class="search-input" placeholder="🔍 Search by city..." onkeyup="searchAgents()">
+                <input type="text" id="agentSearch" class="search-input" placeholder="Search..." onkeyup="searchAgents()">
                 <button class="btn-primary" onclick="openAddAgentModal()"><i class="fas fa-plus"></i> Add Agent</button>
-                <div style="overflow-x:auto;"><table id="agentsTable"><thead><tr><th>Agent Name</th><th>Phone</th><th>City</th><th>Bookings Handled</th><th>Total Sales (₹)</th><th>Commission Earned (₹)</th><th>Actions</th></tr></thead><tbody id="agentsTableBody"></tbody></table></div>
+                <div style="overflow-x:auto;"><table id="agentsTable"><thead><th>Name</th><th>Phone</th><th>City</th><th>Bookings</th><th>Sales</th><th>Commission</th><th>Actions</th></thead><tbody id="agentsTableBody"></tbody></table></div>
             </div>
         </div>
 
         <!-- BOOKINGS PANEL -->
         <div id="bookingsPanel" class="panel">
             <div class="card">
-                <h3>📋 All Bookings - Complete Customer Details</h3>
-                <input type="text" id="bookingSearch" class="search-input" placeholder="🔍 Search by customer, vendor, or booking ID..." onkeyup="searchBookings()">
-                <div style="overflow-x:auto;"><table id="bookingsTable"><thead><tr><th>ID</th><th>Customer Name</th><th>Phone</th><th>Email</th><th>Stadium/Vendor</th><th>Event Date</th><th>Event Type</th><th>Amount</th><th>Commission</th><th>Status</th><th>Actions</th></tr></thead><tbody id="bookingsTableBody"></tbody></table></div>
+                <h3>📋 All Bookings</h3>
+                <input type="text" id="bookingSearch" class="search-input" placeholder="Search..." onkeyup="searchBookings()">
+                <div style="overflow-x:auto;"><table id="bookingsTable"><thead><th>ID</th><th>Customer</th><th>Phone</th><th>Stadium</th><th>Date</th><th>Amount</th><th>Commission</th><th>Status</th><th>Actions</th></thead><tbody id="bookingsTableBody"></tbody></table></div>
             </div>
         </div>
 
         <!-- ANALYTICS PANEL -->
         <div id="analyticsPanel" class="panel">
             <div class="stats-grid" id="analyticsStats"></div>
-            <div class="card">
-                <h3>📊 Revenue Trend (Last 6 Months)</h3>
-                <div class="chart-container"><canvas id="revenueTrendChart"></canvas></div>
-            </div>
-            <div class="card">
-                <h3>🏟️ Stadium vs Other Vendors Revenue</h3>
-                <div class="chart-container"><canvas id="categoryRevenueChart"></canvas></div>
-            </div>
-            <div class="card">
-                <h3>📈 Top Cities by Revenue</h3>
-                <div class="chart-container"><canvas id="cityRevenueChart"></canvas></div>
-            </div>
+            <div class="card"><h3>Revenue Trend</h3><div class="chart-container"><canvas id="revenueTrendChart"></canvas></div></div>
+            <div class="card"><h3>Category Revenue</h3><div class="chart-container"><canvas id="categoryRevenueChart"></canvas></div></div>
+            <div class="card"><h3>Top Cities</h3><div class="chart-container"><canvas id="cityRevenueChart"></canvas></div></div>
         </div>
 
-        <!-- COMMISSION REPORT PANEL -->
+        <!-- COMMISSION PANEL -->
         <div id="commissionPanel" class="panel">
-            <div class="card">
-                <h3><i class="fas fa-coins"></i> Commission Report (12.5% of All Bookings)</h3>
-                <div class="stats-grid" id="commissionStats"></div>
-                <div style="overflow-x:auto;"><table id="commissionTable"><thead><tr><th>Booking ID</th><th>Customer</th><th>Vendor/Stadium</th><th>Booking Amount</th><th>Commission (12.5%)</th><th>Status</th><th>Date</th></tr></thead><tbody id="commissionTableBody"></tbody></table></div>
-            </div>
+            <div class="card"><h3>Commission Report (12.5%)</h3><div class="stats-grid" id="commissionStats"></div><div style="overflow-x:auto;"><table id="commissionTable"><thead><th>Booking ID</th><th>Customer</th><th>Vendor</th><th>Amount</th><th>Commission</th><th>Status</th></thead><tbody id="commissionTableBody"></tbody></table></div></div>
         </div>
 
         <!-- CITIES PANEL -->
         <div id="citiesPanel" class="panel">
-            <div class="card">
-                <h3>📍 Manage Cities</h3>
-                <button class="btn-primary" onclick="openAddCityModal()"><i class="fas fa-plus"></i> Add City</button>
-                <div id="citiesList" style="margin-top: 20px;"></div>
-            </div>
+            <div class="card"><h3>📍 Cities</h3><button class="btn-primary" onclick="openAddCityModal()"><i class="fas fa-plus"></i> Add City</button><div id="citiesList"></div></div>
         </div>
+    </div>
+</div>
+
+<!-- Stadium Modal -->
+<div id="stadiumModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal('stadiumModal')">&times;</span>
+        <h3 id="stadiumModalTitle">Add Stadium</h3>
+        <input type="hidden" id="stadiumEditId">
+        <div class="form-row">
+            <div class="form-group"><label>Stadium Name *</label><input type="text" id="stadiumName" required></div>
+            <div class="form-group"><label>City *</label><input type="text" id="stadiumCity" required></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label>Capacity</label><input type="number" id="stadiumCapacity" placeholder="Total seats"></div>
+            <div class="form-group"><label>Base Price/Day *</label><input type="number" id="stadiumPrice" required></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label>Location</label><input type="text" id="stadiumLocation"></div>
+            <div class="form-group"><label>Type</label><select id="stadiumType"><option>Cricket</option><option>Football</option><option>Multipurpose</option></select></div>
+        </div>
+        <div class="form-group"><label>Description</label><textarea id="stadiumDescription" rows="2"></textarea></div>
+        <div class="form-group"><label>Amenities</label><input type="text" id="stadiumAmenities" placeholder="Floodlights, Parking, WiFi"></div>
+        <div class="form-group"><label>Stadium Logo</label><input type="file" id="stadiumLogo" accept="image/*"><div id="stadiumLogoPreview"></div></div>
+        <div class="form-group"><label>Gallery Photos (Multiple)</label><input type="file" id="stadiumPhotos" accept="image/*" multiple><div id="stadiumPhotosPreview" class="photo-grid"></div></div>
+        <div class="form-group"><label>Blocked Dates (Match days)</label><input type="text" id="blockedDates" placeholder="2024-12-25, 2024-12-31"></div>
+        <div id="credentialsDisplay" class="credentials-box" style="display:none;"></div>
+        <button onclick="saveStadium()" class="btn-primary" style="width:100%; margin-top:10px;">Save Stadium</button>
+    </div>
+</div>
+
+<!-- Vendor Modal -->
+<div id="vendorModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal('vendorModal')">&times;</span>
+        <h3 id="vendorModalTitle">Add Vendor</h3>
+        <input type="hidden" id="vendorEditId">
+        <div class="form-row">
+            <div class="form-group"><label>Business Name *</label><input type="text" id="vendorName" required></div>
+            <div class="form-group"><label>Category *</label><select id="vendorCategory"><option>decorator</option><option>photographer</option><option>caterer</option><option>bandbaja</option></select></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label>City *</label><input type="text" id="vendorCity" required></div>
+            <div class="form-group"><label>Price Range</label><input type="text" id="vendorPrice" placeholder="₹50,000 - ₹2,00,000"></div>
+        </div>
+        <div class="form-group"><label>Logo</label><input type="file" id="vendorLogo" accept="image/*"><div id="vendorLogoPreview"></div></div>
+        <div class="form-group"><label>Description</label><textarea id="vendorDescription" rows="2"></textarea></div>
+        <button onclick="saveVendor()" class="btn-primary" style="width:100%;">Save Vendor</button>
+    </div>
+</div>
+
+<!-- Agent Modal -->
+<div id="agentModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal('agentModal')">&times;</span>
+        <h3 id="agentModalTitle">Add Agent</h3>
+        <input type="hidden" id="agentEditId">
+        <div class="form-row">
+            <div class="form-group"><label>Full Name *</label><input type="text" id="agentName" required></div>
+            <div class="form-group"><label>Phone *</label><input type="tel" id="agentPhone" required></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label>City *</label><input type="text" id="agentCity" required></div>
+            <div class="form-group"><label>Email</label><input type="email" id="agentEmail"></div>
+        </div>
+        <button onclick="saveAgent()" class="btn-primary" style="width:100%;">Save Agent</button>
+    </div>
+</div>
+
+<!-- City Modal -->
+<div id="cityModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal('cityModal')">&times;</span>
+        <h3>Add City</h3>
+        <input type="text" id="cityName" placeholder="City Name" style="width:100%; padding:10px;">
+        <label style="margin-top:10px;"><input type="checkbox" id="cityPopular"> Popular City</label>
+        <button onclick="saveCity()" class="btn-primary" style="width:100%; margin-top:15px;">Save</button>
     </div>
 </div>
 
@@ -278,23 +372,20 @@
 <div id="customerDetailModal" class="modal">
     <div class="modal-content">
         <span class="close-modal" onclick="closeModal('customerDetailModal')">&times;</span>
-        <h3><i class="fas fa-user-circle"></i> Customer Details</h3>
+        <h3>Customer Details</h3>
         <div id="customerDetailsContainer"></div>
-        <div style="margin-top: 20px;">
-            <h4>Booking Details</h4>
-            <div id="bookingDetailsContainer"></div>
-        </div>
-        <div style="margin-top: 20px; display: flex; gap: 10px;">
-            <button onclick="updateBookingStatus('confirmed')" class="btn-confirm">✓ Confirm Booking</button>
-            <button onclick="updateBookingStatus('cancelled')" class="btn-delete">✗ Cancel Booking</button>
+        <div style="margin-top:20px;"><h4>Booking Details</h4><div id="bookingDetailsContainer"></div></div>
+        <div style="margin-top:20px; display:flex; gap:10px;">
+            <button onclick="updateBookingStatus('confirmed')" class="btn-confirm">✓ Confirm</button>
+            <button onclick="updateBookingStatus('cancelled')" class="btn-delete">✗ Cancel</button>
         </div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, updateDoc, deleteDoc, doc, setDoc, query, where } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-    import { getStorage } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js";
+    import { getFirestore, collection, getDocs, updateDoc, deleteDoc, doc, setDoc, addDoc, query, where } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
@@ -308,14 +399,37 @@
     const db = getFirestore(app);
     const storage = getStorage(app);
     
-    const COMMISSION_RATE = 0.125; // 12.5%
-    
+    const COMMISSION_RATE = 0.125;
     let allStadiums = [], allVendors = [], allAgents = [], allBookings = [], allCities = [];
     let currentSelectedBooking = null;
+    let tempStadiumPhotos = [];
+    let tempStadiumLogo = null;
     
-    function calculateCommission(amount) {
-        let numAmount = parseInt(String(amount).replace(/[₹,]/g, '')) || 0;
-        return Math.floor(numAmount * COMMISSION_RATE);
+    function showToast(msg, isError = false) {
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.style.background = isError ? '#dc3545' : '#28a745';
+        toast.innerHTML = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+    
+    function generateRandomId(prefix) {
+        return prefix + Math.random().toString(36).substring(2, 10).toUpperCase();
+    }
+    
+    function generateRandomPassword() {
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+        let pass = '';
+        for(let i = 0; i < 8; i++) pass += chars[Math.floor(Math.random() * chars.length)];
+        return pass;
+    }
+    
+    async function uploadImage(file, path) {
+        if(!file) return null;
+        const storageRef = ref(storage, path + Date.now());
+        await uploadBytes(storageRef, file);
+        return await getDownloadURL(storageRef);
     }
     
     async function loadAllData() {
@@ -324,12 +438,13 @@
         const bookingsSnap = await getDocs(collection(db, "bookings"));
         
         allVendors = vendorsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-        allStadiums = allVendors.filter(v => v.category === 'stadium' || v.type === 'stadium');
+        allStadiums = allVendors.filter(v => v.category === 'stadium');
         allAgents = agentsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
         allBookings = bookingsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
         
         const citiesDoc = await getDocs(collection(db, "settings"));
         citiesDoc.forEach(d => { if(d.id === 'cities') allCities = d.data().list || []; });
+        if(allCities.length === 0) allCities = [{name:"Mumbai",popular:true},{name:"Delhi",popular:true},{name:"Nagpur",popular:true},{name:"Bangalore",popular:true}];
         
         updateDashboard();
         renderStadiums();
@@ -337,63 +452,30 @@
         renderAgents();
         renderBookings();
         renderAnalytics();
-        renderCommissionReport();
+        renderCommission();
         renderCities();
     }
     
-    function getVendorBookings(vendorId) {
-        return allBookings.filter(b => b.vendorId === vendorId);
-    }
-    
-    function getVendorRevenue(vendorId) {
-        return getVendorBookings(vendorId).filter(b => b.status === 'confirmed' || b.status === 'completed')
-            .reduce((sum, b) => sum + (parseInt(String(b.amount).replace(/[₹,]/g, '')) || 0), 0);
-    }
+    function getVendorBookings(id) { return allBookings.filter(b => b.vendorId === id); }
+    function getVendorRevenue(id) { return getVendorBookings(id).filter(b => b.status === 'confirmed').reduce((s,b) => s + (parseInt(String(b.amount).replace(/[₹,]/g,''))||0), 0); }
+    function calcCommission(amt) { return Math.floor((parseInt(String(amt).replace(/[₹,]/g,''))||0) * COMMISSION_RATE); }
     
     function updateDashboard() {
-        const confirmedBookings = allBookings.filter(b => b.status === 'confirmed' || b.status === 'completed');
-        const totalRevenue = confirmedBookings.reduce((sum, b) => sum + (parseInt(String(b.amount).replace(/[₹,]/g, '')) || 0), 0);
-        const totalCommission = confirmedBookings.reduce((sum, b) => sum + calculateCommission(b.amount), 0);
-        
+        const confirmed = allBookings.filter(b => b.status === 'confirmed');
+        const totalRev = confirmed.reduce((s,b) => s + (parseInt(String(b.amount).replace(/[₹,]/g,''))||0), 0);
         document.getElementById('dashboardStats').innerHTML = `
             <div class="stat-card"><div class="stat-value">${allStadiums.length}</div><div class="stat-label">Stadiums</div></div>
-            <div class="stat-card"><div class="stat-value">${allVendors.filter(v => v.category !== 'stadium').length}</div><div class="stat-label">Other Vendors</div></div>
+            <div class="stat-card"><div class="stat-value">${allVendors.filter(v=>v.category!=='stadium').length}</div><div class="stat-label">Vendors</div></div>
             <div class="stat-card"><div class="stat-value">${allAgents.length}</div><div class="stat-label">Agents</div></div>
-            <div class="stat-card"><div class="stat-value">${allBookings.length}</div><div class="stat-label">Total Bookings</div></div>
-            <div class="stat-card"><div class="stat-value">₹${totalRevenue.toLocaleString()}</div><div class="stat-label">Total Revenue</div></div>
-            <div class="stat-card"><div class="stat-value">₹${totalCommission.toLocaleString()}</div><div class="stat-label">Total Commission (12.5%)</div></div>
-        `;
+            <div class="stat-card"><div class="stat-value">${allBookings.length}</div><div class="stat-label">Bookings</div></div>
+            <div class="stat-card"><div class="stat-value">₹${totalRev.toLocaleString()}</div><div class="stat-label">Revenue</div></div>
+            <div class="stat-card"><div class="stat-value">₹${calcCommission(totalRev).toLocaleString()}</div><div class="stat-label">Commission</div></div>`;
         
-        const stadiumRevenue = allStadiums.map(s => ({
-            ...s,
-            bookings: getVendorBookings(s.id).filter(b => b.status === 'confirmed' || b.status === 'completed'),
-            revenue: getVendorRevenue(s.id)
-        })).sort((a, b) => b.revenue - a.revenue).slice(0, 5);
+        const top = allStadiums.map(s => ({...s, rev: getVendorRevenue(s.id)})).sort((a,b)=>b.rev-a.rev).slice(0,5);
+        document.getElementById('topStadiumsBody').innerHTML = top.map((s,i)=>`<tr><td>${i+1}</td><td>${s.name}</td><td>${s.city}</td><td>${getVendorBookings(s.id).length}</td><td>₹${s.rev.toLocaleString()}</td><td>₹${calcCommission(s.rev).toLocaleString()}</td></tr>`).join('');
         
-        document.getElementById('topStadiumsBody').innerHTML = stadiumRevenue.map((s, i) => `
-            <tr>
-                <td><span class="rank-badge">${i+1}</span></td>
-                <td><strong>${s.name || s.businessName}</strong></td>
-                <td>${s.city || '-'}</td>
-                <td>${s.bookings.length}</td>
-                <td>₹${s.revenue.toLocaleString()}</td>
-                <td>₹${calculateCommission(s.revenue).toLocaleString()}</td>
-            </tr>
-        `).join('');
-        
-        const recent = [...allBookings].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 8);
-        document.getElementById('recentBookingsBody').innerHTML = recent.map(b => `
-            <tr>
-                <td>${b.id?.slice(-8) || '-'}</td>
-                <td>${b.userName || b.customerName || '-'}</td>
-                <td>${b.vendorName || b.stadiumName || '-'}</td>
-                <td>${b.eventDate || b.date || '-'}</td>
-                <td>₹${(parseInt(String(b.amount).replace(/[₹,]/g,''))||0).toLocaleString()}</td>
-                <td>₹${calculateCommission(b.amount).toLocaleString()}</td>
-                <td><span class="status-badge status-${b.status === 'confirmed' ? 'confirmed' : b.status === 'cancelled' ? 'cancelled' : 'pending'}">${b.status || 'pending'}</span></td>
-                <td><button class="btn-view" onclick="viewCustomerDetails('${b.id}')">View</button></td>
-            </tr>
-        `).join('');
+        const recent = [...allBookings].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).slice(0,6);
+        document.getElementById('recentBookingsBody').innerHTML = recent.map(b=>`<tr><td>${b.id.slice(-6)}</td><td>${b.userName}</td><td>${b.vendorName}</td><td>₹${(parseInt(String(b.amount).replace(/[₹,]/g,''))||0).toLocaleString()}</td><td><span class="status-badge status-${b.status}">${b.status}</span></td><td><button class="btn-view" onclick="viewCustomerDetails('${b.id}')">View</button></td></tr>`).join('');
     }
     
     function renderStadiums() {
@@ -401,35 +483,26 @@
         const filtered = allStadiums.filter(s => !search || s.name?.toLowerCase().includes(search) || s.city?.toLowerCase().includes(search));
         document.getElementById('stadiumsTableBody').innerHTML = filtered.map(s => {
             const bookings = getVendorBookings(s.id);
-            const confirmedBookings = bookings.filter(b => b.status === 'confirmed' || b.status === 'completed');
-            const revenue = confirmedBookings.reduce((sum, b) => sum + (parseInt(String(b.amount).replace(/[₹,]/g,''))||0), 0);
+            const revenue = getVendorRevenue(s.id);
             return `<tr>
-                <td><img src="${s.imageUrl || 'https://via.placeholder.com/40'}" style="width:50px;height:50px;border-radius:10px;object-fit:cover;"></td>
-                <td><strong>${s.name || s.businessName}</strong></td>
-                <td>${s.city || '-'}</td>
-                <td>${s.capacity?.toLocaleString() || '-'}</td>
-                <td>₹${(s.basePrice || s.priceRange?.replace(/[^0-9]/g,'') || 50000).toLocaleString()}</td>
-                <td>${bookings.length}</td>
-                <td>₹${revenue.toLocaleString()}</td>
-                <td><button class="btn-edit" onclick="editStadium('${s.id}')">Edit</button><button class="btn-delete" onclick="deleteItem('vendors','${s.id}')">Del</button></td>
+                <td><img src="${s.imageUrl || 'https://via.placeholder.com/40'}" style="width:40px;height:40px;border-radius:8px;"></td>
+                <td><strong>${s.name}</strong></td><td>${s.city}</td><td>${s.capacity?.toLocaleString() || '-'}</td>
+                <td>₹${(s.basePrice || 50000).toLocaleString()}</td><td>${bookings.length}</td><td>₹${revenue.toLocaleString()}</td>
+                <td><code>${s.loginId || '-'}</code><button class="btn-copy" onclick="copyText('${s.loginId}')">Copy</button></td>
+                <td><button class="btn-edit" onclick="editStadium('${s.id}')">Edit</button><button class="btn-delete" onclick="deleteItem('vendors','${s.id}')">Del</button><button class="btn-view" onclick="openOwnerPanel('${s.loginId}','${s.password}')">Owner Panel</button></td>
             </tr>`;
         }).join('');
     }
     
     function renderVendors() {
         const search = document.getElementById('vendorSearch')?.value.toLowerCase() || '';
-        const otherVendors = allVendors.filter(v => v.category !== 'stadium' && (!search || v.name?.toLowerCase().includes(search) || v.city?.toLowerCase().includes(search)));
-        document.getElementById('vendorsTableBody').innerHTML = otherVendors.map(v => {
+        const others = allVendors.filter(v => v.category !== 'stadium' && (!search || v.name?.toLowerCase().includes(search) || v.city?.toLowerCase().includes(search)));
+        document.getElementById('vendorsTableBody').innerHTML = others.map(v => {
             const revenue = getVendorRevenue(v.id);
-            const bookings = getVendorBookings(v.id);
             return `<tr>
                 <td><img src="${v.imageUrl || 'https://via.placeholder.com/40'}" style="width:40px;height:40px;border-radius:8px;"></td>
-                <td><strong>${v.name || v.businessName}</strong></td>
-                <td>${v.category || '-'}</td>
-                <td>${v.city || '-'}</td>
-                <td>${bookings.length}</td>
-                <td>₹${revenue.toLocaleString()}</td>
-                <td>₹${calculateCommission(revenue).toLocaleString()}</td>
+                <td><strong>${v.name}</strong></td><td>${v.category}</td><td>${v.city}</td>
+                <td>${getVendorBookings(v.id).length}</td><td>₹${revenue.toLocaleString()}</td>
                 <td><button class="btn-edit" onclick="editVendor('${v.id}')">Edit</button><button class="btn-delete" onclick="deleteItem('vendors','${v.id}')">Del</button></td>
             </tr>`;
         }).join('');
@@ -439,144 +512,179 @@
         const search = document.getElementById('agentSearch')?.value.toLowerCase() || '';
         const filtered = allAgents.filter(a => !search || a.city?.toLowerCase().includes(search) || a.name?.toLowerCase().includes(search));
         document.getElementById('agentsTableBody').innerHTML = filtered.map(a => {
-            const agentBookings = allBookings.filter(b => b.agentId === a.id && (b.status === 'confirmed' || b.status === 'completed'));
-            const totalSales = agentBookings.reduce((sum, b) => sum + (parseInt(String(b.amount).replace(/[₹,]/g,''))||0), 0);
-            const commissionEarned = agentBookings.reduce((sum, b) => sum + calculateCommission(b.amount), 0);
-            return `<tr>
-                <td><strong>${a.name || a.fullName}</strong></td>
-                <td>${a.phone || '-'}</td>
-                <td>${a.city || '-'}</td>
-                <td>${agentBookings.length}</td>
-                <td>₹${totalSales.toLocaleString()}</td>
-                <td>₹${commissionEarned.toLocaleString()}</td>
-                <td><button class="btn-edit" onclick="editAgent('${a.id}')">Edit</button><button class="btn-delete" onclick="deleteItem('agents','${a.id}')">Del</button></td>
-            </tr>`;
+            const agentBookings = allBookings.filter(b => b.agentId === a.id && b.status === 'confirmed');
+            const sales = agentBookings.reduce((s,b) => s + (parseInt(String(b.amount).replace(/[₹,]/g,''))||0), 0);
+            return `<tr><td><strong>${a.name}</strong></td><td>${a.phone}</td><td>${a.city}</td><td>${agentBookings.length}</td><td>₹${sales.toLocaleString()}</td><td>₹${calcCommission(sales).toLocaleString()}</td>
+            <td><button class="btn-edit" onclick="editAgent('${a.id}')">Edit</button><button class="btn-delete" onclick="deleteItem('agents','${a.id}')">Del</button></td></tr>`;
         }).join('');
     }
     
     function renderBookings() {
         const search = document.getElementById('bookingSearch')?.value.toLowerCase() || '';
-        const filtered = allBookings.filter(b => !search || b.userName?.toLowerCase().includes(search) || b.vendorName?.toLowerCase().includes(search) || b.id?.toLowerCase().includes(search));
+        const filtered = allBookings.filter(b => !search || b.userName?.toLowerCase().includes(search) || b.vendorName?.toLowerCase().includes(search));
         document.getElementById('bookingsTableBody').innerHTML = filtered.map(b => `
-            <tr>
-                <td>${b.id?.slice(-8)}</td>
-                <td><strong>${b.userName || b.customerName || '-'}</strong></td>
-                <td>${b.userPhone || b.phone || '-'}</td>
-                <td>${b.userEmail || b.email || '-'}</td>
-                <td>${b.vendorName || b.stadiumName || '-'}</td>
-                <td>${b.eventDate || b.date || '-'}</td>
-                <td>${b.eventType || '-'}</td>
-                <td>₹${(parseInt(String(b.amount).replace(/[₹,]/g,''))||0).toLocaleString()}</td>
-                <td>₹${calculateCommission(b.amount).toLocaleString()}</td>
-                <td><span class="status-badge status-${b.status === 'confirmed' ? 'confirmed' : b.status === 'cancelled' ? 'cancelled' : 'pending'}">${b.status || 'pending'}</span></td>
-                <td><button class="btn-view" onclick="viewCustomerDetails('${b.id}')">Full Details</button></td>
-            </tr>
+            <tr><td>${b.id.slice(-8)}</td><td><strong>${b.userName}</strong></td><td>${b.userPhone}</td><td>${b.vendorName}</td>
+            <td>${b.eventDate}</td><td>₹${(parseInt(String(b.amount).replace(/[₹,]/g,''))||0).toLocaleString()}</td>
+            <td>₹${calcCommission(b.amount).toLocaleString()}</td>
+            <td><span class="status-badge status-${b.status}">${b.status}</span></td>
+            <td><button class="btn-view" onclick="viewCustomerDetails('${b.id}')">View</button>
+            ${b.status !== 'confirmed' ? `<button class="btn-confirm" onclick="updateBookingStatusDirect('${b.id}','confirmed')">Confirm</button>` : ''}
+            ${b.status !== 'cancelled' ? `<button class="btn-delete" onclick="updateBookingStatusDirect('${b.id}','cancelled')">Cancel</button>` : ''}</td></tr>
         `).join('');
     }
     
-    window.viewCustomerDetails = async (bookingId) => {
-        const booking = allBookings.find(b => b.id === bookingId);
-        if (!booking) return;
+    window.viewCustomerDetails = async (id) => {
+        const booking = allBookings.find(b => b.id === id);
+        if(!booking) return;
         currentSelectedBooking = booking;
-        
         document.getElementById('customerDetailsContainer').innerHTML = `
-            <div class="customer-detail-row"><div class="detail-label">Full Name:</div><div>${booking.userName || booking.customerName || '-'}</div></div>
-            <div class="customer-detail-row"><div class="detail-label">Phone Number:</div><div>${booking.userPhone || booking.phone || '-'}</div></div>
-            <div class="customer-detail-row"><div class="detail-label">Email:</div><div>${booking.userEmail || booking.email || '-'}</div></div>
-            <div class="customer-detail-row"><div class="detail-label">City:</div><div>${booking.userCity || booking.city || '-'}</div></div>
-            <div class="customer-detail-row"><div class="detail-label">User ID:</div><div>${booking.userId || '-'}</div></div>
-        `;
-        
+            <div class="customer-detail-row"><div class="detail-label">Name:</div><div>${booking.userName}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">Phone:</div><div>${booking.userPhone}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">Email:</div><div>${booking.userEmail}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">City:</div><div>${booking.userCity}</div></div>`;
         document.getElementById('bookingDetailsContainer').innerHTML = `
-            <div class="customer-detail-row"><div class="detail-label">Booking ID:</div><div>${booking.id}</div></div>
-            <div class="customer-detail-row"><div class="detail-label">Vendor/Stadium:</div><div>${booking.vendorName || booking.stadiumName}</div></div>
-            <div class="customer-detail-row"><div class="detail-label">Event Location:</div><div>${booking.eventLocation || '-'}</div></div>
-            <div class="customer-detail-row"><div class="detail-label">Event Date:</div><div>${booking.eventDate || booking.date}</div></div>
-            <div class="customer-detail-row"><div class="detail-label">Event Time:</div><div>${booking.eventTime || '-'}</div></div>
-            <div class="customer-detail-row"><div class="detail-label">Event Type:</div><div>${booking.eventType || '-'}</div></div>
-            <div class="customer-detail-row"><div class="detail-label">Guests Count:</div><div>${booking.guestCount || booking.expectedGuests || '-'}</div></div>
-            <div class="customer-detail-row"><div class="detail-label">Selected Portion:</div><div>${booking.selectedPortion || '100%'}</div></div>
-            <div class="customer-detail-row"><div class="detail-label">Booking Amount:</div><div>₹${(parseInt(String(booking.amount).replace(/[₹,]/g,''))||0).toLocaleString()}</div></div>
-            <div class="customer-detail-row"><div class="detail-label">Paid Amount:</div><div>₹${(parseInt(String(booking.paidAmount).replace(/[₹,]/g,''))||0).toLocaleString()}</div></div>
-            <div class="customer-detail-row"><div class="detail-label">Payment Type:</div><div>${booking.paymentType || 'full'}</div></div>
-            <div class="customer-detail-row"><div class="detail-label">Special Requests:</div><div>${booking.specialRequests || '-'}</div></div>
-            <div class="customer-detail-row"><div class="detail-label">Status:</div><div><span class="status-badge status-${booking.status === 'confirmed' ? 'confirmed' : booking.status === 'cancelled' ? 'cancelled' : 'pending'}">${booking.status || 'pending'}</span></div></div>
-            <div class="customer-detail-row"><div class="detail-label">Created At:</div><div>${new Date(booking.createdAt).toLocaleString()}</div></div>
-        `;
-        
+            <div class="customer-detail-row"><div class="detail-label">Vendor:</div><div>${booking.vendorName}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">Date:</div><div>${booking.eventDate}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">Amount:</div><div>₹${(parseInt(String(booking.amount).replace(/[₹,]/g,''))||0).toLocaleString()}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">Portion:</div><div>${booking.selectedPortion || '100%'}</div></div>
+            <div class="customer-detail-row"><div class="detail-label">Guests:</div><div>${booking.guestCount || '-'}</div></div>`;
         openModal('customerDetailModal');
     };
     
     window.updateBookingStatus = async (status) => {
-        if (currentSelectedBooking) {
+        if(currentSelectedBooking) {
             await updateDoc(doc(db, 'bookings', currentSelectedBooking.id), { status });
+            showToast(`Booking ${status}!`);
             loadAllData();
             closeModal('customerDetailModal');
         }
     };
     
+    window.updateBookingStatusDirect = async (id, status) => {
+        await updateDoc(doc(db, 'bookings', id), { status });
+        showToast(`Booking ${status}!`);
+        loadAllData();
+    };
+    
     function renderAnalytics() {
-        const confirmed = allBookings.filter(b => b.status === 'confirmed' || b.status === 'completed');
+        const confirmed = allBookings.filter(b => b.status === 'confirmed');
         const totalRev = confirmed.reduce((s,b) => s + (parseInt(String(b.amount).replace(/[₹,]/g,''))||0), 0);
-        document.getElementById('analyticsStats').innerHTML = `
-            <div class="stat-card"><div class="stat-value">₹${totalRev.toLocaleString()}</div><div class="stat-label">Total Revenue</div></div>
-            <div class="stat-card"><div class="stat-value">${confirmed.length}</div><div class="stat-label">Completed Bookings</div></div>
-            <div class="stat-card"><div class="stat-value">${allStadiums.length}</div><div class="stat-label">Stadiums</div></div>
-            <div class="stat-card"><div class="stat-value">${allAgents.length}</div><div class="stat-label">Agents</div></div>
-        `;
+        document.getElementById('analyticsStats').innerHTML = `<div class="stat-card"><div class="stat-value">₹${totalRev.toLocaleString()}</div><div class="stat-label">Revenue</div></div>
+        <div class="stat-card"><div class="stat-value">${confirmed.length}</div><div class="stat-label">Confirmed</div></div>
+        <div class="stat-card"><div class="stat-value">${allStadiums.length}</div><div class="stat-label">Stadiums</div></div>`;
         
-        const monthlyData = {};
-        confirmed.forEach(b => {
-            if (b.createdAt) {
-                const date = new Date(b.createdAt);
-                const key = `${date.getFullYear()}-${date.getMonth()+1}`;
-                monthlyData[key] = (monthlyData[key] || 0) + (parseInt(String(b.amount).replace(/[₹,]/g,''))||0);
-            }
-        });
-        const sortedMonths = Object.keys(monthlyData).sort().slice(-6);
-        new Chart(document.getElementById('revenueTrendChart'), { type: 'line', data: { labels: sortedMonths, datasets: [{ label: 'Revenue (₹)', data: sortedMonths.map(m => monthlyData[m]), borderColor: '#ff6b35', tension: 0.3, fill: true, backgroundColor: 'rgba(255,107,53,0.1)' }] } });
+        const monthly = {};
+        confirmed.forEach(b => { if(b.createdAt) { let m = new Date(b.createdAt).toLocaleString('default',{month:'short'}); monthly[m] = (monthly[m]||0) + (parseInt(String(b.amount).replace(/[₹,]/g,''))||0); } });
+        new Chart(document.getElementById('revenueTrendChart'), { type:'line', data:{ labels:Object.keys(monthly), datasets:[{ label:'Revenue', data:Object.values(monthly), borderColor:'#ff6b35' }] } });
         
         const stadiumRev = allStadiums.reduce((s,b) => s + getVendorRevenue(b.id), 0);
-        const otherRev = allVendors.filter(v => v.category !== 'stadium').reduce((s,v) => s + getVendorRevenue(v.id), 0);
-        new Chart(document.getElementById('categoryRevenueChart'), { type: 'doughnut', data: { labels: ['Stadiums', 'Other Vendors'], datasets: [{ data: [stadiumRev, otherRev], backgroundColor: ['#ff6b35', '#28a745'] }] } });
+        const otherRev = allVendors.filter(v=>v.category!=='stadium').reduce((s,v) => s + getVendorRevenue(v.id), 0);
+        new Chart(document.getElementById('categoryRevenueChart'), { type:'doughnut', data:{ labels:['Stadiums','Others'], datasets:[{ data:[stadiumRev,otherRev], backgroundColor:['#ff6b35','#28a745'] }] } });
         
-        const cityRevenue = {};
-        confirmed.forEach(b => {
-            const city = b.vendorCity || b.city;
-            if (city) cityRevenue[city] = (cityRevenue[city] || 0) + (parseInt(String(b.amount).replace(/[₹,]/g,''))||0);
-        });
-        const topCities = Object.entries(cityRevenue).sort((a,b) => b[1] - a[1]).slice(0, 5);
-        new Chart(document.getElementById('cityRevenueChart'), { type: 'bar', data: { labels: topCities.map(c => c[0]), datasets: [{ label: 'Revenue (₹)', data: topCities.map(c => c[1]), backgroundColor: '#ff6b35' }] } });
+        const cityRev = {};
+        confirmed.forEach(b => { if(b.vendorCity) cityRev[b.vendorCity] = (cityRev[b.vendorCity]||0) + (parseInt(String(b.amount).replace(/[₹,]/g,''))||0); });
+        new Chart(document.getElementById('cityRevenueChart'), { type:'bar', data:{ labels:Object.keys(cityRev).slice(0,5), datasets:[{ label:'Revenue', data:Object.values(cityRev).slice(0,5), backgroundColor:'#ff6b35' }] } });
     }
     
-    function renderCommissionReport() {
-        const confirmed = allBookings.filter(b => b.status === 'confirmed' || b.status === 'completed');
-        const totalCommission = confirmed.reduce((s,b) => s + calculateCommission(b.amount), 0);
-        document.getElementById('commissionStats').innerHTML = `
-            <div class="stat-card"><div class="stat-value">${confirmed.length}</div><div class="stat-label">Commissionable Bookings</div></div>
-            <div class="stat-card"><div class="stat-value">₹${totalCommission.toLocaleString()}</div><div class="stat-label">Total Commission (12.5%)</div></div>
-        `;
-        document.getElementById('commissionTableBody').innerHTML = confirmed.slice(0, 20).map(b => `
-            <tr>
-                <td>${b.id?.slice(-8)}</td>
-                <td>${b.userName || b.customerName || '-'}</td>
-                <td>${b.vendorName || b.stadiumName || '-'}</td>
-                <td>₹${(parseInt(String(b.amount).replace(/[₹,]/g,''))||0).toLocaleString()}</td>
-                <td>₹${calculateCommission(b.amount).toLocaleString()}</td>
-                <td><span class="status-badge status-confirmed">${b.status}</span></td>
-                <td>${b.eventDate || b.createdAt?.split('T')[0] || '-'}</td>
-            </tr>
-        `).join('');
+    function renderCommission() {
+        const confirmed = allBookings.filter(b => b.status === 'confirmed');
+        const total = confirmed.reduce((s,b) => s + calcCommission(b.amount), 0);
+        document.getElementById('commissionStats').innerHTML = `<div class="stat-card"><div class="stat-value">${confirmed.length}</div><div class="stat-label">Bookings</div></div>
+        <div class="stat-card"><div class="stat-value">₹${total.toLocaleString()}</div><div class="stat-label">Total Commission</div></div>`;
+        document.getElementById('commissionTableBody').innerHTML = confirmed.slice(0,15).map(b => `<tr><td>${b.id.slice(-8)}</td><td>${b.userName}</td><td>${b.vendorName}</td><td>₹${(parseInt(String(b.amount).replace(/[₹,]/g,''))||0).toLocaleString()}</td><td>₹${calcCommission(b.amount).toLocaleString()}</td><td><span class="status-badge status-confirmed">${b.status}</span></td></tr>`).join('');
     }
     
     function renderCities() {
-        document.getElementById('citiesList').innerHTML = (allCities || []).map(c => `
-            <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #eee;">
-                <span><i class="fas fa-location-dot"></i> <strong>${c.name}</strong> ${c.popular ? '<span style="color:#ff6b35;">⭐ Popular</span>' : ''}</span>
-                <button class="btn-delete" onclick="deleteCity('${c.name}')">Delete</button>
-            </div>
-        `).join('');
+        document.getElementById('citiesList').innerHTML = (allCities||[]).map(c => `<div style="display:flex; justify-content:space-between; padding:12px; border-bottom:1px solid #eee;"><span>📍 ${c.name} ${c.popular ? '⭐' : ''}</span><button class="btn-delete" onclick="deleteCity('${c.name}')">Delete</button></div>`).join('');
     }
+    
+    window.saveStadium = async () => {
+        const isEdit = document.getElementById('stadiumEditId').value;
+        const loginId = isEdit ? document.getElementById('stadiumLoginId')?.value : generateRandomId('STAD');
+        const password = isEdit ? document.getElementById('stadiumPassword')?.value : generateRandomPassword();
+        
+        const data = {
+            name: document.getElementById('stadiumName').value,
+            category: 'stadium',
+            city: document.getElementById('stadiumCity').value,
+            capacity: parseInt(document.getElementById('stadiumCapacity').value) || 0,
+            basePrice: parseInt(document.getElementById('stadiumPrice').value) || 50000,
+            location: document.getElementById('stadiumLocation').value,
+            type: document.getElementById('stadiumType').value,
+            description: document.getElementById('stadiumDescription').value,
+            amenities: document.getElementById('stadiumAmenities').value.split(','),
+            blockedDates: document.getElementById('blockedDates').value.split(','),
+            loginId: loginId,
+            password: password,
+            updatedAt: new Date().toISOString()
+        };
+        
+        const logoFile = document.getElementById('stadiumLogo').files[0];
+        if(logoFile) data.imageUrl = await uploadImage(logoFile, 'stadiums/');
+        
+        if(isEdit) {
+            await updateDoc(doc(db, 'vendors', isEdit), data);
+            showToast('Stadium updated!');
+        } else {
+            data.createdAt = new Date().toISOString();
+            await addDoc(collection(db, 'vendors'), data);
+            showToast(`Stadium added! Login ID: ${loginId}, Password: ${password}`);
+            document.getElementById('credentialsDisplay').innerHTML = `
+                <h4>📋 Login Credentials</h4>
+                <div class="credential-item"><strong>Login ID:</strong> ${loginId} <button class="btn-copy" onclick="copyText('${loginId}')">Copy</button></div>
+                <div class="credential-item"><strong>Password:</strong> ${password} <button class="btn-copy" onclick="copyText('${password}')">Copy</button></div>
+                <div class="credential-item"><strong>Owner Panel Link:</strong> <a href="owner-login.html" target="_blank">owner-login.html</a></div>`;
+            document.getElementById('credentialsDisplay').style.display = 'block';
+        }
+        closeModal('stadiumModal');
+        loadAllData();
+    };
+    
+    window.saveVendor = async () => {
+        const isEdit = document.getElementById('vendorEditId').value;
+        const data = {
+            name: document.getElementById('vendorName').value,
+            category: document.getElementById('vendorCategory').value,
+            city: document.getElementById('vendorCity').value,
+            priceRange: document.getElementById('vendorPrice').value,
+            description: document.getElementById('vendorDescription').value,
+            updatedAt: new Date().toISOString()
+        };
+        const logoFile = document.getElementById('vendorLogo').files[0];
+        if(logoFile) data.imageUrl = await uploadImage(logoFile, 'vendors/');
+        
+        if(isEdit) await updateDoc(doc(db, 'vendors', isEdit), data);
+        else { data.createdAt = new Date().toISOString(); await addDoc(collection(db, 'vendors'), data); }
+        showToast('Vendor saved!');
+        closeModal('vendorModal');
+        loadAllData();
+    };
+    
+    window.saveAgent = async () => {
+        const isEdit = document.getElementById('agentEditId').value;
+        const data = {
+            name: document.getElementById('agentName').value,
+            phone: document.getElementById('agentPhone').value,
+            city: document.getElementById('agentCity').value,
+            email: document.getElementById('agentEmail').value,
+            updatedAt: new Date().toISOString()
+        };
+        if(isEdit) await updateDoc(doc(db, 'agents', isEdit), data);
+        else { data.createdAt = new Date().toISOString(); await addDoc(collection(db, 'agents'), data); }
+        showToast('Agent saved!');
+        closeModal('agentModal');
+        loadAllData();
+    };
+    
+    window.saveCity = async () => {
+        const name = document.getElementById('cityName').value;
+        if(!name) return;
+        const newList = [...allCities, {name, popular: document.getElementById('cityPopular').checked}];
+        await setDoc(doc(db, 'settings', 'cities'), { list: newList });
+        showToast('City added!');
+        closeModal('cityModal');
+        loadAllData();
+    };
     
     window.deleteCity = async (name) => {
         const newList = allCities.filter(c => c.name !== name);
@@ -584,32 +692,92 @@
         loadAllData();
     };
     
-    window.deleteItem = async (collection, id) => {
-        if (confirm('Delete this item?')) {
-            await deleteDoc(doc(db, collection, id));
+    window.deleteItem = async (collectionName, id) => {
+        if(confirm('Delete this item?')) {
+            await deleteDoc(doc(db, collectionName, id));
+            showToast('Deleted!');
             loadAllData();
         }
     };
     
+    window.editStadium = (id) => {
+        const s = allStadiums.find(s => s.id === id);
+        if(s) {
+            document.getElementById('stadiumModalTitle').innerText = 'Edit Stadium';
+            document.getElementById('stadiumEditId').value = s.id;
+            document.getElementById('stadiumName').value = s.name || '';
+            document.getElementById('stadiumCity').value = s.city || '';
+            document.getElementById('stadiumCapacity').value = s.capacity || '';
+            document.getElementById('stadiumPrice').value = s.basePrice || '';
+            document.getElementById('stadiumLocation').value = s.location || '';
+            document.getElementById('stadiumType').value = s.type || 'Cricket';
+            document.getElementById('stadiumDescription').value = s.description || '';
+            document.getElementById('stadiumAmenities').value = (s.amenities || []).join(', ');
+            document.getElementById('blockedDates').value = (s.blockedDates || []).join(', ');
+            document.getElementById('credentialsDisplay').style.display = 'none';
+            openModal('stadiumModal');
+        }
+    };
+    
+    window.editVendor = (id) => {
+        const v = allVendors.find(v => v.id === id && v.category !== 'stadium');
+        if(v) {
+            document.getElementById('vendorModalTitle').innerText = 'Edit Vendor';
+            document.getElementById('vendorEditId').value = v.id;
+            document.getElementById('vendorName').value = v.name || '';
+            document.getElementById('vendorCategory').value = v.category || '';
+            document.getElementById('vendorCity').value = v.city || '';
+            document.getElementById('vendorPrice').value = v.priceRange || '';
+            document.getElementById('vendorDescription').value = v.description || '';
+            openModal('vendorModal');
+        }
+    };
+    
+    window.editAgent = (id) => {
+        const a = allAgents.find(a => a.id === id);
+        if(a) {
+            document.getElementById('agentModalTitle').innerText = 'Edit Agent';
+            document.getElementById('agentEditId').value = a.id;
+            document.getElementById('agentName').value = a.name || '';
+            document.getElementById('agentPhone').value = a.phone || '';
+            document.getElementById('agentCity').value = a.city || '';
+            document.getElementById('agentEmail').value = a.email || '';
+            openModal('agentModal');
+        }
+    };
+    
+    window.openOwnerPanel = (loginId, password) => {
+        const url = `owner-dashboard.html?login=${loginId}&pass=${password}`;
+        window.open(url, '_blank');
+        showToast('Owner panel opened in new tab');
+    };
+    
+    window.copyText = (text) => { navigator.clipboard.writeText(text); showToast('Copied!'); };
+    
+    window.openAddStadiumModal = () => {
+        document.getElementById('stadiumModalTitle').innerText = 'Add Stadium';
+        document.getElementById('stadiumEditId').value = '';
+        document.getElementById('stadiumName').value = '';
+        document.getElementById('stadiumCity').value = '';
+        document.getElementById('stadiumCapacity').value = '';
+        document.getElementById('stadiumPrice').value = '';
+        document.getElementById('stadiumLocation').value = '';
+        document.getElementById('stadiumType').value = 'Cricket';
+        document.getElementById('stadiumDescription').value = '';
+        document.getElementById('stadiumAmenities').value = '';
+        document.getElementById('blockedDates').value = '';
+        document.getElementById('stadiumLogo').value = '';
+        document.getElementById('credentialsDisplay').style.display = 'none';
+        openModal('stadiumModal');
+    };
+    window.openAddVendorModal = () => { document.getElementById('vendorModalTitle').innerText = 'Add Vendor'; document.getElementById('vendorEditId').value = ''; document.getElementById('vendorName').value = ''; document.getElementById('vendorCategory').value = 'decorator'; document.getElementById('vendorCity').value = ''; document.getElementById('vendorPrice').value = ''; document.getElementById('vendorDescription').value = ''; document.getElementById('vendorLogo').value = ''; openModal('vendorModal'); };
+    window.openAddAgentModal = () => { document.getElementById('agentModalTitle').innerText = 'Add Agent'; document.getElementById('agentEditId').value = ''; document.getElementById('agentName').value = ''; document.getElementById('agentPhone').value = ''; document.getElementById('agentCity').value = ''; document.getElementById('agentEmail').value = ''; openModal('agentModal'); };
+    window.openAddCityModal = () => { document.getElementById('cityName').value = ''; document.getElementById('cityPopular').checked = false; openModal('cityModal'); };
     window.searchStadiums = () => renderStadiums();
     window.searchVendors = () => renderVendors();
     window.searchAgents = () => renderAgents();
     window.searchBookings = () => renderBookings();
-    
-    window.switchPanel = (panel) => {
-        document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
-        event.target.closest('.sidebar-item').classList.add('active');
-        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-        document.getElementById(panel + 'Panel').classList.add('active');
-    };
-    
-    window.openAddStadiumModal = () => alert('Add Stadium - Implement form similar to previous');
-    window.openAddVendorModal = () => alert('Add Vendor - Implement form');
-    window.openAddAgentModal = () => alert('Add Agent - Implement form');
-    window.openAddCityModal = () => alert('Add City - Implement form');
-    window.editStadium = (id) => alert('Edit Stadium: ' + id);
-    window.editVendor = (id) => alert('Edit Vendor: ' + id);
-    window.editAgent = (id) => alert('Edit Agent: ' + id);
+    window.switchPanel = (panel) => { document.querySelectorAll('.sidebar-item').forEach(i=>i.classList.remove('active')); event.target.closest('.sidebar-item').classList.add('active'); document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active')); document.getElementById(panel+'Panel').classList.add('active'); };
     window.closeModal = (id) => document.getElementById(id).style.display = 'none';
     window.openModal = (id) => document.getElementById(id).style.display = 'flex';
     window.logout = () => { localStorage.removeItem('admin'); window.location.href = 'admin-login.html'; };
