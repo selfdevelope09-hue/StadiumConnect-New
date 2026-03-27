@@ -165,20 +165,27 @@
             document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
         }
         
-        // Agar user already logged in hai toh direct dashboard pe bhejo
+        // Login ke baad home.html pe jayega
+        function goToHome() {
+            window.location.href = 'home.html';
+        }
+        
+        // Check if user already logged in
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 localStorage.setItem('userLoggedIn', 'true');
                 localStorage.setItem('userEmail', user.email);
                 localStorage.setItem('userName', user.displayName || 'User');
-                window.location.href = 'super-admin-dashboard.html';
+                showToast(`Welcome ${user.displayName || 'User'}!`);
+                setTimeout(goToHome, 1000);
             }
         });
         
-        // Handle redirect result (APK ke liye important)
+        // Handle redirect result (APK ke liye)
         getRedirectResult(auth).then((result) => {
             if (result && result.user) {
-                window.location.href = 'super-admin-dashboard.html';
+                showToast(`Welcome ${result.user.displayName || 'User'}!`);
+                setTimeout(goToHome, 1000);
             }
         }).catch((error) => {
             console.log('Redirect error:', error);
@@ -191,7 +198,8 @@
                 // Pehle popup try karo
                 const result = await signInWithPopup(auth, provider);
                 if (result.user) {
-                    window.location.href = 'super-admin-dashboard.html';
+                    showToast(`Welcome ${result.user.displayName || 'User'}!`);
+                    setTimeout(goToHome, 1000);
                 }
             } catch (error) {
                 console.log('Popup error:', error);
@@ -207,9 +215,8 @@
         };
         
         console.log('✅ Index page loaded - APK compatible');
-        console.log('📍 After login, redirect to: super-admin-dashboard.html');
+        console.log('📍 After login, redirect to: home.html');
     </script>
 </body>
 </html>
-
 
