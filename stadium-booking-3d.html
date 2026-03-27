@@ -1,416 +1,207 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StadiumConnect | Ultimate Enterprise Admin & Booking</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
-    <style>
-        :root {
-            --primary: #ff6b35;
-            --secondary: #2ed573;
-            --dark: #0a0a0b;
-            --card: #151518;
-            --border: rgba(255,255,255,0.08);
-            --glass: rgba(255,255,255,0.03);
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { background: var(--dark); color: #fff; overflow-x: hidden; scroll-behavior: smooth; }
-
-        /* --- ADVANCED UI COMPONENTS --- */
-        .sc-nav { background: rgba(0,0,0,0.8); backdrop-filter: blur(15px); padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 2000; }
-        .logo { font-size: 24px; font-weight: 800; letter-spacing: -1px; }
-        .logo span { color: var(--primary); }
-
-        .main-wrapper { max-width: 1600px; margin: 0 auto; padding: 30px; display: grid; grid-template-columns: 1fr 450px; gap: 40px; }
-
-        /* --- LEFT: AI STADIUM VISUALIZER --- */
-        .visual-panel { background: var(--card); border-radius: 30px; padding: 25px; border: 1px solid var(--border); position: sticky; top: 100px; height: fit-content; }
-        .canvas-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        
-        .viewport-box { width: 100%; height: 500px; background: #000; border-radius: 20px; position: relative; overflow: hidden; border: 2px solid var(--border); }
-        #stadiumCanvas { width: 100%; height: 100%; cursor: crosshair; }
-
-        /* AI Legend & Stats */
-        .ai-stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 20px; }
-        .stat-item { background: var(--glass); padding: 15px; border-radius: 15px; text-align: center; border: 1px solid var(--border); }
-        .stat-val { display: block; font-size: 22px; font-weight: 800; color: var(--primary); }
-        .stat-label { font-size: 11px; color: #777; text-transform: uppercase; }
-
-        /* --- RIGHT: INTELLIGENT BOOKING ENGINE --- */
-        .booking-panel { background: var(--glass); border-radius: 30px; padding: 30px; border: 1px solid var(--border); backdrop-filter: blur(20px); }
-        .section-title { font-size: 14px; font-weight: 800; color: var(--primary); margin: 25px 0 15px 0; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 10px; }
-        
-        /* Interactive Inputs */
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .sc-input { width: 100%; background: #000; border: 1px solid var(--border); padding: 14px 18px; border-radius: 15px; color: #fff; outline: none; transition: 0.3s; font-size: 14px; margin-bottom: 10px; }
-        .sc-input:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(255,107,53,0.2); }
-
-        /* Portion Selection Buttons */
-        .portion-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-        .p-btn { background: #000; border: 1px solid var(--border); padding: 15px; border-radius: 15px; text-align: center; cursor: pointer; transition: 0.3s; font-weight: 700; font-size: 13px; }
-        .p-btn.active { background: var(--primary); border-color: var(--primary); transform: scale(1.05); }
-
-        /* AI Layout Planner (Drag & Drop) */
-        .planner-container { background: #000; border-radius: 20px; padding: 20px; border: 1px dashed var(--border); }
-        .drag-palette { display: flex; gap: 10px; margin-bottom: 15px; }
-        .drag-item { background: var(--primary); color: #fff; padding: 8px 15px; border-radius: 10px; font-size: 11px; font-weight: 700; cursor: grab; }
-        .drop-zone { height: 130px; background: rgba(255,255,255,0.02); border-radius: 15px; position: relative; overflow: hidden; }
-        .placed-item { position: absolute; background: #fff; color: #000; padding: 4px 10px; border-radius: 8px; font-size: 10px; font-weight: 800; cursor: move; }
-
-        /* Modern Calendar */
-        .cal-ctrl { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
-        .cal-day { padding: 12px; background: #000; border-radius: 10px; text-align: center; cursor: pointer; font-size: 12px; border: 1px solid var(--border); transition: 0.2s; }
-        .cal-day.selected { background: var(--primary); border-color: var(--primary); }
-        .cal-day.booked { opacity: 0.2; cursor: not-allowed; text-decoration: line-through; }
-
-        /* Dynamic Pricing Card */
-        .pricing-card { background: linear-gradient(135deg, #1a1a1e, #000); padding: 25px; border-radius: 20px; border: 1px solid var(--primary); margin-top: 25px; }
-        .price-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; color: #888; }
-        .final-price { font-size: 36px; font-weight: 800; color: var(--primary); margin-top: 10px; }
-
-        .btn-book { width: 100%; padding: 20px; border-radius: 50px; border: none; background: var(--primary); color: #fff; font-size: 18px; font-weight: 800; cursor: pointer; margin-top: 25px; box-shadow: 0 10px 30px rgba(255,107,53,0.3); transition: 0.3s; }
-        .btn-book:hover { transform: translateY(-5px); box-shadow: 0 15px 40px rgba(255,107,53,0.4); }
-
-        /* Agent Sync */
-        .agent-sync-card { display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 20px; margin-top: 25px; border: 1px solid var(--border); }
-        .agent-btn { background: var(--secondary); color: #fff; border: none; padding: 8px 18px; border-radius: 30px; font-weight: 700; cursor: pointer; margin-left: auto; }
-
-        @media (max-width: 1100px) { .main-wrapper { grid-template-columns: 1fr; } .visual-panel { position: relative; top: 0; } }
-    </style>
-</head>
-<body>
-
-<nav class="sc-nav">
-    <div class="logo">STADIUM<span>CONNECT</span> AI</div>
-    <div id="liveStatus" style="font-size: 12px; color: var(--secondary); font-weight: 700;">
-        <i class="fas fa-circle"></i> <span id="viewerCount">14</span> USERS VIEWING LIVE
-    </div>
-</nav>
-
-<div class="main-wrapper">
-    <div class="visual-panel">
-        <div class="canvas-header">
-            <h3>AI Field Projection</h3>
-            <div style="display: flex; gap: 10px;">
-                <button class="day" onclick="setMode('2d')" style="padding: 5px 12px; border-radius: 20px; background: var(--primary); border:none; color:#fff; font-size:11px; cursor:pointer;">2D Map</button>
-                <button class="day" onclick="setMode('3d')" style="padding: 5px 12px; border-radius: 20px; background: #333; border:none; color:#fff; font-size:11px; cursor:pointer;">3D Render</button>
-            </div>
-        </div>
-
-        <div class="viewport-box">
-            <canvas id="stadiumCanvas"></canvas>
-            <div id="arOverlay" style="display:none; position:absolute; inset:0; background:#000;">
-                <video id="arVideo" style="width:100%; height:100%; object-fit:cover;" autoplay playsinline></video>
-            </div>
-        </div>
-
-        <div class="ai-stats-row">
-            <div class="stat-item">
-                <span class="stat-val" id="displayPercent">0%</span>
-                <span class="stat-label">Area Selected</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-val" id="displayCapacity">0</span>
-                <span class="stat-label">Guest Capacity</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-val" id="displaySurge">1.0x</span>
-                <span class="stat-label">Demand Index</span>
-            </div>
-        </div>
-    </div>
-
-    <div class="booking-panel">
-        <div class="stadium-header">
-            <h1 id="stName">Vidarbha Cricket Stadium</h1>
-            <p style="color: #666; font-size: 14px;"><i class="fas fa-map-marker-alt"></i> <span id="stLoc">Nagpur, Maharashtra</span></p>
-        </div>
-
-        <div class="section-title">👤 Personal Details</div>
-        <div class="form-grid">
-            <input type="text" id="custName" class="sc-input" placeholder="Your Full Name">
-            <input type="tel" id="custPhone" class="sc-input" placeholder="WhatsApp Number">
-        </div>
-        <input type="email" id="custEmail" class="sc-input" placeholder="Email Address">
-
-        <div class="section-title">🏟️ Portion Selection</div>
-        <div class="portion-grid">
-            <div class="p-btn" onclick="selectPortion(25)">25%</div>
-            <div class="p-btn" onclick="selectPortion(50)">50%</div>
-            <div class="p-btn" onclick="selectPortion(75)">75%</div>
-            <div class="p-btn" onclick="selectPortion(100)">FULL</div>
-        </div>
-
-        <div class="section-title">🎯 AI Layout Planner</div>
-        <div class="planner-container">
-            <div class="drag-palette">
-                <div class="drag-item" draggable="true" ondragstart="handleDrag(event)" id="item-stage">🎭 Stage</div>
-                <div class="drag-item" draggable="true" ondragstart="handleDrag(event)" id="item-food">🍔 Food</div>
-                <div class="drag-item" draggable="true" ondragstart="handleDrag(event)" id="item-vip">👑 VIP</div>
-            </div>
-            <div class="drop-zone" id="plannerDrop" ondragover="allowDrop(event)" ondrop="handleDrop(event)">
-                <p id="dropHint" style="text-align:center; padding-top:55px; font-size:10px; opacity:0.3;">Drop items to visualize layout</p>
-            </div>
-        </div>
-
-        <div class="section-title">📅 Event Timeline</div>
-        <div class="cal-ctrl">
-            <button onclick="moveMonth(-1)" style="background:none; border:none; color:#fff; cursor:pointer;"><i class="fas fa-chevron-left"></i></button>
-            <strong id="monthDisplay">March 2025</strong>
-            <button onclick="moveMonth(1)" style="background:none; border:none; color:#fff; cursor:pointer;"><i class="fas fa-chevron-right"></i></button>
-        </div>
-        <div class="calendar-grid" id="calendar"></div>
-
-        <div class="pricing-card">
-            <div class="price-row"><span>Fractional Rent</span><span id="pBase">₹0</span></div>
-            <div class="price-row"><span>AI Multiplier</span><span id="pMult">1.0x</span></div>
-            <div class="price-row"><span>Platform Service</span><span>₹2,500</span></div>
-            <div class="final-price" id="pTotal">₹0</div>
-        </div>
-
-        <button class="btn-book" onclick="processFinalBooking()">CONFIRM BOOKING & NOTIFY AGENT →</button>
-
-        <div class="agent-sync-card">
-            <img src="https://ui-avatars.com/api/?name=Agent&background=ff6b35&color=fff" style="width:40px; border-radius:50%;">
-            <div>
-                <p style="font-size:13px; font-weight:700;" id="agName">Loading Agent...</p>
-                <p style="font-size:10px; color:#666;">Nagpur Hub Expert</p>
-            </div>
-            <button class="agent-btn" onclick="dialAgent()"><i class="fas fa-phone-alt"></i> Call</button>
-        </div>
-    </div>
-</div>
-
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-
 <script>
-    // --- 1. FIREBASE & CORE STATE ---
-    const firebaseConfig = {
-        apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
-        authDomain: "stadiumconnect-8fecb.firebaseapp.com",
-        projectId: "stadiumconnect-8fecb",
-        storageBucket: "stadiumconnect-8fecb.firebasestorage.app",
-        messagingSenderId: "458108198578",
-        appId: "1:458108198578:web:83d83646f0e24e718b73ab"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+/* ------------------ FIREBASE INIT ------------------ */
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-    let stadiumData = { name: "Nagpur Stadium", basePrice: 150000, city: "Nagpur" };
-    let currentPercent = 0;
-    let selectedDate = null;
-    let currentMonth = new Date().getMonth();
-    let currentYear = new Date().getFullYear();
-    let agentInfo = null;
+/* ------------------ GLOBAL STATE ------------------ */
+let stadiumData = { name: "Default Stadium", basePrice: 150000, city: "Nagpur" };
+let currentPercent = 0;
+let selectedDate = null;
+let currentMonth = new Date().getMonth();
+let currentYear = new Date().getFullYear();
+let agentInfo = null;
 
-    // --- 2. ADMIN-TO-USER LIVE SYNC ---
-    function syncFromAdmin() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const stId = urlParams.get('id') || 'stadium_1';
+/* ------------------ SAFE PARSE ------------------ */
+function safePrice(val) {
+    if (!val) return 150000;
+    return parseInt(val.toString().replace(/[^0-9]/g, '')) || 150000;
+}
 
-        // Live Listener: Admin panel se price ya details change hongi toh yahan bina refresh ke dikhengi
-        db.collection("vendors").doc(stId).onSnapshot((doc) => {
-            if (doc.exists) {
-                stadiumData = doc.data();
-                document.getElementById('stName').innerText = stadiumData.name;
-                document.getElementById('stLoc').innerText = stadiumData.city;
-                stadiumData.basePrice = parseInt(stadiumData.priceRange?.replace(/[^0-9]/g, '')) || 150000;
-                updatePricingLogic(); // Auto-update price when admin changes it
+/* ------------------ ADMIN SYNC ------------------ */
+function syncFromAdmin() {
+    const stId = new URLSearchParams(window.location.search).get('id') || 'stadium_1';
+
+    db.collection("vendors").doc(stId).onSnapshot((doc) => {
+        if (!doc.exists) return;
+
+        stadiumData = doc.data();
+        stadiumData.basePrice = safePrice(stadiumData.priceRange);
+
+        document.getElementById('stName').innerText = stadiumData.name || "Unknown Stadium";
+        document.getElementById('stLoc').innerText = stadiumData.city || "Unknown City";
+
+        updatePricingLogic();
+    });
+
+    db.collection("agents").onSnapshot((snap) => {
+        let found = false;
+
+        snap.forEach(d => {
+            const data = d.data();
+            if (!found && data.city?.toLowerCase() === stadiumData.city?.toLowerCase()) {
+                agentInfo = { ...data, id: d.id };
+                document.getElementById('agName').innerText = data.name;
+                found = true;
             }
         });
 
-        // Sync Agent based on Stadium City
-        db.collection("agents").onSnapshot((snap) => {
-            snap.forEach(d => {
-                if(d.data().city?.toLowerCase() === stadiumData.city?.toLowerCase()){
-                    agentInfo = d.data();
-                    document.getElementById('agName').innerText = agentInfo.name;
-                }
-            });
-        });
+        if (!found) {
+            document.getElementById('agName').innerText = "No Agent Available";
+        }
+    });
+}
+
+/* ------------------ CANVAS ENGINE ------------------ */
+const canvas = document.getElementById('stadiumCanvas');
+const ctx = canvas.getContext('2d');
+
+function renderCanvas() {
+    const w = canvas.offsetWidth;
+    const h = canvas.offsetHeight;
+
+    canvas.width = w;
+    canvas.height = h;
+
+    ctx.clearRect(0, 0, w, h);
+
+    ctx.fillStyle = '#081c08';
+    ctx.fillRect(0, 0, w, h);
+
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    for (let i = 0; i < w; i += 25) {
+        ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, h); ctx.stroke();
     }
 
-    // --- 3. AI CANVAS ENGINE ---
-    const canvas = document.getElementById('stadiumCanvas');
-    const ctx = canvas.getContext('2d');
+    ctx.strokeStyle = '#ff6b35';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.ellipse(w/2, h/2, w*0.4, h*0.35, 0, 0, Math.PI*2);
+    ctx.stroke();
 
-    function renderCanvas() {
-        canvas.width = canvas.offsetWidth;
-        canvas.height = canvas.offsetHeight;
-        const w = canvas.width, h = canvas.height;
-        ctx.clearRect(0, 0, w, h);
+    if (currentPercent > 0) {
+        const angle = (currentPercent / 100) * (Math.PI * 2);
 
-        // Ground Base
-        ctx.fillStyle = '#0a1a0a';
-        ctx.fillRect(0,0,w,h);
-
-        // Grid
-        ctx.strokeStyle = 'rgba(255,255,255,0.03)';
-        for(let i=0; i<w; i+=20){ ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,h); ctx.stroke(); }
-        for(let j=0; j<h; j+=20){ ctx.beginPath(); ctx.moveTo(0,j); ctx.lineTo(w,j); ctx.stroke(); }
-
-        // Stadium Boundary
-        ctx.strokeStyle = 'rgba(255,107,53,0.3)';
-        ctx.lineWidth = 4;
+        ctx.fillStyle = 'rgba(255,107,53,0.4)';
         ctx.beginPath();
-        ctx.ellipse(w/2, h/2, w*0.4, h*0.35, 0, 0, Math.PI*2);
-        ctx.stroke();
-
-        // Fraction Selection Logic
-        if(currentPercent > 0) {
-            ctx.fillStyle = 'rgba(255,107,53,0.35)';
-            const sector = (currentPercent / 100) * (Math.PI * 2);
-            ctx.beginPath();
-            ctx.moveTo(w/2, h/2);
-            ctx.arc(w/2, h/2, w*0.4, 0, sector);
-            ctx.closePath();
-            ctx.fill();
-            
-            // AI Marker
-            ctx.fillStyle = "#fff";
-            ctx.font = "bold 12px Plus Jakarta Sans";
-            ctx.fillText(`${currentPercent}% Area Selected`, w/2 - 40, h/2 + 20);
-        }
+        ctx.moveTo(w/2, h/2);
+        ctx.arc(w/2, h/2, w*0.4, 0, angle);
+        ctx.fill();
     }
+}
 
-    // --- 4. DRAG & DROP SYSTEM (PRO) ---
-    function allowDrop(ev) { ev.preventDefault(); }
-    function handleDrag(ev) { ev.dataTransfer.setData("text", ev.target.id); }
-    function handleDrop(ev) {
-        ev.preventDefault();
-        const data = ev.dataTransfer.getData("text");
-        const zone = document.getElementById('plannerDrop');
-        const rect = zone.getBoundingClientRect();
-        
-        document.getElementById('dropHint').style.display = 'none';
+/* ------------------ PORTION SELECT ------------------ */
+function selectPortion(p, el) {
+    currentPercent = p;
 
-        const item = document.createElement('div');
-        item.className = 'placed-item';
-        item.innerText = document.getElementById(data).innerText;
-        
-        const x = ev.clientX - rect.left - 20;
-        const y = ev.clientY - rect.top - 10;
-        
-        item.style.left = x + 'px';
-        item.style.top = y + 'px';
-        item.onclick = function() { this.remove(); if(zone.children.length === 1) document.getElementById('dropHint').style.display = 'block'; };
-        zone.appendChild(item);
-    }
+    document.querySelectorAll('.p-btn').forEach(b => b.classList.remove('active'));
+    if (el) el.classList.add('active');
 
-    // --- 5. SMART CALENDAR ---
-    function moveMonth(dir) {
-        currentMonth += dir;
-        if(currentMonth < 0) { currentMonth = 11; currentYear--; }
-        if(currentMonth > 11) { currentMonth = 0; currentYear++; }
-        renderCalendar();
-    }
+    renderCanvas();
+    updatePricingLogic();
+}
 
-    function renderCalendar() {
-        const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-        document.getElementById('monthDisplay').innerText = months[currentMonth] + " " + currentYear;
-        const grid = document.getElementById('calendar');
-        grid.innerHTML = '';
-        
-        const days = new Date(currentYear, currentMonth + 1, 0).getDate();
-        for(let i=1; i<=days; i++) {
-            const dateStr = `${currentYear}-${currentMonth+1}-${i}`;
-            const day = document.createElement('div');
-            day.className = 'cal-day';
-            day.innerText = i;
-            if(selectedDate === dateStr) day.classList.add('selected');
-            
-            day.onclick = () => {
-                selectedDate = dateStr;
-                renderCalendar();
-                updatePricingLogic();
-            };
-            grid.appendChild(day);
-        }
-    }
+/* FIX CLICK */
+document.querySelectorAll('.p-btn').forEach(btn => {
+    btn.onclick = function() {
+        selectPortion(parseInt(this.innerText), this);
+    };
+});
 
-    // --- 6. AI PRICING LOGIC ---
-    function selectPortion(p) {
-        currentPercent = p;
-        document.querySelectorAll('.p-btn').forEach(b => b.classList.remove('active'));
-        event.target.classList.add('active');
-        updatePricingLogic();
-        renderCanvas();
-    }
+/* ------------------ CALENDAR ------------------ */
+function renderCalendar() {
+    const grid = document.getElementById('calendar');
+    grid.innerHTML = '';
 
-    function updatePricingLogic() {
-        let multiplier = 1.0;
-        if(selectedDate) {
-            const d = new Date(selectedDate);
-            if(d.getDay() === 0 || d.getDay() === 6) multiplier = 1.2; // Weekend Surge
-        }
-        
-        const base = (stadiumData.basePrice * (currentPercent / 100));
-        const final = (base * multiplier) + 2500;
+    const days = new Date(currentYear, currentMonth + 1, 0).getDate();
 
-        document.getElementById('displayPercent').innerText = currentPercent + '%';
-        document.getElementById('displayCapacity').innerText = (currentPercent * 400).toLocaleString();
-        document.getElementById('displaySurge').innerText = multiplier.toFixed(1) + 'x';
-        
-        document.getElementById('pBase').innerText = '₹' + Math.floor(base).toLocaleString();
-        document.getElementById('pMult').innerText = multiplier.toFixed(1) + 'x';
-        document.getElementById('pTotal').innerText = '₹' + Math.floor(final).toLocaleString();
-    }
+    for (let i = 1; i <= days; i++) {
+        const dateStr = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
 
-    // --- 7. FINAL BOOKING ACTION ---
-    async function processFinalBooking() {
-        const name = document.getElementById('custName').value;
-        const phone = document.getElementById('custPhone').value;
-        const email = document.getElementById('custEmail').value;
+        const day = document.createElement('div');
+        day.className = 'cal-day';
+        day.innerText = i;
 
-        if(!name || !phone || !selectedDate || currentPercent === 0) {
-            alert("Bhai, saari details fill karlo (Name, Date aur Area)!");
-            return;
-        }
+        if (selectedDate === dateStr) day.classList.add('selected');
 
-        const bookingData = {
-            customerName: name,
-            customerPhone: phone,
-            customerEmail: email,
-            stadiumId: stadiumData.name,
-            portion: currentPercent + '%',
-            eventDate: selectedDate,
-            amount: document.getElementById('pTotal').innerText,
-            agentId: agentInfo?.id || 'NA',
-            status: 'pending',
-            createdAt: new Date().toISOString()
+        day.onclick = () => {
+            selectedDate = dateStr;
+            renderCalendar();
+            updatePricingLogic();
         };
 
-        try {
-            await db.collection("bookings").add(bookingData);
-            alert("🔥 Booking Request Sent! Hamara Agent abhi aapko call karega.");
-            window.location.href = 'dashboard.html';
-        } catch(e) { alert("Error: " + e.message); }
+        grid.appendChild(day);
+    }
+}
+
+/* ------------------ PRICING ------------------ */
+function updatePricingLogic() {
+    let multiplier = 1;
+
+    if (selectedDate) {
+        const d = new Date(selectedDate);
+        if ([0,6].includes(d.getDay())) multiplier = 1.2;
     }
 
-    window.dialAgent = () => { if(agentInfo) window.location.href = `tel:${agentInfo.phone}`; };
+    const base = stadiumData.basePrice * (currentPercent / 100);
+    const final = Math.floor(base * multiplier + 2500);
 
-    // --- INITIALIZE ---
-    window.onload = () => {
-        syncFromAdmin();
-        renderCanvas();
-        renderCalendar();
-        
-        // Simulating Real-time Viewer count
-        setInterval(() => {
-            const count = Math.floor(Math.random() * 10) + 10;
-            document.getElementById('viewerCount').innerText = count;
-        }, 5000);
-    };
+    document.getElementById('pBase').innerText = '₹' + Math.floor(base).toLocaleString();
+    document.getElementById('pTotal').innerText = '₹' + final.toLocaleString();
+    document.getElementById('displayPercent').innerText = currentPercent + '%';
+    document.getElementById('displaySurge').innerText = multiplier + 'x';
+}
 
-    window.onresize = renderCanvas;
+/* ------------------ VALIDATION ------------------ */
+function isValid() {
+    const name = custName.value.trim();
+    const phone = custPhone.value.trim();
+
+    return name.length > 2 && phone.length >= 10 && selectedDate && currentPercent > 0;
+}
+
+/* ------------------ BOOKING ------------------ */
+async function processFinalBooking() {
+    if (!isValid()) {
+        alert("Complete details first!");
+        return;
+    }
+
+    const btn = document.querySelector('.btn-book');
+    btn.innerText = "Processing...";
+    btn.disabled = true;
+
+    try {
+        await db.collection("bookings").add({
+            customerName: custName.value,
+            customerPhone: custPhone.value,
+            customerEmail: custEmail.value,
+            stadiumId: stadiumData.name,
+            portion: currentPercent,
+            eventDate: selectedDate,
+            amount: document.getElementById('pTotal').innerText,
+            agentId: agentInfo?.id || null,
+            createdAt: new Date()
+        });
+
+        alert("🔥 Booking Confirmed!");
+    } catch (e) {
+        alert("Error: " + e.message);
+    }
+
+    btn.innerText = "CONFIRM BOOKING";
+    btn.disabled = false;
+}
+
+/* ------------------ INIT ------------------ */
+window.onload = () => {
+    syncFromAdmin();
+    renderCanvas();
+    renderCalendar();
+
+    setInterval(() => {
+        viewerCount.innerText = Math.floor(Math.random()*10)+10;
+    }, 3000);
+};
+
+window.onresize = renderCanvas;
 </script>
-</body>
-</html>
