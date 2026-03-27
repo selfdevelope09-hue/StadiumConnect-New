@@ -6,13 +6,14 @@
     <title>AI Stadium Booking - StadiumConnect</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background: #0a0a0a; color: #fff; }
-        
+
         .header {
             background: rgba(0,0,0,0.95);
-            padding: 16px 24px;
+            padding: 16px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -23,52 +24,58 @@
         }
         .logo { font-size: 22px; font-weight: 800; background: linear-gradient(135deg, #fff, #ff6b35); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .back-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #ff6b35; }
-        
-        .container { max-width: 1200px; margin: 0 auto; padding: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
-        
-        /* 3D Canvas */
-        .canvas-container {
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+
+        /* Left Side - Stadium Visual */
+        .visual-panel {
             background: #1a1a2e;
-            border-radius: 24px;
-            overflow: hidden;
+            border-radius: 28px;
+            padding: 24px;
+            position: sticky;
+            top: 100px;
+        }
+        .stadium-canvas {
+            background: #0a0a2a;
+            border-radius: 20px;
+            height: 450px;
             position: relative;
+            cursor: crosshair;
+            overflow: hidden;
         }
-        #stadiumCanvas {
+        canvas {
             width: 100%;
-            height: 500px;
+            height: 100%;
             display: block;
+            cursor: crosshair;
         }
-        .canvas-overlay {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            background: rgba(0,0,0,0.7);
-            padding: 8px 16px;
-            border-radius: 30px;
-            font-size: 12px;
+        .selection-info {
+            margin-top: 20px;
+            padding: 16px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 16px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
         }
-        
-        /* Booking Panel */
+        .selection-percentage { font-size: 28px; font-weight: 800; color: #ff6b35; }
+        .selection-area { color: #aaa; }
+
+        /* Right Side - Booking Panel */
         .booking-panel {
             background: rgba(255,255,255,0.05);
-            border-radius: 24px;
-            padding: 24px;
+            border-radius: 28px;
+            padding: 28px;
             border: 1px solid rgba(255,255,255,0.1);
         }
-        .stadium-name {
-            font-size: 28px;
-            font-weight: 800;
-            margin-bottom: 8px;
-        }
-        .stadium-location {
-            color: #aaa;
-            margin-bottom: 24px;
-        }
-        
-        /* Portion Selection */
-        .portion-grid {
+        .stadium-name { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+        .stadium-location { color: #aaa; margin-bottom: 24px; }
+
+        /* Portion Selection Buttons */
+        .portion-buttons {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 12px;
             margin: 24px 0;
         }
@@ -81,17 +88,27 @@
             cursor: pointer;
             transition: 0.2s;
         }
-        .portion-btn.selected {
-            background: #ff6b35;
-            border-color: #ff6b35;
+        .portion-btn.selected { background: #ff6b35; border-color: #ff6b35; }
+        .portion-btn:hover { background: rgba(255,107,53,0.5); }
+
+        /* Date Calendar */
+        .calendar-section { margin: 24px 0; }
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+        .calendar-day {
+            text-align: center;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.2s;
         }
-        .portion-btn:hover {
-            background: rgba(255,107,53,0.5);
-        }
-        .portion-name { font-weight: 600; margin-bottom: 4px; }
-        .portion-area { font-size: 12px; color: #aaa; }
-        
-        /* AI Price Calculator */
+        .calendar-day.available { background: rgba(46,125,50,0.3); border: 1px solid #2e7d32; }
+        .calendar-day.booked { background: rgba(211,47,47,0.3); border: 1px solid #d32f2f; cursor: not-allowed; opacity: 0.5; }
+        .calendar-day.selected { background: #ff6b35; color: white; }
+        .calendar-day:hover:not(.booked) { background: rgba(255,107,53,0.5); }
+
+        /* Price Calculator */
         .price-calculator {
             background: rgba(255,107,53,0.1);
             border-radius: 20px;
@@ -99,44 +116,57 @@
             margin: 24px 0;
             border: 1px solid rgba(255,107,53,0.3);
         }
-        .price-row {
+        .price-row { display: flex; justify-content: space-between; margin-bottom: 12px; }
+        .ai-price { font-size: 32px; font-weight: 800; color: #ff6b35; }
+
+        /* Payment Options */
+        .payment-options {
             display: flex;
-            justify-content: space-between;
-            margin-bottom: 12px;
+            gap: 12px;
+            margin: 20px 0;
         }
-        .ai-price {
-            font-size: 32px;
-            font-weight: 800;
-            color: #ff6b35;
+        .payment-option {
+            flex: 1;
+            padding: 14px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
         }
-        
+        .payment-option.selected { background: #ff6b35; }
+        .payment-option small { display: block; font-size: 11px; color: #aaa; }
+
         .book-btn {
             width: 100%;
             background: #ff6b35;
             color: white;
             border: none;
-            padding: 16px;
+            padding: 18px;
             border-radius: 50px;
             font-size: 18px;
             font-weight: 700;
             cursor: pointer;
+            margin-top: 20px;
             transition: 0.2s;
         }
         .book-btn:hover { background: #e55a2b; transform: scale(1.02); }
-        
-        .info-text {
-            font-size: 12px;
-            color: #666;
-            text-align: center;
-            margin-top: 16px;
+
+        .agent-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 16px;
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
         }
-        
-        @media (max-width: 900px) {
-            .container { grid-template-columns: 1fr; }
-            #stadiumCanvas { height: 400px; }
-        }
+        .call-agent { background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 30px; cursor: pointer; }
+
+        @media (max-width: 1000px) { .container { grid-template-columns: 1fr; } .visual-panel { position: relative; top: 0; } }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 
@@ -147,203 +177,418 @@
 </header>
 
 <div class="container">
-    <!-- 3D Canvas -->
-    <div class="canvas-container">
-        <canvas id="stadiumCanvas" width="600" height="500"></canvas>
-        <div class="canvas-overlay">
-            <i class="fas fa-mouse-pointer"></i> Click & Drag to select portion | 🤖 AI Spatial Projection
+    <!-- Left Side - Interactive Stadium Visual -->
+    <div class="visual-panel">
+        <div class="stadium-canvas">
+            <canvas id="stadiumCanvas" width="500" height="400"></canvas>
+        </div>
+        <div class="selection-info">
+            <div>
+                <div class="selection-percentage" id="selectedPercent">0%</div>
+                <div class="selection-area" id="selectedArea">0 sq meters</div>
+            </div>
+            <div>
+                <div class="selection-percentage" id="estimatedSeats">0 seats</div>
+                <div class="selection-area">Estimated capacity</div>
+            </div>
+            <div>
+                <i class="fas fa-info-circle"></i> Click & drag to select area
+            </div>
         </div>
     </div>
-    
-    <!-- Booking Panel -->
+
+    <!-- Right Side - Booking Panel -->
     <div class="booking-panel">
         <div class="stadium-name" id="stadiumName">Vidarbha Cricket Stadium</div>
         <div class="stadium-location"><i class="fas fa-map-marker-alt"></i> <span id="stadiumLocation">Nagpur</span></div>
-        
-        <div class="portion-grid" id="portionGrid">
-            <div class="portion-btn" data-area="25" onclick="selectPortion('North Stand', 25)">
-                <div class="portion-name">North Stand</div>
-                <div class="portion-area">25% Area | 5,000 seats</div>
+
+        <!-- Quick Portion Buttons -->
+        <div class="portion-buttons">
+            <div class="portion-btn" onclick="selectPortion(25)">25%</div>
+            <div class="portion-btn" onclick="selectPortion(50)">50%</div>
+            <div class="portion-btn" onclick="selectPortion(75)">75%</div>
+            <div class="portion-btn" onclick="selectPortion(100)">Full Stadium</div>
+            <div class="portion-btn" onclick="selectPortion(30)">30%</div>
+            <div class="portion-btn" onclick="selectPortion(40)">40%</div>
+        </div>
+
+        <!-- Date Availability Calendar -->
+        <div class="calendar-section">
+            <div class="calendar-header">
+                <button onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button>
+                <span id="currentMonth">March 2025</span>
+                <button onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button>
             </div>
-            <div class="portion-btn" data-area="30" onclick="selectPortion('South Stand', 30)">
-                <div class="portion-name">South Stand</div>
-                <div class="portion-area">30% Area | 6,000 seats</div>
-            </div>
-            <div class="portion-btn" data-area="35" onclick="selectPortion('East Gallery', 35)">
-                <div class="portion-name">East Gallery</div>
-                <div class="portion-area">35% Area | 7,000 seats</div>
-            </div>
-            <div class="portion-btn" data-area="40" onclick="selectPortion('West Gallery', 40)">
-                <div class="portion-name">West Gallery</div>
-                <div class="portion-area">40% Area | 8,000 seats</div>
-            </div>
-            <div class="portion-btn" data-area="50" onclick="selectPortion('VIP Box', 50)">
-                <div class="portion-name">VIP Box</div>
-                <div class="portion-area">50% Area | Premium View</div>
-            </div>
-            <div class="portion-btn" data-area="100" onclick="selectPortion('Full Stadium', 100)">
-                <div class="portion-name">Full Stadium</div>
-                <div class="portion-area">100% Area | Entire Venue</div>
+            <div class="calendar-grid" id="calendarGrid"></div>
+            <div style="font-size: 12px; margin-top: 12px; display: flex; gap: 20px; justify-content: center;">
+                <span><span style="background:#2e7d32; display:inline-block; width:12px; height:12px; border-radius:2px;"></span> Available</span>
+                <span><span style="background:#d32f2f; display:inline-block; width:12px; height:12px; border-radius:2px;"></span> Booked</span>
+                <span><span style="background:#ff6b35; display:inline-block; width:12px; height:12px; border-radius:2px;"></span> Selected</span>
             </div>
         </div>
-        
+
+        <!-- AI Price Calculator -->
         <div class="price-calculator">
-            <div class="price-row">
-                <span>Base Price (Full Stadium)</span>
-                <span id="basePrice">₹50,000</span>
-            </div>
-            <div class="price-row">
-                <span>Selected Portion</span>
-                <span id="selectedPortion">None</span>
-            </div>
-            <div class="price-row">
-                <span>Area Percentage</span>
-                <span id="areaPercent">0%</span>
-            </div>
-            <div class="price-row">
-                <span>AI Multiplier</span>
-                <span id="aiMultiplier">1.0x</span>
-            </div>
-            <div class="price-row" style="border-top: 1px solid rgba(255,255,255,0.2); padding-top: 12px; margin-top: 8px;">
+            <div class="price-row"><span>Base Price (Full Stadium)</span><span id="basePrice">₹50,000</span></div>
+            <div class="price-row"><span>Selected Area</span><span id="selectedAreaText">0%</span></div>
+            <div class="price-row"><span>AI Demand Multiplier</span><span id="aiMultiplier">1.0x</span></div>
+            <div class="price-row" style="border-top:1px solid rgba(255,255,255,0.2); padding-top:12px;">
                 <span><strong>AI Calculated Price</strong></span>
                 <span class="ai-price" id="aiPrice">₹0</span>
             </div>
         </div>
-        
+
+        <!-- Payment Options -->
+        <div class="payment-options">
+            <div class="payment-option selected" onclick="selectPayment('full')">
+                <strong>Full Payment</strong><br>
+                <small>Pay 100% now</small>
+            </div>
+            <div class="payment-option" onclick="selectPayment('advance')">
+                <strong>4 Months Advance</strong><br>
+                <small>Pay 25% now, rest later</small>
+            </div>
+        </div>
+
         <button class="book-btn" onclick="bookStadium()">
             <i class="fas fa-credit-card"></i> Book Now with AI →
         </button>
-        <div class="info-text">
-            🤖 AI dynamically adjusts pricing based on demand and portion selection
+
+        <!-- Agent Card -->
+        <div class="agent-card" id="agentCard">
+            <div>
+                <strong>📞 Your Local Agent</strong><br>
+                <span id="agentName">Loading...</span><br>
+                <span id="agentCity">-</span>
+            </div>
+            <button class="call-agent" id="callAgentBtn" onclick="callAgent()">
+                <i class="fas fa-phone-alt"></i> Call Agent
+            </button>
         </div>
     </div>
 </div>
 
-<script>
-    // Stadium data
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getFirestore, doc, getDoc, collection, getDocs, updateDoc, addDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
+        authDomain: "stadiumconnect-8fecb.firebaseapp.com",
+        projectId: "stadiumconnect-8fecb",
+        storageBucket: "stadiumconnect-8fecb.firebasestorage.app",
+        messagingSenderId: "458108198578",
+        appId: "1:458108198578:web:83d83646f0e24e718b73ab"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const stadiumId = urlParams.get('id');
+
     let stadium = {
         id: null,
         name: "Vidarbha Cricket Stadium",
-        location: "Nagpur",
+        city: "Nagpur",
         basePrice: 50000,
-        totalArea: 45000
+        totalArea: 45000,
+        boundaries: { length: 160, width: 140 }
     };
-    
-    let selectedPortion = null;
-    let selectedArea = 0;
-    
-    // Get stadium ID from URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const stadiumId = urlParams.get('id');
-    
-    if (stadiumId) {
-        // Load stadium data from Firebase (will be implemented)
-        console.log("Loading stadium:", stadiumId);
+    let selectedPercent = 0;
+    let selectedDate = null;
+    let paymentType = 'full';
+    let bookedDates = [];
+    let cityAgent = null;
+
+    // Canvas variables for drag selection
+    let canvas = document.getElementById('stadiumCanvas');
+    let ctx = canvas.getContext('2d');
+    let isDragging = false;
+    let startX, startY;
+    let selectionRect = { x: 0, y: 0, w: 0, h: 0 };
+
+    // Load stadium data
+    async function loadStadium() {
+        if (stadiumId) {
+            const stadiumDoc = await getDoc(doc(db, 'vendors', stadiumId));
+            if (stadiumDoc.exists()) {
+                stadium = { id: stadiumDoc.id, ...stadiumDoc.data() };
+                stadium.basePrice = parseInt(stadium.priceRange?.replace(/[^0-9]/g, '')) || 50000;
+                document.getElementById('stadiumName').innerText = stadium.name || 'Stadium';
+                document.getElementById('stadiumLocation').innerText = stadium.city || 'Location';
+                document.getElementById('basePrice').innerHTML = `₹${stadium.basePrice.toLocaleString()}`;
+            }
+        }
+        await loadBookedDates();
+        await loadCityAgent();
+        drawStadium();
+        drawCalendar();
     }
-    
-    // 3D Canvas Setup
-    const canvas = document.getElementById('stadiumCanvas');
-    const ctx = canvas.getContext('2d');
-    
+
+    // Load booked dates for this stadium
+    async function loadBookedDates() {
+        const bookingsSnap = await getDocs(collection(db, "bookings"));
+        bookedDates = bookingsSnap.docs
+            .filter(d => d.data().vendorId === stadium.id && d.data().status !== 'cancelled')
+            .map(d => d.data().eventDate);
+    }
+
+    // Load agent for stadium's city
+    async function loadCityAgent() {
+        const agentsSnap = await getDocs(collection(db, "agents"));
+        agentsSnap.forEach(doc => {
+            const agent = doc.data();
+            if (agent.city?.toLowerCase() === stadium.city?.toLowerCase()) {
+                cityAgent = { id: doc.id, ...agent };
+            }
+        });
+        if (cityAgent) {
+            document.getElementById('agentName').innerText = cityAgent.name || cityAgent.id;
+            document.getElementById('agentCity').innerText = cityAgent.city || '-';
+        } else {
+            document.getElementById('agentCard').innerHTML = '<div>No agent assigned to this city yet</div>';
+        }
+    }
+
+    // Draw stadium ground with boundaries
     function drawStadium() {
         const w = canvas.width, h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
         
         // Background
-        ctx.fillStyle = '#1a1a2e';
+        ctx.fillStyle = '#1a5c2a';
         ctx.fillRect(0, 0, w, h);
         
-        // Stadium outline (oval)
+        // Boundary (oval)
         ctx.beginPath();
-        ctx.ellipse(w/2, h/2, w*0.4, h*0.35, 0, 0, 2 * Math.PI);
+        ctx.ellipse(w/2, h/2, w*0.42, h*0.38, 0, 0, 2 * Math.PI);
         ctx.strokeStyle = '#ff6b35';
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 4;
         ctx.stroke();
         
-        // Field
-        ctx.fillStyle = '#2d5a2c';
-        ctx.fillRect(w*0.2, h*0.3, w*0.6, h*0.4);
-        
-        // Center circle
+        // Inner circle
         ctx.beginPath();
-        ctx.arc(w/2, h/2, h*0.1, 0, 2 * Math.PI);
-        ctx.fillStyle = '#2d5a2c';
-        ctx.fill();
+        ctx.arc(w/2, h/2, h*0.12, 0, 2 * Math.PI);
         ctx.strokeStyle = '#ff6b35';
         ctx.stroke();
         
-        // Draw fractional sections (highlight based on selection)
-        // North Stand (top)
-        if (selectedArea > 0 && selectedArea <= 50) {
-            ctx.fillStyle = 'rgba(255,107,53,0.4)';
-            ctx.fillRect(w*0.2, h*0.2, w*0.6, h*0.15);
-        }
+        // Pitch
+        ctx.fillStyle = '#3a7a3a';
+        ctx.fillRect(w/2 - 30, h/2 - 60, 60, 120);
         
-        // South Stand (bottom)
-        if (selectedArea > 50 && selectedArea <= 100) {
-            ctx.fillStyle = 'rgba(255,107,53,0.4)';
-            ctx.fillRect(w*0.2, h*0.65, w*0.6, h*0.15);
-        }
+        // Boundary dimensions text
+        ctx.fillStyle = '#ffd966';
+        ctx.font = '12px Inter';
+        ctx.fillText(`Length: ${stadium.boundaries?.length || 160}m`, w-100, 30);
+        ctx.fillText(`Width: ${stadium.boundaries?.width || 140}m`, w-100, 50);
         
-        // Labels
-        ctx.fillStyle = '#ff6b35';
-        ctx.font = 'bold 14px Inter';
-        ctx.fillText('North Stand (25%)', w*0.35, h*0.25);
-        ctx.fillText('South Stand (30%)', w*0.35, h*0.7);
-        ctx.fillText('East Gallery (35%)', w*0.05, h*0.45);
-        ctx.fillText('West Gallery (40%)', w*0.75, h*0.45);
-        ctx.fillText('VIP Box (50%)', w*0.4, h*0.5);
-        
-        // AI Projection - Virtual Stage
-        if (selectedArea > 0) {
-            ctx.fillStyle = 'rgba(255,107,53,0.6)';
-            ctx.fillRect(w*0.35, h*0.55, w*0.3, h*0.1);
+        // Selected area highlight
+        if (selectedPercent > 0) {
+            ctx.fillStyle = 'rgba(255,107,53,0.3)';
+            const areaHeight = h * (selectedPercent / 100);
+            ctx.fillRect(0, h - areaHeight, w, areaHeight);
             ctx.fillStyle = '#ff6b35';
-            ctx.font = '12px Inter';
-            ctx.fillText('🎭 AI Projected Stage', w*0.38, h*0.6);
-            ctx.fillText(`👥 Seating Capacity: ${Math.floor(stadium.totalArea * (selectedArea/100))}`, w*0.38, h*0.63);
+            ctx.font = 'bold 14px Inter';
+            ctx.fillText(`${selectedPercent}% Selected`, w/2-40, h-20);
         }
+        
+        // Draw boundary numbers (north, south, east, west)
+        ctx.fillStyle = '#ff6b35';
+        ctx.font = '12px Inter';
+        ctx.fillText('North Stand', w/2-35, 25);
+        ctx.fillText('South Stand', w/2-35, h-15);
+        ctx.fillText('East Gallery', w-70, h/2);
+        ctx.fillText('West Gallery', 15, h/2);
     }
-    
-    function selectPortion(name, areaPercent) {
-        selectedPortion = name;
-        selectedArea = areaPercent;
+
+    // Canvas drag selection handlers
+    function getMousePos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        let clientX, clientY;
+        if (e.touches) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+        return {
+            x: (clientX - rect.left) * scaleX,
+            y: (clientY - rect.top) * scaleY
+        };
+    }
+
+    canvas.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        const pos = getMousePos(e);
+        startX = pos.x;
+        startY = pos.y;
+        canvas.style.cursor = 'grabbing';
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const pos = getMousePos(e);
+        const width = Math.abs(pos.x - startX);
+        const height = Math.abs(pos.y - startY);
+        const areaPercent = Math.min(100, Math.max(5, ((width * height) / (canvas.width * canvas.height)) * 100));
+        updateSelectedPercent(Math.floor(areaPercent));
+    });
+
+    canvas.addEventListener('mouseup', () => {
+        isDragging = false;
+        canvas.style.cursor = 'crosshair';
+    });
+
+    canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        isDragging = true;
+        const pos = getMousePos(e);
+        startX = pos.x;
+        startY = pos.y;
+    });
+
+    canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        if (!isDragging) return;
+        const pos = getMousePos(e);
+        const width = Math.abs(pos.x - startX);
+        const height = Math.abs(pos.y - startY);
+        const areaPercent = Math.min(100, Math.max(5, ((width * height) / (canvas.width * canvas.height)) * 100));
+        updateSelectedPercent(Math.floor(areaPercent));
+    });
+
+    canvas.addEventListener('touchend', () => {
+        isDragging = false;
+    });
+
+    function updateSelectedPercent(percent) {
+        selectedPercent = percent;
+        const area = (stadium.totalArea * percent) / 100;
+        const seats = Math.floor((stadium.totalArea / 2) * (percent / 100));
+        document.getElementById('selectedPercent').innerHTML = `${percent}%`;
+        document.getElementById('selectedArea').innerHTML = `${Math.floor(area)} sq m`;
+        document.getElementById('estimatedSeats').innerHTML = `${seats.toLocaleString()} seats`;
+        document.getElementById('selectedAreaText').innerHTML = `${percent}%`;
         
-        // Update UI
-        document.querySelectorAll('.portion-btn').forEach(btn => btn.classList.remove('selected'));
-        event.target.closest('.portion-btn').classList.add('selected');
-        
-        document.getElementById('selectedPortion').innerHTML = `${name} (${areaPercent}%)`;
-        document.getElementById('areaPercent').innerHTML = `${areaPercent}%`;
-        
-        // AI Price Calculation
-        const basePrice = stadium.basePrice;
-        const multiplier = 1 + (areaPercent / 100) * 0.5;
-        const aiPrice = Math.floor(basePrice * (areaPercent / 100) * multiplier);
-        
+        const multiplier = 1 + (percent / 100) * 0.3;
+        const price = Math.floor(stadium.basePrice * (percent / 100) * multiplier);
         document.getElementById('aiMultiplier').innerHTML = `${multiplier.toFixed(1)}x`;
-        document.getElementById('aiPrice').innerHTML = `₹${aiPrice.toLocaleString()}`;
-        
-        // Redraw canvas with selection
+        document.getElementById('aiPrice').innerHTML = `₹${price.toLocaleString()}`;
         drawStadium();
     }
-    
-    function bookStadium() {
-        if (!selectedPortion) {
-            alert('Please select a portion of the stadium to book');
-            return;
-        }
+
+    window.selectPortion = (percent) => {
+        updateSelectedPercent(percent);
+        document.querySelectorAll('.portion-btn').forEach(btn => btn.classList.remove('selected'));
+        event.target.classList.add('selected');
+    };
+
+    // Calendar functions
+    let currentDate = new Date();
+    let currentMonth = currentDate.getMonth();
+    let currentYear = currentDate.getFullYear();
+
+    function drawCalendar() {
+        const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        document.getElementById('currentMonth').innerHTML = `${monthNames[currentMonth]} ${currentYear}`;
         
-        const price = document.getElementById('aiPrice').innerText;
-        alert(`✅ Booking request sent for ${stadium.name}\nSelected: ${selectedPortion} (${selectedArea}%)\nAI Price: ${price}\n\nAgent will contact you shortly!`);
+        let html = '';
+        for (let i = 0; i < firstDay; i++) html += '<div></div>';
+        
+        for (let d = 1; d <= daysInMonth; d++) {
+            const dateStr = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            const isBooked = bookedDates.includes(dateStr);
+            const isSelected = selectedDate === dateStr;
+            html += `
+                <div class="calendar-day ${isBooked ? 'booked' : 'available'} ${isSelected ? 'selected' : ''}" 
+                     onclick="${!isBooked ? `selectDate('${dateStr}')` : ''}">
+                    ${d}
+                </div>
+            `;
+        }
+        document.getElementById('calendarGrid').innerHTML = html;
     }
-    
-    // Initial draw
-    drawStadium();
-    
-    // Set base price display
-    document.getElementById('basePrice').innerHTML = `₹${stadium.basePrice.toLocaleString()}`;
-    document.getElementById('aiPrice').innerHTML = `₹${stadium.basePrice.toLocaleString()}`;
+
+    window.selectDate = (date) => {
+        selectedDate = date;
+        drawCalendar();
+    };
+
+    window.changeMonth = (delta) => {
+        currentMonth += delta;
+        if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+        if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+        drawCalendar();
+    };
+
+    window.selectPayment = (type) => {
+        paymentType = type;
+        document.querySelectorAll('.payment-option').forEach(opt => opt.classList.remove('selected'));
+        event.target.classList.add('selected');
+    };
+
+    window.callAgent = () => {
+        if (cityAgent && cityAgent.phone) {
+            window.location.href = `tel:${cityAgent.phone}`;
+        } else {
+            alert('Agent contact not available');
+        }
+    };
+
+    window.bookStadium = async () => {
+        const user = auth.currentUser;
+        if (!user) { alert('Please login first'); window.location.href = 'login.html'; return; }
+        if (selectedPercent === 0) { alert('Please select a portion of the stadium'); return; }
+        if (!selectedDate) { alert('Please select an event date'); return; }
+        
+        const totalPrice = parseInt(document.getElementById('aiPrice').innerText.replace(/[₹,]/g, ''));
+        const advanceAmount = Math.floor(totalPrice * 0.25);
+        const finalAmount = paymentType === 'full' ? totalPrice : advanceAmount;
+        
+        const bookingData = {
+            vendorId: stadium.id,
+            vendorName: stadium.name,
+            vendorCity: stadium.city,
+            category: 'stadium',
+            userId: user.uid,
+            userName: user.displayName || user.email,
+            userPhone: user.phoneNumber || '',
+            eventDate: selectedDate,
+            eventType: 'Stadium Booking',
+            eventLocation: stadium.location || stadium.city,
+            amount: totalPrice,
+            paymentType: paymentType,
+            paidAmount: finalAmount,
+            selectedPortion: `${selectedPercent}%`,
+            agentId: cityAgent?.id || '',
+            status: paymentType === 'full' ? 'confirmed' : 'partial',
+            createdAt: new Date().toISOString()
+        };
+        
+        try {
+            await addDoc(collection(db, 'bookings'), bookingData);
+            if (paymentType === 'full') {
+                alert(`✅ Booking confirmed! Amount: ₹${finalAmount.toLocaleString()}\nAgent will contact you.`);
+            } else {
+                alert(`✅ Advance payment of ₹${advanceAmount.toLocaleString()} received!\nRemaining ₹${(totalPrice - advanceAmount).toLocaleString()} to be paid 4 months before event.`);
+            }
+            window.location.href = 'dashboard.html';
+        } catch (error) {
+            alert('Booking failed: ' + error.message);
+        }
+    };
+
+    loadStadium();
 </script>
 
 </body>
 </html>
+
+
