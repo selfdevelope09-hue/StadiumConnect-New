@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>My Profile - StadiumConnect</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -53,6 +53,31 @@
             min-height: 100vh;
         }
 
+        /* Animated Background */
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        .animated-bg .gradient-1 {
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 40%, rgba(255,107,53,0.08) 0%, transparent 50%);
+            animation: rotate1 25s linear infinite;
+        }
+        @keyframes rotate1 {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
         /* Header */
         .header {
             background: var(--bg-secondary);
@@ -79,9 +104,21 @@
             -webkit-text-fill-color: transparent;
         }
 
-        .logo span {
-            background: none;
-            -webkit-text-fill-color: var(--accent);
+        .back-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            color: var(--accent);
+            transition: all 0.3s ease;
+        }
+        .back-btn:hover {
+            background: var(--accent);
+            color: white;
+            transform: translateX(-3px);
         }
 
         .header-actions {
@@ -126,6 +163,8 @@
 
         /* Container */
         .container {
+            position: relative;
+            z-index: 1;
             max-width: 1200px;
             margin: 0 auto;
             padding: 30px;
@@ -143,14 +182,8 @@
         }
 
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .profile-avatar {
@@ -300,12 +333,7 @@
 
         /* Edit Form */
         .edit-form {
-            display: none;
             margin-top: 20px;
-        }
-
-        .edit-form.active {
-            display: block;
         }
 
         .form-group {
@@ -427,11 +455,13 @@
         .review-rating {
             color: #fbbf24;
             margin-bottom: 8px;
+            font-size: 18px;
         }
 
         .review-comment {
             color: var(--text-secondary);
             margin: 8px 0;
+            line-height: 1.5;
         }
 
         .review-date {
@@ -449,6 +479,22 @@
         .empty-state i {
             font-size: 64px;
             margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        /* Spinner */
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         /* Toast */
@@ -486,13 +532,22 @@
             .profile-name { font-size: 22px; }
             .tab-btn { padding: 8px 16px; font-size: 14px; }
             .booking-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+            .profile-stats { gap: 20px; }
+            .stat-number { font-size: 20px; }
         }
     </style>
 </head>
 <body>
 
+<div class="animated-bg">
+    <div class="gradient-1"></div>
+</div>
+
 <header class="header">
-    <div class="logo" onclick="window.location.href='index.html'">🏟️ STADIUM<span>CONNECT</span></div>
+    <div style="display: flex; align-items: center; gap: 15px;">
+        <button class="back-btn" onclick="window.location.href='dashboard.html'"><i class="fas fa-arrow-left"></i></button>
+        <div class="logo" onclick="window.location.href='index.html'">🏟️ STADIUM<span>CONNECT</span></div>
+    </div>
     <div class="header-actions">
         <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
         <button class="logout-btn" onclick="logout()">Logout</button>
@@ -510,10 +565,10 @@
 
     <!-- Tabs -->
     <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('overview')">📊 Overview</button>
-        <button class="tab-btn" onclick="switchTab('bookings')">📅 My Bookings</button>
-        <button class="tab-btn" onclick="switchTab('reviews')">⭐ My Reviews</button>
-        <button class="tab-btn" onclick="switchTab('settings')">⚙️ Settings</button>
+        <button class="tab-btn active" data-tab="overview">📊 Overview</button>
+        <button class="tab-btn" data-tab="bookings">📅 My Bookings</button>
+        <button class="tab-btn" data-tab="reviews">⭐ My Reviews</button>
+        <button class="tab-btn" data-tab="settings">⚙️ Settings</button>
     </div>
 
     <!-- Overview Tab -->
@@ -577,7 +632,7 @@
     <div id="settingsTab" class="tab-content">
         <div class="info-card">
             <div class="card-title"><i class="fas fa-edit"></i> Edit Profile</div>
-            <div id="editForm">
+            <div class="edit-form">
                 <div class="form-group">
                     <label>Full Name</label>
                     <input type="text" id="editName" placeholder="Enter your full name">
@@ -623,26 +678,21 @@
     let userReviews = [];
 
     // Tab Switching
-    window.switchTab = (tab) => {
+    function switchTab(tabName) {
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
         
-        if (tab === 'overview') {
-            document.querySelector('.tab-btn:nth-child(1)').classList.add('active');
-            document.getElementById('overviewTab').classList.add('active');
-        } else if (tab === 'bookings') {
-            document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
-            document.getElementById('bookingsTab').classList.add('active');
-            loadBookings();
-        } else if (tab === 'reviews') {
-            document.querySelector('.tab-btn:nth-child(3)').classList.add('active');
-            document.getElementById('reviewsTab').classList.add('active');
-            loadReviews();
-        } else if (tab === 'settings') {
-            document.querySelector('.tab-btn:nth-child(4)').classList.add('active');
-            document.getElementById('settingsTab').classList.add('active');
-        }
-    };
+        document.querySelector(`.tab-btn[data-tab="${tabName}"]`).classList.add('active');
+        document.getElementById(`${tabName}Tab`).classList.add('active');
+        
+        if (tabName === 'bookings') loadBookings();
+        if (tabName === 'reviews') loadReviews();
+    }
+
+    // Add click listeners to tabs
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.onclick = () => switchTab(btn.dataset.tab);
+    });
 
     // Load User Data
     async function loadUserData() {
@@ -663,6 +713,13 @@
             document.getElementById('infoPhone').innerText = userData.phone || 'Not set';
             document.getElementById('editPhone').value = userData.phone || '';
             document.getElementById('infoSince').innerText = userData.createdAt ? new Date(userData.createdAt).toLocaleDateString() : new Date().toLocaleDateString();
+        } else {
+            // Create user document if not exists
+            await updateDoc(doc(db, 'users', currentUser.uid), {
+                name: currentUser.displayName || '',
+                email: currentUser.email,
+                createdAt: new Date().toISOString()
+            }).catch(() => {});
         }
         
         // Email verification status
@@ -677,7 +734,7 @@
     // Load Bookings
     async function loadBookings() {
         const container = document.getElementById('bookingsList');
-        container.innerHTML = '<div class="empty-state"><div class="spinner" style="width: 40px; height: 40px; border: 3px solid var(--border-color); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px;"></div><p>Loading bookings...</p></div>';
+        container.innerHTML = '<div class="empty-state"><div class="spinner"></div><p>Loading bookings...</p></div>';
         
         try {
             const q = query(collection(db, "bookings"), where("userId", "==", currentUser.uid), orderBy("createdAt", "desc"));
@@ -716,7 +773,7 @@
     // Load Reviews
     async function loadReviews() {
         const container = document.getElementById('reviewsList');
-        container.innerHTML = '<div class="empty-state"><div class="spinner" style="width: 40px; height: 40px; border: 3px solid var(--border-color); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px;"></div><p>Loading reviews...</p></div>';
+        container.innerHTML = '<div class="empty-state"><div class="spinner"></div><p>Loading reviews...</p></div>';
         
         try {
             const q = query(collection(db, "reviews"), where("userId", "==", currentUser.uid), orderBy("createdAt", "desc"));
@@ -731,7 +788,7 @@
             container.innerHTML = userReviews.map(review => `
                 <div class="review-item">
                     <div class="review-rating">
-                        ${'⭐'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}
+                        ${'⭐'.repeat(review.rating)}${'☆'.repeat(5 - (review.rating || 0))}
                     </div>
                     <div class="booking-vendor">${escapeHtml(review.vendorName || 'Vendor')}</div>
                     <div class="review-comment">${escapeHtml(review.comment || 'No comment provided')}</div>
@@ -757,7 +814,7 @@
         document.getElementById('userStats').innerHTML = `
             <div class="stat-item"><div class="stat-number">${total}</div><div class="stat-label">Bookings</div></div>
             <div class="stat-item"><div class="stat-number">${completed}</div><div class="stat-label">Completed</div></div>
-            <div class="stat-item"><div class="stat-number">₹${(totalSpent / 1000).toFixed(0)}k</div><div class="stat-label">Spent</div></div>
+            <div class="stat-item"><div class="stat-number">₹${Math.floor(totalSpent / 1000)}k</div><div class="stat-label">Spent</div></div>
             <div class="stat-item"><div class="stat-number">${avgRating > 0 ? avgRating : '—'}</div><div class="stat-label">Rating</div></div>
         `;
         
@@ -852,17 +909,17 @@
     }
 
     // Theme Toggle
-    function toggleTheme() {
+    window.toggleTheme = () => {
         document.body.classList.toggle('dark');
         const btn = document.querySelector('.theme-toggle');
         btn.innerHTML = document.body.classList.contains('dark') ? '☀️' : '🌙';
         localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
-    }
+    };
 
-    function logout() {
+    window.logout = () => {
         auth.signOut();
         window.location.href = 'index.html';
-    }
+    };
 
     // Initialize theme
     if (localStorage.getItem('theme') === 'dark') {
@@ -871,19 +928,16 @@
     }
 
     // Auth State
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
         if (!user) {
             window.location.href = 'login.html';
             return;
         }
         currentUser = user;
-        loadUserData();
-        loadBookings();
-        loadReviews();
+        await loadUserData();
+        await loadBookings();
+        await loadReviews();
     });
-
-    window.toggleTheme = toggleTheme;
-    window.logout = logout;
 </script>
 </body>
 </html>
