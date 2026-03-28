@@ -3,202 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Agent Dashboard - Debug Version</title>
+    <title>Agent Dashboard - StadiumConnect</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background: #f5f7fb; padding: 20px; }
+        body { background: #f5f7fb; color: #333; }
+        .header { background: white; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .logo { font-size: 22px; font-weight: 800; cursor: pointer; background: linear-gradient(135deg, #ff6b35, #ff9068); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .agent-info { background: #fff5f0; padding: 8px 16px; border-radius: 40px; display: flex; align-items: center; gap: 10px; font-size: 14px; }
+        .live-badge { background: #28a745; color: white; padding: 4px 10px; border-radius: 20px; font-size: 10px; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+        .logout-btn { background: #ff6b35; color: white; border: none; padding: 8px 20px; border-radius: 30px; cursor: pointer; font-weight: 600; }
         
-        .header {
-            background: white;
-            padding: 16px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #eee;
-            flex-wrap: wrap;
-            gap: 15px;
-            border-radius: 16px;
-            margin-bottom: 20px;
-        }
-        .logo { font-size: 24px; font-weight: 800; background: linear-gradient(135deg, #ff6b35, #ff9068); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .agent-info { background: #fff5f0; padding: 8px 20px; border-radius: 40px; display: flex; align-items: center; gap: 10px; }
-        .logout-btn { background: #ff6b35; color: white; border: none; padding: 8px 24px; border-radius: 30px; cursor: pointer; font-weight: 600; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: white; border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .stat-value { font-size: 28px; font-weight: 800; color: #ff6b35; }
+        .stat-label { color: #777; font-size: 12px; margin-top: 5px; }
+
+        .analytics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 25px; }
+        .chart-card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         
-        .container { max-width: 1400px; margin: 0 auto; }
+        .table-card { background: white; border-radius: 20px; padding: 20px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th { text-align: left; padding: 12px; background: #fafafa; color: #666; font-size: 13px; }
+        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; }
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .status-confirmed { background: #e8f5e9; color: #2e7d32; }
+        .status-pending { background: #fff8e1; color: #f57f17; }
         
-        .debug-card {
-            background: white;
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        
-        .debug-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 15px;
-            color: #ff6b35;
-            border-left: 4px solid #ff6b35;
-            padding-left: 12px;
-        }
-        
-        .agent-id-box {
-            background: #f0f0f0;
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            font-family: monospace;
-        }
-        
-        .booking-card {
-            background: #f9f9f9;
-            border: 1px solid #e0e0e0;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 10px;
-        }
-        
-        .field-match {
-            color: green;
-            font-weight: bold;
-        }
-        
-        .field-mismatch {
-            color: red;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background: #f5f5f5;
-            font-weight: 600;
-        }
-        .status-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 600;
-        }
-        .status-confirmed { background: #d4edda; color: #155724; }
-        .status-pending { background: #fff3cd; color: #856404; }
-        .commission-amount { color: #28a745; font-weight: bold; }
-        .loading {
-            text-align: center;
-            padding: 40px;
-        }
-        .error-box {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-        }
-        .success-box {
-            background: #d4edda;
-            color: #155724;
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-        }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        .stat-card {
-            background: white;
-            border-radius: 20px;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        .stat-value {
-            font-size: 28px;
-            font-weight: 800;
-            color: #ff6b35;
-        }
-        button {
-            background: #ff6b35;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            margin: 5px;
-        }
-        button:hover {
-            background: #e55a2b;
-        }
-        input {
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            margin: 5px;
-        }
+        .error-banner { background: #fee; color: #c33; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: none; border: 1px solid #fcc; }
     </style>
 </head>
 <body>
 
+<header class="header">
+    <div class="logo">⚡ STADIUM<span>CONNECT</span></div>
+    <div class="agent-info">
+        <i class="fas fa-user-circle"></i>
+        <span id="agentName">Loading...</span> | ID: <strong id="agentIdDisplay">---</strong>
+        <span class="live-badge">LIVE</span>
+    </div>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+</header>
+
 <div class="container">
-    <div class="header">
-        <div class="logo">⚡ STADIUMCONNECT</div>
-        <div class="agent-info">
-            <i class="fas fa-user-tie"></i>
-            <span id="agentName"></span>
-            <span>ID: <strong id="agentIdDisplay"></strong></span>
-        </div>
-        <button class="logout-btn" onclick="logout()">Logout</button>
+    <div id="errorBanner" class="error-banner"></div>
+
+    <div class="stats-grid" id="statsGrid">
+        <div class="stat-card"><h3>--</h3><p>Total Bookings</p></div>
+        <div class="stat-card"><h3>₹--</h3><p>Revenue</p></div>
+        <div class="stat-card"><h3>₹--</h3><p>Commission</p></div>
     </div>
 
-    <!-- Debug Section -->
-    <div class="debug-card">
-        <div class="debug-title">🔧 Debug Information</div>
-        <div class="agent-id-box">
-            <strong>Current Agent ID:</strong> <span id="currentAgentId" style="color: #ff6b35; font-size: 18px;"></span>
-        </div>
-        <div>
-            <button onclick="fetchAllBookings()">📥 Fetch ALL Bookings (No Filter)</button>
-            <button onclick="fetchAgentBookings()">👤 Fetch My Bookings (With Filter)</button>
-            <button onclick="testConnection()">🔌 Test Firebase Connection</button>
-        </div>
+    <div class="analytics-grid">
+        <div class="chart-card"><canvas id="weeklyChart"></canvas></div>
+        <div class="chart-card"><canvas id="statusChart"></canvas></div>
     </div>
 
-    <!-- Stats Section -->
-    <div class="stats-grid" id="statsGrid"></div>
-
-    <!-- All Bookings Table -->
-    <div class="debug-card">
-        <div class="debug-title">📋 All Bookings from Firebase</div>
-        <div id="bookingsList" style="overflow-x: auto;">
-            <div class="loading">Click "Fetch ALL Bookings" to load data...</div>
-        </div>
-    </div>
-
-    <!-- My Bookings Table -->
-    <div class="debug-card">
-        <div class="debug-title">👤 My Bookings (Filtered by Agent ID)</div>
-        <div id="myBookingsList" style="overflow-x: auto;">
-            <div class="loading">Click "Fetch My Bookings" to load data...</div>
+    <div class="table-card">
+        <h3>Recent Bookings</h3>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr><th>Booking ID</th><th>Customer</th><th>Amount</th><th>Commission</th><th>Status</th></tr>
+                </thead>
+                <tbody id="bookingsTableBody">
+                    <tr><td colspan="5" style="text-align:center; padding:30px;">Loading data from Firestore...</td></tr>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getFirestore, collection, query, where, onSnapshot, orderBy } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
@@ -208,251 +90,113 @@
         messagingSenderId: "458108198578",
         appId: "1:458108198578:web:83d83646f0e24e718b73ab"
     };
-    
+
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    
-    // Get agent ID
-    let agentId = null;
-    let agentName = "Agent";
-    
-    try {
-        const agentData = JSON.parse(localStorage.getItem('agent'));
-        if (agentData) {
-            agentId = agentData.id || agentData.agentId || agentData.uid;
-            agentName = agentData.name || agentData.displayName || "Agent";
-        }
-    } catch(e) {}
-    
-    document.getElementById('agentName').innerText = agentName;
-    document.getElementById('agentIdDisplay').innerText = agentId || "Not Set";
-    document.getElementById('currentAgentId').innerText = agentId || "❌ No Agent ID Found in LocalStorage";
-    
-    // Function to calculate commission
-    function calculateCommission(amount) {
-        return Math.floor((Number(amount) || 0) * 0.025);
+
+    // 1. Get Agent ID from Storage
+    const agentData = JSON.parse(localStorage.getItem('agent'));
+    const agentId = agentData ? (agentData.id || agentData.agentId || agentData.uid) : null;
+
+    if (!agentId) {
+        alert("Session expired. Please login again.");
+        window.location.href = 'agent-login.html';
+    } else {
+        document.getElementById('agentName').innerText = agentData.name || "Agent";
+        document.getElementById('agentIdDisplay').innerText = agentId;
+        fetchBookings(agentId);
     }
-    
-    // Test Firebase Connection
-    window.testConnection = async () => {
-        try {
-            const bookingsRef = collection(db, "bookings");
-            const snapshot = await getDocs(bookingsRef);
-            alert(`✅ Connection Success! Total bookings: ${snapshot.size}`);
-        } catch (error) {
-            alert(`❌ Connection Failed: ${error.message}`);
-            console.error(error);
-        }
-    };
-    
-    // Fetch ALL bookings
-    window.fetchAllBookings = async () => {
-        const container = document.getElementById('bookingsList');
-        container.innerHTML = '<div class="loading">📡 Fetching all bookings...</div>';
+
+    let charts = {};
+
+    function fetchBookings(id) {
+        const bookingsRef = collection(db, "bookings");
         
-        try {
-            const bookingsRef = collection(db, "bookings");
-            const snapshot = await getDocs(bookingsRef);
-            
-            if (snapshot.empty) {
-                container.innerHTML = '<div class="error-box">⚠️ No bookings found in Firestore! Please add some test data.</div>';
-                return;
-            }
-            
+        // Strategy: Query specifically for this agent
+        // Try 'agentId' field first. If your Firestore uses a different name, change it here.
+        const q = query(bookingsRef, where("agentId", "==", id));
+
+        onSnapshot(q, (snapshot) => {
             const bookings = [];
             snapshot.forEach(doc => {
                 bookings.push({ id: doc.id, ...doc.data() });
             });
             
-            // Display table
-            let html = `
-                <table>
-                    <thead>
-                        <tr><th>Booking ID</th><th>Customer</th><th>Vendor</th><th>Amount</th><th>Status</th><th>Agent ID Field</th><th>Agent ID Value</th></tr>
-                    </thead>
-                    <tbody>
-            `;
-            
-            bookings.forEach(booking => {
-                // Find which agent field exists
-                let agentField = null;
-                let agentValue = null;
-                
-                if (booking.agentId) { agentField = 'agentId'; agentValue = booking.agentId; }
-                else if (booking.agent_id) { agentField = 'agent_id'; agentValue = booking.agent_id; }
-                else if (booking.assignedAgent) { agentField = 'assignedAgent'; agentValue = booking.assignedAgent; }
-                
-                const matches = (agentValue && agentValue.toString() === agentId);
-                
-                html += `
-                    <tr style="${matches ? 'background: #d4edda;' : ''}">
-                        <td><code>${booking.id.slice(-6)}</code></td>
-                        <td>${booking.userName || booking.customerName || '-'}</td>
-                        <td>${booking.vendorName || '-'}</td>
-                        <td>₹${(Number(booking.amount) || 0).toLocaleString()}</td>
-                        <td><span class="status-badge status-${booking.status || 'pending'}">${booking.status || 'pending'}</span></td>
-                        <td><strong>${agentField || '❌ No agent field'}</strong></td>
-                        <td>
-                            ${agentValue ? 
-                                `<span class="${matches ? 'field-match' : 'field-mismatch'}">${agentValue}</span>
-                                 ${matches ? ' ✅ MATCH' : ' ❌ MISMATCH'}` : 
-                                '<span style="color:red;">Missing</span>'
-                            }
-                        </td>
-                    </tr>
-                `;
-            });
-            
-            html += `</tbody></table>`;
-            html += `<div style="margin-top: 15px; padding: 10px; background: #e3f2fd; border-radius: 8px;">
-                        <strong>💡 Tip:</strong> Green rows show bookings matching your Agent ID (${agentId || 'not set'})
-                    </div>`;
-            
-            container.innerHTML = html;
-            
-            // Also update stats
-            updateStats(bookings);
-            
-        } catch (error) {
-            container.innerHTML = `<div class="error-box">❌ Error: ${error.message}</div>`;
-            console.error(error);
-        }
-    };
-    
-    // Fetch only agent's bookings
-    window.fetchAgentBookings = async () => {
-        const container = document.getElementById('myBookingsList');
-        
-        if (!agentId) {
-            container.innerHTML = '<div class="error-box">❌ No Agent ID found! Please login first.</div>';
-            return;
-        }
-        
-        container.innerHTML = '<div class="loading">🔍 Fetching bookings for Agent ID: ' + agentId + '...</div>';
-        
-        try {
-            const bookingsRef = collection(db, "bookings");
-            
-            // Try different field names
-            let bookings = [];
-            let usedField = null;
-            
-            // Try agentId
-            let q = query(bookingsRef, where("agentId", "==", agentId));
-            let snapshot = await getDocs(q);
-            
-            if (!snapshot.empty) {
-                usedField = 'agentId';
-                snapshot.forEach(doc => {
-                    bookings.push({ id: doc.id, ...doc.data() });
-                });
-            } else {
-                // Try agent_id
-                q = query(bookingsRef, where("agent_id", "==", agentId));
-                snapshot = await getDocs(q);
-                if (!snapshot.empty) {
-                    usedField = 'agent_id';
-                    snapshot.forEach(doc => {
-                        bookings.push({ id: doc.id, ...doc.data() });
-                    });
-                } else {
-                    // Try assignedAgent
-                    q = query(bookingsRef, where("assignedAgent", "==", agentId));
-                    snapshot = await getDocs(q);
-                    if (!snapshot.empty) {
-                        usedField = 'assignedAgent';
-                        snapshot.forEach(doc => {
-                            bookings.push({ id: doc.id, ...doc.data() });
-                        });
-                    }
-                }
-            }
-            
-            if (bookings.length === 0) {
-                container.innerHTML = `
-                    <div class="error-box">
-                        ⚠️ No bookings found for Agent ID: <strong>${agentId}</strong><br><br>
-                        <strong>Possible Issues:</strong><br>
-                        1. No bookings exist in Firestore<br>
-                        2. Bookings exist but don't have this Agent ID<br>
-                        3. Field name mismatch<br><br>
-                        <strong>Solution:</strong> Click "Fetch ALL Bookings" above to see what fields are available.
-                    </div>
-                `;
-                return;
-            }
-            
-            // Display bookings
-            let html = `
-                <table>
-                    <thead>
-                        <tr><th>ID</th><th>Customer</th><th>Vendor</th><th>Date</th><th>Amount</th><th>Commission (2.5%)</th><th>Status</th></tr>
-                    </thead>
-                    <tbody>
-            `;
-            
-            bookings.forEach(booking => {
-                const commission = calculateCommission(booking.amount);
-                html += `
-                    <tr>
-                        <td><code>${booking.id.slice(-6)}</code></td>
-                        <td>${booking.userName || booking.customerName || 'Guest'}</td>
-                        <td>${booking.vendorName || '-'}</td>
-                        <td>${booking.eventDate || booking.date || '-'}</td>
-                        <td>₹${(Number(booking.amount) || 0).toLocaleString()}</td>
-                        <td class="commission-amount">₹${commission.toLocaleString()}</td>
-                        <td><span class="status-badge status-${booking.status || 'pending'}">${booking.status || 'pending'}</span></td>
-                    </tr>
-                `;
-            });
-            
-            html += `</tbody></table>`;
-            html += `<div style="margin-top: 15px; padding: 10px; background: #d4edda; border-radius: 8px;">
-                        ✅ Found ${bookings.length} booking(s) using field: <strong>${usedField}</strong>
-                    </div>`;
-            
-            container.innerHTML = html;
-            
-            // Calculate and show stats
-            const confirmed = bookings.filter(b => b.status === 'confirmed' || b.status === 'completed');
-            const totalRevenue = confirmed.reduce((s, b) => s + (Number(b.amount) || 0), 0);
-            const totalCommission = calculateCommission(totalRevenue);
-            
-            document.getElementById('statsGrid').innerHTML = `
-                <div class="stat-card"><div class="stat-value">${bookings.length}</div><div>Total Bookings</div></div>
-                <div class="stat-card"><div class="stat-value">${confirmed.length}</div><div>Confirmed</div></div>
-                <div class="stat-card"><div class="stat-value">₹${totalRevenue.toLocaleString()}</div><div>Revenue</div></div>
-                <div class="stat-card"><div class="stat-value">₹${totalCommission.toLocaleString()}</div><div>Your Commission</div></div>
-            `;
-            
-        } catch (error) {
-            container.innerHTML = `<div class="error-box">❌ Error: ${error.message}</div>`;
-            console.error(error);
-        }
-    };
-    
-    function updateStats(bookings) {
-        const confirmed = bookings.filter(b => b.status === 'confirmed' || b.status === 'completed');
-        const totalRevenue = confirmed.reduce((s, b) => s + (Number(b.amount) || 0), 0);
-        const totalCommission = calculateCommission(totalRevenue);
-        
-        document.getElementById('statsGrid').innerHTML = `
-            <div class="stat-card"><div class="stat-value">${bookings.length}</div><div>Total Bookings</div></div>
-            <div class="stat-card"><div class="stat-value">${confirmed.length}</div><div>Confirmed</div></div>
-            <div class="stat-card"><div class="stat-value">₹${totalRevenue.toLocaleString()}</div><div>Revenue</div></div>
-            <div class="stat-card"><div class="stat-value">₹${totalCommission.toLocaleString()}</div><div>Commission</div></div>
-        `;
+            console.log("Data Received:", bookings);
+            updateUI(bookings);
+        }, (error) => {
+            console.error("Firestore Error:", error);
+            document.getElementById('errorBanner').style.display = "block";
+            document.getElementById('errorBanner').innerHTML = `<strong>Fetch Error:</strong> ${error.message}. <br>Check if 'agentId' field exists in your 'bookings' collection.`;
+        });
     }
-    
+
+    function updateUI(data) {
+        const confirmed = data.filter(b => b.status === 'confirmed' || b.status === 'completed');
+        const totalRevenue = confirmed.reduce((sum, b) => sum + (Number(b.amount) || 0), 0);
+        const totalCommission = Math.floor(totalRevenue * 0.025);
+
+        // Update Stats
+        document.getElementById('statsGrid').innerHTML = `
+            <div class="stat-card"><div class="stat-value">${data.length}</div><div class="stat-label">Total Bookings</div></div>
+            <div class="stat-card"><div class="stat-value">₹${totalRevenue.toLocaleString()}</div><div class="stat-label">Confirmed Revenue</div></div>
+            <div class="stat-card"><div class="stat-icon">🏆</div><div class="stat-value">₹${totalCommission.toLocaleString()}</div><div class="stat-label">Your Earnings (2.5%)</div></div>
+        `;
+
+        // Update Table
+        const tbody = document.getElementById('bookingsTableBody');
+        if (data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px;">No bookings found for your ID.</td></tr>';
+        } else {
+            tbody.innerHTML = data.map(b => `
+                <tr>
+                    <td>#${b.id.slice(-6).toUpperCase()}</td>
+                    <td>${b.userName || 'Customer'}</td>
+                    <td>₹${Number(b.amount || 0).toLocaleString()}</td>
+                    <td style="color:green; font-weight:600;">₹${Math.floor(Number(b.amount || 0) * 0.025)}</td>
+                    <td><span class="status-badge ${b.status === 'confirmed' ? 'status-confirmed' : 'status-pending'}">${b.status || 'pending'}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        renderCharts(data);
+    }
+
+    function renderCharts(data) {
+        const ctx1 = document.getElementById('weeklyChart').getContext('2d');
+        const ctx2 = document.getElementById('statusChart').getContext('2d');
+
+        if (charts.weekly) charts.weekly.destroy();
+        if (charts.status) charts.status.destroy();
+
+        charts.weekly = new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                datasets: [{ label: 'Revenue', data: [totalRevenueByWeek(data)], backgroundColor: '#ff6b35' }]
+            }
+        });
+
+        charts.status = new Chart(ctx2, {
+            type: 'doughnut',
+            data: {
+                labels: ['Confirmed', 'Pending'],
+                datasets: [{
+                    data: [data.filter(b => b.status === 'confirmed').length, data.filter(b => b.status === 'pending').length],
+                    backgroundColor: ['#28a745', '#ffc107']
+                }]
+            }
+        });
+    }
+
+    function totalRevenueByWeek(data) {
+        return data.filter(b => b.status === 'confirmed').reduce((s, b) => s + Number(b.amount || 0), 0);
+    }
+
     window.logout = () => {
         localStorage.removeItem('agent');
         window.location.href = 'agent-login.html';
     };
-    
-    // Auto-fetch on load
-    setTimeout(() => {
-        fetchAllBookings();
-    }, 500);
 </script>
 </body>
 </html>
