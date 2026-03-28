@@ -2,199 +2,699 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stadium Owner Dashboard - DEBUG MODE</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Stadium Owner Pro - StadiumConnect</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Flatpickr Calendar -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background: #1e1e2f; padding: 20px; }
-        
-        .debug-container {
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Animated Background */
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .animated-bg .circle {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,107,53,0.1) 0%, rgba(255,107,53,0) 70%);
+            animation: float 20s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0) scale(1); }
+            33% { transform: translateY(-50px) translateX(30px) scale(1.1); }
+            66% { transform: translateY(50px) translateX(-30px) scale(0.9); }
+        }
+
+        /* Main Container */
+        .container {
+            position: relative;
+            z-index: 1;
             max-width: 1400px;
             margin: 0 auto;
+            padding: 20px;
         }
-        
+
+        /* Header */
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
             padding: 20px 30px;
-            border-radius: 20px;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            animation: slideDown 0.6s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ff6b35, #ff9068);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            cursor: pointer;
+        }
+
+        .stadium-badge {
+            background: linear-gradient(135deg, #ff6b35, #ff9068);
+            padding: 10px 24px;
+            border-radius: 40px;
             color: white;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 5px 15px rgba(255,107,53,0.3);
         }
-        
-        .card {
-            background: white;
+
+        .live-badge {
+            background: #10b981;
+            color: white;
+            padding: 6px 14px;
             border-radius: 20px;
-            padding: 24px;
-            margin-bottom: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-        
-        .card h3 {
-            color: #333;
-            margin-bottom: 20px;
-            font-size: 20px;
-            border-left: 4px solid #ff6b35;
-            padding-left: 15px;
-        }
-        
-        .debug-info {
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 15px;
-            font-family: monospace;
-        }
-        
-        .booking-item {
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 10px;
-            border-left: 4px solid #28a745;
-        }
-        
-        .booking-item pre {
-            background: #fff;
-            padding: 10px;
-            border-radius: 8px;
-            overflow-x: auto;
             font-size: 12px;
+            animation: pulse 2s infinite;
+            font-weight: 600;
         }
-        
-        button {
-            background: #ff6b35;
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(16,185,129,0.4); }
+            50% { opacity: 0.9; box-shadow: 0 0 0 10px rgba(16,185,129,0); }
+        }
+
+        .btn-logout {
+            background: rgba(220,53,69,0.9);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-logout:hover {
+            background: #dc3545;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(220,53,69,0.4);
+        }
+
+        .btn-refresh {
+            background: rgba(16,185,129,0.9);
             color: white;
             border: none;
             padding: 10px 20px;
-            border-radius: 10px;
+            border-radius: 40px;
             cursor: pointer;
-            margin: 5px;
-            font-weight: 600;
+            margin-right: 10px;
+            transition: all 0.3s ease;
         }
-        
-        button:hover {
-            background: #e55a2b;
+
+        .btn-refresh:hover {
+            background: #10b981;
             transform: translateY(-2px);
         }
-        
-        .btn-success {
-            background: #28a745;
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+            animation: fadeInUp 0.6s ease 0.1s backwards;
         }
-        
-        .btn-info {
-            background: #17a2b8;
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        
+
+        .stat-card {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 24px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #ff6b35, #ff9068);
+            transform: scaleX(0);
+            transition: transform 0.4s ease;
+        }
+
+        .stat-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .stat-icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ff6b35, #ff9068);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .stat-sub {
+            font-size: 12px;
+            color: #10b981;
+            margin-top: 8px;
+            font-weight: 600;
+        }
+
+        /* Cards */
+        .card {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 28px;
+            margin-bottom: 30px;
+            transition: all 0.4s ease;
+            animation: fadeInUp 0.6s ease 0.2s backwards;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .card h3 {
+            margin-bottom: 24px;
+            font-size: 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #1a1a2e;
+        }
+
+        .card h3 i {
+            color: #ff6b35;
+            font-size: 24px;
+        }
+
+        /* Calendar Section */
+        .calendar-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .calendar-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .calendar-wrapper {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        }
+
+        .flatpickr-calendar {
+            width: 100% !important;
+            box-shadow: none !important;
+            border: 1px solid #eee;
+            border-radius: 16px;
+        }
+
+        .blocked-dates-list {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+        }
+
+        .blocked-date-item {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .blocked-date-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .remove-date {
+            background: #ef4444;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .remove-date:hover {
+            transform: scale(1.1);
+            background: #dc2626;
+        }
+
+        /* Form Styles */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 16px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #ff6b35;
+            box-shadow: 0 0 0 3px rgba(255,107,53,0.1);
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, #ff6b35, #ff9068);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255,107,53,0.4);
+        }
+
+        /* Table */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 14px 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th {
+            background: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        tr:hover {
+            background: #f9fafb;
+        }
+
         .status-badge {
-            display: inline-block;
             padding: 4px 12px;
             border-radius: 20px;
             font-size: 12px;
             font-weight: 600;
+            display: inline-block;
         }
-        
-        .status-confirmed { background: #d4edda; color: #155724; }
-        .status-pending { background: #fff3cd; color: #856404; }
-        .status-cancelled { background: #f8d7da; color: #721c24; }
-        
+
+        .status-confirmed, .status-completed {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-cancelled {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* Photo Grid */
+        .photo-grid {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .photo-item {
+            width: 100px;
+            height: 100px;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            border: 2px solid #e5e7eb;
+            transition: all 0.3s ease;
+        }
+
+        .photo-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-item .remove {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(239,68,68,0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: white;
+            padding: 14px 24px;
+            border-radius: 50px;
+            z-index: 2000;
+            animation: slideUp 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+        }
+
+        .toast.success {
+            border-left: 4px solid #10b981;
+        }
+
+        .toast.error {
+            border-left: 4px solid #ef4444;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Loading */
         .loading {
             text-align: center;
             padding: 40px;
             color: #666;
         }
-        
-        .error-box {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 15px;
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #ff6b35;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
         }
-        
-        .success-box {
-            background: #d4edda;
-            color: #155724;
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 15px;
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background: #f8f9fa;
-            font-weight: 600;
-        }
-        
-        .json-view {
-            background: #2d2d2d;
-            color: #f8f8f2;
-            padding: 15px;
-            border-radius: 8px;
-            overflow-x: auto;
-            font-size: 12px;
-            font-family: monospace;
+
+        .last-updated {
+            text-align: right;
+            font-size: 11px;
+            color: #888;
+            margin-top: 15px;
         }
     </style>
 </head>
 <body>
-<div class="debug-container">
+<div class="animated-bg" id="animatedBg"></div>
+
+<div class="container">
     <div class="header">
-        <h1><i class="fas fa-bug"></i> Stadium Owner Dashboard - DEBUG MODE</h1>
-        <p>यहां सारा डेटा RAW दिखेगा ताकि पता चले कि Firebase से bookings आ रही हैं या नहीं</p>
-    </div>
-    
-    <!-- Connection Status -->
-    <div class="card">
-        <h3><i class="fas fa-plug"></i> Firebase Connection Status</h3>
-        <div id="connectionStatus" class="debug-info">Checking connection...</div>
-        <button onclick="testConnection()" class="btn-info"><i class="fas fa-vial"></i> Test Connection</button>
-        <button onclick="fetchAllData()"><i class="fas fa-database"></i> Fetch ALL Data from Firestore</button>
-        <button onclick="fetchBookingsOnly()"><i class="fas fa-book"></i> Fetch ONLY Bookings</button>
-        <button onclick="checkStadiumData()"><i class="fas fa-stadium"></i> Check Stadium Data</button>
-    </div>
-    
-    <!-- Stadium Info -->
-    <div class="card">
-        <h3><i class="fas fa-stadium"></i> Current Stadium Info</h3>
-        <div id="stadiumInfo" class="debug-info">Loading stadium info...</div>
-    </div>
-    
-    <!-- All Bookings from Firebase -->
-    <div class="card">
-        <h3><i class="fas fa-list"></i> ALL Bookings from Firebase (No Filter)</h3>
-        <div id="allBookingsContainer" class="debug-info">
-            <div class="loading">Click "Fetch ALL Data" to see bookings...</div>
+        <div class="logo" onclick="window.location.href='index.html'">🏟️ STADIUM<span style="color:#ff6b35;">CONNECT</span> <span style="font-size:12px;">PRO</span></div>
+        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+            <div class="stadium-badge" id="stadiumNameDisplay">
+                <i class="fas fa-stadium"></i> <span id="stadiumNameText">Loading...</span>
+            </div>
+            <span class="live-badge"><i class="fas fa-circle" style="font-size: 8px;"></i> LIVE SYNC</span>
+            <button class="btn-refresh" onclick="refreshData()"><i class="fas fa-sync-alt"></i></button>
+            <button class="btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </div>
     </div>
-    
-    <!-- Filtered Bookings (by stadium) -->
-    <div class="card">
-        <h3><i class="fas fa-filter"></i> Filtered Bookings (vendorId = Current Stadium)</h3>
-        <div id="filteredBookingsContainer" class="debug-info">
-            <div class="loading">Click "Check Stadium Data" first...</div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid" id="statsGrid"></div>
+
+    <!-- Analytics Charts -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-bottom: 30px;">
+        <div class="card">
+            <h3><i class="fas fa-chart-line"></i> Revenue Trend</h3>
+            <canvas id="revenueChart" style="max-height: 280px;"></canvas>
+        </div>
+        <div class="card">
+            <h3><i class="fas fa-chart-pie"></i> Booking Distribution</h3>
+            <canvas id="statusChart" style="max-height: 280px;"></canvas>
         </div>
     </div>
-    
-    <!-- Raw JSON Data -->
+
+    <!-- Blocked Dates with Calendar -->
     <div class="card">
-        <h3><i class="fas fa-code"></i> Raw JSON Response</h3>
-        <div id="rawJson" class="json-view">No data yet...</div>
+        <h3><i class="fas fa-calendar-alt"></i> Manage Blocked Dates</h3>
+        <div class="calendar-section">
+            <div class="calendar-wrapper">
+                <label style="display: block; margin-bottom: 12px; font-weight: 600;">📅 Select Dates to Block</label>
+                <input type="text" id="dateCalendar" placeholder="Select multiple dates..." style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 12px;">
+                <button class="btn-primary" onclick="addSelectedDates()" style="margin-top: 15px; width: 100%;">
+                    <i class="fas fa-plus-circle"></i> Block Selected Dates
+                </button>
+            </div>
+            <div class="blocked-dates-list">
+                <label style="display: block; margin-bottom: 12px; font-weight: 600;">🚫 Currently Blocked Dates</label>
+                <div id="blockedDatesList">
+                    <div class="loading">Loading blocked dates...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Stadium Details -->
+    <div class="card">
+        <h3><i class="fas fa-edit"></i> Stadium Details & Settings</h3>
+        <div class="form-row">
+            <div class="form-group">
+                <label><i class="fas fa-building"></i> Stadium Name</label>
+                <input type="text" id="stadiumName" placeholder="e.g., Wankhede Stadium">
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-city"></i> City</label>
+                <input type="text" id="stadiumCity" placeholder="e.g., Mumbai">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label><i class="fas fa-users"></i> Capacity (Seats)</label>
+                <input type="number" id="stadiumCapacityInput" placeholder="Total capacity">
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-rupee-sign"></i> Base Price / Day (₹)</label>
+                <input type="number" id="stadiumPrice" placeholder="Price per day">
+            </div>
+        </div>
+        <div class="form-group">
+            <label><i class="fas fa-map-marker-alt"></i> Location / Address</label>
+            <input type="text" id="stadiumLocation" placeholder="Full address">
+        </div>
+        <div class="form-group">
+            <label><i class="fas fa-align-left"></i> Description</label>
+            <textarea id="stadiumDescription" rows="3" placeholder="Describe your stadium facilities..."></textarea>
+        </div>
+        <div class="form-group">
+            <label><i class="fas fa-wifi"></i> Amenities (comma separated)</label>
+            <input type="text" id="stadiumAmenities" placeholder="Floodlights, Parking, WiFi, CCTV, Dressing Room">
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label><i class="fas fa-image"></i> Stadium Logo</label>
+                <input type="file" id="stadiumLogo" accept="image/*">
+                <div id="logoPreview" style="margin-top: 10px;"></div>
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-photo-video"></i> Gallery Photos</label>
+                <input type="file" id="stadiumPhotos" accept="image/*" multiple>
+                <small style="color:#666;">Select multiple photos</small>
+            </div>
+        </div>
+        <div id="photosPreview" class="photo-grid"></div>
+        <div style="display: flex; gap: 12px; margin-top: 20px;">
+            <button class="btn-primary" onclick="updateStadium()"><i class="fas fa-save"></i> Update Stadium</button>
+            <button class="btn-primary" onclick="resetForm()" style="background: #6c757d;"><i class="fas fa-undo"></i> Reset</button>
+        </div>
+    </div>
+
+    <!-- Recent Bookings -->
+    <div class="card">
+        <h3><i class="fas fa-calendar-check"></i> Recent Bookings & Transactions</h3>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Booking ID</th>
+                        <th>Customer</th>
+                        <th>Phone</th>
+                        <th>Event Date</th>
+                        <th>Amount</th>
+                        <th>Your Share (85%)</th>
+                        <th>Agent Commission (15%)</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="bookingsTableBody">
+                    <tr><td colspan="8" class="loading"><div class="spinner"></div>Loading bookings...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="last-updated" id="lastUpdated"></div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, query, where, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, updateDoc, collection, query, where, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
@@ -207,305 +707,430 @@
     
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    
-    // Get stadium ID from URL
+    const storage = getStorage(app);
+
     const urlParams = new URLSearchParams(window.location.search);
     const stadiumId = urlParams.get('id');
     
-    let stadiumData = null;
-    let allBookingsData = [];
-    
-    function showRawJson(data) {
-        document.getElementById('rawJson').innerHTML = JSON.stringify(data, null, 2);
+    let stadium = null;
+    let allBookings = [];
+    let revenueChart = null;
+    let statusChart = null;
+    let unsubscribeBookings = null;
+    let flatpickrInstance = null;
+
+    // Calculate earnings (85% for stadium owner, 15% for agent)
+    function calculateOwnerShare(amount) {
+        return Math.floor((Number(amount) || 0) * 0.85);
     }
     
-    // Test Firebase Connection
-    window.testConnection = async () => {
-        try {
-            const testRef = collection(db, "vendors");
-            const snapshot = await getDocs(testRef);
-            document.getElementById('connectionStatus').innerHTML = `
-                <i class="fas fa-check-circle" style="color: green;"></i> 
-                ✅ Connection Successful! Found ${snapshot.size} vendors in database.
-                <br><strong>Firebase is working!</strong>
-            `;
-            showRawJson({ status: "connected", vendorsCount: snapshot.size, message: "Connection successful" });
-        } catch (error) {
-            document.getElementById('connectionStatus').innerHTML = `
-                <i class="fas fa-times-circle" style="color: red;"></i> 
-                ❌ Connection Failed: ${error.message}
-            `;
-            showRawJson({ status: "error", message: error.message });
-            console.error(error);
+    function calculateAgentShare(amount) {
+        return Math.floor((Number(amount) || 0) * 0.15);
+    }
+
+    function showToast(msg, isError = false) {
+        const toast = document.createElement('div');
+        toast.className = `toast ${isError ? 'error' : 'success'}`;
+        toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i> ${msg}`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    function updateLastUpdated() {
+        document.getElementById('lastUpdated').innerHTML = `Last updated: ${new Date().toLocaleString()}`;
+    }
+
+    // Animated Background
+    function createAnimatedBackground() {
+        const bg = document.getElementById('animatedBg');
+        for (let i = 0; i < 8; i++) {
+            const circle = document.createElement('div');
+            circle.className = 'circle';
+            const size = Math.random() * 300 + 100;
+            circle.style.width = size + 'px';
+            circle.style.height = size + 'px';
+            circle.style.left = Math.random() * 100 + '%';
+            circle.style.top = Math.random() * 100 + '%';
+            circle.style.animationDelay = Math.random() * 20 + 's';
+            circle.style.animationDuration = Math.random() * 20 + 15 + 's';
+            bg.appendChild(circle);
         }
-    };
-    
-    // Check Stadium Data
-    window.checkStadiumData = async () => {
+    }
+
+    async function loadStadium() {
         if (!stadiumId) {
-            document.getElementById('stadiumInfo').innerHTML = `
-                <div class="error-box">
-                    ❌ No stadium ID found in URL!<br>
-                    Please login again: <a href="owner-login.html">owner-login.html</a>
-                </div>
-            `;
+            showToast('Invalid access. Redirecting...', true);
+            setTimeout(() => window.location.href = 'owner-login.html', 1500);
             return;
         }
         
         try {
             const docSnap = await getDoc(doc(db, 'vendors', stadiumId));
             if (docSnap.exists()) {
-                stadiumData = { id: docSnap.id, ...docSnap.data() };
-                document.getElementById('stadiumInfo').innerHTML = `
-                    <strong>✅ Stadium Found!</strong><br>
-                    ID: ${stadiumId}<br>
-                    Name: ${stadiumData.name || 'Not set'}<br>
-                    City: ${stadiumData.city || 'Not set'}<br>
-                    Capacity: ${stadiumData.capacity || 'Not set'}<br>
-                    Base Price: ₹${stadiumData.basePrice || 'Not set'}<br>
-                    <strong>Blocked Dates:</strong> ${(stadiumData.blockedDates || []).join(', ') || 'None'}<br>
-                    <strong>Total Bookings in this stadium:</strong> <span id="stadiumBookingCount">Loading...</span>
-                `;
-                showRawJson({ stadium: stadiumData });
+                stadium = { id: docSnap.id, ...docSnap.data() };
                 
-                // After getting stadium data, fetch filtered bookings
-                await fetchFilteredBookings();
+                document.getElementById('stadiumNameText').innerText = stadium.name || 'Stadium';
+                document.getElementById('stadiumName').value = stadium.name || '';
+                document.getElementById('stadiumCity').value = stadium.city || '';
+                document.getElementById('stadiumCapacityInput').value = stadium.capacity || '';
+                document.getElementById('stadiumPrice').value = stadium.basePrice || '';
+                document.getElementById('stadiumLocation').value = stadium.location || '';
+                document.getElementById('stadiumDescription').value = stadium.description || '';
+                document.getElementById('stadiumAmenities').value = (stadium.amenities || []).join(', ');
+                
+                if (stadium.imageUrl) {
+                    document.getElementById('logoPreview').innerHTML = `<img src="${stadium.imageUrl}" style="width:80px;height:80px;border-radius:12px; object-fit:cover;">`;
+                }
+                
+                if (stadium.gallery && stadium.gallery.length) {
+                    const galleryContainer = document.getElementById('photosPreview');
+                    galleryContainer.innerHTML = stadium.gallery.map((url, i) => `
+                        <div class="photo-item">
+                            <img src="${url}">
+                            <button class="remove" onclick="removeGalleryPhoto(${i})">×</button>
+                        </div>
+                    `).join('');
+                }
+                
+                updateBlockedDatesList();
+                setupBookingsListener();
+                setupCalendar();
             } else {
-                document.getElementById('stadiumInfo').innerHTML = `
-                    <div class="error-box">
-                        ❌ Stadium with ID "${stadiumId}" not found in Firestore!<br>
-                        Please check if the vendor document exists in 'vendors' collection.
-                    </div>
-                `;
-                showRawJson({ error: "Stadium not found", stadiumId: stadiumId });
+                showToast('Stadium not found!', true);
+                setTimeout(() => window.location.href = 'owner-login.html', 1500);
             }
-        } catch (error) {
-            document.getElementById('stadiumInfo').innerHTML = `
-                <div class="error-box">❌ Error: ${error.message}</div>
-            `;
-            showRawJson({ error: error.message });
+        } catch(error) {
+            console.error(error);
+            showToast('Error loading data', true);
         }
-    };
+    }
     
-    // Fetch ALL Bookings
-    window.fetchAllData = async () => {
-        const container = document.getElementById('allBookingsContainer');
-        container.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Fetching all bookings...</div>';
+    function updateBlockedDatesList() {
+        const container = document.getElementById('blockedDatesList');
+        const blockedDates = stadium?.blockedDates || [];
         
-        try {
-            const bookingsRef = collection(db, "bookings");
-            const snapshot = await getDocs(bookingsRef);
-            allBookingsData = [];
-            
-            snapshot.forEach(doc => {
-                allBookingsData.push({ id: doc.id, ...doc.data() });
-            });
-            
-            if (allBookingsData.length === 0) {
-                container.innerHTML = `
-                    <div class="error-box">
-                        ⚠️ No bookings found in Firestore!<br>
-                        <strong>Solution:</strong> Add some test bookings first.
-                    </div>
-                `;
-                showRawJson({ bookings: [], count: 0, message: "No bookings found" });
-                return;
-            }
-            
-            // Display bookings in table
-            let html = `
-                <div style="margin-bottom: 10px;"><strong>Total Bookings: ${allBookingsData.length}</strong></div>
-                <table>
-                    <thead>
-                        <tr><th>Booking ID</th><th>Customer</th><th>Vendor ID</th><th>Stadium Name</th><th>Amount</th><th>Status</th><th>Event Date</th></tr>
-                    </thead>
-                    <tbody>
-            `;
-            
-            allBookingsData.forEach(booking => {
-                html += `
-                    <tr>
-                        <td><code>${booking.id.slice(-8)}</code></td>
-                        <td>${booking.userName || booking.customerName || '-'}</td>
-                        <td><strong>${booking.vendorId || booking.stadiumId || '❌ MISSING'}</strong></td>
-                        <td>${booking.vendorName || booking.stadiumName || '-'}</td>
-                        <td>₹${(Number(booking.amount) || 0).toLocaleString()}</td>
-                        <td><span class="status-badge status-${booking.status || 'pending'}">${booking.status || 'pending'}</span></td>
-                        <td>${booking.eventDate || booking.date || '-'}</td>
-                    </tr>
-                `;
-            });
-            
-            html += `</tbody></table>`;
-            container.innerHTML = html;
-            showRawJson({ bookings: allBookingsData, count: allBookingsData.length });
-            
-            // Also show what fields are available
-            if (allBookingsData.length > 0) {
-                const firstBooking = allBookingsData[0];
-                console.log("First booking fields:", Object.keys(firstBooking));
-                container.innerHTML += `
-                    <div class="success-box" style="margin-top: 15px;">
-                        <strong>📋 Available fields in bookings:</strong><br>
-                        ${Object.keys(firstBooking).join(', ')}
-                    </div>
-                `;
-            }
-            
-        } catch (error) {
-            container.innerHTML = `<div class="error-box">❌ Error: ${error.message}</div>`;
-            showRawJson({ error: error.message });
-        }
-    };
-    
-    // Fetch only bookings for this stadium
-    window.fetchFilteredBookings = async () => {
-        const container = document.getElementById('filteredBookingsContainer');
-        
-        if (!stadiumId) {
-            container.innerHTML = '<div class="error-box">No stadium ID available</div>';
+        if (blockedDates.length === 0) {
+            container.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">No blocked dates</div>';
             return;
         }
         
-        container.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Filtering bookings for vendorId: ' + stadiumId + '...</div>';
+        container.innerHTML = blockedDates.map(date => `
+            <div class="blocked-date-item">
+                <span><i class="fas fa-calendar-times" style="color: #f59e0b;"></i> ${date}</span>
+                <button class="remove-date" onclick="removeBlockedDate('${date}')">×</button>
+            </div>
+        `).join('');
+    }
+    
+    function setupCalendar() {
+        const calendarInput = document.getElementById('dateCalendar');
+        flatpickrInstance = flatpickr(calendarInput, {
+            mode: "multiple",
+            dateFormat: "Y-m-d",
+            minDate: "today",
+            disable: stadium?.blockedDates || [],
+            onChange: function(selectedDates, dateStr, instance) {
+                console.log('Selected:', dateStr);
+            }
+        });
+    }
+    
+    window.addSelectedDates = async () => {
+        if (!flatpickrInstance) return;
         
-        try {
-            const bookingsRef = collection(db, "bookings");
-            
-            // Try different field names
-            let possibleFields = ['vendorId', 'vendor_id', 'stadiumId', 'stadium_id', 'assignedStadium'];
-            let foundBookings = [];
-            let usedField = null;
-            
-            for (let field of possibleFields) {
-                const q = query(bookingsRef, where(field, "==", stadiumId));
-                const snapshot = await getDocs(q);
-                if (snapshot.size > 0) {
-                    usedField = field;
-                    snapshot.forEach(doc => {
-                        foundBookings.push({ id: doc.id, ...doc.data() });
-                    });
-                    break;
+        const selectedDates = flatpickrInstance.selectedDates.map(d => {
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        });
+        
+        if (selectedDates.length === 0) {
+            showToast('Please select dates from calendar first', true);
+            return;
+        }
+        
+        const currentBlocked = stadium?.blockedDates || [];
+        const newBlocked = [...new Set([...currentBlocked, ...selectedDates])];
+        
+        await updateDoc(doc(db, 'vendors', stadiumId), { blockedDates: newBlocked });
+        stadium.blockedDates = newBlocked;
+        updateBlockedDatesList();
+        if (flatpickrInstance) {
+            flatpickrInstance.set('disable', newBlocked);
+            flatpickrInstance.clear();
+        }
+        showToast(`✅ ${selectedDates.length} date(s) blocked successfully!`);
+    };
+    
+    window.removeBlockedDate = async (date) => {
+        const newBlocked = (stadium?.blockedDates || []).filter(d => d !== date);
+        await updateDoc(doc(db, 'vendors', stadiumId), { blockedDates: newBlocked });
+        stadium.blockedDates = newBlocked;
+        updateBlockedDatesList();
+        if (flatpickrInstance) {
+            flatpickrInstance.set('disable', newBlocked);
+        }
+        showToast(`Removed ${date} from blocked dates`);
+    };
+    
+    function setupBookingsListener() {
+        if (unsubscribeBookings) unsubscribeBookings();
+        
+        const q = query(
+            collection(db, "bookings"),
+            where("vendorId", "==", stadiumId),
+            orderBy("createdAt", "desc")
+        );
+        
+        unsubscribeBookings = onSnapshot(q, (snapshot) => {
+            allBookings = snapshot.docs.map(d => ({ 
+                id: d.id, 
+                ...d.data(),
+                amount: Number(d.data().amount) || 0
+            }));
+            updateUI();
+            updateLastUpdated();
+        }, (error) => {
+            console.error("Error loading bookings:", error);
+        });
+    }
+    
+    function updateUI() {
+        updateStats();
+        updateBookingsTable();
+        renderCharts();
+    }
+    
+    function updateStats() {
+        const confirmedBookings = allBookings.filter(b => b.status === 'confirmed' || b.status === 'completed');
+        const totalRevenue = confirmedBookings.reduce((sum, b) => sum + (b.amount || 0), 0);
+        const ownerEarnings = calculateOwnerShare(totalRevenue);
+        const agentCommission = calculateAgentShare(totalRevenue);
+        const pendingAmount = allBookings.filter(b => b.status === 'pending').reduce((sum, b) => sum + (b.amount || 0), 0);
+        
+        document.getElementById('statsGrid').innerHTML = `
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
+                <div class="stat-value">${allBookings.length}</div>
+                <div class="stat-label">Total Bookings</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="stat-value">${confirmedBookings.length}</div>
+                <div class="stat-label">Confirmed Bookings</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-rupee-sign"></i></div>
+                <div class="stat-value">₹${totalRevenue.toLocaleString()}</div>
+                <div class="stat-label">Total Revenue</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-building"></i></div>
+                <div class="stat-value">₹${ownerEarnings.toLocaleString()}</div>
+                <div class="stat-label">Your Earnings (85%)</div>
+                <div class="stat-sub"><i class="fas fa-chart-line"></i> Your Share</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-users"></i></div>
+                <div class="stat-value">₹${agentCommission.toLocaleString()}</div>
+                <div class="stat-label">Agent Commission (15%)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                <div class="stat-value">₹${pendingAmount.toLocaleString()}</div>
+                <div class="stat-label">Pending Amount</div>
+            </div>
+        `;
+    }
+    
+    function updateBookingsTable() {
+        const tableBody = document.getElementById('bookingsTableBody');
+        if (allBookings.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="8" class="loading"><i class="fas fa-inbox"></i> No bookings yet</td></tr>';
+            return;
+        }
+        
+        tableBody.innerHTML = allBookings.map(b => {
+            const ownerShare = calculateOwnerShare(b.amount);
+            const agentShare = calculateAgentShare(b.amount);
+            return `
+                <tr>
+                    <td><code>${b.id.slice(-8)}</code></td>
+                    <td><strong>${b.userName || b.customerName || 'Guest'}</strong></td>
+                    <td>${b.userPhone || b.phone || '-'}</td>
+                    <td>${b.eventDate || b.date || '-'}</td>
+                    <td><strong>₹${(b.amount || 0).toLocaleString()}</strong></td>
+                    <td style="color: #10b981; font-weight: bold;">₹${ownerShare.toLocaleString()}</td>
+                    <td style="color: #f59e0b;">₹${agentShare.toLocaleString()}</td>
+                    <td><span class="status-badge status-${b.status || 'pending'}">${b.status || 'pending'}</span></td>
+                 </tr>
+            `;
+        }).join('');
+    }
+    
+    function renderCharts() {
+        const confirmed = allBookings.filter(b => b.status === 'confirmed' || b.status === 'completed');
+        
+        const monthly = {};
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const last6Months = [];
+        const today = new Date();
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+            last6Months.push(months[d.getMonth()]);
+        }
+        
+        confirmed.forEach(b => {
+            if (b.createdAt) {
+                const date = b.createdAt.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+                const monthName = months[date.getMonth()];
+                if (last6Months.includes(monthName)) {
+                    monthly[monthName] = (monthly[monthName] || 0) + (b.amount || 0);
                 }
             }
-            
-            if (foundBookings.length === 0) {
-                container.innerHTML = `
-                    <div class="error-box">
-                        ⚠️ No bookings found with vendorId = "${stadiumId}"<br><br>
-                        <strong>Possible Reasons:</strong><br>
-                        1. Bookings exist but use a different field name (vendorId, vendor_id, stadiumId, etc.)<br>
-                        2. No bookings exist for this stadium yet<br>
-                        3. The booking documents don't have any vendor identifier<br><br>
-                        <strong>Solution:</strong> Click "Fetch ALL Data" above to see what field names are actually used in bookings.
-                    </div>
-                `;
-                document.getElementById('stadiumBookingCount').innerHTML = '0';
-                return;
-            }
-            
-            document.getElementById('stadiumBookingCount').innerHTML = foundBookings.length;
-            
-            // Display filtered bookings
-            let html = `
-                <div class="success-box">
-                    ✅ Found ${foundBookings.length} booking(s) using field: <strong>${usedField}</strong>
-                </div>
-                <table>
-                    <thead>
-                        <tr><th>Booking ID</th><th>Customer</th><th>Amount</th><th>Status</th><th>Event Date</th><th>Booked On</th></tr>
-                    </thead>
-                    <tbody>
-            `;
-            
-            foundBookings.forEach(booking => {
-                const bookedDate = booking.createdAt ? new Date(booking.createdAt).toLocaleDateString() : '-';
-                html += `
-                    <tr>
-                        <td><code>${booking.id.slice(-8)}</code></td>
-                        <td>${booking.userName || booking.customerName || 'Guest'}</td>
-                        <td>₹${(Number(booking.amount) || 0).toLocaleString()}</td>
-                        <td><span class="status-badge status-${booking.status || 'pending'}">${booking.status || 'pending'}</span></td>
-                        <td>${booking.eventDate || booking.date || '-'}</td>
-                        <td>${bookedDate}</td>
-                    </tr>
-                `;
-            });
-            
-            html += `</tbody></table>`;
-            container.innerHTML = html;
-            
-            // Calculate total revenue
-            const totalRevenue = foundBookings.reduce((sum, b) => sum + (Number(b.amount) || 0), 0);
-            container.innerHTML += `
-                <div class="success-box" style="margin-top: 15px;">
-                    <strong>💰 Total Revenue: ₹${totalRevenue.toLocaleString()}</strong><br>
-                    <strong>📊 Your Commission (2.5%): ₹${Math.floor(totalRevenue * 0.025).toLocaleString()}</strong>
-                </div>
-            `;
-            
-        } catch (error) {
-            container.innerHTML = `<div class="error-box">❌ Error: ${error.message}</div>`;
-            console.error(error);
-        }
-    };
-    
-    window.fetchBookingsOnly = async () => {
-        const container = document.getElementById('allBookingsContainer');
-        container.innerHTML = '<div class="loading">Fetching bookings...</div>';
+        });
         
-        try {
-            const bookingsRef = collection(db, "bookings");
-            const snapshot = await getDocs(bookingsRef);
-            const bookings = [];
-            snapshot.forEach(doc => {
-                bookings.push({ id: doc.id, ...doc.data() });
-            });
-            
-            if (bookings.length === 0) {
-                container.innerHTML = '<div class="error-box">No bookings in Firestore!</div>';
-                return;
+        const revenueData = last6Months.map(m => monthly[m] || 0);
+        
+        if (revenueChart) revenueChart.destroy();
+        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+        revenueChart = new Chart(revenueCtx, {
+            type: 'line',
+            data: {
+                labels: last6Months,
+                datasets: [{
+                    label: 'Revenue (₹)',
+                    data: revenueData,
+                    borderColor: '#ff6b35',
+                    backgroundColor: 'rgba(255,107,53,0.1)',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#ff6b35',
+                    pointBorderColor: 'white',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: { callbacks: { label: (ctx) => `₹${ctx.raw.toLocaleString()}` } }
+                }
             }
-            
-            // Show first 5 bookings
-            container.innerHTML = `
-                <div><strong>Total Bookings: ${bookings.length}</strong></div>
-                ${bookings.slice(0, 5).map(b => `
-                    <div class="booking-item">
-                        <strong>ID:</strong> ${b.id}<br>
-                        <strong>Customer:</strong> ${b.userName || b.customerName || 'N/A'}<br>
-                        <strong>Vendor ID:</strong> <span style="background: #ffeb3b; padding: 2px 8px; border-radius: 4px;">${b.vendorId || b.vendor_id || b.stadiumId || '❌ MISSING'}</span><br>
-                        <strong>Amount:</strong> ₹${b.amount || 0}<br>
-                        <strong>Status:</strong> ${b.status || 'pending'}<br>
-                        <strong>Event Date:</strong> ${b.eventDate || b.date || 'N/A'}<br>
-                        <strong>Raw Data:</strong>
-                        <pre>${JSON.stringify(b, null, 2)}</pre>
-                    </div>
-                `).join('')}
-                ${bookings.length > 5 ? `<p>... and ${bookings.length - 5} more bookings</p>` : ''}
-            `;
-            
-        } catch (error) {
-            container.innerHTML = `<div class="error-box">Error: ${error.message}</div>`;
+        });
+        
+        const statusCount = {
+            confirmed: allBookings.filter(b => b.status === 'confirmed' || b.status === 'completed').length,
+            pending: allBookings.filter(b => b.status === 'pending').length,
+            cancelled: allBookings.filter(b => b.status === 'cancelled').length
+        };
+        
+        if (statusChart) statusChart.destroy();
+        const statusCtx = document.getElementById('statusChart').getContext('2d');
+        statusChart = new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Confirmed', 'Pending', 'Cancelled'],
+                datasets: [{
+                    data: [statusCount.confirmed, statusCount.pending, statusCount.cancelled],
+                    backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    }
+    
+    async function uploadImage(file, path) {
+        if(!file) return null;
+        try {
+            const storageRef = ref(storage, `${path}/${Date.now()}_${file.name}`);
+            await uploadBytes(storageRef, file);
+            return await getDownloadURL(storageRef);
+        } catch(e) {
+            console.error("Upload error:", e);
+            return null;
+        }
+    }
+    
+    window.updateStadium = async () => {
+        const data = {
+            name: document.getElementById('stadiumName').value,
+            city: document.getElementById('stadiumCity').value,
+            capacity: parseInt(document.getElementById('stadiumCapacityInput').value) || 0,
+            basePrice: parseInt(document.getElementById('stadiumPrice').value) || 50000,
+            location: document.getElementById('stadiumLocation').value,
+            description: document.getElementById('stadiumDescription').value,
+            amenities: document.getElementById('stadiumAmenities').value.split(',').map(a => a.trim()).filter(a => a),
+            updatedAt: new Date().toISOString()
+        };
+        
+        const logoFile = document.getElementById('stadiumLogo').files[0];
+        if(logoFile) {
+            const logoUrl = await uploadImage(logoFile, 'stadiums/logos');
+            if(logoUrl) data.imageUrl = logoUrl;
+        }
+        
+        const photoFiles = document.getElementById('stadiumPhotos').files;
+        if(photoFiles.length > 0) {
+            const existingPhotos = stadium.gallery || [];
+            const newPhotos = [];
+            for(let file of photoFiles) {
+                const url = await uploadImage(file, 'stadiums/gallery');
+                if(url) newPhotos.push(url);
+            }
+            data.gallery = [...existingPhotos, ...newPhotos];
+        }
+        
+        await updateDoc(doc(db, 'vendors', stadiumId), data);
+        showToast('✅ Stadium details updated successfully!');
+        loadStadium();
+    };
+    
+    window.removeGalleryPhoto = async (index) => {
+        const newGallery = [...(stadium.gallery || [])];
+        newGallery.splice(index, 1);
+        await updateDoc(doc(db, 'vendors', stadiumId), { gallery: newGallery });
+        showToast('Photo removed!');
+        loadStadium();
+    };
+    
+    window.resetForm = () => {
+        if (stadium) {
+            document.getElementById('stadiumName').value = stadium.name || '';
+            document.getElementById('stadiumCity').value = stadium.city || '';
+            document.getElementById('stadiumCapacityInput').value = stadium.capacity || '';
+            document.getElementById('stadiumPrice').value = stadium.basePrice || '';
+            document.getElementById('stadiumLocation').value = stadium.location || '';
+            document.getElementById('stadiumDescription').value = stadium.description || '';
+            document.getElementById('stadiumAmenities').value = (stadium.amenities || []).join(', ');
+            showToast('Form reset to saved values');
         }
     };
     
-    // Auto-run on load
-    setTimeout(() => {
-        testConnection();
-        if (stadiumId) {
-            checkStadiumData();
-        } else {
-            document.getElementById('stadiumInfo').innerHTML = `
-                <div class="error-box">
-                    ⚠️ No stadium ID in URL!<br>
-                    Current URL: ${window.location.href}<br>
-                    Expected: owner-dashboard.html?id=YOUR_STADIUM_ID
-                </div>
-            `;
-        }
-        fetchAllData();
-    }, 1000);
+    window.refreshData = () => {
+        loadStadium();
+        showToast('Data refreshed!');
+    };
+    
+    window.logout = () => {
+        if (unsubscribeBookings) unsubscribeBookings();
+        sessionStorage.clear();
+        localStorage.removeItem('stadiumOwner');
+        window.location.href = 'owner-login.html';
+    };
+    
+    createAnimatedBackground();
+    loadStadium();
 </script>
 </body>
 </html>
