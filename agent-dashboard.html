@@ -1,202 +1,109 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Agent Dashboard - StadiumConnect</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background: #f5f7fb; color: #333; }
-        .header { background: white; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .logo { font-size: 22px; font-weight: 800; cursor: pointer; background: linear-gradient(135deg, #ff6b35, #ff9068); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .agent-info { background: #fff5f0; padding: 8px 16px; border-radius: 40px; display: flex; align-items: center; gap: 10px; font-size: 14px; }
-        .live-badge { background: #28a745; color: white; padding: 4px 10px; border-radius: 20px; font-size: 10px; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
-        .logout-btn { background: #ff6b35; color: white; border: none; padding: 8px 20px; border-radius: 30px; cursor: pointer; font-weight: 600; }
-        
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .stat-card { background: white; border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .stat-value { font-size: 28px; font-weight: 800; color: #ff6b35; }
-        .stat-label { color: #777; font-size: 12px; margin-top: 5px; }
-
-        .analytics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 25px; }
-        .chart-card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        
-        .table-card { background: white; border-radius: 20px; padding: 20px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th { text-align: left; padding: 12px; background: #fafafa; color: #666; font-size: 13px; }
-        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; }
-        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
-        .status-confirmed { background: #e8f5e9; color: #2e7d32; }
-        .status-pending { background: #fff8e1; color: #f57f17; }
-        
-        .error-banner { background: #fee; color: #c33; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: none; border: 1px solid #fcc; }
-    </style>
-</head>
-<body>
-
-<header class="header">
-    <div class="logo">⚡ STADIUM<span>CONNECT</span></div>
-    <div class="agent-info">
-        <i class="fas fa-user-circle"></i>
-        <span id="agentName">Loading...</span> | ID: <strong id="agentIdDisplay">---</strong>
-        <span class="live-badge">LIVE</span>
+<div class="table-card" style="margin-top: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h3><i class="fas fa-users"></i> Detailed Customer Bookings</h3>
+        <button onclick="location.reload()" style="background:#eee; border:none; padding:5px 15px; border-radius:5px; cursor:pointer;">
+            <i class="fas fa-sync-alt"></i> Refresh
+        </button>
     </div>
-    <button class="logout-btn" onclick="logout()">Logout</button>
-</header>
-
-<div class="container">
-    <div id="errorBanner" class="error-banner"></div>
-
-    <div class="stats-grid" id="statsGrid">
-        <div class="stat-card"><h3>--</h3><p>Total Bookings</p></div>
-        <div class="stat-card"><h3>₹--</h3><p>Revenue</p></div>
-        <div class="stat-card"><h3>₹--</h3><p>Commission</p></div>
-    </div>
-
-    <div class="analytics-grid">
-        <div class="chart-card"><canvas id="weeklyChart"></canvas></div>
-        <div class="chart-card"><canvas id="statusChart"></canvas></div>
-    </div>
-
-    <div class="table-card">
-        <h3>Recent Bookings</h3>
-        <div style="overflow-x: auto;">
-            <table>
-                <thead>
-                    <tr><th>Booking ID</th><th>Customer</th><th>Amount</th><th>Commission</th><th>Status</th></tr>
-                </thead>
-                <tbody id="bookingsTableBody">
-                    <tr><td colspan="5" style="text-align:center; padding:30px;">Loading data from Firestore...</td></tr>
-                </tbody>
-            </table>
-        </div>
+    <div style="overflow-x: auto;">
+        <table id="agentBookingsTable">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Booking ID</th>
+                    <th>Customer Name</th>
+                    <th>Contact Info</th>
+                    <th>Venue / Address</th>
+                    <th>Amount</th>
+                    <th>Earned</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="bookingsTableBody">
+                <tr><td colspan="8" style="text-align:center; padding:30px;">Fetching detailed data...</td></tr>
+            </tbody>
+        </table>
     </div>
 </div>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, collection, query, where, onSnapshot, orderBy } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
-        authDomain: "stadiumconnect-8fecb.firebaseapp.com",
-        projectId: "stadiumconnect-8fecb",
-        storageBucket: "stadiumconnect-8fecb.firebasestorage.app",
-        messagingSenderId: "458108198578",
-        appId: "1:458108198578:web:83d83646f0e24e718b73ab"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    // 1. Get Agent ID from Storage
-    const agentData = JSON.parse(localStorage.getItem('agent'));
-    const agentId = agentData ? (agentData.id || agentData.agentId || agentData.uid) : null;
-
-    if (!agentId) {
-        alert("Session expired. Please login again.");
-        window.location.href = 'agent-login.html';
-    } else {
-        document.getElementById('agentName').innerText = agentData.name || "Agent";
-        document.getElementById('agentIdDisplay').innerText = agentId;
-        fetchBookings(agentId);
-    }
-
-    let charts = {};
-
-    function fetchBookings(id) {
-        const bookingsRef = collection(db, "bookings");
-        
-        // Strategy: Query specifically for this agent
-        // Try 'agentId' field first. If your Firestore uses a different name, change it here.
-        const q = query(bookingsRef, where("agentId", "==", id));
-
-        onSnapshot(q, (snapshot) => {
-            const bookings = [];
-            snapshot.forEach(doc => {
-                bookings.push({ id: doc.id, ...doc.data() });
-            });
-            
-            console.log("Data Received:", bookings);
-            updateUI(bookings);
-        }, (error) => {
-            console.error("Firestore Error:", error);
-            document.getElementById('errorBanner').style.display = "block";
-            document.getElementById('errorBanner').innerHTML = `<strong>Fetch Error:</strong> ${error.message}. <br>Check if 'agentId' field exists in your 'bookings' collection.`;
-        });
-    }
+    // ... (Firebase Initialization same rahegi) ...
 
     function updateUI(data) {
-        const confirmed = data.filter(b => b.status === 'confirmed' || b.status === 'completed');
-        const totalRevenue = confirmed.reduce((sum, b) => sum + (Number(b.amount) || 0), 0);
-        const totalCommission = Math.floor(totalRevenue * 0.025);
-
-        // Update Stats
-        document.getElementById('statsGrid').innerHTML = `
-            <div class="stat-card"><div class="stat-value">${data.length}</div><div class="stat-label">Total Bookings</div></div>
-            <div class="stat-card"><div class="stat-value">₹${totalRevenue.toLocaleString()}</div><div class="stat-label">Confirmed Revenue</div></div>
-            <div class="stat-card"><div class="stat-icon">🏆</div><div class="stat-value">₹${totalCommission.toLocaleString()}</div><div class="stat-label">Your Earnings (2.5%)</div></div>
-        `;
-
-        // Update Table
         const tbody = document.getElementById('bookingsTableBody');
+        
         if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px;">No bookings found for your ID.</td></tr>';
-        } else {
-            tbody.innerHTML = data.map(b => `
-                <tr>
-                    <td>#${b.id.slice(-6).toUpperCase()}</td>
-                    <td>${b.userName || 'Customer'}</td>
-                    <td>₹${Number(b.amount || 0).toLocaleString()}</td>
-                    <td style="color:green; font-weight:600;">₹${Math.floor(Number(b.amount || 0) * 0.025)}</td>
-                    <td><span class="status-badge ${b.status === 'confirmed' ? 'status-confirmed' : 'status-pending'}">${b.status || 'pending'}</span></td>
-                </tr>
-            `).join('');
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:30px;">No bookings found.</td></tr>';
+            return;
         }
 
-        renderCharts(data);
-    }
+        // Sorting: Latest bookings first
+        data.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 
-    function renderCharts(data) {
-        const ctx1 = document.getElementById('weeklyChart').getContext('2d');
-        const ctx2 = document.getElementById('statusChart').getContext('2d');
-
-        if (charts.weekly) charts.weekly.destroy();
-        if (charts.status) charts.status.destroy();
-
-        charts.weekly = new Chart(ctx1, {
-            type: 'bar',
-            data: {
-                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-                datasets: [{ label: 'Revenue', data: [totalRevenueByWeek(data)], backgroundColor: '#ff6b35' }]
+        tbody.innerHTML = data.map(b => {
+            const amount = Number(b.amount || 0);
+            const commission = Math.floor(amount * 0.025);
+            
+            // Date formatting
+            let displayDate = "N/A";
+            if(b.createdAt) {
+                const d = b.createdAt.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+                displayDate = d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
             }
-        });
 
-        charts.status = new Chart(ctx2, {
-            type: 'doughnut',
-            data: {
-                labels: ['Confirmed', 'Pending'],
-                datasets: [{
-                    data: [data.filter(b => b.status === 'confirmed').length, data.filter(b => b.status === 'pending').length],
-                    backgroundColor: ['#28a745', '#ffc107']
-                }]
-            }
-        });
+            return `
+                <tr>
+                    <td><strong>${displayDate}</strong></td>
+                    <td><small>#${b.id.slice(-6).toUpperCase()}</small></td>
+                    <td><strong>${b.userName || b.customerName || 'Guest'}</strong></td>
+                    <td>
+                        <i class="fas fa-phone" style="font-size:10px; color:#666;"></i> ${b.userPhone || b.phone || 'N/A'}<br>
+                        <i class="fas fa-envelope" style="font-size:10px; color:#666;"></i> <small>${b.userEmail || b.email || '-'}</small>
+                    </td>
+                    <td>
+                        <span style="font-size:12px;">${b.vendorName || 'General Venue'}</span><br>
+                        <small style="color:#888;">${b.address || b.location || 'No address provided'}</small>
+                    </td>
+                    <td>₹${amount.toLocaleString()}</td>
+                    <td style="color:#28a745; font-weight:700;">₹${commission.toLocaleString()}</td>
+                    <td>
+                        <span class="status-badge ${getStatusClass(b.status)}">
+                            ${(b.status || 'pending').toUpperCase()}
+                        </span>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        // Update top stats cards
+        updateTopStats(data);
     }
 
-    function totalRevenueByWeek(data) {
-        return data.filter(b => b.status === 'confirmed').reduce((s, b) => s + Number(b.amount || 0), 0);
+    function getStatusClass(status) {
+        status = status ? status.toLowerCase() : 'pending';
+        if (status === 'confirmed' || status === 'completed') return 'status-confirmed';
+        if (status === 'cancelled') return 'status-cancelled';
+        return 'status-pending';
     }
 
-    window.logout = () => {
-        localStorage.removeItem('agent');
-        window.location.href = 'agent-login.html';
-    };
+    function updateTopStats(data) {
+        const confirmed = data.filter(b => b.status === 'confirmed' || b.status === 'completed');
+        const revenue = confirmed.reduce((s, b) => s + (Number(b.amount) || 0), 0);
+        
+        document.getElementById('statsGrid').innerHTML = `
+            <div class="stat-card">
+                <div class="stat-value">${data.length}</div>
+                <div class="stat-label">Total Leads</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">₹${revenue.toLocaleString()}</div>
+                <div class="stat-label">Confirmed Revenue</div>
+            </div>
+            <div class="stat-card" style="border: 2px solid #ff6b35;">
+                <div class="stat-value">₹${Math.floor(revenue * 0.025).toLocaleString()}</div>
+                <div class="stat-label">Your Payout (2.5%)</div>
+            </div>
+        `;
+    }
 </script>
-</body>
-</html>
+
