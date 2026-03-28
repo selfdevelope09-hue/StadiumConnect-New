@@ -3,197 +3,795 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Book Vendor - StadiumConnect</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>My Bookings - StadiumConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background: #f5f7fb; padding: 20px; }
-        .container { max-width: 550px; margin: 0 auto; }
-        .card { background: white; border-radius: 28px; padding: 28px; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
-        h2 { font-size: 24px; margin-bottom: 8px; color: #1a1a1a; }
-        .subtitle { color: #666; margin-bottom: 24px; }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; font-weight: 600; margin-bottom: 8px; color: #333; }
-        input, select, textarea {
-            width: 100%;
-            padding: 14px 16px;
-            border: 1px solid #e0e0e0;
-            border-radius: 16px;
-            font-size: 15px;
-            transition: 0.2s;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
         }
-        input:focus, select:focus { outline: none; border-color: #ff6b35; box-shadow: 0 0 0 3px rgba(255,107,53,0.1); }
-        .optional-badge { font-size: 12px; font-weight: normal; color: #999; margin-left: 8px; }
-        .payment-plan {
-            background: #f8f9fa;
-            border-radius: 20px;
-            padding: 16px;
-            margin: 20px 0;
+
+        :root {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-card: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --border-color: #e2e8f0;
+            --accent: #ff6b35;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
         }
-        .installment-item {
+
+        body.dark {
+            --bg-primary: #0a0a2a;
+            --bg-secondary: #1a1a2e;
+            --bg-card: #1e1e3a;
+            --text-primary: #ffffff;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .header {
+            background: var(--bg-secondary);
+            backdrop-filter: blur(20px);
+            padding: 16px 32px;
             display: flex;
             justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px solid #eee;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            flex-wrap: wrap;
+            gap: 15px;
         }
-        .installment-amount { font-weight: 700; color: #ff6b35; }
-        .total-amount { font-size: 20px; font-weight: 800; color: #ff6b35; text-align: right; margin-top: 12px; }
-        .agent-id-field { background: #fff8f0; border-left: 3px solid #ff6b35; padding: 12px; border-radius: 12px; margin-top: 8px; }
-        .btn-submit {
-            width: 100%;
-            background: #ff6b35;
-            color: white;
-            border: none;
-            padding: 16px;
-            border-radius: 50px;
-            font-size: 16px;
-            font-weight: 700;
+
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
             cursor: pointer;
-            margin-top: 20px;
+            background: linear-gradient(135deg, var(--accent), #ff9068);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-        .btn-submit:hover { background: #e55a2b; }
-        .call-agent-btn {
-            background: #28a745;
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 50px;
-            width: 100%;
-            font-weight: 600;
-            cursor: pointer;
-            margin-bottom: 20px;
+
+        .user-info {
             display: flex;
             align-items: center;
+            gap: 12px;
+            background: rgba(255, 107, 53, 0.1);
+            padding: 8px 20px;
+            border-radius: 40px;
+        }
+
+        .theme-toggle, .logout-btn {
+            padding: 10px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 500;
+            border: none;
+        }
+
+        .theme-toggle {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--accent);
+        }
+
+        .logout-btn {
+            background: var(--danger);
+            color: white;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+        }
+
+        .page-header h1 {
+            font-size: 32px;
+            background: linear-gradient(135deg, var(--accent), #ff9068);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 24px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-box:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        .table-container {
+            overflow-x: auto;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 13px;
+            background: var(--bg-secondary);
+        }
+
+        tr:hover {
+            background: rgba(255, 107, 53, 0.05);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 14px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+
+        .status-confirmed, .status-completed {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .status-cancelled {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        .review-btn {
+            background: rgba(255, 107, 53, 0.15);
+            border: none;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            cursor: pointer;
+            color: var(--accent);
+        }
+
+        .review-btn:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        .rated-badge {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            display: inline-block;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+        }
+
+        .empty-state i {
+            font-size: 64px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        .loading-spinner {
+            text-align: center;
+            padding: 60px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-color);
+            border-top: 3px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
             justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border-radius: 28px;
+            padding: 32px;
+            max-width: 450px;
+            width: 90%;
+        }
+
+        .modal-rating {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .modal-rating i {
+            font-size: 32px;
+            cursor: pointer;
+            color: #cbd5e1;
+        }
+
+        .modal-rating i.active {
+            color: #fbbf24;
+        }
+
+        .modal textarea {
+            width: 100%;
+            padding: 14px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            margin: 15px 0;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--bg-card);
+            padding: 12px 24px;
+            border-radius: 50px;
+            z-index: 2000;
+            border-left: 4px solid var(--success);
+            display: flex;
+            align-items: center;
             gap: 10px;
         }
-        @media (max-width: 550px) { .container { padding: 0; } }
-    </style>
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getFirestore, doc, getDoc, addDoc, collection, updateDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-        import { getAuth } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
-            authDomain: "stadiumconnect-8fecb.firebaseapp.com",
-            projectId: "stadiumconnect-8fecb",
-            storageBucket: "stadiumconnect-8fecb.firebasestorage.app",
-            messagingSenderId: "458108198578",
-            appId: "1:458108198578:web:83d83646f0e24e718b73ab"
-        };
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const vendorId = urlParams.get('id');
-        let vendor = null;
-
-        async function loadVendor() {
-            const vendorDoc = await getDoc(doc(db, 'vendors', vendorId));
-            if (vendorDoc.exists()) vendor = { id: vendorDoc.id, ...vendorDoc.data() };
-            else alert('Vendor not found');
-            document.getElementById('vendorName').innerText = vendor?.name || 'Vendor';
-            document.getElementById('vendorCategory').innerText = vendor?.category || '-';
-            document.getElementById('vendorPhone').innerText = vendor?.phone || 'Not available';
-            document.getElementById('agentPhone').innerText = vendor?.agentPhone || 'Not assigned';
-            
-            const amount = vendor?.priceRange ? parseInt(vendor.priceRange.replace(/[^0-9]/g, '')) || 50000 : 50000;
-            const isDecorator = vendor?.category === 'decorator';
-            
-            if (isDecorator) {
-                const installment1 = Math.round(amount * 0.3);
-                const installment2 = Math.round(amount * 0.3);
-                const installment3 = Math.round(amount * 0.4);
-                document.getElementById('paymentPlan').innerHTML = `
-                    <div class="payment-plan">
-                        <strong>📅 Payment Plan (Decorator)</strong>
-                        <div class="installment-item"><span>1st Installment (30%)</span><span class="installment-amount">₹${installment1.toLocaleString()}</span></div>
-                        <div class="installment-item"><span>2nd Installment (30%)</span><span class="installment-amount">₹${installment2.toLocaleString()}</span></div>
-                        <div class="installment-item"><span>Final Installment (40%)</span><span class="installment-amount">₹${installment3.toLocaleString()}</span></div>
-                        <div class="total-amount">Total: ₹${amount.toLocaleString()}</div>
-                    </div>
-                `;
-                document.getElementById('paymentType').value = 'installment';
-            } else {
-                document.getElementById('paymentPlan').innerHTML = `
-                    <div class="payment-plan">
-                        <strong>💰 Full Payment</strong>
-                        <div class="installment-item"><span>Total Amount</span><span class="installment-amount">₹${amount.toLocaleString()}</span></div>
-                    </div>
-                `;
-                document.getElementById('paymentType').value = 'full';
-            }
+        .last-updated {
+            text-align: right;
+            font-size: 11px;
+            color: var(--text-muted);
+            padding: 15px 20px;
         }
 
-        window.callAgent = () => {
-            if (vendor?.agentPhone) window.location.href = `tel:${vendor.agentPhone}`;
-            else alert('Agent phone not available');
-        };
+        @media (max-width: 768px) {
+            .container { padding: 20px; }
+            th, td { font-size: 12px; padding: 10px; }
+        }
+    </style>
+</head>
+<body>
 
-        document.getElementById('bookingForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const user = auth.currentUser;
-            if (!user) { alert('Please login first'); window.location.href = 'login.html'; return; }
+<header class="header">
+    <div class="logo" onclick="window.location.href='index.html'">🏟️ STADIUM<span>CONNECT</span></div>
+    <div style="display: flex; align-items: center; gap: 15px;">
+        <div class="user-info">
+            <i class="fas fa-user-circle"></i>
+            <span id="userName">Loading...</span>
+        </div>
+        <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+</header>
+
+<div class="container">
+    <div class="page-header">
+        <a href="dashboard.html" class="back-btn" style="display: inline-flex; align-items: center; gap: 8px; margin-bottom: 20px; color: var(--accent); text-decoration: none;">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+        <h1><i class="fas fa-ticket-alt"></i> My Bookings</h1>
+        <p>View all your bookings, track status, and leave reviews</p>
+    </div>
+
+    <div class="stats-row" id="statsRow">
+        <div class="stat-box"><div class="stat-number">0</div><div>Total Bookings</div></div>
+        <div class="stat-box"><div class="stat-number">0</div><div>Confirmed</div></div>
+        <div class="stat-box"><div class="stat-number">0</div><div>Pending</div></div>
+        <div class="stat-box"><div class="stat-number">₹0</div><div>Total Spent</div></div>
+    </div>
+
+    <div class="table-container">
+        <div id="bookingsTable"></div>
+        <div class="last-updated" id="lastUpdated"></div>
+    </div>
+</div>
+
+<div id="reviewModal" class="modal">
+    <div class="modal-content">
+        <h3>⭐ Rate Your Experience</h3>
+        <p id="modalVendorName"></p>
+        <div class="modal-rating" id="modalRatingStars">
+            <i class="fas fa-star" data-rating="1"></i>
+            <i class="fas fa-star" data-rating="2"></i>
+            <i class="fas fa-star" data-rating="3"></i>
+            <i class="fas fa-star" data-rating="4"></i>
+            <i class="fas fa-star" data-rating="5"></i>
+        </div>
+        <textarea id="modalReviewText" rows="4" placeholder="Share your experience... (optional)"></textarea>
+        <div style="display: flex; gap: 12px; justify-content: flex-end;">
+            <button class="btn-cancel" onclick="closeReviewModal()" style="background: transparent; border: 1px solid var(--border-color); padding: 10px 24px; border-radius: 40px; cursor: pointer;">Cancel</button>
+            <button class="btn-submit" onclick="submitReview()" style="background: var(--accent); border: none; padding: 10px 24px; border-radius: 40px; color: white; cursor: pointer;">Submit Review</button>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, doc, getDoc, setDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
+        authDomain: "stadiumconnect-8fecb.firebaseapp.com",
+        projectId: "stadiumconnect-8fecb",
+        storageBucket: "stadiumconnect-8fecb.firebasestorage.app",
+        messagingSenderId: "458108198578",
+        appId: "1:458108198578:web:83d83646f0e24e718b73ab"
+    };
+    
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    let currentUser = null;
+    let allBookings = [];
+    let unsubscribe = null;
+    let currentBookingForReview = null;
+    let selectedRating = 0;
+
+    // Function to fetch ALL bookings from Firebase and filter by user
+    async function loadBookings() {
+        if (!currentUser) return;
+        
+        const tableDiv = document.getElementById('bookingsTable');
+        tableDiv.innerHTML = '<div class="loading-spinner"><div class="spinner"></div>Loading bookings...</div>';
+        
+        try {
+            console.log("Fetching all bookings from Firebase...");
+            const bookingsRef = collection(db, "bookings");
+            const snapshot = await getDocs(bookingsRef);
             
-            const bookingData = {
-                vendorId: vendor.id,
-                vendorName: vendor.name,
-                vendorCategory: vendor.category,
-                userId: user.uid,
-                userName: user.displayName || user.email,
-                userPhone: document.getElementById('userPhone').value,
-                eventLocation: document.getElementById('eventLocation').value,
-                eventDate: document.getElementById('eventDate').value,
-                eventType: document.getElementById('eventType').value,
-                agentId: document.getElementById('agentId').value || '',
-                amount: vendor?.priceRange ? parseInt(vendor.priceRange.replace(/[^0-9]/g, '')) || 50000 : 50000,
-                paymentType: document.getElementById('paymentType').value,
-                status: 'pending',
+            console.log(`Total bookings in collection: ${snapshot.size}`);
+            
+            // Filter bookings where ANY field matches the current user ID
+            const userBookings = [];
+            const userId = currentUser.uid;
+            const userEmail = currentUser.email;
+            
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                let isUserBooking = false;
+                let matchField = '';
+                
+                // Check all possible user ID fields
+                const possibleFields = ['userId', 'user_id', 'customerId', 'customer_id', 'uid', 'bookedBy', 'booked_by', 'user', 'customer'];
+                
+                for (let field of possibleFields) {
+                    if (data[field] === userId || data[field] === userEmail) {
+                        isUserBooking = true;
+                        matchField = field;
+                        break;
+                    }
+                }
+                
+                // Also check if the document ID or any nested object contains user ID
+                if (!isUserBooking) {
+                    if (data.user && (data.user.id === userId || data.user.uid === userId || data.user.email === userEmail)) {
+                        isUserBooking = true;
+                    }
+                    if (data.customer && (data.customer.id === userId || data.customer.uid === userId)) {
+                        isUserBooking = true;
+                    }
+                }
+                
+                if (isUserBooking) {
+                    console.log(`Found booking for user via field: ${matchField}`, data);
+                    userBookings.push({
+                        id: doc.id,
+                        ...data
+                    });
+                }
+            });
+            
+            console.log(`Found ${userBookings.length} bookings for user`);
+            
+            // Sort by date (newest first)
+            userBookings.sort((a, b) => {
+                const dateA = a.createdAt ? new Date(a.createdAt.seconds * 1000) : new Date(0);
+                const dateB = b.createdAt ? new Date(b.createdAt.seconds * 1000) : new Date(0);
+                return dateB - dateA;
+            });
+            
+            // Fetch reviews for each booking
+            for (let booking of userBookings) {
+                const reviewId = `${booking.id}_${currentUser.uid}`;
+                const reviewRef = doc(db, "reviews", reviewId);
+                const reviewSnap = await getDoc(reviewRef);
+                if (reviewSnap.exists()) {
+                    booking.review = reviewSnap.data();
+                }
+            }
+            
+            allBookings = userBookings;
+            updateUI();
+            
+        } catch (error) {
+            console.error("Error loading bookings:", error);
+            tableDiv.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Error loading bookings: ${error.message}</p><button onclick="location.reload()" style="margin-top: 10px; padding: 8px 20px; background: var(--accent); color: white; border: none; border-radius: 20px; cursor: pointer;">Retry</button></div>`;
+        }
+    }
+    
+    // Set up real-time listener for bookings
+    function setupRealtimeListener() {
+        if (unsubscribe) unsubscribe();
+        
+        const bookingsRef = collection(db, "bookings");
+        
+        unsubscribe = onSnapshot(bookingsRef, async (snapshot) => {
+            console.log("Real-time update detected! Total bookings:", snapshot.size);
+            
+            if (!currentUser) return;
+            
+            const userId = currentUser.uid;
+            const userEmail = currentUser.email;
+            const userBookings = [];
+            
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                let isUserBooking = false;
+                
+                const possibleFields = ['userId', 'user_id', 'customerId', 'customer_id', 'uid', 'bookedBy', 'booked_by'];
+                
+                for (let field of possibleFields) {
+                    if (data[field] === userId || data[field] === userEmail) {
+                        isUserBooking = true;
+                        break;
+                    }
+                }
+                
+                if (isUserBooking) {
+                    userBookings.push({
+                        id: doc.id,
+                        ...data
+                    });
+                }
+            });
+            
+            // Sort by date
+            userBookings.sort((a, b) => {
+                const dateA = a.createdAt ? new Date(a.createdAt.seconds * 1000) : new Date(0);
+                const dateB = b.createdAt ? new Date(b.createdAt.seconds * 1000) : new Date(0);
+                return dateB - dateA;
+            });
+            
+            // Fetch reviews
+            for (let booking of userBookings) {
+                const reviewId = `${booking.id}_${currentUser.uid}`;
+                const reviewRef = doc(db, "reviews", reviewId);
+                const reviewSnap = await getDoc(reviewRef);
+                if (reviewSnap.exists()) {
+                    booking.review = reviewSnap.data();
+                }
+            }
+            
+            allBookings = userBookings;
+            updateUI();
+            updateLastUpdated();
+            
+        }, (error) => {
+            console.error("Real-time listener error:", error);
+        });
+    }
+    
+    function updateUI() {
+        updateStats();
+        renderBookingsTable();
+    }
+    
+    function updateLastUpdated() {
+        document.getElementById('lastUpdated').innerHTML = `🟢 Live sync: ${new Date().toLocaleString()}`;
+    }
+    
+    function updateStats() {
+        const total = allBookings.length;
+        const confirmed = allBookings.filter(b => b.status === 'confirmed' || b.status === 'completed').length;
+        const pending = allBookings.filter(b => b.status === 'pending').length;
+        const totalAmount = allBookings.reduce((sum, b) => sum + (b.amount || 0), 0);
+        
+        document.getElementById('statsRow').innerHTML = `
+            <div class="stat-box"><div class="stat-number">${total}</div><div>Total Bookings</div></div>
+            <div class="stat-box"><div class="stat-number">${confirmed}</div><div>Confirmed</div></div>
+            <div class="stat-box"><div class="stat-number">${pending}</div><div>Pending</div></div>
+            <div class="stat-box"><div class="stat-number">₹${totalAmount.toLocaleString()}</div><div>Total Spent</div></div>
+        `;
+    }
+    
+    function renderBookingsTable() {
+        const container = document.getElementById('bookingsTable');
+        
+        if (allBookings.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-calendar-alt"></i>
+                    <p>No bookings found</p>
+                    <p style="font-size: 14px; margin-top: 10px;">Make your first booking to see it here!</p>
+                    <a href="vendors.html" style="color: var(--accent); text-decoration: none; display: inline-block; margin-top: 15px;">Browse Vendors →</a>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = `
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Vendor</th>
+                        <th>Event Date</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Booked On</th>
+                        <th>Review</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${allBookings.map(booking => `
+                        <tr>
+                            <td><code>${booking.id.slice(-8)}</code></td>
+                            <td>
+                                <strong>${escapeHtml(booking.vendorName || booking.stadiumName || booking.serviceName || 'Vendor')}</strong>
+                                <br><small style="color: var(--text-muted);">${booking.category || 'Event'}</small>
+                            </td>
+                            <td>${booking.eventDate || booking.date || '-'}</td>
+                            <td><strong>₹${(booking.amount || 0).toLocaleString()}</strong></td>
+                            <td><span class="status-badge status-${booking.status || 'pending'}">${booking.status || 'pending'}</span></td>
+                            <td><small>${formatDate(booking.createdAt)}</small></td>
+                            <td>${renderReviewButton(booking)}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+    }
+    
+    function renderReviewButton(booking) {
+        const canReview = (booking.status === 'completed' || booking.status === 'confirmed') && !booking.review;
+        const hasReview = booking.review;
+        
+        if (hasReview) {
+            return `<span class="rated-badge"><i class="fas fa-star"></i> ${booking.review.rating}/5</span>`;
+        }
+        
+        if (canReview) {
+            return `<button class="review-btn" onclick="openReviewModal('${booking.id}', '${escapeHtml(booking.vendorName || booking.stadiumName || 'Vendor')}')">
+                        <i class="fas fa-star"></i> Rate & Review
+                    </button>`;
+        }
+        
+        if (booking.status === 'pending') {
+            return '<span style="color: var(--text-muted); font-size: 12px;">Awaiting confirmation</span>';
+        }
+        
+        return '<span style="color: var(--text-muted); font-size: 12px;">—</span>';
+    }
+    
+    function formatDate(timestamp) {
+        if (!timestamp) return '-';
+        try {
+            if (timestamp.toDate) return timestamp.toDate().toLocaleDateString();
+            if (timestamp.seconds) return new Date(timestamp.seconds * 1000).toLocaleDateString();
+            return new Date(timestamp).toLocaleDateString();
+        } catch {
+            return '-';
+        }
+    }
+    
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
+    window.openReviewModal = (bookingId, vendorName) => {
+        const booking = allBookings.find(b => b.id === bookingId);
+        if (!booking) return;
+        
+        currentBookingForReview = booking;
+        document.getElementById('modalVendorName').innerHTML = `Booking for: <strong>${vendorName}</strong>`;
+        document.getElementById('modalReviewText').value = '';
+        selectedRating = 0;
+        updateModalStars(0);
+        document.getElementById('reviewModal').classList.add('active');
+    };
+    
+    function updateModalStars(rating) {
+        const stars = document.querySelectorAll('#modalRatingStars i');
+        stars.forEach((star, index) => {
+            if (index < rating) {
+                star.classList.add('active');
+            } else {
+                star.classList.remove('active');
+            }
+        });
+    }
+    
+    function setupModalRating() {
+        const stars = document.querySelectorAll('#modalRatingStars i');
+        stars.forEach(star => {
+            star.addEventListener('click', () => {
+                selectedRating = parseInt(star.dataset.rating);
+                updateModalStars(selectedRating);
+            });
+            star.addEventListener('mouseenter', () => {
+                const rating = parseInt(star.dataset.rating);
+                updateModalStars(rating);
+            });
+            star.addEventListener('mouseleave', () => {
+                updateModalStars(selectedRating);
+            });
+        });
+    }
+    
+    window.closeReviewModal = () => {
+        document.getElementById('reviewModal').classList.remove('active');
+        currentBookingForReview = null;
+        selectedRating = 0;
+    };
+    
+    window.submitReview = async () => {
+        if (!currentBookingForReview) return;
+        if (selectedRating === 0) {
+            showToast("Please select a rating", true);
+            return;
+        }
+        
+        const comment = document.getElementById('modalReviewText').value.trim();
+        
+        try {
+            const reviewId = `${currentBookingForReview.id}_${currentUser.uid}`;
+            const reviewData = {
+                bookingId: currentBookingForReview.id,
+                userId: currentUser.uid,
+                userName: currentUser.displayName || currentUser.email?.split('@')[0] || 'User',
+                userEmail: currentUser.email,
+                vendorId: currentBookingForReview.vendorId || currentBookingForReview.stadiumId,
+                vendorName: currentBookingForReview.vendorName || currentBookingForReview.stadiumName,
+                rating: selectedRating,
+                comment: comment,
                 createdAt: new Date().toISOString()
             };
             
-            const docRef = await addDoc(collection(db, 'bookings'), bookingData);
-            alert('✅ Booking created! Proceed to payment.');
-            window.location.href = `payment-page.html?id=${docRef.id}`;
+            await setDoc(doc(db, "reviews", reviewId), reviewData);
+            currentBookingForReview.review = reviewData;
+            
+            showToast("✅ Thank you for your review!");
+            closeReviewModal();
+            renderBookingsTable();
+        } catch (error) {
+            console.error("Error submitting review:", error);
+            showToast("Error submitting review", true);
+        }
+    };
+    
+    function showToast(message, isError = false) {
+        const existing = document.querySelector('.toast');
+        if (existing) existing.remove();
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.style.cssText = `position: fixed; bottom: 30px; right: 30px; background: var(--bg-card); padding: 12px 24px; border-radius: 50px; z-index: 2000; border-left: 4px solid ${isError ? 'var(--danger)' : 'var(--success)'}; display: flex; align-items: center; gap: 10px;`;
+        toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${message}`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+    
+    function toggleTheme() {
+        document.body.classList.toggle('dark');
+        const btn = document.querySelector('.theme-toggle');
+        btn.innerHTML = document.body.classList.contains('dark') ? '☀️' : '🌙';
+        localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+    }
+    
+    function logout() {
+        if (unsubscribe) unsubscribe();
+        auth.signOut();
+        window.location.href = 'index.html';
+    }
+    
+    if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark');
+        document.querySelector('.theme-toggle').innerHTML = '☀️';
+    }
+    
+    onAuthStateChanged(auth, (user) => {
+        if (!user) {
+            window.location.href = 'login.html';
+            return;
+        }
+        currentUser = user;
+        document.getElementById('userName').innerText = user.displayName || user.email?.split('@')[0] || 'User';
+        setupRealtimeListener();
+    });
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        setupModalRating();
+        document.getElementById('reviewModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('reviewModal')) {
+                closeReviewModal();
+            }
         });
-
-        loadVendor();
-    </script>
-</head>
-<body>
-<div class="container">
-    <div class="card">
-        <h2>📋 Book <span id="vendorName">Vendor</span></h2>
-        <div class="subtitle">Complete your booking details</div>
-        
-        <button class="call-agent-btn" onclick="callAgent()"><i class="fas fa-phone-alt"></i> Call Agent Now</button>
-        
-        <div class="info-row" style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid #eee;">
-            <span>Category:</span><strong id="vendorCategory">-</strong>
-        </div>
-        <div class="info-row" style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid #eee;">
-            <span>Vendor Phone:</span><strong id="vendorPhone">-</strong>
-        </div>
-        <div class="info-row" style="display:flex; justify-content:space-between; padding:12px 0;">
-            <span>Agent Phone:</span><strong id="agentPhone">-</strong>
-        </div>
-        
-        <div id="paymentPlan"></div>
-        
-        <form id="bookingForm">
-            <input type="hidden" id="paymentType" value="full">
-            <div class="form-group"><label>Your Phone Number *</label><input type="tel" id="userPhone" required placeholder="Enter your phone number"></div>
-            <div class="form-group"><label>Event Location *</label><input type="text" id="eventLocation" required placeholder="Full address with city"></div>
-            <div class="form-group"><label>Event Date *</label><input type="date" id="eventDate" required></div>
-            <div class="form-group"><label>Event Type *</label><select id="eventType" required><option>Wedding</option><option>Corporate</option><option>Birthday</option><option>Concert</option><option>Other</option></select></div>
-            <div class="agent-id-field"><label>Agent ID (Optional) <span class="optional-badge">if referred by agent</span></label><input type="text" id="agentId" placeholder="Enter agent ID if any"></div>
-            <button type="submit" class="btn-submit">Proceed to Payment →</button>
-        </form>
-    </div>
-</div>
+    });
+    
+    window.toggleTheme = toggleTheme;
+    window.logout = logout;
+</script>
 </body>
 </html>
