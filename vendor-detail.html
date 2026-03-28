@@ -40,7 +40,6 @@
             color: var(--dark);
         }
 
-        /* Animated Background */
         .bg-animation {
             position: fixed;
             top: 0;
@@ -64,7 +63,6 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Header */
         .header {
             background: rgba(10, 10, 42, 0.95);
             backdrop-filter: blur(20px);
@@ -127,7 +125,6 @@
             transform: scale(1.05);
         }
 
-        /* Container */
         .container {
             position: relative;
             z-index: 1;
@@ -136,7 +133,6 @@
             padding: 30px;
         }
 
-        /* Vendor Card Premium */
         .vendor-card {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(10px);
@@ -203,7 +199,6 @@
             color: #666;
         }
 
-        /* Info Section */
         .info-section {
             padding: 24px 28px;
         }
@@ -223,7 +218,6 @@
             font-size: 18px;
         }
 
-        /* Amenities Section */
         .amenities-section {
             padding: 0 28px 20px 28px;
         }
@@ -251,7 +245,6 @@
             gap: 8px;
         }
 
-        /* Price Box */
         .price-box {
             background: rgba(255,107,53,0.1);
             padding: 20px 28px;
@@ -269,7 +262,6 @@
             color: var(--primary);
         }
 
-        /* Gallery */
         .gallery-section {
             padding: 0 28px 28px 28px;
         }
@@ -295,7 +287,6 @@
             object-fit: cover;
         }
 
-        /* Booking Form Card */
         .booking-form-card {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(10px);
@@ -360,7 +351,6 @@
             gap: 20px;
         }
 
-        /* Payment Plan */
         .payment-plan {
             background: rgba(255,107,53,0.1);
             border-radius: 24px;
@@ -383,7 +373,6 @@
             color: var(--primary);
         }
 
-        /* Action Buttons */
         .action-buttons {
             display: flex;
             gap: 15px;
@@ -430,7 +419,6 @@
             box-shadow: 0 5px 20px rgba(255,107,53,0.4);
         }
 
-        /* Reviews Section - Display Only */
         .reviews-section {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(10px);
@@ -611,8 +599,23 @@
             margin-bottom: 16px;
             display: block;
         }
+        .loading-reviews {
+            text-align: center;
+            padding: 40px;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255,255,255,0.2);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
 
-        /* Lightbox */
         .lightbox {
             display: none;
             position: fixed;
@@ -796,10 +799,15 @@
         </div>
     </div>
 
-    <!-- Reviews Section - DISPLAY ONLY -->
-    <div class="reviews-section" id="reviewsSection">
+    <!-- Reviews Section -->
+    <div class="reviews-section">
         <div class="section-title"><i class="fas fa-star"></i> Customer Reviews</div>
-        <div id="reviewsContainer"></div>
+        <div id="reviewsContainer">
+            <div class="loading-reviews">
+                <div class="spinner"></div>
+                <p>Loading reviews...</p>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -814,7 +822,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, doc, getDoc, collection, getDocs, addDoc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, collection, getDocs, addDoc, query, where } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -860,18 +868,39 @@
     }
 
     async function loadReviews() {
+        const container = document.getElementById('reviewsContainer');
+        container.innerHTML = '<div class="loading-reviews"><div class="spinner"></div><p>Loading reviews...</p></div>';
+        
         try {
-            const q = query(
-                collection(db, "reviews"),
-                where("vendorId", "==", vendorId),
-                orderBy("createdAt", "desc")
-            );
+            console.log("Loading reviews for vendor:", vendorId);
+            const reviewsRef = collection(db, "reviews");
+            const q = query(reviewsRef, where("vendorId", "==", vendorId));
             const snapshot = await getDocs(q);
-            reviews = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            
+            console.log("Reviews found:", snapshot.size);
+            
+            reviews = snapshot.docs.map(doc => ({ 
+                id: doc.id, 
+                ...doc.data() 
+            }));
+            
+            // Sort by createdAt client-side (newest first)
+            reviews.sort((a, b) => {
+                const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
+                const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
+                return dateB - dateA;
+            });
+            
             renderReviews();
         } catch (error) {
             console.error("Error loading reviews:", error);
-            document.getElementById('reviewsContainer').innerHTML = '<div class="no-reviews"><i class="fas fa-exclamation-circle"></i><p>Error loading reviews</p></div>';
+            container.innerHTML = `
+                <div class="no-reviews">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p>Error loading reviews</p>
+                    <button onclick="loadReviews()" style="margin-top: 15px; padding: 8px 20px; background: var(--primary); border: none; border-radius: 20px; color: white; cursor: pointer;">Retry</button>
+                </div>
+            `;
         }
     }
 
@@ -890,8 +919,8 @@
             container.innerHTML = `
                 <div class="no-reviews">
                     <i class="fas fa-star"></i>
-                    <p style="margin-bottom: 10px;">No reviews yet</p>
-                    <p style="font-size: 13px; opacity: 0.7;">Be the first to review this vendor after your event!</p>
+                    <p>No reviews yet</p>
+                    <p style="font-size: 13px; opacity: 0.7; margin-top: 8px;">Be the first to review this vendor after your event!</p>
                 </div>
             `;
             return;
@@ -996,6 +1025,7 @@
     }
 
     function getStars(rating) {
+        if (!rating || rating === 0) return '☆☆☆☆☆';
         let stars = '';
         for (let i = 0; i < Math.floor(rating); i++) stars += '★';
         for (let i = stars.length; i < 5; i++) stars += '☆';
@@ -1014,14 +1044,16 @@
             <div class="amenities-section">
                 <div class="section-title"><i class="fas fa-crown"></i> Amenities & Services</div>
                 <div class="amenities-grid">
-                    ${amenities.map(a => `<span class="amenity-tag"><i class="fas fa-check-circle"></i> ${a}</span>`).join('')}
+                    ${amenities.map(a => `<span class="amenity-tag"><i class="fas fa-check-circle"></i> ${escapeHtml(a)}</span>`).join('')}
                 </div>
             </div>
         `;
     }
 
     function renderVendor() {
-        const avgRating = reviews.length > 0 ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1) : (currentVendor.rating || '4.5');
+        // Calculate average rating from actual reviews
+        const avgRating = reviews.length > 0 ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1) : null;
+        const reviewCount = reviews.length;
         
         document.getElementById('vendorDetail').innerHTML = `
             <div class="vendor-card">
@@ -1030,9 +1062,13 @@
                     <div class="vendor-info">
                         <h1>${escapeHtml(currentVendor.name || 'Vendor')}</h1>
                         <div class="vendor-rating">
-                            <div class="stars">${getStars(parseFloat(avgRating))}</div>
-                            <span class="rating-number">${avgRating}</span>
-                            <span class="review-count">(${reviews.length} review${reviews.length !== 1 ? 's' : ''})</span>
+                            ${avgRating ? `
+                                <div class="stars">${getStars(parseFloat(avgRating))}</div>
+                                <span class="rating-number">${avgRating}</span>
+                                <span class="review-count">(${reviewCount} review${reviewCount !== 1 ? 's' : ''})</span>
+                            ` : `
+                                <span class="review-count">No reviews yet</span>
+                            `}
                         </div>
                     </div>
                 </div>
