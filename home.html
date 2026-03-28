@@ -52,7 +52,7 @@
             min-height: 100vh;
         }
 
-        /* Animated Background (dark mode only subtle) */
+        /* Animated Background (dark mode only) */
         body.dark .animated-bg {
             position: fixed;
             top: 0;
@@ -173,7 +173,7 @@
         /* Welcome Hero Section */
         .hero {
             background: var(--bg-secondary);
-            padding: 48px 24px;
+            padding: 60px 24px;
             text-align: center;
             border-bottom: 1px solid var(--border-color);
             position: relative;
@@ -185,8 +185,8 @@
             position: absolute;
             top: -50%;
             right: -20%;
-            width: 300px;
-            height: 300px;
+            width: 400px;
+            height: 400px;
             background: radial-gradient(circle, rgba(255,107,53,0.1) 0%, transparent 70%);
             border-radius: 50%;
             animation: floatGlow 8s infinite ease-in-out;
@@ -198,9 +198,9 @@
         }
 
         .hero h2 {
-            font-size: 36px;
+            font-size: 42px;
             font-weight: 800;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
             background: linear-gradient(135deg, var(--accent), #ff9068);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -208,7 +208,9 @@
 
         .hero p {
             color: var(--text-secondary);
-            font-size: 16px;
+            font-size: 18px;
+            max-width: 600px;
+            margin: 0 auto;
         }
 
         /* Location Bar */
@@ -216,8 +218,10 @@
             padding: 20px 24px;
             display: flex;
             align-items: center;
-            gap: 12px;
+            justify-content: center;
+            gap: 20px;
             border-bottom: 1px solid var(--border-color);
+            flex-wrap: wrap;
         }
 
         .location-btn {
@@ -226,7 +230,7 @@
             gap: 10px;
             background: var(--bg-card);
             border: 1px solid var(--border-color);
-            padding: 12px 24px;
+            padding: 14px 32px;
             border-radius: 50px;
             cursor: pointer;
             font-weight: 500;
@@ -247,13 +251,13 @@
 
         /* Section Styles */
         .section {
-            padding: 32px 24px;
+            padding: 48px 24px;
         }
 
         .section-title {
-            font-size: 24px;
+            font-size: 28px;
             font-weight: 700;
-            margin-bottom: 24px;
+            margin-bottom: 32px;
             display: flex;
             align-items: center;
             gap: 12px;
@@ -261,21 +265,21 @@
 
         .section-title i {
             color: var(--accent);
-            font-size: 28px;
+            font-size: 32px;
         }
 
         /* Category Grid Premium */
         .category-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 24px;
         }
 
         .category-card {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: 24px;
-            padding: 24px 16px;
+            padding: 28px 20px;
             text-align: center;
             cursor: pointer;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -289,7 +293,7 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 3px;
+            height: 4px;
             background: linear-gradient(90deg, var(--accent), #ff9068);
             transform: scaleX(0);
             transition: transform 0.4s ease;
@@ -306,33 +310,48 @@
         }
 
         .category-icon {
-            font-size: 48px;
-            margin-bottom: 12px;
+            font-size: 56px;
+            margin-bottom: 16px;
         }
 
         .category-card h3 {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 700;
             color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .category-card p {
+            font-size: 13px;
+            color: var(--text-muted);
         }
 
         /* City Chips Premium */
         .city-list {
             display: flex;
             flex-wrap: wrap;
-            gap: 12px;
+            gap: 16px;
+            justify-content: center;
         }
 
         .city-chip {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
-            padding: 12px 28px;
-            border-radius: 50px;
-            font-size: 14px;
+            padding: 14px 32px;
+            border-radius: 60px;
+            font-size: 16px;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.3s ease;
             color: var(--text-primary);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .city-chip i {
+            color: var(--accent);
+            font-size: 16px;
         }
 
         .city-chip:hover {
@@ -343,10 +362,47 @@
             box-shadow: 0 8px 20px rgba(255,107,53,0.3);
         }
 
+        .city-chip:hover i {
+            color: white;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(135deg, var(--accent), #ff9068);
+            margin: 24px;
+            border-radius: 32px;
+            padding: 48px;
+            text-align: center;
+            color: white;
+        }
+
+        .cta-section h3 {
+            font-size: 28px;
+            margin-bottom: 16px;
+        }
+
+        .cta-section button {
+            background: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--accent);
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .cta-section button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
         /* Footer */
         footer {
             text-align: center;
-            padding: 32px 24px;
+            padding: 40px 24px;
             border-top: 1px solid var(--border-color);
             color: var(--text-muted);
             font-size: 13px;
@@ -398,15 +454,20 @@
         }
 
         /* Responsive */
-        @media (max-width: 640px) {
+        @media (max-width: 768px) {
             .header { padding: 12px 16px; }
             .logo { font-size: 20px; }
             .user-info { display: none; }
             .profile-card { padding: 6px 12px; }
             .hero h2 { font-size: 28px; }
-            .category-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-            .section { padding: 24px 16px; }
-            .location-bar { padding: 16px; }
+            .hero { padding: 40px 20px; }
+            .hero p { font-size: 14px; }
+            .category-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+            .section { padding: 32px 20px; }
+            .section-title { font-size: 24px; }
+            .city-chip { padding: 10px 20px; font-size: 14px; }
+            .cta-section { margin: 16px; padding: 32px 20px; }
+            .cta-section h3 { font-size: 22px; }
         }
     </style>
 </head>
@@ -433,45 +494,58 @@
 
 <div class="hero">
     <h2>Plan Your Perfect Event</h2>
-    <p>Discover premium vendors, stadiums, and services tailored to your needs</p>
+    <p>Discover premium vendors, stunning stadiums, and top-rated services for your special occasions</p>
 </div>
 
 <div class="location-bar">
     <div class="location-btn" onclick="detectLocation()">
         <i class="fas fa-location-dot"></i>
-        <span id="locationText">Detect my location</span>
+        <span id="locationText">📍 Detect my location</span>
+    </div>
+    <div class="location-btn" onclick="window.location.href='vendors.html'">
+        <i class="fas fa-search"></i>
+        <span>Browse All Vendors</span>
     </div>
 </div>
 
+<!-- Categories Section -->
 <div class="section">
     <div class="section-title">
         <i class="fas fa-th-large"></i>
         <span>Browse by Category</span>
     </div>
     <div class="category-grid" id="categoryGrid">
-        <div class="loading"><div class="spinner"></div>Loading categories...</div>
+        <!-- Categories will be loaded here with fallback data -->
     </div>
 </div>
 
+<!-- Popular Cities Section -->
 <div class="section" style="background: var(--bg-secondary);">
     <div class="section-title">
         <i class="fas fa-city"></i>
         <span>Popular Cities</span>
     </div>
     <div class="city-list" id="cityList">
-        <div class="loading"><div class="spinner"></div>Loading cities...</div>
+        <!-- Cities will be loaded here with fallback data -->
     </div>
+</div>
+
+<!-- CTA Section -->
+<div class="cta-section">
+    <h3>✨ Ready to Create Magic?</h3>
+    <p>Join thousands of happy customers who found their perfect vendors through StadiumConnect</p>
+    <button onclick="window.location.href='vendors.html'">Explore Now →</button>
 </div>
 
 <footer>
     <p>© 2025 StadiumConnect | Your Need, Our Network</p>
-    <p style="margin-top: 8px; font-size: 11px;">Premium Event Marketplace</p>
+    <p style="margin-top: 8px; font-size: 11px;">Premium Event Marketplace | 50,000+ Happy Customers</p>
 </footer>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
     import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
@@ -485,6 +559,161 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
+
+    // Default categories (fallback if Firebase fails)
+    const DEFAULT_CATEGORIES = [
+        { id: 'stadium', name: 'Stadiums', icon: '🏟️', description: 'Book premium stadiums' },
+        { id: 'decorator', name: 'Decorators', icon: '🎨', description: 'Event decoration experts' },
+        { id: 'photographer', name: 'Photographers', icon: '📸', description: 'Capture your moments' },
+        { id: 'caterer', name: 'Caterers', icon: '🍽️', description: 'Delicious food services' },
+        { id: 'bandbaja', name: 'Band Baja', icon: '🎵', description: 'Music & entertainment' },
+        { id: 'florist', name: 'Florists', icon: '🌸', description: 'Beautiful flower arrangements' },
+        { id: 'makeup', name: 'Makeup Artist', icon: '💄', description: 'Professional makeup' },
+        { id: 'venue', name: 'Event Venues', icon: '🏛️', description: 'Perfect event locations' },
+        { id: 'cakes', name: 'Cake Designers', icon: '🎂', description: 'Custom cakes' },
+        { id: 'invitation', name: 'Invitations', icon: '📧', description: 'Digital invites' }
+    ];
+
+    // Default popular cities
+    const DEFAULT_CITIES = [
+        { name: 'Mumbai', icon: '🌊' },
+        { name: 'Delhi', icon: '🏛️' },
+        { name: 'Bangalore', icon: '🌳' },
+        { name: 'Chennai', icon: '🏝️' },
+        { name: 'Kolkata', icon: '🎭' },
+        { name: 'Hyderabad', icon: '🍛' },
+        { name: 'Pune', icon: '🏔️' },
+        { name: 'Ahmedabad', icon: '🏙️' },
+        { name: 'Jaipur', icon: '🏰' },
+        { name: 'Lucknow', icon: '🍽️' }
+    ];
+
+    // Load Categories
+    async function loadCategories() {
+        const container = document.getElementById('categoryGrid');
+        container.innerHTML = '<div class="loading"><div class="spinner"></div>Loading categories...</div>';
+        
+        try {
+            const snapshot = await getDocs(collection(db, "categories"));
+            let categories = [];
+            snapshot.forEach(doc => {
+                if (!doc.data().deleted) {
+                    categories.push({ id: doc.id, ...doc.data() });
+                }
+            });
+            
+            // Use Firebase data if available, otherwise use defaults
+            if (categories.length === 0) {
+                categories = DEFAULT_CATEGORIES;
+            }
+            
+            container.innerHTML = categories.map(cat => `
+                <div class="category-card" onclick="goToCategory('${cat.id}')">
+                    <div class="category-icon">${cat.icon || '🏷️'}</div>
+                    <h3>${escapeHtml(cat.name)}</h3>
+                    <p>${cat.description || 'Explore ' + cat.name}</p>
+                </div>
+            `).join('');
+            
+        } catch (error) {
+            console.error("Error loading categories:", error);
+            // Use default categories on error
+            container.innerHTML = DEFAULT_CATEGORIES.map(cat => `
+                <div class="category-card" onclick="goToCategory('${cat.id}')">
+                    <div class="category-icon">${cat.icon}</div>
+                    <h3>${cat.name}</h3>
+                    <p>${cat.description}</p>
+                </div>
+            `).join('');
+        }
+    }
+
+    // Load Popular Cities
+    async function loadPopularCities() {
+        const container = document.getElementById('cityList');
+        container.innerHTML = '<div class="loading"><div class="spinner"></div>Loading cities...</div>';
+        
+        try {
+            const docRef = doc(db, 'settings', 'cities');
+            const docSnap = await getDoc(docRef);
+            let popularCities = [];
+            
+            if (docSnap.exists()) {
+                const cities = docSnap.data().list || [];
+                popularCities = cities.filter(c => c.popular === true).map(c => ({ name: c.name, icon: c.icon || '📍' }));
+            }
+            
+            // Use Firebase data if available, otherwise use defaults
+            if (popularCities.length === 0) {
+                popularCities = DEFAULT_CITIES;
+            }
+            
+            container.innerHTML = popularCities.map(city => `
+                <div class="city-chip" onclick="goToCity('${city.name}')">
+                    <i class="fas fa-map-marker-alt"></i>
+                    ${escapeHtml(city.name)}
+                </div>
+            `).join('');
+            
+        } catch (error) {
+            console.error("Error loading cities:", error);
+            // Use default cities on error
+            container.innerHTML = DEFAULT_CITIES.map(city => `
+                <div class="city-chip" onclick="goToCity('${city.name}')">
+                    <i class="fas fa-map-marker-alt"></i>
+                    ${city.name}
+                </div>
+            `).join('');
+        }
+    }
+
+    // Navigation Functions
+    window.goToCategory = (category) => {
+        window.location.href = `vendors.html?category=${category}`;
+    };
+
+    window.goToCity = (city) => {
+        window.location.href = `vendors.html?city=${city.toLowerCase()}`;
+    };
+
+    window.detectLocation = () => {
+        const locationText = document.getElementById('locationText');
+        if (navigator.geolocation) {
+            locationText.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Detecting...';
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    window.location.href = `vendors.html?lat=${pos.coords.latitude}&lng=${pos.coords.longitude}`;
+                },
+                () => {
+                    locationText.innerHTML = '📍 Detect my location';
+                    showToast('Please allow location access to see nearby vendors', true);
+                }
+            );
+        } else {
+            showToast('Geolocation not supported', true);
+        }
+    };
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    // Toast Notification
+    function showToast(message, isError = false) {
+        const existing = document.querySelector('.toast');
+        if (existing) existing.remove();
+        const toast = document.createElement('div');
+        toast.className = `toast ${isError ? 'error' : ''}`;
+        toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${message}`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
 
     // Theme Management
     function initTheme() {
@@ -515,136 +744,7 @@
         showToast(isDark ? '🌙 Dark mode enabled' : '☀️ Light mode enabled');
     }
 
-    // Toast Notification
-    function showToast(message, isError = false) {
-        const existing = document.querySelector('.toast');
-        if (existing) existing.remove();
-        const toast = document.createElement('div');
-        toast.className = 'toast';
-        toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${message}`;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
-    }
-
-    // Load Categories from Firebase
-    async function loadCategories() {
-        const container = document.getElementById('categoryGrid');
-        container.innerHTML = '<div class="loading"><div class="spinner"></div>Loading categories...</div>';
-        
-        try {
-            const snapshot = await getDocs(collection(db, "categories"));
-            let categories = [];
-            snapshot.forEach(doc => {
-                if (!doc.data().deleted) {
-                    categories.push({ id: doc.id, ...doc.data() });
-                }
-            });
-            
-            // Default categories if none in Firebase
-            if (categories.length === 0) {
-                categories = [
-                    { id: 'decorator', name: 'Decorators', icon: '🎨' },
-                    { id: 'photographer', name: 'Photographers', icon: '📸' },
-                    { id: 'caterer', name: 'Caterers', icon: '🍽️' },
-                    { id: 'bandbaja', name: 'Band Baja', icon: '🎵' },
-                    { id: 'stadium', name: 'Stadiums', icon: '🏟️' },
-                    { id: 'florist', name: 'Florists', icon: '🌸' },
-                    { id: 'makeup', name: 'Makeup Artist', icon: '💄' },
-                    { id: 'venue', name: 'Venues', icon: '🏛️' }
-                ];
-            }
-            
-            container.innerHTML = categories.map(cat => `
-                <div class="category-card" onclick="goToCategory('${cat.id}')">
-                    <div class="category-icon">${cat.icon || '🏷️'}</div>
-                    <h3>${escapeHtml(cat.name)}</h3>
-                </div>
-            `).join('');
-            
-        } catch (error) {
-            console.error("Error loading categories:", error);
-            container.innerHTML = '<div class="loading">⚠️ Error loading categories</div>';
-        }
-    }
-
-    // Load Popular Cities
-    async function loadPopularCities() {
-        const container = document.getElementById('cityList');
-        container.innerHTML = '<div class="loading"><div class="spinner"></div>Loading cities...</div>';
-        
-        try {
-            const docRef = doc(db, 'settings', 'cities');
-            const docSnap = await getDoc(docRef);
-            let cities = [];
-            
-            if (docSnap.exists()) {
-                cities = docSnap.data().list || [];
-            }
-            
-            const popularCities = cities.filter(c => c.popular === true).map(c => c.name);
-            
-            // Default popular cities if none
-            if (popularCities.length === 0) {
-                const defaultCities = ['Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Kolkata', 'Hyderabad', 'Pune', 'Ahmedabad'];
-                container.innerHTML = defaultCities.map(city => `
-                    <div class="city-chip" onclick="goToCity('${city}')">
-                        ${city}
-                    </div>
-                `).join('');
-                return;
-            }
-            
-            container.innerHTML = popularCities.map(city => `
-                <div class="city-chip" onclick="goToCity('${city}')">
-                    ${city}
-                </div>
-            `).join('');
-            
-        } catch (error) {
-            console.error("Error loading cities:", error);
-            container.innerHTML = '<div class="loading">⚠️ Error loading cities</div>';
-        }
-    }
-
-    // Escape HTML
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
-    }
-
-    // Navigation Functions
-    window.goToCategory = (category) => {
-        window.location.href = `vendors.html?category=${category}`;
-    };
-
-    window.goToCity = (city) => {
-        window.location.href = `vendors.html?city=${city.toLowerCase()}`;
-    };
-
-    window.detectLocation = () => {
-        const locationText = document.getElementById('locationText');
-        if (navigator.geolocation) {
-            locationText.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Detecting...';
-            navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                    window.location.href = `vendors.html?lat=${pos.coords.latitude}&lng=${pos.coords.longitude}`;
-                },
-                () => {
-                    locationText.innerHTML = '<i class="fas fa-location-dot"></i> Detect location';
-                    showToast('Please allow location access to see nearby vendors', true);
-                }
-            );
-        } else {
-            showToast('Geolocation not supported', true);
-        }
-    };
-
-    // Profile Dropdown & User Management
+    // User Profile
     let currentUser = null;
 
     function updateProfileUI(user) {
@@ -658,10 +758,6 @@
             userNameSpan.innerText = displayName;
             userEmailSpan.innerText = email;
             avatarDiv.innerText = displayName.charAt(0).toUpperCase();
-            
-            // Update hero greeting
-            const heroNameSpan = document.getElementById('heroUserName');
-            if (heroNameSpan) heroNameSpan.innerText = displayName;
         } else {
             userNameSpan.innerText = 'Guest';
             userEmailSpan.innerText = 'Sign in';
@@ -669,49 +765,24 @@
         }
     }
 
-    // Profile card click handler - redirect or show menu
+    // Profile click handler
     function setupProfileClick() {
         const profileCard = document.getElementById('profileCard');
         profileCard.addEventListener('click', (e) => {
             e.stopPropagation();
             if (currentUser) {
-                // If logged in, go to profile page
                 window.location.href = 'profile.html';
             } else {
-                // If guest, go to login
                 window.location.href = 'login.html';
             }
         });
-    }
-
-    // Add greeting name to hero
-    function addHeroGreeting() {
-        const hero = document.querySelector('.hero h2');
-        const originalText = hero.innerHTML;
-        hero.innerHTML = originalText.replace('Plan Your Perfect Event', 'Plan Your Perfect Event');
-        // We'll dynamically update if needed
-    }
-
-    // Update hero with user name
-    function updateHeroWithUser(user) {
-        const heroTitle = document.querySelector('.hero h2');
-        if (user) {
-            const name = user.displayName || user.email?.split('@')[0] || 'there';
-            heroTitle.innerHTML = `Hello, ${escapeHtml(name)}! <span style="background: linear-gradient(135deg, var(--accent), #ff9068); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">✨</span>`;
-            const subText = document.querySelector('.hero p');
-            if (subText) subText.innerHTML = 'Ready to discover the best vendors for your dream event?';
-        } else {
-            heroTitle.innerHTML = `Plan Your Perfect Event`;
-        }
     }
 
     // Auth State Listener
     onAuthStateChanged(auth, (user) => {
         currentUser = user;
         updateProfileUI(user);
-        updateHeroWithUser(user);
         
-        // Optional: If user is logged in, we can show a welcome toast
         if (user) {
             setTimeout(() => {
                 showToast(`Welcome back, ${user.displayName || user.email?.split('@')[0]}! 👋`);
@@ -719,9 +790,9 @@
         }
     });
 
-    // Add animation to cards on scroll
+    // Animation on scroll
     function addScrollAnimation() {
-        const cards = document.querySelectorAll('.category-card, .city-chip');
+        const elements = document.querySelectorAll('.category-card, .city-chip');
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -731,21 +802,12 @@
             });
         }, { threshold: 0.1 });
         
-        document.querySelectorAll('.category-card, .city-chip').forEach(card => {
-            card.style.opacity = '0';
-            card.style.transform = 'translateY(20px)';
-            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-            observer.observe(card);
+        elements.forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            observer.observe(el);
         });
-        
-        // Re-observe when content loads
-        setTimeout(() => {
-            document.querySelectorAll('.category-card, .city-chip').forEach(card => {
-                card.style.opacity = '0';
-                card.style.transform = 'translateY(20px)';
-                observer.observe(card);
-            });
-        }, 500);
     }
 
     // Initialize everything
@@ -757,53 +819,9 @@
         await loadCategories();
         await loadPopularCities();
         
-        // Add scroll animation after content loads
         setTimeout(addScrollAnimation, 300);
-        
-        // Add floating particles effect for dark mode
-        createParticles();
     }
     
-    function createParticles() {
-        const container = document.createElement('div');
-        container.className = 'particle-container';
-        container.style.position = 'fixed';
-        container.style.top = '0';
-        container.style.left = '0';
-        container.style.width = '100%';
-        container.style.height = '100%';
-        container.style.pointerEvents = 'none';
-        container.style.zIndex = '0';
-        container.style.overflow = 'hidden';
-        document.body.appendChild(container);
-        
-        for (let i = 0; i < 30; i++) {
-            const particle = document.createElement('div');
-            particle.style.position = 'absolute';
-            particle.style.width = Math.random() * 4 + 2 + 'px';
-            particle.style.height = particle.style.width;
-            particle.style.background = 'rgba(255,107,53,0.3)';
-            particle.style.borderRadius = '50%';
-            particle.style.left = Math.random() * 100 + '%';
-            particle.style.top = Math.random() * 100 + '%';
-            particle.style.animation = `floatParticle ${Math.random() * 20 + 15}s infinite ease-in-out`;
-            particle.style.opacity = '0';
-            container.appendChild(particle);
-        }
-        
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes floatParticle {
-                0% { transform: translateY(0) translateX(0); opacity: 0; }
-                10% { opacity: 0.4; }
-                90% { opacity: 0.4; }
-                100% { transform: translateY(-100vh) translateX(100px); opacity: 0; }
-            }
-        `;
-        document.head.appendChild(style);
-    }
-    
-    // Run init
     init();
 </script>
 </body>
