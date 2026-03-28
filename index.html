@@ -86,6 +86,22 @@
         .form-group input:focus {
             border-color: #ff6b35;
         }
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 10px 0;
+        }
+        .remember-me input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        .remember-me label {
+            font-size: 13px;
+            color: #666;
+            cursor: pointer;
+        }
         .email-submit-btn {
             background: #ff6b35;
             color: white;
@@ -170,6 +186,7 @@
             z-index: 1001;
         }
         .toast.error { background: #dc3545; }
+        .toast.success { background: #28a745; }
         
         @media (max-width: 500px) { .logo { font-size: 32px; } .btn { padding: 10px 24px; } }
     </style>
@@ -196,6 +213,10 @@
             <div class="form-group">
                 <label>Password</label>
                 <input type="password" id="loginPassword" placeholder="••••••••">
+            </div>
+            <div class="remember-me">
+                <input type="checkbox" id="rememberMeCheckbox" checked>
+                <label for="rememberMeCheckbox">Remember me (Stay logged in)</label>
             </div>
             <button class="email-submit-btn" id="loginBtn">Login</button>
             <div class="toggle-form">
@@ -241,16 +262,21 @@
     <div id="toast" class="toast"></div>
 
     <script type="module">
-        import { 
-            auth, 
-            signInWithGoogle, 
-            handleRedirectResult, 
-            onAuthStateChanged,
-            saveUserToLocalStorage,
-            signUpWithEmail,
-            loginWithEmail,
-            signOut
-        } from './firebase-config.js';
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, onAuthStateChanged, setPersistence, browserLocalPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
+            authDomain: "stadiumconnect-8fecb.firebaseapp.com",
+            projectId: "stadiumconnect-8fecb",
+            storageBucket: "stadiumconnect-8fecb.firebasestorage.app",
+            messagingSenderId: "458108198578",
+            appId: "1:458108198578:web:83d83646f0e24e718b73ab"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
         
         // DOM Elements
         const googleBtn = document.getElementById('googleSignInBtn');
@@ -262,11 +288,12 @@
         const registerForm = document.getElementById('registerForm');
         const loadingOverlay = document.getElementById('loadingOverlay');
         const toast = document.getElementById('toast');
+        const rememberMeCheckbox = document.getElementById('rememberMeCheckbox');
         
         // Toast Function
-        function showToast(msg, isError = false) {
+        function showToast(msg, type = 'success') {
             toast.textContent = msg;
-            toast.className = `toast ${isError ? 'error' : ''}`;
+            toast.className = `toast ${type}`;
             toast.style.display = 'block';
             setTimeout(() => {
                 toast.style.display = 'none';
@@ -277,41 +304,116 @@
             loadingOverlay.style.display = show ? 'flex' : 'none';
         }
         
+        // Save user to localStorage
+        function saveUserToLocalStorage(user) {
+            if (user) {
+                const userData = {
+                    uid: user.uid,
+                    email: user.email,
+                    displayName: user.displayName,
+                    photoURL: user.photoURL,
+                    lastLogin: new Date().toISOString()
+                };
+                localStorage.setItem('stadiumconnect_user', JSON.stringify(userData));
+            }
+        }
+        
+        // Clear user from localStorage
+        function clearUserFromLocalStorage() {
+            localStorage.removeItem('stadiumconnect_user');
+        }
+        
+        // Check if user is already logged in (from localStorage)
+        function getStoredUser() {
+            const stored = localStorage.getItem('stadiumconnect_user');
+            if (stored) {
+                try {
+                    return JSON.parse(stored);
+                } catch(e) {
+                    return null;
+                }
+            }
+            return null;
+        }
+        
         // Redirect to home page
         function goToHome() {
             window.location.href = 'home.html';
         }
         
-        // ============= EMAIL LOGIN =============
+        // Set persistence based on remember me checkbox
+        async function setAuthPersistence(rememberMe) {
+            try {
+                if (rememberMe) {
+                    await setPersistence(auth, browserLocalPersistence);
+                    console.log('✅ Persistence set to LOCAL (remember me)');
+                } else {
+                    await setPersistence(auth, browserSessionPersistence);
+                    console.log('✅ Persistence set to SESSION (until browser closes)');
+                }
+                return true;
+            } catch (error) {
+                console.error('Persistence error:', error);
+                return false;
+            }
+        }
+        
+        // ============= AUTO-LOGIN CHECK =============
+        // Check if user is already authenticated
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User is logged in via Firebase
+                saveUserToLocalStorage(user);
+                // If we're on index page, redirect to home
+                if (window.location.pathname.includes('index.html') || window.location.pathname === '/' || window.location.pathname.endsWith('/')) {
+                    console.log('✅ User already logged in, redirecting to home...');
+                    goToHome();
+                }
+            } else {
+                // Check if we have stored user data (for cases where Firebase session expired but we have local data)
+                const storedUser = getStoredUser();
+                if (storedUser) {
+                    // We have stored user but Firebase says no user - clear it
+                    clearUserFromLocalStorage();
+                }
+            }
+        });
+        
+        // ============= EMAIL LOGIN with Remember Me =============
         loginBtn.onclick = async () => {
             const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
+            const rememberMe = rememberMeCheckbox.checked;
             
             if (!email || !password) {
-                showToast('Please enter email and password', true);
+                showToast('Please enter email and password', 'error');
                 return;
             }
             
             setLoading(true);
-            const result = await loginWithEmail(email, password);
+            
+            // Set persistence first
+            await setAuthPersistence(rememberMe);
+            
+            const result = await signInWithEmailAndPassword(auth, email, password);
             setLoading(false);
             
-            if (result.success) {
+            if (result.user) {
                 saveUserToLocalStorage(result.user);
-                showToast(`Welcome back ${result.user.displayName || result.user.email}!`);
-                setTimeout(goToHome, 1500);
+                showToast(`Welcome back ${result.user.displayName || result.user.email}!`, 'success');
+                setTimeout(goToHome, 1000);
             } else {
                 let errorMsg = 'Login failed';
-                if (result.error?.code === 'auth/invalid-credential') {
+                if (result.code === 'auth/invalid-credential') {
                     errorMsg = 'Invalid email or password';
-                } else if (result.error?.code === 'auth/user-not-found') {
+                } else if (result.code === 'auth/user-not-found') {
                     errorMsg = 'Account not found. Please register first.';
-                } else if (result.error?.code === 'auth/wrong-password') {
+                } else if (result.code === 'auth/wrong-password') {
                     errorMsg = 'Wrong password';
                 } else {
-                    errorMsg = result.error?.message || 'Login failed';
+                    errorMsg = result.message || 'Login failed';
                 }
-                showToast(errorMsg, true);
+                showToast(errorMsg, 'error');
             }
         };
         
@@ -322,51 +424,72 @@
             const password = document.getElementById('regPassword').value;
             
             if (!name || !email || !password) {
-                showToast('Please fill all fields', true);
+                showToast('Please fill all fields', 'error');
                 return;
             }
             
             if (password.length < 6) {
-                showToast('Password must be at least 6 characters', true);
+                showToast('Password must be at least 6 characters', 'error');
                 return;
             }
             
             setLoading(true);
-            const result = await signUpWithEmail(email, password, name);
-            setLoading(false);
             
-            if (result.success) {
-                saveUserToLocalStorage(result.user);
-                showToast(`Welcome ${name}! Account created successfully.`);
-                setTimeout(goToHome, 1500);
-            } else {
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                
+                // Update profile with name
+                await updateProfile(user, { displayName: name });
+                
+                // Refresh user object
+                const updatedUser = auth.currentUser;
+                saveUserToLocalStorage(updatedUser);
+                
+                // Set persistence to LOCAL for new users
+                await setAuthPersistence(true);
+                
+                showToast(`Welcome ${name}! Account created successfully.`, 'success');
+                setTimeout(goToHome, 1000);
+            } catch (error) {
                 let errorMsg = 'Registration failed';
-                if (result.error?.code === 'auth/email-already-in-use') {
+                if (error.code === 'auth/email-already-in-use') {
                     errorMsg = 'Email already registered. Please login.';
-                } else if (result.error?.code === 'auth/invalid-email') {
+                } else if (error.code === 'auth/invalid-email') {
                     errorMsg = 'Invalid email address';
                 } else {
-                    errorMsg = result.error?.message || 'Registration failed';
+                    errorMsg = error.message || 'Registration failed';
                 }
-                showToast(errorMsg, true);
+                showToast(errorMsg, 'error');
             }
+            setLoading(false);
         };
         
-        // ============= GOOGLE SIGN-IN (APK Compatible) =============
+        // ============= GOOGLE SIGN-IN with Remember Me =============
         googleBtn.onclick = async () => {
+            const rememberMe = rememberMeCheckbox?.checked || true;
             setLoading(true);
-            const result = await signInWithGoogle();
             
-            if (result.success === true) {
-                saveUserToLocalStorage(result.user);
-                showToast(`Welcome ${result.user.displayName || 'User'}!`);
-                setTimeout(goToHome, 1500);
-            } else if (result.success === 'redirect') {
-                // Redirecting to Google, no action needed
-                console.log('Redirecting to Google...');
-            } else if (result.error) {
+            // Set persistence based on remember me
+            await setAuthPersistence(rememberMe);
+            
+            try {
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+                saveUserToLocalStorage(user);
+                showToast(`Welcome ${user.displayName || 'User'}!`, 'success');
+                setTimeout(goToHome, 1000);
+            } catch (error) {
                 setLoading(false);
-                showToast(result.error.message || 'Google Sign-In failed', true);
+                let errorMsg = 'Google Sign-In failed';
+                if (error.code === 'auth/popup-blocked') {
+                    errorMsg = 'Popup blocked. Please allow popups for this site.';
+                } else if (error.code === 'auth/cancelled-popup-request') {
+                    errorMsg = 'Sign-in cancelled';
+                } else {
+                    errorMsg = error.message || 'Google Sign-In failed';
+                }
+                showToast(errorMsg, 'error');
             }
         };
         
@@ -381,27 +504,8 @@
             loginForm.style.display = 'block';
         };
         
-        // ============= HANDLE REDIRECT RESULT (APK) =============
-        async function checkRedirectResult() {
-            const result = await handleRedirectResult();
-            if (result.success) {
-                saveUserToLocalStorage(result.user);
-                showToast(`Welcome ${result.user.displayName || 'User'}!`);
-                setTimeout(goToHome, 1000);
-            }
-        }
-        checkRedirectResult();
-        
-        // ============= CHECK IF ALREADY LOGGED IN =============
-        onAuthStateChanged(auth, (user) => {
-            if (user && window.location.pathname.includes('index.html')) {
-                saveUserToLocalStorage(user);
-                goToHome();
-            }
-        });
-        
-        console.log('✅ Index page loaded with Email/Google Sign-In');
-        console.log('📍 After login, redirect to: home.html');
+        console.log('✅ Index page loaded with Auto-Login feature');
+        console.log('📍 If already logged in, will auto-redirect to home.html');
     </script>
 </body>
 </html>
