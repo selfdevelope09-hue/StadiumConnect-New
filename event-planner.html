@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Event Planner - StadiumConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body {
+            background: linear-gradient(135deg, #0a0a2a 0%, #050517 100%);
+            color: #fff;
+            min-height: 100vh;
+        }
+        body.light-mode {
+            background: linear-gradient(135deg, #f5f7fb 0%, #eef2f7 100%);
+            color: #1a1a2e;
+        }
+        .header {
+            background: rgba(10, 10, 42, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,107,53,0.3);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        body.light-mode .header { background: rgba(255, 255, 255, 0.95); }
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff, #ff6b35);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            cursor: pointer;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(255,107,53,0.2);
+            padding: 8px 20px;
+            border-radius: 40px;
+        }
+        .theme-toggle {
+            background: rgba(255,107,53,0.2);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            color: #ff6b35;
+        }
+        .back-btn {
+            background: rgba(255,107,53,0.2);
+            border: none;
+            padding: 8px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            color: #ff6b35;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .logout-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+        .page-header {
+            margin-bottom: 30px;
+        }
+        .page-header h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        .planner-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        .planner-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 24px;
+            padding: 24px;
+        }
+        body.light-mode .planner-card {
+            background: white;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            border: 1px solid #eee;
+        }
+        .planner-card h3 {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .form-group {
+            margin-bottom: 18px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.7);
+        }
+        body.light-mode .form-group label {
+            color: #666;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            color: white;
+            font-size: 14px;
+        }
+        body.light-mode .form-group input,
+        body.light-mode .form-group select,
+        body.light-mode .form-group textarea {
+            background: #f5f5f5;
+            color: #333;
+            border-color: #ddd;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+        .checklist-item input {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        .budget-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .total-budget {
+            font-size: 24px;
+            font-weight: 800;
+            color: #ff6b35;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid #ff6b35;
+        }
+        .save-plan-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #ff6b35, #ff9068);
+            border: none;
+            padding: 14px;
+            border-radius: 40px;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .saved-plans {
+            margin-top: 30px;
+        }
+        .plan-item {
+            background: rgba(255,107,53,0.1);
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(0,0,0,0.9);
+            padding: 12px 24px;
+            border-radius: 50px;
+            z-index: 2000;
+            border-left: 4px solid #10b981;
+        }
+        @media (max-width: 768px) {
+            .planner-grid {
+                grid-template-columns: 1fr;
+            }
+            .container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="logo" onclick="window.location.href='index.html'">🏟️ STADIUM<span>CONNECT</span></div>
+    <div style="display: flex; align-items: center; gap: 15px;">
+        <div class="user-info">
+            <i class="fas fa-user-circle"></i>
+            <span id="userName">Loading...</span>
+        </div>
+        <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+</header>
+
+<div class="container">
+    <div class="page-header">
+        <a href="dashboard.html" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+        <h1><i class="fas fa-calendar-alt"></i> Event Planner</h1>
+        <p>Plan your perfect event with our smart checklist and budget calculator</p>
+    </div>
+
+    <div class="planner-grid">
+        <div class="planner-card">
+            <h3><i class="fas fa-clipboard-list"></i> Event Details</h3>
+            <div class="form-group">
+                <label>Event Name</label>
+                <input type="text" id="eventName" placeholder="e.g., Corporate Gala 2024">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Event Date</label>
+                    <input type="date" id="eventDate">
+                </div>
+                <div class="form-group">
+                    <label>Event Type</label>
+                    <select id="eventType">
+                        <option>Wedding</option>
+                        <option>Corporate Event</option>
+                        <option>Concert</option>
+                        <option>Sports Event</option>
+                        <option>Birthday Party</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Expected Guests</label>
+                    <input type="number" id="guestCount" placeholder="Number of guests">
+                </div>
+                <div class="form-group">
+                    <label>Budget (₹)</label>
+                    <input type="number" id="eventBudget" placeholder="Total budget">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Special Notes</label>
+                <textarea id="eventNotes" rows="3" placeholder="Any special requirements..."></textarea>
+            </div>
+            <button class="save-plan-btn" onclick="savePlan()"><i class="fas fa-save"></i> Save Event Plan</button>
+        </div>
+
+        <div class="planner-card">
+            <h3><i class="fas fa-check-circle"></i> Event Checklist</h3>
+            <div id="checklist">
+                <div class="checklist-item"><input type="checkbox" value="Venue Booking"><span>📅 Venue Booking</span></div>
+                <div class="checklist-item"><input type="checkbox" value="Catering"><span>🍽️ Catering Services</span></div>
+                <div class="checklist-item"><input type="checkbox" value="Decoration"><span>🎨 Decoration</span></div>
+                <div class="checklist-item"><input type="checkbox" value="Photography"><span>📸 Photography/Videography</span></div>
+                <div class="checklist-item"><input type="checkbox" value="Entertainment"><span>🎵 Entertainment/Music</span></div>
+                <div class="checklist-item"><input type="checkbox" value="Invitations"><span>💌 Invitations</span></div>
+                <div class="checklist-item"><input type="checkbox" value="Transportation"><span>🚗 Transportation</span></div>
+                <div class="checklist-item"><input type="checkbox" value="Accommodation"><span>🏨 Accommodation</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="planner-card">
+        <h3><i class="fas fa-chart-line"></i> Budget Estimator</h3>
+        <div id="budgetItems">
+            <div class="budget-item"><span>Venue (50% of budget)</span><span id="venueCost">₹0</span></div>
+            <div class="budget-item"><span>Catering (30% of budget)</span><span id="cateringCost">₹0</span></div>
+            <div class="budget-item"><span>Decoration (10% of budget)</span><span id="decorationCost">₹0</span></div>
+            <div class="budget-item"><span>Entertainment (10% of budget)</span><span id="entertainmentCost">₹0</span></div>
+            <div class="total-budget" id="totalBudget">Total: ₹0</div>
+        </div>
+    </div>
+
+    <div class="planner-card">
+        <h3><i class="fas fa-history"></i> Saved Plans</h3>
+        <div id="savedPlansList"></div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
+        authDomain: "stadiumconnect-8fecb.firebaseapp.com",
+        projectId: "stadiumconnect-8fecb",
+        storageBucket: "stadiumconnect-8fecb.firebasestorage.app",
+        messagingSenderId: "458108198578",
+        appId: "1:458108198578:web:83d83646f0e24e718b73ab"
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    let currentUser = null;
+    let savedPlans = [];
+
+    function loadSavedPlans() {
+        const saved = localStorage.getItem(`plans_${currentUser?.uid}`);
+        savedPlans = saved ? JSON.parse(saved) : [];
+        renderSavedPlans();
+    }
+
+    function savePlansToStorage() {
+        localStorage.setItem(`plans_${currentUser?.uid}`, JSON.stringify(savedPlans));
+    }
+
+    function renderSavedPlans() {
+        const container = document.getElementById('savedPlansList');
+        if (savedPlans.length === 0) {
+            container.innerHTML = '<div style="text-align: center; padding: 20px;">No saved plans yet</div>';
+            return;
+        }
+        container.innerHTML = savedPlans.map((plan, index) => `
+            <div class="plan-item">
+                <div>
+                    <strong>${plan.name}</strong><br>
+                    <small>${plan.date || 'No date'} | ${plan.guests || 0} guests | ₹${plan.budget?.toLocaleString() || 0}</small>
+                </div>
+                <div>
+                    <button class="back-btn" onclick="loadPlan(${index})" style="padding: 5px 12px;">Load</button>
+                    <button class="back-btn" onclick="deletePlan(${index})" style="padding: 5px 12px; background: #ef4444;">Delete</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function updateBudget() {
+        const budget = parseInt(document.getElementById('eventBudget').value) || 0;
+        document.getElementById('venueCost').innerHTML = `₹${Math.floor(budget * 0.5).toLocaleString()}`;
+        document.getElementById('cateringCost').innerHTML = `₹${Math.floor(budget * 0.3).toLocaleString()}`;
+        document.getElementById('decorationCost').innerHTML = `₹${Math.floor(budget * 0.1).toLocaleString()}`;
+        document.getElementById('entertainmentCost').innerHTML = `₹${Math.floor(budget * 0.1).toLocaleString()}`;
+        document.getElementById('totalBudget').innerHTML = `Total: ₹${budget.toLocaleString()}`;
+    }
+
+    window.savePlan = () => {
+        const name = document.getElementById('eventName').value;
+        if (!name) {
+            showToast('Please enter event name');
+            return;
+        }
+        
+        const checklist = [];
+        document.querySelectorAll('#checklist input[type="checkbox"]').forEach(cb => {
+            if (cb.checked) checklist.push(cb.value);
+        });
+        
+        const plan = {
+            name: name,
+            date: document.getElementById('eventDate').value,
+            type: document.getElementById('eventType').value,
+            guests: document.getElementById('guestCount').value,
+            budget: parseInt(document.getElementById('eventBudget').value) || 0,
+            notes: document.getElementById('eventNotes').value,
+            checklist: checklist,
+            createdAt: new Date().toISOString()
+        };
+        
+        savedPlans.unshift(plan);
+        savePlansToStorage();
+        renderSavedPlans();
+        showToast('Plan saved successfully!');
+    };
+
+    window.loadPlan = (index) => {
+        const plan = savedPlans[index];
+        document.getElementById('eventName').value = plan.name;
+        document.getElementById('eventDate').value = plan.date || '';
+        document.getElementById('eventType').value = plan.type || 'Wedding';
+        document.getElementById('guestCount').value = plan.guests || '';
+        document.getElementById('eventBudget').value = plan.budget || '';
+        document.getElementById('eventNotes').value = plan.notes || '';
+        
+        document.querySelectorAll('#checklist input[type="checkbox"]').forEach(cb => {
+            cb.checked = plan.checklist?.includes(cb.value) || false;
+        });
+        
+        updateBudget();
+        showToast('Plan loaded successfully!');
+    };
+
+    window.deletePlan = (index) => {
+        savedPlans.splice(index, 1);
+        savePlansToStorage();
+        renderSavedPlans();
+        showToast('Plan deleted');
+    };
+
+    function showToast(message) {
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2000);
+    }
+
+    document.getElementById('eventBudget').addEventListener('input', updateBudget);
+
+    function toggleTheme() {
+        document.body.classList.toggle('light-mode');
+        const btn = document.querySelector('.theme-toggle');
+        btn.innerHTML = document.body.classList.contains('light-mode') ? '☀️' : '🌙';
+        localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
+    }
+
+    if (localStorage.getItem('theme') === 'light') {
+        document.body.classList.add('light-mode');
+        document.querySelector('.theme-toggle').innerHTML = '☀️';
+    }
+
+    function logout() {
+        auth.signOut();
+        window.location.href = 'index.html';
+    }
+
+    onAuthStateChanged(auth, (user) => {
+        if (!user) {
+            window.location.href = 'login.html';
+            return;
+        }
+        currentUser = user;
+        document.getElementById('userName').innerText = user.displayName || user.email?.split('@')[0] || 'User';
+        loadSavedPlans();
+    });
+</script>
+</body>
+</html>
