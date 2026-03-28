@@ -1,748 +1,104 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>My Profile - StadiumConnect</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-        }
-
-        :root {
-            --bg-primary: #f8fafc;
-            --bg-secondary: #ffffff;
-            --bg-card: #ffffff;
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-            --text-muted: #94a3b8;
-            --border-color: #e2e8f0;
-            --accent: #ff6b35;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-        }
-
-        body.dark {
-            --bg-primary: #0f0f1a;
-            --bg-secondary: #1a1a2e;
-            --bg-card: #1e1e3a;
-            --text-primary: #ffffff;
-            --text-secondary: #cbd5e1;
-            --text-muted: #94a3b8;
-            --border-color: rgba(255, 255, 255, 0.1);
-        }
-
-        body {
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            min-height: 100vh;
-        }
-
-        .header {
-            background: var(--bg-secondary);
-            padding: 16px 32px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border-color);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .logo {
-            font-size: 24px;
-            font-weight: 800;
-            cursor: pointer;
-            background: linear-gradient(135deg, var(--accent), #ff9068);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .back-btn {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 18px;
-            color: var(--accent);
-        }
-
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .theme-toggle {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 18px;
-            color: var(--accent);
-        }
-
-        .logout-btn {
-            background: var(--danger);
-            color: white;
-            border: none;
-            padding: 10px 24px;
-            border-radius: 40px;
-            cursor: pointer;
-            font-weight: 500;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 30px;
-        }
-
-        .profile-header {
-            background: var(--bg-card);
-            border-radius: 32px;
-            padding: 40px;
-            margin-bottom: 30px;
-            text-align: center;
-            border: 1px solid var(--border-color);
-        }
-
-        .profile-avatar {
-            width: 120px;
-            height: 120px;
-            background: linear-gradient(135deg, var(--accent), #ff9068);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-            font-size: 48px;
-            font-weight: 700;
-            color: white;
-        }
-
-        .profile-name {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .profile-email {
-            color: var(--text-secondary);
-            margin-bottom: 16px;
-        }
-
-        .profile-stats {
-            display: flex;
-            justify-content: center;
-            gap: 40px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
-
-        .stat-number {
-            font-size: 28px;
-            font-weight: 800;
-            color: var(--accent);
-        }
-
-        .stat-label {
-            font-size: 13px;
-            color: var(--text-muted);
-        }
-
-        .tabs {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 30px;
-            border-bottom: 1px solid var(--border-color);
-            flex-wrap: wrap;
-        }
-
-        .tab-btn {
-            background: none;
-            border: none;
-            padding: 12px 24px;
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            cursor: pointer;
-            position: relative;
-        }
-
-        .tab-btn.active {
-            color: var(--accent);
-        }
-
-        .tab-btn.active::after {
-            content: '';
-            position: absolute;
-            bottom: -1px;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: var(--accent);
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .info-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 24px;
-            padding: 24px;
-            margin-bottom: 24px;
-        }
-
-        .card-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .card-title i {
-            color: var(--accent);
-        }
-
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .info-row:last-child {
-            border-bottom: none;
-        }
-
-        .info-label {
-            color: var(--text-secondary);
-        }
-
-        .info-value {
-            font-weight: 600;
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: var(--text-secondary);
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 12px 16px;
-            background: var(--bg-primary);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            color: var(--text-primary);
-        }
-
-        .btn-primary {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 40px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .btn-secondary {
-            background: var(--bg-primary);
-            border: 1px solid var(--border-color);
-            padding: 12px 24px;
-            border-radius: 40px;
-            cursor: pointer;
-            color: var(--text-primary);
-        }
-
-        .booking-item, .review-item {
-            background: var(--bg-primary);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 16px;
-            border: 1px solid var(--border-color);
-        }
-
-        .booking-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            margin-bottom: 12px;
-        }
-
-        .booking-vendor {
-            font-weight: 700;
-            font-size: 18px;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .status-pending { background: rgba(245,158,11,0.2); color: var(--warning); }
-        .status-confirmed, .status-completed { background: rgba(16,185,129,0.2); color: var(--success); }
-        .status-cancelled { background: rgba(239,68,68,0.2); color: var(--danger); }
-
-        .booking-details {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            margin: 12px 0;
-            color: var(--text-secondary);
-            font-size: 14px;
-        }
-
-        .booking-amount {
-            font-weight: 700;
-            color: var(--accent);
-        }
-
-        .review-rating {
-            color: #fbbf24;
-            margin-bottom: 8px;
-            font-size: 18px;
-        }
-
-        .review-comment {
-            color: var(--text-secondary);
-            margin: 8px 0;
-        }
-
-        .review-date {
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px;
-            color: var(--text-muted);
-        }
-
-        .empty-state i {
-            font-size: 64px;
-            margin-bottom: 20px;
-            opacity: 0.5;
-        }
-
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid var(--border-color);
-            border-top-color: var(--accent);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: var(--bg-card);
-            padding: 12px 24px;
-            border-radius: 50px;
-            z-index: 2000;
-            border-left: 4px solid var(--success);
-            color: var(--text-primary);
-        }
-
-        .toast.error {
-            border-left-color: var(--danger);
-        }
-
-        @media (max-width: 768px) {
-            .container { padding: 20px; }
-            .profile-header { padding: 24px; }
-            .profile-avatar { width: 80px; height: 80px; font-size: 32px; }
-            .profile-name { font-size: 22px; }
-            .tab-btn { padding: 8px 16px; font-size: 14px; }
-            .profile-stats { gap: 20px; }
-            .stat-number { font-size: 20px; }
-        }
-    </style>
-</head>
-<body>
-
-<header class="header">
-    <div style="display: flex; align-items: center; gap: 15px;">
-        <button class="back-btn" onclick="window.location.href='dashboard.html'"><i class="fas fa-arrow-left"></i></button>
-        <div class="logo" onclick="window.location.href='index.html'">🏟️ STADIUM<span>CONNECT</span></div>
-    </div>
-    <div class="header-actions">
-        <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
-        <button class="logout-btn" onclick="logout()">Logout</button>
-    </div>
-</header>
-
-<div class="container">
-    <div class="profile-header">
-        <div class="profile-avatar" id="userAvatar">👤</div>
-        <div class="profile-name" id="userName">Loading...</div>
-        <div class="profile-email" id="userEmail">Loading...</div>
-        <div class="profile-stats" id="userStats"></div>
-    </div>
-
-    <div class="tabs">
-        <button class="tab-btn active" data-tab="overview">📊 Overview</button>
-        <button class="tab-btn" data-tab="bookings">📅 My Bookings</button>
-        <button class="tab-btn" data-tab="reviews">⭐ My Reviews</button>
-        <button class="tab-btn" data-tab="settings">⚙️ Settings</button>
-    </div>
-
-    <div id="overviewTab" class="tab-content active">
-        <div class="info-card">
-            <div class="card-title"><i class="fas fa-user-circle"></i> Personal Information</div>
-            <div class="info-row"><span class="info-label">Full Name</span><span class="info-value" id="infoName">-</span></div>
-            <div class="info-row"><span class="info-label">Email Address</span><span class="info-value" id="infoEmail">-</span></div>
-            <div class="info-row"><span class="info-label">Phone Number</span><span class="info-value" id="infoPhone">Not set</span></div>
-            <div class="info-row"><span class="info-label">Member Since</span><span class="info-value" id="infoSince">-</span></div>
-        </div>
-        <div class="info-card">
-            <div class="card-title"><i class="fas fa-chart-line"></i> Activity Summary</div>
-            <div class="info-row"><span class="info-label">Total Bookings</span><span class="info-value" id="totalBookings">0</span></div>
-            <div class="info-row"><span class="info-label">Completed Bookings</span><span class="info-value" id="completedBookings">0</span></div>
-            <div class="info-row"><span class="info-label">Total Spent</span><span class="info-value" id="totalSpent">₹0</span></div>
-            <div class="info-row"><span class="info-label">Reviews Given</span><span class="info-value" id="reviewsGiven">0</span></div>
-            <div class="info-row"><span class="info-label">Average Rating</span><span class="info-value" id="avgRating">0 ⭐</span></div>
-        </div>
-    </div>
-
-    <div id="bookingsTab" class="tab-content">
-        <div id="bookingsList"></div>
-    </div>
-
-    <div id="reviewsTab" class="tab-content">
-        <div id="reviewsList"></div>
-    </div>
-
-    <div id="settingsTab" class="tab-content">
-        <div class="info-card">
-            <div class="card-title"><i class="fas fa-edit"></i> Edit Profile</div>
-            <div class="form-group"><label>Full Name</label><input type="text" id="editName"></div>
-            <div class="form-group"><label>Phone Number</label><input type="tel" id="editPhone"></div>
-            <button class="btn-primary" onclick="updateProfile()">Save Changes</button>
-        </div>
-        <div class="info-card">
-            <div class="card-title"><i class="fas fa-shield-alt"></i> Account Security</div>
-            <div class="info-row"><span class="info-label">Email Verification</span><span class="info-value" id="emailVerified">Not verified</span></div>
-            <button class="btn-secondary" onclick="changePassword()" style="margin-top: 16px;">Change Password</button>
-        </div>
-    </div>
-</div>
-
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, doc, getDoc, collection, query, where, getDocs, updateDoc, orderBy } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged, updateProfile, sendEmailVerification, updatePassword } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
-        authDomain: "stadiumconnect-8fecb.firebaseapp.com",
-        projectId: "stadiumconnect-8fecb",
-        storageBucket: "stadiumconnect-8fecb.firebasestorage.app",
-        messagingSenderId: "458108198578",
-        appId: "1:458108198578:web:83d83646f0e24e718b73ab"
-    };
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
-
-    let currentUser = null;
-    let userBookings = [];
-    let userReviews = [];
-
-    function showToast(msg, isError = false) {
-        const toast = document.createElement('div');
-        toast.className = `toast ${isError ? 'error' : ''}`;
-        toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${msg}`;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
-    }
-
-    // Tab Switching
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.onclick = () => {
-            const tabName = btn.dataset.tab;
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            btn.classList.add('active');
-            document.getElementById(`${tabName}Tab`).classList.add('active');
-            
-            if (tabName === 'bookings') loadUserBookings();
-            if (tabName === 'reviews') loadUserReviews();
-        };
-    });
-
-    async function loadUserData() {
-        if (!currentUser) return;
+// Is code ko profile.html mein replace karo
+
+async function loadUserBookings() {
+    const container = document.getElementById('bookingsList');
+    container.innerHTML = '<div class="empty-state"><div class="spinner"></div><p>Loading your bookings...</p></div>';
+    
+    try {
+        console.log("Fetching bookings for user:", currentUser?.uid);
         
-        document.getElementById('userName').innerText = currentUser.displayName || currentUser.email?.split('@')[0] || 'User';
-        document.getElementById('userEmail').innerText = currentUser.email;
-        document.getElementById('userAvatar').innerText = (currentUser.displayName?.charAt(0) || currentUser.email?.charAt(0) || 'U').toUpperCase();
-        document.getElementById('infoName').innerText = currentUser.displayName || 'Not set';
-        document.getElementById('infoEmail').innerText = currentUser.email;
-        document.getElementById('editName').value = currentUser.displayName || '';
+        // 🔥 WITHOUT orderBy - index nahi chahiye
+        const q = query(
+            collection(db, "bookings"), 
+            where("userId", "==", currentUser.uid)
+        );
         
-        const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
-        if (userDoc.exists()) {
-            const userData = userDoc.data();
-            document.getElementById('infoPhone').innerText = userData.phone || 'Not set';
-            document.getElementById('editPhone').value = userData.phone || '';
-            document.getElementById('infoSince').innerText = userData.createdAt ? new Date(userData.createdAt).toLocaleDateString() : new Date().toLocaleDateString();
-        }
+        const snapshot = await getDocs(q);
+        userBookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         
-        if (currentUser.emailVerified) {
-            document.getElementById('emailVerified').innerHTML = '<span style="color: var(--success);">✓ Verified</span>';
-        } else {
-            document.getElementById('emailVerified').innerHTML = '<span style="color: var(--warning);">Not verified</span> <button class="btn-secondary" style="padding: 4px 12px; margin-left: 10px; font-size: 12px;" onclick="verifyEmail()">Verify</button>';
-        }
-    }
-
-    // SIRF CURRENT USER KI BOOKINGS
-    async function loadUserBookings() {
-        const container = document.getElementById('bookingsList');
-        container.innerHTML = '<div class="empty-state"><div class="spinner"></div><p>Loading your bookings...</p></div>';
-        
-        try {
-            console.log("Fetching bookings for user:", currentUser?.uid);
-            
-            // 🔥 IMPORTANT: userId filter - sirf current user ki bookings
-            const q = query(
-                collection(db, "bookings"), 
-                where("userId", "==", currentUser.uid),
-                orderBy("createdAt", "desc")
-            );
-            
-            const snapshot = await getDocs(q);
-            userBookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            console.log("Your bookings found:", userBookings.length);
-            
-            if (userBookings.length === 0) {
-                container.innerHTML = '<div class="empty-state"><i class="fas fa-calendar-alt"></i><p>You have no bookings yet</p><a href="vendors.html" style="color: var(--accent);">Browse vendors →</a></div>';
-                return;
-            }
-            
-            container.innerHTML = userBookings.map(booking => `
-                <div class="booking-item">
-                    <div class="booking-header">
-                        <span class="booking-vendor">${escapeHtml(booking.vendorName || booking.stadiumName || 'Vendor')}</span>
-                        <span class="status-badge status-${booking.status || 'pending'}">${booking.status || 'pending'}</span>
-                    </div>
-                    <div class="booking-details">
-                        <span><i class="fas fa-calendar"></i> ${booking.eventDate || booking.date || 'Date TBD'}</span>
-                        <span><i class="fas fa-tag"></i> ${booking.category || 'Event'}</span>
-                    </div>
-                    <div class="booking-details">
-                        <span class="booking-amount">₹${(booking.amount || 0).toLocaleString()}</span>
-                        <span><i class="fas fa-clock"></i> Booked: ${formatDate(booking.createdAt)}</span>
-                    </div>
-                </div>
-            `).join('');
-            
-            updateStats();
-        } catch (error) {
-            console.error("Error loading bookings:", error);
-            container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Error loading bookings: ' + error.message + '</p></div>';
-        }
-    }
-
-    // SIRF CURRENT USER KI REVIEWS
-    async function loadUserReviews() {
-        const container = document.getElementById('reviewsList');
-        container.innerHTML = '<div class="empty-state"><div class="spinner"></div><p>Loading your reviews...</p></div>';
-        
-        try {
-            console.log("Fetching reviews for user:", currentUser?.uid);
-            
-            // 🔥 IMPORTANT: userId filter - sirf current user ki reviews
-            const q = query(
-                collection(db, "reviews"), 
-                where("userId", "==", currentUser.uid),
-                orderBy("createdAt", "desc")
-            );
-            
-            const snapshot = await getDocs(q);
-            userReviews = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            console.log("Your reviews found:", userReviews.length);
-            
-            if (userReviews.length === 0) {
-                container.innerHTML = '<div class="empty-state"><i class="fas fa-star"></i><p>You have no reviews yet</p><p style="font-size: 14px;">Book a service and share your experience!</p></div>';
-                return;
-            }
-            
-            container.innerHTML = userReviews.map(review => `
-                <div class="review-item">
-                    <div class="review-rating">
-                        ${'⭐'.repeat(review.rating)}${'☆'.repeat(5 - (review.rating || 0))}
-                    </div>
-                    <div class="booking-vendor">${escapeHtml(review.vendorName || 'Vendor')}</div>
-                    <div class="review-comment">${escapeHtml(review.comment || 'No comment provided')}</div>
-                    <div class="review-date">${formatDate(review.createdAt)}</div>
-                </div>
-            `).join('');
-            
-            updateStats();
-        } catch (error) {
-            console.error("Error loading reviews:", error);
-            container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Error loading reviews: ' + error.message + '</p></div>';
-        }
-    }
-
-    function updateStats() {
-        const total = userBookings.length;
-        const completed = userBookings.filter(b => b.status === 'completed' || b.status === 'confirmed').length;
-        const totalSpent = userBookings.reduce((sum, b) => sum + (b.amount || 0), 0);
-        const reviewsGiven = userReviews.length;
-        const avgRating = userReviews.length > 0 ? (userReviews.reduce((sum, r) => sum + (r.rating || 0), 0) / userReviews.length).toFixed(1) : 0;
-        
-        document.getElementById('userStats').innerHTML = `
-            <div class="stat-item"><div class="stat-number">${total}</div><div class="stat-label">Bookings</div></div>
-            <div class="stat-item"><div class="stat-number">${completed}</div><div class="stat-label">Completed</div></div>
-            <div class="stat-item"><div class="stat-number">₹${Math.floor(totalSpent / 1000)}k</div><div class="stat-label">Spent</div></div>
-            <div class="stat-item"><div class="stat-number">${avgRating > 0 ? avgRating : '—'}</div><div class="stat-label">Rating</div></div>
-        `;
-        
-        document.getElementById('totalBookings').innerText = total;
-        document.getElementById('completedBookings').innerText = completed;
-        document.getElementById('totalSpent').innerHTML = `₹${totalSpent.toLocaleString()}`;
-        document.getElementById('reviewsGiven').innerText = reviewsGiven;
-        document.getElementById('avgRating').innerHTML = avgRating > 0 ? `${avgRating} ⭐` : 'No reviews';
-    }
-
-    window.updateProfile = async () => {
-        const newName = document.getElementById('editName').value.trim();
-        const newPhone = document.getElementById('editPhone').value.trim();
-        
-        if (!newName) {
-            showToast("Please enter a name", true);
-            return;
-        }
-        
-        try {
-            if (newName !== currentUser.displayName) {
-                await updateProfile(currentUser, { displayName: newName });
-            }
-            
-            await updateDoc(doc(db, 'users', currentUser.uid), {
-                name: newName,
-                phone: newPhone,
-                updatedAt: new Date().toISOString()
-            });
-            
-            await loadUserData();
-            showToast("Profile updated successfully!");
-        } catch (error) {
-            showToast("Error updating profile", true);
-        }
-    };
-
-    window.verifyEmail = async () => {
-        try {
-            await sendEmailVerification(currentUser);
-            showToast("Verification email sent! Check your inbox.");
-        } catch (error) {
-            showToast("Error sending verification email", true);
-        }
-    };
-
-    window.changePassword = () => {
-        const newPassword = prompt("Enter new password (min 6 characters):");
-        if (newPassword && newPassword.length >= 6) {
-            updatePassword(currentUser, newPassword)
-                .then(() => showToast("Password updated successfully!"))
-                .catch((error) => showToast(error.message, true));
-        } else if (newPassword) {
-            showToast("Password must be at least 6 characters", true);
-        }
-    };
-
-    function formatDate(timestamp) {
-        if (!timestamp) return '-';
-        try {
-            if (timestamp.toDate) return timestamp.toDate().toLocaleDateString();
-            if (timestamp.seconds) return new Date(timestamp.seconds * 1000).toLocaleDateString();
-            return new Date(timestamp).toLocaleDateString();
-        } catch {
-            return '-';
-        }
-    }
-
-    function escapeHtml(str) {
-        if (!str) return '';
-        return String(str).replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
+        // Manually sort by createdAt (descending)
+        userBookings.sort((a, b) => {
+            const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
+            const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+            return dateB - dateA;
         });
-    }
-
-    window.toggleTheme = () => {
-        document.body.classList.toggle('dark');
-        const btn = document.querySelector('.theme-toggle');
-        btn.innerHTML = document.body.classList.contains('dark') ? '☀️' : '🌙';
-        localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
-    };
-
-    window.logout = () => {
-        auth.signOut();
-        window.location.href = 'index.html';
-    };
-
-    if (localStorage.getItem('theme') === 'dark') {
-        document.body.classList.add('dark');
-        document.querySelector('.theme-toggle').innerHTML = '☀️';
-    }
-
-    onAuthStateChanged(auth, async (user) => {
-        if (!user) {
-            window.location.href = 'login.html';
+        
+        console.log("Your bookings found:", userBookings.length);
+        
+        if (userBookings.length === 0) {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-calendar-alt"></i><p>You have no bookings yet</p><a href="vendors.html" style="color: var(--accent);">Browse vendors →</a></div>';
             return;
         }
-        currentUser = user;
-        console.log("✅ User logged in:", currentUser.uid);
-        await loadUserData();
-        await loadUserBookings();
-        await loadUserReviews();
-    });
-</script>
-</body>
-</html>
+        
+        container.innerHTML = userBookings.map(booking => `
+            <div class="booking-item">
+                <div class="booking-header">
+                    <span class="booking-vendor">${escapeHtml(booking.vendorName || booking.stadiumName || 'Vendor')}</span>
+                    <span class="status-badge status-${booking.status || 'pending'}">${booking.status || 'pending'}</span>
+                </div>
+                <div class="booking-details">
+                    <span><i class="fas fa-calendar"></i> ${booking.eventDate || booking.date || 'Date TBD'}</span>
+                    <span><i class="fas fa-tag"></i> ${booking.category || 'Event'}</span>
+                </div>
+                <div class="booking-details">
+                    <span class="booking-amount">₹${(booking.amount || 0).toLocaleString()}</span>
+                    <span><i class="fas fa-clock"></i> Booked: ${formatDate(booking.createdAt)}</span>
+                </div>
+            </div>
+        `).join('');
+        
+        updateStats();
+    } catch (error) {
+        console.error("Error loading bookings:", error);
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Error loading bookings: ' + error.message + '</p></div>';
+    }
+}
+
+// Similarly for reviews
+async function loadUserReviews() {
+    const container = document.getElementById('reviewsList');
+    container.innerHTML = '<div class="empty-state"><div class="spinner"></div><p>Loading your reviews...</p></div>';
+    
+    try {
+        console.log("Fetching reviews for user:", currentUser?.uid);
+        
+        // 🔥 WITHOUT orderBy
+        const q = query(
+            collection(db, "reviews"), 
+            where("userId", "==", currentUser.uid)
+        );
+        
+        const snapshot = await getDocs(q);
+        userReviews = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
+        // Manually sort
+        userReviews.sort((a, b) => {
+            const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
+            const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+            return dateB - dateA;
+        });
+        
+        console.log("Your reviews found:", userReviews.length);
+        
+        if (userReviews.length === 0) {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-star"></i><p>You have no reviews yet</p><p style="font-size: 14px;">Book a service and share your experience!</p></div>';
+            return;
+        }
+        
+        container.innerHTML = userReviews.map(review => `
+            <div class="review-item">
+                <div class="review-rating">
+                    ${'⭐'.repeat(review.rating)}${'☆'.repeat(5 - (review.rating || 0))}
+                </div>
+                <div class="booking-vendor">${escapeHtml(review.vendorName || 'Vendor')}</div>
+                <div class="review-comment">${escapeHtml(review.comment || 'No comment provided')}</div>
+                <div class="review-date">${formatDate(review.createdAt)}</div>
+            </div>
+        `).join('');
+        
+        updateStats();
+    } catch (error) {
+        console.error("Error loading reviews:", error);
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Error loading reviews: ' + error.message + '</p></div>';
+    }
+}
