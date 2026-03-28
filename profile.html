@@ -445,7 +445,7 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--accent), var(--accent-dark, #ff9068));
+            background: linear-gradient(135deg, var(--accent), #ff9068);
             color: white;
             border: none;
             padding: 14px 28px;
@@ -470,6 +470,7 @@
             font-weight: 600;
             color: var(--text-primary);
             transition: all 0.3s ease;
+            width: 100%;
         }
 
         .btn-secondary:hover {
@@ -627,14 +628,14 @@
                 <span class="info-label">Email Verification</span>
                 <span class="info-value" id="emailVerified">Not verified</span>
             </div>
-            <button class="btn-secondary" onclick="changePassword()" style="margin-top: 16px; width: 100%;"><i class="fas fa-key"></i> Change Password</button>
+            <button class="btn-secondary" onclick="changePassword()" style="margin-top: 16px;"><i class="fas fa-key"></i> Change Password</button>
         </div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, doc, getDoc, collection, query, where, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, collection, query, where, getDocs, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, updateProfile, sendEmailVerification, updatePassword } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -687,8 +688,25 @@
         };
     });
 
+    // Initialize or get user document
+    async function initUserDocument() {
+        const userRef = doc(db, 'users', currentUser.uid);
+        const userSnap = await getDoc(userRef);
+        
+        if (!userSnap.exists()) {
+            await setDoc(userRef, {
+                name: currentUser.displayName || '',
+                email: currentUser.email,
+                phone: '',
+                createdAt: new Date().toISOString()
+            });
+        }
+    }
+
     async function loadUserData() {
         if (!currentUser) return;
+        
+        await initUserDocument();
         
         document.getElementById('userName').innerText = currentUser.displayName || currentUser.email?.split('@')[0] || 'User';
         document.getElementById('userEmail').innerText = currentUser.email;
@@ -700,15 +718,16 @@
         const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
         if (userDoc.exists()) {
             const userData = userDoc.data();
-            document.getElementById('infoPhone').innerText = userData.phone || 'Not set';
-            document.getElementById('editPhone').value = userData.phone || '';
+            const phoneNumber = userData.phone || '';
+            document.getElementById('infoPhone').innerText = phoneNumber || 'Not set';
+            document.getElementById('editPhone').value = phoneNumber;
             document.getElementById('infoSince').innerText = userData.createdAt ? new Date(userData.createdAt).toLocaleDateString() : new Date().toLocaleDateString();
         }
         
         if (currentUser.emailVerified) {
             document.getElementById('emailVerified').innerHTML = '<span style="color: var(--success);"><i class="fas fa-check-circle"></i> Verified</span>';
         } else {
-            document.getElementById('emailVerified').innerHTML = '<span style="color: var(--warning);"><i class="fas fa-exclamation-triangle"></i> Not verified</span> <button class="btn-secondary" style="padding: 4px 12px; margin-left: 10px; font-size: 12px;" onclick="verifyEmail()">Verify Now</button>';
+            document.getElementById('emailVerified').innerHTML = '<span style="color: var(--warning);"><i class="fas fa-exclamation-triangle"></i> Not verified</span> <button class="btn-secondary" style="padding: 4px 12px; margin-left: 10px; font-size: 12px; width: auto;" onclick="verifyEmail()">Verify Now</button>';
         }
         
         await loadStats();
@@ -755,20 +774,24 @@
         }
         
         try {
+            // Update Firebase Auth profile
             if (newName !== currentUser.displayName) {
                 await updateProfile(currentUser, { displayName: newName });
             }
             
+            // Update Firestore
             await updateDoc(doc(db, 'users', currentUser.uid), {
                 name: newName,
                 phone: newPhone,
                 updatedAt: new Date().toISOString()
             });
             
+            // Reload user data
             await loadUserData();
             showToast("Profile updated successfully!");
         } catch (error) {
-            showToast("Error updating profile", true);
+            console.error("Error updating profile:", error);
+            showToast("Error updating profile: " + error.message, true);
         }
     };
 
