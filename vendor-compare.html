@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Compare Vendors - StadiumConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body {
+            background: linear-gradient(135deg, #0a0a2a 0%, #050517 100%);
+            color: #fff;
+            min-height: 100vh;
+        }
+        body.light-mode {
+            background: linear-gradient(135deg, #f5f7fb 0%, #eef2f7 100%);
+            color: #1a1a2e;
+        }
+        .header {
+            background: rgba(10, 10, 42, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,107,53,0.3);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        body.light-mode .header {
+            background: rgba(255, 255, 255, 0.95);
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff, #ff6b35);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            cursor: pointer;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(255,107,53,0.2);
+            padding: 8px 20px;
+            border-radius: 40px;
+        }
+        .theme-toggle {
+            background: rgba(255,107,53,0.2);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            color: #ff6b35;
+        }
+        .back-btn {
+            background: rgba(255,107,53,0.2);
+            border: none;
+            padding: 8px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            color: #ff6b35;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .logout-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+        .page-header {
+            margin-bottom: 30px;
+        }
+        .page-header h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        .compare-section {
+            display: grid;
+            grid-template-columns: 200px repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+        .compare-label {
+            background: rgba(0,0,0,0.3);
+            padding: 15px 20px;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .compare-card {
+            background: rgba(255,255,255,0.05);
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+        .compare-header {
+            background: rgba(255,107,53,0.2);
+            padding: 20px;
+            text-align: center;
+        }
+        .compare-header img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 16px;
+            margin-bottom: 12px;
+        }
+        .compare-header h3 {
+            font-size: 18px;
+            margin: 10px 0;
+        }
+        .remove-vendor {
+            background: #ef4444;
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+        .add-vendor-card {
+            background: rgba(255,255,255,0.05);
+            border: 2px dashed rgba(255,107,53,0.5);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .add-vendor-card:hover {
+            background: rgba(255,107,53,0.1);
+            border-color: #ff6b35;
+        }
+        .vendor-selector {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(10,10,42,0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 24px;
+            width: 90%;
+            max-width: 500px;
+            z-index: 2000;
+            border: 1px solid rgba(255,107,53,0.3);
+        }
+        .vendor-selector.active {
+            display: block;
+        }
+        .vendor-selector select {
+            width: 100%;
+            padding: 12px;
+            margin: 15px 0;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            color: white;
+        }
+        .price-highlight {
+            color: #ff6b35;
+            font-size: 20px;
+            font-weight: 800;
+        }
+        .amenities-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+        }
+        .amenity-badge {
+            background: rgba(255,107,53,0.2);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+        }
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(0,0,0,0.9);
+            padding: 12px 24px;
+            border-radius: 50px;
+            z-index: 2000;
+            border-left: 4px solid #10b981;
+        }
+        @media (max-width: 768px) {
+            .compare-section {
+                grid-template-columns: 150px repeat(auto-fit, minmax(220px, 1fr));
+                overflow-x: auto;
+            }
+            .container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="logo" onclick="window.location.href='index.html'">🏟️ STADIUM<span>CONNECT</span></div>
+    <div style="display: flex; align-items: center; gap: 15px;">
+        <div class="user-info">
+            <i class="fas fa-user-circle"></i>
+            <span id="userName">Loading...</span>
+        </div>
+        <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+</header>
+
+<div class="container">
+    <div class="page-header">
+        <a href="dashboard.html" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+        <h1><i class="fas fa-chart-line"></i> Compare Vendors</h1>
+        <p>Compare stadiums side by side to make the best choice</p>
+    </div>
+
+    <div id="compareContainer"></div>
+</div>
+
+<div class="vendor-selector" id="vendorSelector">
+    <h3>Select Vendor to Compare</h3>
+    <select id="vendorSelect"></select>
+    <button class="back-btn" onclick="addSelectedVendor()" style="width: 100%;">Add to Compare</button>
+    <button class="back-btn" onclick="closeSelector()" style="width: 100%; margin-top: 10px; background: #ef4444;">Cancel</button>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
+        authDomain: "stadiumconnect-8fecb.firebaseapp.com",
+        projectId: "stadiumconnect-8fecb",
+        storageBucket: "stadiumconnect-8fecb.firebasestorage.app",
+        messagingSenderId: "458108198578",
+        appId: "1:458108198578:web:83d83646f0e24e718b73ab"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    let currentUser = null;
+    let allVendors = [];
+    let compareVendors = [];
+
+    function loadCompareList() {
+        const saved = localStorage.getItem(`compare_${currentUser?.uid}`);
+        compareVendors = saved ? JSON.parse(saved) : [];
+    }
+
+    function saveCompareList() {
+        localStorage.setItem(`compare_${currentUser?.uid}`, JSON.stringify(compareVendors));
+    }
+
+    function showToast(message) {
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.innerHTML = `<i class="fas fa-info-circle"></i> ${message}`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2000);
+    }
+
+    async function loadVendors() {
+        const snapshot = await getDocs(collection(db, "vendors"));
+        allVendors = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderCompare();
+    }
+
+    function renderCompare() {
+        const container = document.getElementById('compareContainer');
+        
+        if (compareVendors.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-chart-line" style="font-size: 64px; opacity: 0.5;"></i>
+                    <h3>No vendors selected for comparison</h3>
+                    <p>Click the button below to add vendors and compare them side by side</p>
+                    <button class="back-btn" onclick="openSelector()" style="margin-top: 20px; background: #ff6b35; color: white;">+ Add Vendor to Compare</button>
+                </div>
+            `;
+            return;
+        }
+
+        let html = `<div class="compare-section">`;
+        html += `<div class="compare-label">Features</div>`;
+        
+        compareVendors.forEach(vendor => {
+            html += `<div class="compare-header">
+                        <img src="${vendor.imageUrl || 'https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=200&h=150&fit=crop'}" alt="${vendor.name}">
+                        <h3>${vendor.name || 'Stadium'}</h3>
+                        <button class="remove-vendor" onclick="removeVendor('${vendor.id}')">Remove</button>
+                    </div>`;
+        });
+        
+        const features = [
+            { label: "📍 City", key: "city", default: "Not specified" },
+            { label: "🏟️ Capacity", key: "capacity", default: "0", format: (v) => `${v?.toLocaleString()} seats` },
+            { label: "💰 Price/Day", key: "basePrice", default: "50000", format: (v) => `₹${v?.toLocaleString()}` },
+            { label: "⭐ Rating", key: "rating", default: "4.5", format: (v) => `${v} ★` },
+            { label: "🛋️ Amenities", key: "amenities", default: [], format: (v) => `<div class="amenities-list">${v?.slice(0, 4).map(a => `<span class="amenity-badge">${a}</span>`).join('') || 'Not specified'}</div>` }
+        ];
+        
+        features.forEach(feature => {
+            html += `<div class="compare-label">${feature.label}</div>`;
+            compareVendors.forEach(vendor => {
+                let value = vendor[feature.key] || feature.default;
+                if (feature.format) value = feature.format(value);
+                html += `<div class="compare-card">${value}</div>`;
+            });
+        });
+        
+        html += `</div>`;
+        html += `<div style="text-align: center; margin-top: 20px;">
+                    <button class="back-btn" onclick="openSelector()" style="background: #ff6b35; color: white;">+ Add Another Vendor</button>
+                    <button class="back-btn" onclick="clearCompare()" style="background: #ef4444;">Clear All</button>
+                 </div>`;
+        
+        container.innerHTML = html;
+    }
+
+    window.openSelector = () => {
+        const availableVendors = allVendors.filter(v => !compareVendors.some(c => c.id === v.id));
+        const select = document.getElementById('vendorSelect');
+        select.innerHTML = '<option value="">Select a vendor...</option>' + 
+            availableVendors.map(v => `<option value="${v.id}">${v.name} (${v.city || 'Unknown'})</option>`).join('');
+        document.getElementById('vendorSelector').classList.add('active');
+    };
+
+    window.closeSelector = () => {
+        document.getElementById('vendorSelector').classList.remove('active');
+    };
+
+    window.addSelectedVendor = () => {
+        const select = document.getElementById('vendorSelect');
+        const vendorId = select.value;
+        if (!vendorId) {
+            showToast('Please select a vendor');
+            return;
+        }
+        const vendor = allVendors.find(v => v.id === vendorId);
+        if (vendor && compareVendors.length < 4) {
+            compareVendors.push(vendor);
+            saveCompareList();
+            renderCompare();
+            closeSelector();
+            showToast(`${vendor.name} added to comparison`);
+        } else {
+            showToast('Maximum 4 vendors can be compared');
+        }
+    };
+
+    window.removeVendor = (vendorId) => {
+        compareVendors = compareVendors.filter(v => v.id !== vendorId);
+        saveCompareList();
+        renderCompare();
+        showToast('Vendor removed from comparison');
+    };
+
+    window.clearCompare = () => {
+        compareVendors = [];
+        saveCompareList();
+        renderCompare();
+        showToast('Comparison cleared');
+    };
+
+    function toggleTheme() {
+        document.body.classList.toggle('light-mode');
+        const btn = document.querySelector('.theme-toggle');
+        btn.innerHTML = document.body.classList.contains('light-mode') ? '☀️' : '🌙';
+        localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
+    }
+
+    if (localStorage.getItem('theme') === 'light') {
+        document.body.classList.add('light-mode');
+        document.querySelector('.theme-toggle').innerHTML = '☀️';
+    }
+
+    function logout() {
+        auth.signOut();
+        window.location.href = 'index.html';
+    }
+
+    onAuthStateChanged(auth, (user) => {
+        if (!user) {
+            window.location.href = 'login.html';
+            return;
+        }
+        currentUser = user;
+        document.getElementById('userName').innerText = user.displayName || user.email?.split('@')[0] || 'User';
+        loadCompareList();
+        loadVendors();
+    });
+</script>
+</body>
+</html>
