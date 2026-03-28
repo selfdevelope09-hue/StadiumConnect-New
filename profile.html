@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>My Profile - StadiumConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.2s ease;
+        }
+
+        /* Theme Variables */
+        :root {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-card: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --border-color: #e2e8f0;
+            --accent: #ff6b35;
+            --accent-light: #fff5f0;
+            --accent-dark: #e55a2b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
+        }
+
+        body.dark {
+            --bg-primary: #0f0f1a;
+            --bg-secondary: #1a1a2e;
+            --bg-card: #1e1e3a;
+            --text-primary: #ffffff;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --accent-light: rgba(255, 107, 53, 0.1);
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 20px 40px -10px rgba(0, 0, 0, 0.4);
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-secondary);
+            backdrop-filter: blur(20px);
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            flex-wrap: wrap;
+            gap: 15px;
+            box-shadow: var(--shadow);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            cursor: pointer;
+            background: linear-gradient(135deg, var(--accent), #ff9068);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo span {
+            background: none;
+            -webkit-text-fill-color: var(--accent);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .theme-toggle {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            color: var(--accent);
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            transform: rotate(15deg);
+            background: var(--accent);
+            color: white;
+        }
+
+        .logout-btn {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+
+        /* Profile Header */
+        .profile-header {
+            background: var(--bg-card);
+            border-radius: 32px;
+            padding: 40px;
+            margin-bottom: 30px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            animation: fadeInUp 0.5s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, var(--accent), #ff9068);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 48px;
+            font-weight: 700;
+            color: white;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .profile-name {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .profile-email {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .profile-stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border-color);
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .tab-btn.active {
+            color: var(--accent);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--accent);
+        }
+
+        .tab-btn:hover {
+            color: var(--accent);
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Cards */
+        .info-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title i {
+            color: var(--accent);
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .info-value {
+            font-weight: 600;
+        }
+
+        /* Edit Form */
+        .edit-form {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .edit-form.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            padding: 12px 24px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--text-primary);
+        }
+
+        .btn-primary:hover, .btn-secondary:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Booking Items */
+        .booking-item {
+            background: var(--bg-primary);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .booking-item:hover {
+            transform: translateX(5px);
+            border-color: var(--accent);
+        }
+
+        .booking-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .booking-vendor {
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-pending { background: rgba(245,158,11,0.2); color: var(--warning); }
+        .status-confirmed, .status-completed { background: rgba(16,185,129,0.2); color: var(--success); }
+        .status-cancelled { background: rgba(239,68,68,0.2); color: var(--danger); }
+
+        .booking-details {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 12px 0;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .booking-amount {
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        /* Review Items */
+        .review-item {
+            background: var(--bg-primary);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border-color);
+        }
+
+        .review-rating {
+            color: #fbbf24;
+            margin-bottom: 8px;
+        }
+
+        .review-comment {
+            color: var(--text-secondary);
+            margin: 8px 0;
+        }
+
+        .review-date {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            padding: 12px 24px;
+            border-radius: 50px;
+            z-index: 2000;
+            animation: slideUp 0.3s ease;
+            border-left: 4px solid var(--success);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .toast.error {
+            border-left-color: var(--danger);
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 20px; }
+            .profile-header { padding: 24px; }
+            .profile-avatar { width: 80px; height: 80px; font-size: 32px; }
+            .profile-name { font-size: 22px; }
+            .tab-btn { padding: 8px 16px; font-size: 14px; }
+            .booking-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="logo" onclick="window.location.href='index.html'">🏟️ STADIUM<span>CONNECT</span></div>
+    <div class="header-actions">
+        <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+</header>
+
+<div class="container">
+    <!-- Profile Header -->
+    <div class="profile-header" id="profileHeader">
+        <div class="profile-avatar" id="userAvatar">👤</div>
+        <div class="profile-name" id="userName">Loading...</div>
+        <div class="profile-email" id="userEmail">Loading...</div>
+        <div class="profile-stats" id="userStats"></div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('overview')">📊 Overview</button>
+        <button class="tab-btn" onclick="switchTab('bookings')">📅 My Bookings</button>
+        <button class="tab-btn" onclick="switchTab('reviews')">⭐ My Reviews</button>
+        <button class="tab-btn" onclick="switchTab('settings')">⚙️ Settings</button>
+    </div>
+
+    <!-- Overview Tab -->
+    <div id="overviewTab" class="tab-content active">
+        <div class="info-card">
+            <div class="card-title"><i class="fas fa-user-circle"></i> Personal Information</div>
+            <div class="info-row">
+                <span class="info-label">Full Name</span>
+                <span class="info-value" id="infoName">-</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Email Address</span>
+                <span class="info-value" id="infoEmail">-</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Phone Number</span>
+                <span class="info-value" id="infoPhone">Not set</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Member Since</span>
+                <span class="info-value" id="infoSince">-</span>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="card-title"><i class="fas fa-chart-line"></i> Activity Summary</div>
+            <div class="info-row">
+                <span class="info-label">Total Bookings</span>
+                <span class="info-value" id="totalBookings">0</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Completed Bookings</span>
+                <span class="info-value" id="completedBookings">0</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Total Spent</span>
+                <span class="info-value" id="totalSpent">₹0</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Reviews Given</span>
+                <span class="info-value" id="reviewsGiven">0</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Average Rating</span>
+                <span class="info-value" id="avgRating">0 ⭐</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bookings Tab -->
+    <div id="bookingsTab" class="tab-content">
+        <div id="bookingsList"></div>
+    </div>
+
+    <!-- Reviews Tab -->
+    <div id="reviewsTab" class="tab-content">
+        <div id="reviewsList"></div>
+    </div>
+
+    <!-- Settings Tab -->
+    <div id="settingsTab" class="tab-content">
+        <div class="info-card">
+            <div class="card-title"><i class="fas fa-edit"></i> Edit Profile</div>
+            <div id="editForm">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="editName" placeholder="Enter your full name">
+                </div>
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="tel" id="editPhone" placeholder="Enter phone number">
+                </div>
+                <button class="btn-primary" onclick="updateProfile()">Save Changes</button>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="card-title"><i class="fas fa-shield-alt"></i> Account Security</div>
+            <div class="info-row">
+                <span class="info-label">Email Verification</span>
+                <span class="info-value" id="emailVerified">Not verified</span>
+            </div>
+            <button class="btn-secondary" onclick="changePassword()" style="margin-top: 16px;">Change Password</button>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getFirestore, doc, getDoc, collection, query, where, getDocs, updateDoc, orderBy } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, updateProfile, sendEmailVerification, updatePassword } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
+        authDomain: "stadiumconnect-8fecb.firebaseapp.com",
+        projectId: "stadiumconnect-8fecb",
+        storageBucket: "stadiumconnect-8fecb.firebasestorage.app",
+        messagingSenderId: "458108198578",
+        appId: "1:458108198578:web:83d83646f0e24e718b73ab"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    let currentUser = null;
+    let userBookings = [];
+    let userReviews = [];
+
+    // Tab Switching
+    window.switchTab = (tab) => {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        
+        if (tab === 'overview') {
+            document.querySelector('.tab-btn:nth-child(1)').classList.add('active');
+            document.getElementById('overviewTab').classList.add('active');
+        } else if (tab === 'bookings') {
+            document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
+            document.getElementById('bookingsTab').classList.add('active');
+            loadBookings();
+        } else if (tab === 'reviews') {
+            document.querySelector('.tab-btn:nth-child(3)').classList.add('active');
+            document.getElementById('reviewsTab').classList.add('active');
+            loadReviews();
+        } else if (tab === 'settings') {
+            document.querySelector('.tab-btn:nth-child(4)').classList.add('active');
+            document.getElementById('settingsTab').classList.add('active');
+        }
+    };
+
+    // Load User Data
+    async function loadUserData() {
+        if (!currentUser) return;
+        
+        document.getElementById('userName').innerText = currentUser.displayName || currentUser.email?.split('@')[0] || 'User';
+        document.getElementById('userEmail').innerText = currentUser.email;
+        document.getElementById('userAvatar').innerText = (currentUser.displayName?.charAt(0) || currentUser.email?.charAt(0) || 'U').toUpperCase();
+        
+        document.getElementById('infoName').innerText = currentUser.displayName || 'Not set';
+        document.getElementById('infoEmail').innerText = currentUser.email;
+        document.getElementById('editName').value = currentUser.displayName || '';
+        
+        // Get user data from Firestore
+        const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+        if (userDoc.exists()) {
+            const userData = userDoc.data();
+            document.getElementById('infoPhone').innerText = userData.phone || 'Not set';
+            document.getElementById('editPhone').value = userData.phone || '';
+            document.getElementById('infoSince').innerText = userData.createdAt ? new Date(userData.createdAt).toLocaleDateString() : new Date().toLocaleDateString();
+        }
+        
+        // Email verification status
+        const verifiedSpan = document.getElementById('emailVerified');
+        if (currentUser.emailVerified) {
+            verifiedSpan.innerHTML = '<span style="color: var(--success);">✓ Verified</span>';
+        } else {
+            verifiedSpan.innerHTML = '<span style="color: var(--warning);">Not verified</span> <button class="btn-secondary" style="padding: 4px 12px; margin-left: 10px; font-size: 12px;" onclick="verifyEmail()">Verify</button>';
+        }
+    }
+
+    // Load Bookings
+    async function loadBookings() {
+        const container = document.getElementById('bookingsList');
+        container.innerHTML = '<div class="empty-state"><div class="spinner" style="width: 40px; height: 40px; border: 3px solid var(--border-color); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px;"></div><p>Loading bookings...</p></div>';
+        
+        try {
+            const q = query(collection(db, "bookings"), where("userId", "==", currentUser.uid), orderBy("createdAt", "desc"));
+            const snapshot = await getDocs(q);
+            userBookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            
+            if (userBookings.length === 0) {
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-calendar-alt"></i><p>No bookings yet</p><a href="vendors.html" style="color: var(--accent);">Browse vendors →</a></div>';
+                return;
+            }
+            
+            container.innerHTML = userBookings.map(booking => `
+                <div class="booking-item">
+                    <div class="booking-header">
+                        <span class="booking-vendor">${escapeHtml(booking.vendorName || booking.stadiumName || 'Vendor')}</span>
+                        <span class="status-badge status-${booking.status || 'pending'}">${booking.status || 'pending'}</span>
+                    </div>
+                    <div class="booking-details">
+                        <span><i class="fas fa-calendar"></i> ${booking.eventDate || booking.date || 'Date TBD'}</span>
+                        <span><i class="fas fa-tag"></i> ${booking.category || 'Event'}</span>
+                    </div>
+                    <div class="booking-details">
+                        <span class="booking-amount">₹${(booking.amount || 0).toLocaleString()}</span>
+                        <span><i class="fas fa-clock"></i> Booked: ${formatDate(booking.createdAt)}</span>
+                    </div>
+                </div>
+            `).join('');
+            
+            updateStats();
+        } catch (error) {
+            console.error("Error loading bookings:", error);
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Error loading bookings</p></div>';
+        }
+    }
+
+    // Load Reviews
+    async function loadReviews() {
+        const container = document.getElementById('reviewsList');
+        container.innerHTML = '<div class="empty-state"><div class="spinner" style="width: 40px; height: 40px; border: 3px solid var(--border-color); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px;"></div><p>Loading reviews...</p></div>';
+        
+        try {
+            const q = query(collection(db, "reviews"), where("userId", "==", currentUser.uid), orderBy("createdAt", "desc"));
+            const snapshot = await getDocs(q);
+            userReviews = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            
+            if (userReviews.length === 0) {
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-star"></i><p>No reviews yet</p><p style="font-size: 14px;">Book a service and share your experience!</p></div>';
+                return;
+            }
+            
+            container.innerHTML = userReviews.map(review => `
+                <div class="review-item">
+                    <div class="review-rating">
+                        ${'⭐'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}
+                    </div>
+                    <div class="booking-vendor">${escapeHtml(review.vendorName || 'Vendor')}</div>
+                    <div class="review-comment">${escapeHtml(review.comment || 'No comment provided')}</div>
+                    <div class="review-date">${formatDate(review.createdAt)}</div>
+                </div>
+            `).join('');
+            
+            updateStats();
+        } catch (error) {
+            console.error("Error loading reviews:", error);
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Error loading reviews</p></div>';
+        }
+    }
+
+    // Update Statistics
+    function updateStats() {
+        const total = userBookings.length;
+        const completed = userBookings.filter(b => b.status === 'completed' || b.status === 'confirmed').length;
+        const totalSpent = userBookings.reduce((sum, b) => sum + (b.amount || 0), 0);
+        const reviewsGiven = userReviews.length;
+        const avgRating = userReviews.length > 0 ? (userReviews.reduce((sum, r) => sum + (r.rating || 0), 0) / userReviews.length).toFixed(1) : 0;
+        
+        document.getElementById('userStats').innerHTML = `
+            <div class="stat-item"><div class="stat-number">${total}</div><div class="stat-label">Bookings</div></div>
+            <div class="stat-item"><div class="stat-number">${completed}</div><div class="stat-label">Completed</div></div>
+            <div class="stat-item"><div class="stat-number">₹${(totalSpent / 1000).toFixed(0)}k</div><div class="stat-label">Spent</div></div>
+            <div class="stat-item"><div class="stat-number">${avgRating > 0 ? avgRating : '—'}</div><div class="stat-label">Rating</div></div>
+        `;
+        
+        document.getElementById('totalBookings').innerText = total;
+        document.getElementById('completedBookings').innerText = completed;
+        document.getElementById('totalSpent').innerHTML = `₹${totalSpent.toLocaleString()}`;
+        document.getElementById('reviewsGiven').innerText = reviewsGiven;
+        document.getElementById('avgRating').innerHTML = avgRating > 0 ? `${avgRating} ⭐` : 'No reviews';
+    }
+
+    // Update Profile
+    window.updateProfile = async () => {
+        const newName = document.getElementById('editName').value.trim();
+        const newPhone = document.getElementById('editPhone').value.trim();
+        
+        if (!newName) {
+            showToast("Please enter a name", true);
+            return;
+        }
+        
+        try {
+            if (newName !== currentUser.displayName) {
+                await updateProfile(currentUser, { displayName: newName });
+            }
+            
+            await updateDoc(doc(db, 'users', currentUser.uid), {
+                name: newName,
+                phone: newPhone,
+                updatedAt: new Date().toISOString()
+            });
+            
+            await loadUserData();
+            showToast("Profile updated successfully!");
+        } catch (error) {
+            console.error("Error updating profile:", error);
+            showToast("Error updating profile", true);
+        }
+    };
+
+    // Verify Email
+    window.verifyEmail = async () => {
+        try {
+            await sendEmailVerification(currentUser);
+            showToast("Verification email sent! Check your inbox.");
+        } catch (error) {
+            showToast("Error sending verification email", true);
+        }
+    };
+
+    // Change Password
+    window.changePassword = () => {
+        const newPassword = prompt("Enter new password (min 6 characters):");
+        if (newPassword && newPassword.length >= 6) {
+            updatePassword(currentUser, newPassword)
+                .then(() => showToast("Password updated successfully!"))
+                .catch((error) => showToast(error.message, true));
+        } else if (newPassword) {
+            showToast("Password must be at least 6 characters", true);
+        }
+    };
+
+    // Helper Functions
+    function formatDate(timestamp) {
+        if (!timestamp) return '-';
+        try {
+            if (timestamp.toDate) return timestamp.toDate().toLocaleDateString();
+            if (timestamp.seconds) return new Date(timestamp.seconds * 1000).toLocaleDateString();
+            return new Date(timestamp).toLocaleDateString();
+        } catch {
+            return '-';
+        }
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    function showToast(message, isError = false) {
+        const existing = document.querySelector('.toast');
+        if (existing) existing.remove();
+        const toast = document.createElement('div');
+        toast.className = `toast ${isError ? 'error' : ''}`;
+        toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${message}`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    // Theme Toggle
+    function toggleTheme() {
+        document.body.classList.toggle('dark');
+        const btn = document.querySelector('.theme-toggle');
+        btn.innerHTML = document.body.classList.contains('dark') ? '☀️' : '🌙';
+        localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+    }
+
+    function logout() {
+        auth.signOut();
+        window.location.href = 'index.html';
+    }
+
+    // Initialize theme
+    if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark');
+        document.querySelector('.theme-toggle').innerHTML = '☀️';
+    }
+
+    // Auth State
+    onAuthStateChanged(auth, (user) => {
+        if (!user) {
+            window.location.href = 'login.html';
+            return;
+        }
+        currentUser = user;
+        loadUserData();
+        loadBookings();
+        loadReviews();
+    });
+
+    window.toggleTheme = toggleTheme;
+    window.logout = logout;
+</script>
+</body>
+</html>
