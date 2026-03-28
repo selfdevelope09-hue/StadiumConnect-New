@@ -1,109 +1,261 @@
-<div class="table-card" style="margin-top: 20px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <h3><i class="fas fa-users"></i> Detailed Customer Bookings</h3>
-        <button onclick="location.reload()" style="background:#eee; border:none; padding:5px 15px; border-radius:5px; cursor:pointer;">
-            <i class="fas fa-sync-alt"></i> Refresh
-        </button>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StadiumConnect | Pro Agent Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --primary: #ff6b35; --secondary: #2563eb; --success: #22c55e; --warning: #f59e0b; --danger: #ef4444; --bg: #f8fafc; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: var(--bg); color: #1e293b; }
+
+        /* Header Styling */
+        .header { background: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .logo { font-size: 1.5rem; font-weight: 800; color: var(--primary); letter-spacing: -1px; }
+        .nav-right { display: flex; align-items: center; gap: 1.5rem; }
+        .agent-pill { background: #fff7ed; border: 1px solid #ffedd5; padding: 0.5rem 1rem; border-radius: 99px; display: flex; align-items: center; gap: 0.75rem; font-size: 0.875rem; font-weight: 600; }
+        .logout-btn { background: #fee2e2; color: var(--danger); border: none; padding: 0.5rem 1.25rem; border-radius: 8px; cursor: pointer; font-weight: 700; transition: 0.3s; }
+        .logout-btn:hover { background: var(--danger); color: white; }
+
+        .main-container { max-width: 1400px; margin: 2rem auto; padding: 0 1.5rem; }
+
+        /* Referral Card */
+        .referral-box { background: linear-gradient(135deg, #1e293b, #334155); color: white; padding: 1.5rem; border-radius: 16px; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .copy-link { background: rgba(255,255,255,0.1); padding: 0.5rem 1rem; border-radius: 8px; border: 1px dashed rgba(255,255,255,0.3); display: flex; gap: 10px; align-items: center; cursor: pointer; }
+
+        /* Stats Grid */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .stat-card { background: white; padding: 1.5rem; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #f1f5f9; transition: 0.3s; }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        .stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 1rem; }
+        .val { font-size: 1.875rem; font-weight: 800; display: block; }
+        .lbl { color: #64748b; font-size: 0.875rem; font-weight: 500; }
+
+        /* Filters & Search */
+        .action-bar { background: white; padding: 1.25rem; border-radius: 16px 16px 0 0; border: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .search-input { background: #f8fafc; border: 1px solid #e2e8f0; padding: 0.75rem 1rem; border-radius: 8px; width: 300px; outline: none; }
+
+        /* Advanced Table */
+        .table-container { background: white; border-radius: 0 0 16px 16px; border: 1px solid #f1f5f9; border-top: none; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 1000px; }
+        th { background: #f8fafc; text-align: left; padding: 1rem; color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #e2e8f0; }
+        td { padding: 1.25rem 1rem; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+        
+        .user-info { display: flex; align-items: center; gap: 12px; }
+        .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #475569; }
+        
+        .contact-btns { display: flex; gap: 8px; }
+        .c-btn { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; text-decoration: none; color: white; font-size: 0.8rem; }
+        .btn-call { background: var(--success); }
+        .btn-wa { background: #25D366; }
+
+        .badge { padding: 0.4rem 0.8rem; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+        .confirmed { background: #dcfce7; color: #166534; }
+        .pending { background: #fef3c7; color: #92400e; }
+        .cancelled { background: #fee2e2; color: #991b1b; }
+
+        @media (max-width: 768px) { .header { flex-direction: column; gap: 1rem; } .search-input { width: 100%; } }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="logo"><i class="fas fa-bolt"></i> STADIUMCONNECT</div>
+    <div class="nav-right">
+        <div class="agent-pill">
+            <div class="user-avatar" id="avatarLetter">A</div>
+            <div>
+                <span id="agentName" style="display:block">Agent Name</span>
+                <small id="agentIdDisplay" style="color:#64748b">ID: ---</small>
+            </div>
+        </div>
+        <button class="logout-btn" onclick="logout()"><i class="fas fa-power-off"></i></button>
     </div>
-    <div style="overflow-x: auto;">
-        <table id="agentBookingsTable">
+</header>
+
+<div class="main-container">
+    <div class="referral-box">
+        <div>
+            <h3 style="margin-bottom: 5px;">Share Your Referral ID</h3>
+            <p style="opacity: 0.8; font-size: 0.9rem;">Give this ID to customers to earn 2.5% commission on every booking.</p>
+        </div>
+        <div class="copy-link" onclick="copyReferral()">
+            <span id="refIdText" style="font-weight: 800; font-size: 1.2rem;">---</span>
+            <i class="far fa-copy"></i>
+        </div>
+    </div>
+
+    <div class="stats-grid" id="statsGrid">
+        </div>
+
+    <div class="action-bar">
+        <h3>Booking Management</h3>
+        <input type="text" id="searchInput" class="search-input" placeholder="Search customer or phone..." onkeyup="filterTable()">
+    </div>
+
+    <div class="table-container">
+        <table id="bookingsTable">
             <thead>
                 <tr>
-                    <th>Date</th>
-                    <th>Booking ID</th>
-                    <th>Customer Name</th>
-                    <th>Contact Info</th>
-                    <th>Venue / Address</th>
+                    <th>Customer Details</th>
+                    <th>Booking Info</th>
+                    <th>Venue / Match</th>
                     <th>Amount</th>
-                    <th>Earned</th>
+                    <th>Your Earning</th>
                     <th>Status</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody id="bookingsTableBody">
-                <tr><td colspan="8" style="text-align:center; padding:30px;">Fetching detailed data...</td></tr>
+                <tr><td colspan="7" style="text-align:center; padding:50px; color:#64748b;">
+                    <i class="fas fa-spinner fa-spin fa-2x"></i><br><br>Syncing with StadiumConnect Database...
+                </td></tr>
             </tbody>
         </table>
     </div>
 </div>
 
 <script type="module">
-    // ... (Firebase Initialization same rahegi) ...
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getFirestore, collection, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-    function updateUI(data) {
+    // Same Firebase Config
+    const firebaseConfig = {
+        apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
+        authDomain: "stadiumconnect-8fecb.firebaseapp.com",
+        projectId: "stadiumconnect-8fecb",
+        storageBucket: "stadiumconnect-8fecb.firebasestorage.app",
+        messagingSenderId: "458108198578",
+        appId: "1:458108198578:web:83d83646f0e24e718b73ab"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const agentData = JSON.parse(localStorage.getItem('agent'));
+    const agentId = agentData ? (agentData.id || agentData.agentId || agentData.uid) : null;
+
+    if (!agentId) {
+        window.location.href = 'agent-login.html';
+    } else {
+        document.getElementById('agentName').innerText = agentData.name || "Stadium Agent";
+        document.getElementById('agentIdDisplay').innerText = `ID: ${agentId}`;
+        document.getElementById('refIdText').innerText = agentId;
+        document.getElementById('avatarLetter').innerText = (agentData.name || 'A').charAt(0);
+        fetchBookings(agentId);
+    }
+
+    function fetchBookings(id) {
+        // Querying "bookings" where "agentId" matches
+        const q = query(collection(db, "bookings"), where("agentId", "==", id));
+
+        onSnapshot(q, (snapshot) => {
+            const bookings = [];
+            snapshot.forEach(doc => bookings.push({ id: doc.id, ...doc.data() }));
+            updateDashboard(bookings);
+        }, (err) => {
+            console.error(err);
+            alert("Database Error! Contact Admin.");
+        });
+    }
+
+    function updateDashboard(data) {
+        const confirmed = data.filter(b => b.status === 'confirmed' || b.status === 'completed');
+        const revenue = confirmed.reduce((s, b) => s + (Number(b.amount) || 0), 0);
+        const earnings = Math.floor(revenue * 0.025);
+
+        // Update Stats UI
+        document.getElementById('statsGrid').innerHTML = `
+            <div class="stat-card">
+                <div class="stat-icon" style="background:#e0f2fe; color:#0ea5e9"><i class="fas fa-shopping-cart"></i></div>
+                <span class="val">${data.length}</span>
+                <span class="lbl">Total Leads</span>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background:#dcfce7; color:#22c55e"><i class="fas fa-check-circle"></i></div>
+                <span class="val">${confirmed.length}</span>
+                <span class="lbl">Successful Bookings</span>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background:#ffedd5; color:#f97316"><i class="fas fa-wallet"></i></div>
+                <span class="val">₹${revenue.toLocaleString()}</span>
+                <span class="lbl">Business Generated</span>
+            </div>
+            <div class="stat-card" style="border-bottom: 4px solid var(--primary)">
+                <div class="stat-icon" style="background:#fff7ed; color:var(--primary)"><i class="fas fa-hand-holding-usd"></i></div>
+                <span class="val">₹${earnings.toLocaleString()}</span>
+                <span class="lbl">Net Earning (2.5%)</span>
+            </div>
+        `;
+
+        // Update Table
         const tbody = document.getElementById('bookingsTableBody');
-        
         if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:30px;">No bookings found.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:50px;">No bookings found for your referral ID.</td></tr>';
             return;
         }
 
-        // Sorting: Latest bookings first
-        data.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-
         tbody.innerHTML = data.map(b => {
             const amount = Number(b.amount || 0);
-            const commission = Math.floor(amount * 0.025);
-            
-            // Date formatting
-            let displayDate = "N/A";
-            if(b.createdAt) {
-                const d = b.createdAt.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
-                displayDate = d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
-            }
+            const earn = Math.floor(amount * 0.025);
+            const status = b.status || 'pending';
+            const phone = b.userPhone || b.phone || '';
 
             return `
                 <tr>
-                    <td><strong>${displayDate}</strong></td>
-                    <td><small>#${b.id.slice(-6).toUpperCase()}</small></td>
-                    <td><strong>${b.userName || b.customerName || 'Guest'}</strong></td>
                     <td>
-                        <i class="fas fa-phone" style="font-size:10px; color:#666;"></i> ${b.userPhone || b.phone || 'N/A'}<br>
-                        <i class="fas fa-envelope" style="font-size:10px; color:#666;"></i> <small>${b.userEmail || b.email || '-'}</small>
+                        <div class="user-info">
+                            <div class="user-avatar">${(b.userName || 'C').charAt(0)}</div>
+                            <div>
+                                <div style="font-weight:700">${b.userName || 'Customer'}</div>
+                                <div style="font-size:0.8rem; color:#64748b">${phone}</div>
+                            </div>
+                        </div>
                     </td>
                     <td>
-                        <span style="font-size:12px;">${b.vendorName || 'General Venue'}</span><br>
-                        <small style="color:#888;">${b.address || b.location || 'No address provided'}</small>
+                        <div style="font-size:0.85rem">ID: <strong>#${b.id.slice(-6).toUpperCase()}</strong></div>
+                        <div style="font-size:0.75rem; color:#64748b">${b.date || 'TBD'}</div>
                     </td>
-                    <td>₹${amount.toLocaleString()}</td>
-                    <td style="color:#28a745; font-weight:700;">₹${commission.toLocaleString()}</td>
                     <td>
-                        <span class="status-badge ${getStatusClass(b.status)}">
-                            ${(b.status || 'pending').toUpperCase()}
-                        </span>
+                        <div style="font-size:0.9rem">${b.vendorName || 'General Booking'}</div>
+                        <small style="color:#94a3b8"><i class="fas fa-map-marker-alt"></i> ${b.location || 'Stadium'}</small>
+                    </td>
+                    <td style="font-weight:700">₹${amount.toLocaleString()}</td>
+                    <td style="color:var(--success); font-weight:800">₹${earn.toLocaleString()}</td>
+                    <td><span class="badge ${status}">${status}</span></td>
+                    <td>
+                        <div class="contact-btns">
+                            <a href="tel:${phone}" class="c-btn btn-call" title="Call Customer"><i class="fas fa-phone"></i></a>
+                            <a href="https://wa.me/91${phone}" target="_blank" class="c-btn btn-wa" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                        </div>
                     </td>
                 </tr>
             `;
         }).join('');
-
-        // Update top stats cards
-        updateTopStats(data);
     }
 
-    function getStatusClass(status) {
-        status = status ? status.toLowerCase() : 'pending';
-        if (status === 'confirmed' || status === 'completed') return 'status-confirmed';
-        if (status === 'cancelled') return 'status-cancelled';
-        return 'status-pending';
+    // Advanced Table Search
+    window.filterTable = () => {
+        let input = document.getElementById("searchInput").value.toLowerCase();
+        let rows = document.getElementById("bookingsTableBody").getElementsByTagName("tr");
+        for (let row of rows) {
+            row.style.display = row.innerText.toLowerCase().includes(input) ? "" : "none";
+        }
     }
 
-    function updateTopStats(data) {
-        const confirmed = data.filter(b => b.status === 'confirmed' || b.status === 'completed');
-        const revenue = confirmed.reduce((s, b) => s + (Number(b.amount) || 0), 0);
-        
-        document.getElementById('statsGrid').innerHTML = `
-            <div class="stat-card">
-                <div class="stat-value">${data.length}</div>
-                <div class="stat-label">Total Leads</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value">₹${revenue.toLocaleString()}</div>
-                <div class="stat-label">Confirmed Revenue</div>
-            </div>
-            <div class="stat-card" style="border: 2px solid #ff6b35;">
-                <div class="stat-value">₹${Math.floor(revenue * 0.025).toLocaleString()}</div>
-                <div class="stat-label">Your Payout (2.5%)</div>
-            </div>
-        `;
+    window.copyReferral = () => {
+        navigator.clipboard.writeText(agentId);
+        alert("Referral ID Copied to Clipboard!");
+    }
+
+    window.logout = () => {
+        localStorage.removeItem('agent');
+        window.location.href = 'agent-login.html';
     }
 </script>
+</body>
+</html>
 
