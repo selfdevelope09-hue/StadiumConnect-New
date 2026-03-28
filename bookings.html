@@ -564,7 +564,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, collection, query, where, getDocs, doc, getDoc, setDoc, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getFirestore, collection, query, where, getDocs, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -586,7 +586,25 @@
     let currentBookingForReview = null;
     let selectedRating = 0;
 
-    // Load bookings with real-time listener
+    // Helper function to parse date from timestamp
+    function parseDate(timestamp) {
+        if (!timestamp) return new Date(0);
+        if (timestamp.toDate) return timestamp.toDate();
+        if (timestamp.seconds) return new Date(timestamp.seconds * 1000);
+        if (typeof timestamp === 'string') return new Date(timestamp);
+        return new Date(timestamp);
+    }
+
+    // Sort bookings by createdAt (newest first)
+    function sortBookingsByDate(bookings) {
+        return [...bookings].sort((a, b) => {
+            const dateA = parseDate(a.createdAt);
+            const dateB = parseDate(b.createdAt);
+            return dateB - dateA;
+        });
+    }
+
+    // Load bookings without orderBy (to avoid index requirement)
     function setupBookingsListener() {
         if (unsubscribeBookings) unsubscribeBookings();
         
@@ -595,50 +613,71 @@
         console.log("Setting up bookings listener for user:", currentUser.uid);
         
         // Try multiple possible field names that might store the user ID
-        const bookingsRef = collection(db, "bookings");
+        const possibleFields = ['userId', 'customerId', 'user_id', 'customer_id', 'uid', 'bookedBy'];
         
-        // First, try with userId field
-        let q = query(bookingsRef, where("userId", "==", currentUser.uid), orderBy("createdAt", "desc"));
-        
-        unsubscribeBookings = onSnapshot(q, 
-            async (snapshot) => {
-                console.log("Bookings found with userId:", snapshot.size);
-                let bookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                
-                // If no bookings found with userId, try other field names
-                if (bookings.length === 0) {
-                    console.log("No bookings with userId, trying other fields...");
-                    const possibleFields = ['customerId', 'user_id', 'customer_id', 'uid', 'bookedBy'];
-                    for (let field of possibleFields) {
-                        const altQuery = query(bookingsRef, where(field, "==", currentUser.uid), orderBy("createdAt", "desc"));
-                        const altSnapshot = await getDocs(altQuery);
-                        if (altSnapshot.size > 0) {
-                            console.log(`Found ${altSnapshot.size} bookings with field: ${field}`);
-                            bookings = altSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                            break;
-                        }
-                    }
-                }
-                
-                // Fetch reviews for each booking
-                for (let booking of bookings) {
-                    const reviewRef = doc(db, "reviews", `${booking.id}_${currentUser.uid}`);
-                    const reviewSnap = await getDoc(reviewRef);
-                    if (reviewSnap.exists()) {
-                        booking.review = reviewSnap.data();
-                    }
-                }
-                
-                allBookings = bookings;
-                console.log("Total bookings loaded:", allBookings.length);
-                updateUI();
-                updateLastUpdated();
-            },
-            (error) => {
-                console.error("Error in bookings listener:", error);
-                showToast("Error loading bookings: " + error.message, true);
+        // Function to fetch bookings for a specific field
+        async function fetchBookingsForField(field) {
+            try {
+                const bookingsRef = collection(db, "bookings");
+                const q = query(bookingsRef, where(field, "==", currentUser.uid));
+                const snapshot = await getDocs(q);
+                console.log(`Found ${snapshot.size} bookings with field: ${field}`);
+                return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            } catch (error) {
+                console.error(`Error fetching with field ${field}:`, error);
+                return [];
             }
-        );
+        }
+        
+        // Try all fields and combine results
+        async function loadAllBookings() {
+            let allResults = [];
+            for (let field of possibleFields) {
+                const results = await fetchBookingsForField(field);
+                allResults = [...allResults, ...results];
+            }
+            
+            // Remove duplicates by id
+            const uniqueBookings = [];
+            const seenIds = new Set();
+            for (let booking of allResults) {
+                if (!seenIds.has(booking.id)) {
+                    seenIds.add(booking.id);
+                    uniqueBookings.push(booking);
+                }
+            }
+            
+            // Sort by date (newest first)
+            const sortedBookings = sortBookingsByDate(uniqueBookings);
+            
+            // Fetch reviews for each booking
+            for (let booking of sortedBookings) {
+                const reviewRef = doc(db, "reviews", `${booking.id}_${currentUser.uid}`);
+                const reviewSnap = await getDoc(reviewRef);
+                if (reviewSnap.exists()) {
+                    booking.review = reviewSnap.data();
+                }
+            }
+            
+            allBookings = sortedBookings;
+            console.log("Total unique bookings loaded:", allBookings.length);
+            updateUI();
+            updateLastUpdated();
+        }
+        
+        // Initial load
+        loadAllBookings();
+        
+        // Set up real-time listener (simplified - just reload every 30 seconds)
+        // For real-time, we'd need proper listeners but this works without indexes
+        const interval = setInterval(() => {
+            if (currentUser) {
+                loadAllBookings();
+            }
+        }, 30000);
+        
+        // Store cleanup function
+        unsubscribeBookings = () => clearInterval(interval);
     }
 
     // Update all UI
@@ -721,7 +760,7 @@
             return `
                 <div class="rated-badge">
                     <i class="fas fa-star"></i> ${rating}/5
-                    ${booking.review.comment ? `<br><small>${booking.review.comment.substring(0, 30)}${booking.review.comment.length > 30 ? '...' : ''}</small>` : ''}
+                    ${booking.review.comment ? `<br><small>${escapeHtml(booking.review.comment.substring(0, 30))}${booking.review.comment.length > 30 ? '...' : ''}</small>` : ''}
                 </div>
             `;
         }
