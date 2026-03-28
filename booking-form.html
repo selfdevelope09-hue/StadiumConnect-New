@@ -18,24 +18,34 @@
             --bg-primary: #f8fafc;
             --bg-secondary: #ffffff;
             --bg-card: #ffffff;
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-            --text-muted: #94a3b8;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #64748b;
             --border-color: #e2e8f0;
             --accent: #ff6b35;
+            --accent-dark: #e55a2b;
+            --accent-light: #fff5f0;
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
         }
 
         body.dark {
             --bg-primary: #0a0a2a;
-            --bg-secondary: #1a1a2e;
-            --bg-card: #1e1e3a;
+            --bg-secondary: #12122a;
+            --bg-card: #1a1a3a;
             --text-primary: #ffffff;
             --text-secondary: #cbd5e1;
             --text-muted: #94a3b8;
             --border-color: rgba(255, 255, 255, 0.1);
+            --accent-light: rgba(255, 107, 53, 0.15);
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.4);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5);
         }
 
         body {
@@ -44,6 +54,7 @@
             transition: all 0.3s ease;
         }
 
+        /* Header */
         .header {
             background: var(--bg-secondary);
             backdrop-filter: blur(20px);
@@ -57,6 +68,7 @@
             z-index: 1000;
             flex-wrap: wrap;
             gap: 15px;
+            box-shadow: var(--shadow);
         }
 
         .logo {
@@ -68,21 +80,32 @@
             -webkit-text-fill-color: transparent;
         }
 
+        .logo span {
+            background: none;
+            -webkit-text-fill-color: var(--accent);
+        }
+
         .user-info {
             display: flex;
             align-items: center;
             gap: 12px;
-            background: rgba(255, 107, 53, 0.1);
+            background: var(--accent-light);
             padding: 8px 20px;
-            border-radius: 40px;
+            border-radius: 50px;
+            backdrop-filter: blur(10px);
+        }
+
+        .user-info i {
+            color: var(--accent);
         }
 
         .theme-toggle, .logout-btn {
             padding: 10px 20px;
-            border-radius: 40px;
+            border-radius: 50px;
             cursor: pointer;
             font-weight: 500;
             border: none;
+            transition: all 0.3s ease;
         }
 
         .theme-toggle {
@@ -91,161 +114,397 @@
             color: var(--accent);
         }
 
+        .theme-toggle:hover {
+            transform: rotate(15deg);
+            background: var(--accent);
+            color: white;
+        }
+
         .logout-btn {
             background: var(--danger);
             color: white;
         }
 
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4);
+        }
+
+        /* Container */
         .container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 30px;
+            padding: 32px;
         }
 
+        /* Page Header */
         .page-header {
-            margin-bottom: 30px;
+            margin-bottom: 32px;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            transform: translateX(-5px);
         }
 
         .page-header h1 {
-            font-size: 32px;
+            font-size: 36px;
+            font-weight: 800;
             background: linear-gradient(135deg, var(--accent), #ff9068);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
         }
 
+        .page-header p {
+            color: var(--text-secondary);
+            font-size: 16px;
+        }
+
+        /* Stats Row */
         .stats-row {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 20px;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
         }
 
-        .stat-box {
+        .stat-card {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: 24px;
             padding: 24px;
-            text-align: center;
+            display: flex;
+            align-items: center;
+            gap: 16px;
             transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
 
-        .stat-box:hover {
-            transform: translateY(-5px);
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), #ff9068);
+            transform: scaleX(0);
+            transition: transform 0.4s ease;
+        }
+
+        .stat-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
             border-color: var(--accent);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-icon {
+            width: 56px;
+            height: 56px;
+            background: var(--accent-light);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: var(--accent);
+        }
+
+        .stat-info {
+            flex: 1;
         }
 
         .stat-number {
             font-size: 32px;
             font-weight: 800;
-            color: var(--accent);
+            color: var(--text-primary);
+            line-height: 1;
         }
 
-        .table-container {
-            overflow-x: auto;
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Booking Cards */
+        .bookings-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .booking-card {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: 24px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.5s ease;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
-        th, td {
-            padding: 16px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
+        .booking-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent);
+            box-shadow: var(--shadow-xl);
         }
 
-        th {
-            color: var(--text-secondary);
-            font-weight: 600;
-            font-size: 13px;
+        .booking-header {
+            padding: 20px 24px;
             background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
         }
 
-        tr:hover {
-            background: rgba(255, 107, 53, 0.05);
+        .booking-id {
+            font-family: monospace;
+            font-size: 12px;
+            color: var(--text-muted);
+            background: var(--bg-primary);
+            padding: 4px 12px;
+            border-radius: 20px;
         }
 
         .status-badge {
-            display: inline-block;
-            padding: 5px 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
             border-radius: 30px;
             font-size: 12px;
             font-weight: 600;
         }
 
         .status-pending {
-            background: rgba(245, 158, 11, 0.2);
+            background: rgba(245, 158, 11, 0.15);
             color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.3);
         }
 
         .status-confirmed, .status-completed {
-            background: rgba(16, 185, 129, 0.2);
+            background: rgba(16, 185, 129, 0.15);
             color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.3);
         }
 
         .status-cancelled {
-            background: rgba(239, 68, 68, 0.2);
+            background: rgba(239, 68, 68, 0.15);
             color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .booking-body {
+            padding: 24px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+        }
+
+        .vendor-info {
+            flex: 2;
+            min-width: 200px;
+        }
+
+        .vendor-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .vendor-category {
+            display: inline-block;
+            background: var(--accent-light);
+            color: var(--accent);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .booking-details {
+            flex: 3;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .detail-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--accent-light);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: var(--accent);
+        }
+
+        .detail-info {
+            flex: 1;
+        }
+
+        .detail-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .detail-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .amount-value {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        .booking-footer {
+            padding: 16px 24px;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
         }
 
         .review-btn {
-            background: rgba(255, 107, 53, 0.15);
+            background: var(--accent-light);
             border: none;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 11px;
+            padding: 10px 20px;
+            border-radius: 40px;
+            font-size: 14px;
+            font-weight: 500;
             cursor: pointer;
             color: var(--accent);
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .review-btn:hover {
             background: var(--accent);
             color: white;
+            transform: translateY(-2px);
         }
 
         .rated-badge {
-            background: rgba(16, 185, 129, 0.2);
+            background: rgba(16, 185, 129, 0.15);
             color: var(--success);
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-size: 13px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
+        /* Empty State */
         .empty-state {
             text-align: center;
-            padding: 60px;
+            padding: 80px 40px;
+            background: var(--bg-card);
+            border-radius: 32px;
+            border: 1px solid var(--border-color);
         }
 
         .empty-state i {
-            font-size: 64px;
+            font-size: 80px;
             color: var(--text-muted);
-            margin-bottom: 20px;
+            margin-bottom: 24px;
+            opacity: 0.5;
         }
 
-        .loading-spinner {
+        .empty-state h3 {
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+
+        .empty-state p {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .empty-state a {
+            display: inline-block;
+            background: var(--accent);
+            color: white;
+            padding: 12px 32px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .empty-state a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255, 107, 53, 0.4);
+        }
+
+        /* Loading */
+        .loading-state {
             text-align: center;
-            padding: 60px;
+            padding: 80px 40px;
         }
 
         .spinner {
-            width: 40px;
-            height: 40px;
+            width: 48px;
+            height: 48px;
             border: 3px solid var(--border-color);
             border-top: 3px solid var(--accent);
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
+            margin: 0 auto 20px;
         }
 
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
 
+        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -266,27 +525,46 @@
 
         .modal-content {
             background: var(--bg-card);
-            border-radius: 28px;
+            border-radius: 32px;
             padding: 32px;
-            max-width: 450px;
+            max-width: 480px;
             width: 90%;
+            animation: modalSlideUp 0.3s ease;
+        }
+
+        @keyframes modalSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-content h3 {
+            font-size: 24px;
+            margin-bottom: 8px;
         }
 
         .modal-rating {
             display: flex;
-            gap: 8px;
+            gap: 12px;
             justify-content: center;
-            margin: 20px 0;
+            margin: 24px 0;
         }
 
         .modal-rating i {
-            font-size: 32px;
+            font-size: 40px;
             cursor: pointer;
             color: #cbd5e1;
+            transition: all 0.2s ease;
         }
 
         .modal-rating i.active {
             color: #fbbf24;
+            transform: scale(1.1);
         }
 
         .modal textarea {
@@ -295,33 +573,87 @@
             background: var(--bg-primary);
             border: 1px solid var(--border-color);
             border-radius: 16px;
-            margin: 15px 0;
+            color: var(--text-primary);
+            font-size: 14px;
+            resize: vertical;
+            margin: 16px 0;
         }
 
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .btn-cancel {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            padding: 10px 24px;
+            border-radius: 40px;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .btn-submit {
+            background: var(--accent);
+            border: none;
+            padding: 10px 24px;
+            border-radius: 40px;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        /* Toast */
         .toast {
             position: fixed;
             bottom: 30px;
             right: 30px;
             background: var(--bg-card);
-            padding: 12px 24px;
+            backdrop-filter: blur(20px);
+            padding: 14px 24px;
             border-radius: 50px;
             z-index: 2000;
             border-left: 4px solid var(--success);
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            box-shadow: var(--shadow-lg);
+            animation: slideUp 0.3s ease;
+        }
+
+        .toast.error {
+            border-left-color: var(--danger);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
 
         .last-updated {
             text-align: right;
-            font-size: 11px;
+            font-size: 12px;
             color: var(--text-muted);
-            padding: 15px 20px;
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
         }
 
         @media (max-width: 768px) {
             .container { padding: 20px; }
-            th, td { font-size: 12px; padding: 10px; }
+            .page-header h1 { font-size: 28px; }
+            .booking-body { flex-direction: column; }
+            .booking-details { grid-template-columns: 1fr; }
+            .stat-card { padding: 16px; }
+            .stat-icon { width: 48px; height: 48px; font-size: 24px; }
+            .stat-number { font-size: 24px; }
         }
     </style>
 </head>
@@ -341,30 +673,23 @@
 
 <div class="container">
     <div class="page-header">
-        <a href="dashboard.html" class="back-btn" style="display: inline-flex; align-items: center; gap: 8px; margin-bottom: 20px; color: var(--accent); text-decoration: none;">
+        <a href="dashboard.html" class="back-btn">
             <i class="fas fa-arrow-left"></i> Back to Dashboard
         </a>
         <h1><i class="fas fa-ticket-alt"></i> My Bookings</h1>
-        <p>View all your bookings, track status, and leave reviews</p>
+        <p>View and manage all your bookings in one place</p>
     </div>
 
-    <div class="stats-row" id="statsRow">
-        <div class="stat-box"><div class="stat-number">0</div><div>Total Bookings</div></div>
-        <div class="stat-box"><div class="stat-number">0</div><div>Confirmed</div></div>
-        <div class="stat-box"><div class="stat-number">0</div><div>Pending</div></div>
-        <div class="stat-box"><div class="stat-number">₹0</div><div>Total Spent</div></div>
-    </div>
+    <div class="stats-row" id="statsRow"></div>
 
-    <div class="table-container">
-        <div id="bookingsTable"></div>
-        <div class="last-updated" id="lastUpdated"></div>
-    </div>
+    <div id="bookingsContainer"></div>
+    <div id="lastUpdated" class="last-updated"></div>
 </div>
 
 <div id="reviewModal" class="modal">
     <div class="modal-content">
         <h3>⭐ Rate Your Experience</h3>
-        <p id="modalVendorName"></p>
+        <p id="modalVendorName" style="color: var(--text-secondary); margin-bottom: 8px;"></p>
         <div class="modal-rating" id="modalRatingStars">
             <i class="fas fa-star" data-rating="1"></i>
             <i class="fas fa-star" data-rating="2"></i>
@@ -373,16 +698,16 @@
             <i class="fas fa-star" data-rating="5"></i>
         </div>
         <textarea id="modalReviewText" rows="4" placeholder="Share your experience... (optional)"></textarea>
-        <div style="display: flex; gap: 12px; justify-content: flex-end;">
-            <button class="btn-cancel" onclick="closeReviewModal()" style="background: transparent; border: 1px solid var(--border-color); padding: 10px 24px; border-radius: 40px; cursor: pointer;">Cancel</button>
-            <button class="btn-submit" onclick="submitReview()" style="background: var(--accent); border: none; padding: 10px 24px; border-radius: 40px; color: white; cursor: pointer;">Submit Review</button>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeReviewModal()">Cancel</button>
+            <button class="btn-submit" onclick="submitReview()">Submit Review</button>
         </div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, doc, getDoc, setDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -404,97 +729,12 @@
     let currentBookingForReview = null;
     let selectedRating = 0;
 
-    // Function to fetch ALL bookings from Firebase and filter by user
-    async function loadBookings() {
-        if (!currentUser) return;
-        
-        const tableDiv = document.getElementById('bookingsTable');
-        tableDiv.innerHTML = '<div class="loading-spinner"><div class="spinner"></div>Loading bookings...</div>';
-        
-        try {
-            console.log("Fetching all bookings from Firebase...");
-            const bookingsRef = collection(db, "bookings");
-            const snapshot = await getDocs(bookingsRef);
-            
-            console.log(`Total bookings in collection: ${snapshot.size}`);
-            
-            // Filter bookings where ANY field matches the current user ID
-            const userBookings = [];
-            const userId = currentUser.uid;
-            const userEmail = currentUser.email;
-            
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                let isUserBooking = false;
-                let matchField = '';
-                
-                // Check all possible user ID fields
-                const possibleFields = ['userId', 'user_id', 'customerId', 'customer_id', 'uid', 'bookedBy', 'booked_by', 'user', 'customer'];
-                
-                for (let field of possibleFields) {
-                    if (data[field] === userId || data[field] === userEmail) {
-                        isUserBooking = true;
-                        matchField = field;
-                        break;
-                    }
-                }
-                
-                // Also check if the document ID or any nested object contains user ID
-                if (!isUserBooking) {
-                    if (data.user && (data.user.id === userId || data.user.uid === userId || data.user.email === userEmail)) {
-                        isUserBooking = true;
-                    }
-                    if (data.customer && (data.customer.id === userId || data.customer.uid === userId)) {
-                        isUserBooking = true;
-                    }
-                }
-                
-                if (isUserBooking) {
-                    console.log(`Found booking for user via field: ${matchField}`, data);
-                    userBookings.push({
-                        id: doc.id,
-                        ...data
-                    });
-                }
-            });
-            
-            console.log(`Found ${userBookings.length} bookings for user`);
-            
-            // Sort by date (newest first)
-            userBookings.sort((a, b) => {
-                const dateA = a.createdAt ? new Date(a.createdAt.seconds * 1000) : new Date(0);
-                const dateB = b.createdAt ? new Date(b.createdAt.seconds * 1000) : new Date(0);
-                return dateB - dateA;
-            });
-            
-            // Fetch reviews for each booking
-            for (let booking of userBookings) {
-                const reviewId = `${booking.id}_${currentUser.uid}`;
-                const reviewRef = doc(db, "reviews", reviewId);
-                const reviewSnap = await getDoc(reviewRef);
-                if (reviewSnap.exists()) {
-                    booking.review = reviewSnap.data();
-                }
-            }
-            
-            allBookings = userBookings;
-            updateUI();
-            
-        } catch (error) {
-            console.error("Error loading bookings:", error);
-            tableDiv.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Error loading bookings: ${error.message}</p><button onclick="location.reload()" style="margin-top: 10px; padding: 8px 20px; background: var(--accent); color: white; border: none; border-radius: 20px; cursor: pointer;">Retry</button></div>`;
-        }
-    }
-    
-    // Set up real-time listener for bookings
     function setupRealtimeListener() {
         if (unsubscribe) unsubscribe();
         
         const bookingsRef = collection(db, "bookings");
         
         unsubscribe = onSnapshot(bookingsRef, async (snapshot) => {
-            console.log("Real-time update detected! Total bookings:", snapshot.size);
-            
             if (!currentUser) return;
             
             const userId = currentUser.uid;
@@ -515,21 +755,16 @@
                 }
                 
                 if (isUserBooking) {
-                    userBookings.push({
-                        id: doc.id,
-                        ...data
-                    });
+                    userBookings.push({ id: doc.id, ...data });
                 }
             });
             
-            // Sort by date
             userBookings.sort((a, b) => {
                 const dateA = a.createdAt ? new Date(a.createdAt.seconds * 1000) : new Date(0);
                 const dateB = b.createdAt ? new Date(b.createdAt.seconds * 1000) : new Date(0);
                 return dateB - dateA;
             });
             
-            // Fetch reviews
             for (let booking of userBookings) {
                 const reviewId = `${booking.id}_${currentUser.uid}`;
                 const reviewRef = doc(db, "reviews", reviewId);
@@ -542,7 +777,6 @@
             allBookings = userBookings;
             updateUI();
             updateLastUpdated();
-            
         }, (error) => {
             console.error("Real-time listener error:", error);
         });
@@ -550,11 +784,11 @@
     
     function updateUI() {
         updateStats();
-        renderBookingsTable();
+        renderBookings();
     }
     
     function updateLastUpdated() {
-        document.getElementById('lastUpdated').innerHTML = `🟢 Live sync: ${new Date().toLocaleString()}`;
+        document.getElementById('lastUpdated').innerHTML = `🟢 Live updates • Last synced: ${new Date().toLocaleString()}`;
     }
     
     function updateStats() {
@@ -564,59 +798,125 @@
         const totalAmount = allBookings.reduce((sum, b) => sum + (b.amount || 0), 0);
         
         document.getElementById('statsRow').innerHTML = `
-            <div class="stat-box"><div class="stat-number">${total}</div><div>Total Bookings</div></div>
-            <div class="stat-box"><div class="stat-number">${confirmed}</div><div>Confirmed</div></div>
-            <div class="stat-box"><div class="stat-number">${pending}</div><div>Pending</div></div>
-            <div class="stat-box"><div class="stat-number">₹${totalAmount.toLocaleString()}</div><div>Total Spent</div></div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
+                <div class="stat-info">
+                    <div class="stat-number">${total}</div>
+                    <div class="stat-label">Total Bookings</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="stat-info">
+                    <div class="stat-number">${confirmed}</div>
+                    <div class="stat-label">Confirmed</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                <div class="stat-info">
+                    <div class="stat-number">${pending}</div>
+                    <div class="stat-label">Pending</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-rupee-sign"></i></div>
+                <div class="stat-info">
+                    <div class="stat-number">₹${formatAmount(totalAmount)}</div>
+                    <div class="stat-label">Total Spent</div>
+                </div>
+            </div>
         `;
     }
     
-    function renderBookingsTable() {
-        const container = document.getElementById('bookingsTable');
+    function formatAmount(amount) {
+        if (amount >= 100000) return (amount / 100000).toFixed(1) + 'L';
+        if (amount >= 1000) return (amount / 1000).toFixed(0) + 'k';
+        return amount.toLocaleString();
+    }
+    
+    function formatDate(timestamp) {
+        if (!timestamp) return '-';
+        try {
+            if (timestamp.toDate) return timestamp.toDate().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+            if (timestamp.seconds) return new Date(timestamp.seconds * 1000).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+            return new Date(timestamp).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+        } catch {
+            return '-';
+        }
+    }
+    
+    function renderBookings() {
+        const container = document.getElementById('bookingsContainer');
         
         if (allBookings.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
                     <i class="fas fa-calendar-alt"></i>
-                    <p>No bookings found</p>
-                    <p style="font-size: 14px; margin-top: 10px;">Make your first booking to see it here!</p>
-                    <a href="vendors.html" style="color: var(--accent); text-decoration: none; display: inline-block; margin-top: 15px;">Browse Vendors →</a>
+                    <h3>No Bookings Yet</h3>
+                    <p>You haven't made any bookings yet. Start exploring and book your first event!</p>
+                    <a href="vendors.html">Browse Vendors →</a>
                 </div>
             `;
             return;
         }
         
         container.innerHTML = `
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Vendor</th>
-                        <th>Event Date</th>
-                        <th>Amount</th>
-                        <th>Status</th>
-                        <th>Booked On</th>
-                        <th>Review</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${allBookings.map(booking => `
-                        <tr>
-                            <td><code>${booking.id.slice(-8)}</code></td>
-                            <td>
-                                <strong>${escapeHtml(booking.vendorName || booking.stadiumName || booking.serviceName || 'Vendor')}</strong>
-                                <br><small style="color: var(--text-muted);">${booking.category || 'Event'}</small>
-                            </td>
-                            <td>${booking.eventDate || booking.date || '-'}</td>
-                            <td><strong>₹${(booking.amount || 0).toLocaleString()}</strong></td>
-                            <td><span class="status-badge status-${booking.status || 'pending'}">${booking.status || 'pending'}</span></td>
-                            <td><small>${formatDate(booking.createdAt)}</small></td>
-                            <td>${renderReviewButton(booking)}</td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
+            <div class="bookings-grid">
+                ${allBookings.map(booking => `
+                    <div class="booking-card">
+                        <div class="booking-header">
+                            <span class="booking-id"><i class="fas fa-hashtag"></i> ${booking.id.slice(-8)}</span>
+                            <span class="status-badge status-${booking.status || 'pending'}">
+                                <i class="fas ${getStatusIcon(booking.status)}"></i> ${booking.status || 'Pending'}
+                            </span>
+                        </div>
+                        <div class="booking-body">
+                            <div class="vendor-info">
+                                <div class="vendor-name">${escapeHtml(booking.vendorName || booking.stadiumName || 'Vendor')}</div>
+                                <span class="vendor-category"><i class="fas fa-tag"></i> ${booking.category || 'Event Service'}</span>
+                            </div>
+                            <div class="booking-details">
+                                <div class="detail-item">
+                                    <div class="detail-icon"><i class="fas fa-calendar-day"></i></div>
+                                    <div class="detail-info">
+                                        <div class="detail-label">Event Date</div>
+                                        <div class="detail-value">${booking.eventDate || booking.date || 'To be confirmed'}</div>
+                                    </div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-icon"><i class="fas fa-rupee-sign"></i></div>
+                                    <div class="detail-info">
+                                        <div class="detail-label">Total Amount</div>
+                                        <div class="detail-value amount-value">₹${(booking.amount || 0).toLocaleString()}</div>
+                                    </div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-icon"><i class="fas fa-calendar-plus"></i></div>
+                                    <div class="detail-info">
+                                        <div class="detail-label">Booked On</div>
+                                        <div class="detail-value">${formatDate(booking.createdAt)}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="booking-footer">
+                            ${renderReviewButton(booking)}
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
         `;
+    }
+    
+    function getStatusIcon(status) {
+        switch(status) {
+            case 'confirmed': return 'fa-check-circle';
+            case 'completed': return 'fa-check-double';
+            case 'pending': return 'fa-hourglass-half';
+            case 'cancelled': return 'fa-times-circle';
+            default: return 'fa-info-circle';
+        }
     }
     
     function renderReviewButton(booking) {
@@ -624,31 +924,23 @@
         const hasReview = booking.review;
         
         if (hasReview) {
-            return `<span class="rated-badge"><i class="fas fa-star"></i> ${booking.review.rating}/5</span>`;
+            const stars = '★'.repeat(booking.review.rating) + '☆'.repeat(5 - booking.review.rating);
+            return `<span class="rated-badge"><i class="fas fa-star"></i> ${booking.review.rating}/5 • ${stars}</span>`;
         }
         
         if (canReview) {
             return `<button class="review-btn" onclick="openReviewModal('${booking.id}', '${escapeHtml(booking.vendorName || booking.stadiumName || 'Vendor')}')">
-                        <i class="fas fa-star"></i> Rate & Review
+                        <i class="fas fa-star"></i> Write a Review
                     </button>`;
         }
         
         if (booking.status === 'pending') {
-            return '<span style="color: var(--text-muted); font-size: 12px;">Awaiting confirmation</span>';
+            return `<span class="rated-badge" style="background: rgba(245,158,11,0.15); color: var(--warning);">
+                        <i class="fas fa-hourglass-half"></i> Awaiting Confirmation
+                    </span>`;
         }
         
-        return '<span style="color: var(--text-muted); font-size: 12px;">—</span>';
-    }
-    
-    function formatDate(timestamp) {
-        if (!timestamp) return '-';
-        try {
-            if (timestamp.toDate) return timestamp.toDate().toLocaleDateString();
-            if (timestamp.seconds) return new Date(timestamp.seconds * 1000).toLocaleDateString();
-            return new Date(timestamp).toLocaleDateString();
-        } catch {
-            return '-';
-        }
+        return '';
     }
     
     function escapeHtml(str) {
@@ -722,7 +1014,6 @@
                 bookingId: currentBookingForReview.id,
                 userId: currentUser.uid,
                 userName: currentUser.displayName || currentUser.email?.split('@')[0] || 'User',
-                userEmail: currentUser.email,
                 vendorId: currentBookingForReview.vendorId || currentBookingForReview.stadiumId,
                 vendorName: currentBookingForReview.vendorName || currentBookingForReview.stadiumName,
                 rating: selectedRating,
@@ -735,9 +1026,8 @@
             
             showToast("✅ Thank you for your review!");
             closeReviewModal();
-            renderBookingsTable();
+            renderBookings();
         } catch (error) {
-            console.error("Error submitting review:", error);
             showToast("Error submitting review", true);
         }
     };
@@ -746,8 +1036,7 @@
         const existing = document.querySelector('.toast');
         if (existing) existing.remove();
         const toast = document.createElement('div');
-        toast.className = 'toast';
-        toast.style.cssText = `position: fixed; bottom: 30px; right: 30px; background: var(--bg-card); padding: 12px 24px; border-radius: 50px; z-index: 2000; border-left: 4px solid ${isError ? 'var(--danger)' : 'var(--success)'}; display: flex; align-items: center; gap: 10px;`;
+        toast.className = `toast ${isError ? 'error' : ''}`;
         toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${message}`;
         document.body.appendChild(toast);
         setTimeout(() => toast.remove(), 3000);
