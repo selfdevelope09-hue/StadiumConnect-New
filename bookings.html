@@ -6,7 +6,6 @@
     <title>My Bookings - StadiumConnect Premium</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -19,17 +18,13 @@
             --primary: #ff6b35;
             --primary-dark: #e55a2b;
             --primary-light: #ff9068;
-            --primary-glow: rgba(255,107,53,0.4);
             --dark: #0a0a2a;
             --darker: #050517;
             --light: #ffffff;
-            --gray: #f8f9fa;
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
-            --info: #3b82f6;
             --purple: #8b5cf6;
-            --pink: #ec489a;
         }
 
         body {
@@ -37,7 +32,6 @@
             color: #fff;
             min-height: 100vh;
             transition: all 0.3s ease;
-            position: relative;
         }
 
         body.light-mode {
@@ -110,7 +104,7 @@
             100% { transform: translateY(-100vh) translateX(100px); opacity: 0; }
         }
 
-        /* Premium Header */
+        /* Header */
         .header {
             background: rgba(10, 10, 42, 0.85);
             backdrop-filter: blur(20px);
@@ -124,13 +118,10 @@
             z-index: 1000;
             flex-wrap: wrap;
             gap: 15px;
-            box-shadow: 0 4px 30px rgba(0,0,0,0.1);
         }
 
         body.light-mode .header {
             background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(20px);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
         }
 
         .logo {
@@ -154,7 +145,6 @@
 
         .user-info i {
             color: var(--primary);
-            font-size: 20px;
         }
 
         .user-info span {
@@ -373,7 +363,7 @@
             transform: translateY(-2px);
         }
 
-        /* Table Premium */
+        /* Table */
         .table-container {
             overflow-x: auto;
         }
@@ -398,7 +388,6 @@
             font-weight: 600;
             font-size: 13px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
         body.light-mode th {
@@ -475,7 +464,7 @@
             gap: 6px;
         }
 
-        /* Review Modal Premium */
+        /* Review Modal */
         .review-modal {
             display: none;
             position: fixed;
@@ -507,7 +496,6 @@
             max-width: 520px;
             width: 90%;
             border: 1px solid rgba(255,107,53,0.4);
-            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
             animation: slideUp 0.4s ease;
         }
 
@@ -565,11 +553,6 @@
             border-color: #ddd;
         }
 
-        .review-modal textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
         .review-modal button {
             background: linear-gradient(135deg, var(--primary), var(--primary-light));
             border: none;
@@ -580,15 +563,8 @@
             width: 100%;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-size: 16px;
         }
 
-        .review-modal button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(255,107,53,0.4);
-        }
-
-        /* Empty State */
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -601,7 +577,6 @@
             opacity: 0.5;
         }
 
-        /* Toast */
         .toast {
             position: fixed;
             bottom: 30px;
@@ -614,9 +589,6 @@
             border-left: 4px solid var(--success);
             color: white;
             animation: slideInRight 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 12px;
         }
 
         .toast.error {
@@ -628,20 +600,6 @@
             to { transform: translateX(0); opacity: 1; }
         }
 
-        .loading-spinner {
-            display: inline-block;
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(255,107,53,0.3);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
         @media (max-width: 768px) {
             .container {
                 padding: 20px;
@@ -651,10 +609,6 @@
             }
             .stats-grid {
                 grid-template-columns: 1fr 1fr;
-                gap: 16px;
-            }
-            .stat-value {
-                font-size: 24px;
             }
             th, td {
                 padding: 12px 8px;
@@ -676,7 +630,7 @@
         <button class="back-btn" onclick="window.location.href='dashboard.html'"><i class="fas fa-arrow-left"></i></button>
         <div class="logo" onclick="window.location.href='index.html'">🏟️ STADIUM<span>CONNECT</span></div>
     </div>
-    <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+    <div style="display: flex; align-items: center; gap: 15px;">
         <div class="user-info">
             <i class="fas fa-user-astronaut"></i>
             <span id="userName">Loading...</span>
@@ -729,7 +683,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, query, where, orderBy, onSnapshot, addDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, query, where, orderBy, onSnapshot, addDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -764,7 +718,7 @@
         const completed = allBookings.filter(b => b.status === 'confirmed' || b.status === 'completed').length;
         const shareData = {
             title: 'My Bookings - StadiumConnect',
-            text: `I've booked ${total} events on StadiumConnect! ${completed} completed successfully. Check out my bookings!`,
+            text: `I've booked ${total} events on StadiumConnect! ${completed} completed successfully.`,
             url: window.location.href
         };
         if (navigator.share) {
@@ -812,30 +766,43 @@
 
     async function checkIfUserReviewed(vendorId) {
         if (!currentUser) return false;
-        const q = query(
-            collection(db, "reviews"),
-            where("userId", "==", currentUser.uid),
-            where("vendorId", "==", vendorId)
-        );
-        const snapshot = await getDocs(q);
-        return snapshot.size > 0;
+        try {
+            const q = query(
+                collection(db, "reviews"),
+                where("userId", "==", currentUser.uid),
+                where("vendorId", "==", vendorId)
+            );
+            const snapshot = await getDocs(q);
+            return snapshot.size > 0;
+        } catch (error) {
+            console.error("Error checking review:", error);
+            return false;
+        }
     }
 
     function setupRealtimeBookings() {
         if (!currentUser) return;
         
+        // IMPORTANT: Filter by userId - sirf current user ki bookings
         const q = query(
             collection(db, "bookings"),
             where("userId", "==", currentUser.uid),
             orderBy("createdAt", "desc")
         );
         
+        if (unsubscribeBookings) unsubscribeBookings();
+        
         unsubscribeBookings = onSnapshot(q, async (snapshot) => {
-            allBookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            allBookings = snapshot.docs.map(doc => ({ 
+                id: doc.id, 
+                ...doc.data(),
+                amount: Number(doc.data().amount) || 0
+            }));
+            console.log("✅ Loaded bookings for user:", currentUser.uid, "Count:", allBookings.length);
             await updateUI();
         }, (error) => {
             console.error("Realtime error:", error);
-            showToast("Error loading bookings", true);
+            showToast("Error loading bookings: " + error.message, true);
         });
     }
 
@@ -898,7 +865,7 @@
         }
         
         let html = `
-            <table>
+             <table>
                 <thead>
                     <tr>
                         <th>Booking ID</th>
@@ -926,12 +893,12 @@
                         <br><small style="opacity:0.7;">${booking.category || 'stadium'}</small>
                     </td>
                     <td>${booking.eventDate || booking.date || '-'}</td>
-                    <td class="stat-value" style="font-size: 16px; -webkit-text-fill-color: var(--primary);">₹${(booking.amount || 0).toLocaleString()}</td>
+                    <td style="color: var(--primary); font-weight: 600;">₹${(booking.amount || 0).toLocaleString()}</td>
                     <td><span class="status-badge status-${booking.status || 'pending'}">${booking.status || 'pending'}</span></td>
                     <td><small>${bookedDate}</small></td>
                     <td>
                         ${isCompleted && !hasReviewed ? 
-                            `<button class="review-btn" data-booking='${JSON.stringify(booking)}'><i class="fas fa-star"></i> Rate & Review</button>` : 
+                            `<button class="review-btn" data-booking='${JSON.stringify(booking).replace(/'/g, "&#39;")}'><i class="fas fa-star"></i> Rate & Review</button>` : 
                             (hasReviewed ? '<span class="reviewed-badge"><i class="fas fa-check-circle"></i> Reviewed</span>' : '<span style="opacity:0.5;">—</span>')}
                     </td>
                 </tr>
@@ -943,8 +910,12 @@
         
         document.querySelectorAll('.review-btn').forEach(btn => {
             btn.onclick = () => {
-                const booking = JSON.parse(btn.dataset.booking);
-                openReviewModal(booking);
+                try {
+                    const booking = JSON.parse(btn.dataset.booking.replace(/&#39;/g, "'"));
+                    openReviewModal(booking);
+                } catch(e) {
+                    console.error("Parse error:", e);
+                }
             };
         });
     }
@@ -1057,6 +1028,7 @@
         }
         currentUser = user;
         document.getElementById('userName').innerText = user.displayName || user.email?.split('@')[0] || 'User';
+        console.log("✅ User logged in:", currentUser.uid);
         setupRealtimeBookings();
     });
 
