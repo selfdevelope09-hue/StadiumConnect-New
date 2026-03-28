@@ -1,6 +1,6 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, query, where, orderBy, onSnapshot, addDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getFirestore, collection, query, where, onSnapshot, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -23,11 +23,22 @@
     let selectedRating = 0;
     let unsubscribeBookings = null;
 
-    // Fix: Query without direct orderBy to avoid Index errors, then sort manually
+    // Toast Utility
+    function showToast(message, isError = false) {
+        const toast = document.createElement('div');
+        toast.className = `toast ${isError ? 'error' : ''}`;
+        toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i> ${message}`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    // Main Realtime Function
     function setupRealtimeBookings() {
         if (!currentUser) return;
         
-        // Simpler query to ensure it doesn't fail due to missing index
+        console.log("🔍 Fetching bookings for UID:", currentUser.uid);
+
+        // Simple query: only filter by userId (No orderBy to avoid Index Error)
         const q = query(
             collection(db, "bookings"),
             where("userId", "==", currentUser.uid)
@@ -36,35 +47,152 @@
         if (unsubscribeBookings) unsubscribeBookings();
         
         unsubscribeBookings = onSnapshot(q, async (snapshot) => {
-            allBookings = snapshot.docs.map(doc => ({ 
-                id: doc.id, 
-                ...doc.data(),
-                amount: Number(doc.data().amount) || 0,
-                // Handle both Firestore Timestamp and String dates
-                createdDate: doc.data().createdAt?.seconds ? new Date(doc.data().createdAt.seconds * 1000) : new Date(doc.data().createdAt)
-            }));
+            allBookings = snapshot.docs.map(doc => {
+                const data = doc.data();
+                // Safe Date Parsing
+                let dateValue = new Date();
+                if (data.createdAt) {
+                    dateValue = data.createdAt.seconds ? new Date(data.createdAt.seconds * 1000) : new Date(data.createdAt);
+                }
 
-            // Manual sorting by date (latest first)
-            allBookings.sort((a, b) => b.createdDate - a.createdDate);
+                return {
+                    id: doc.id,
+                    ...data,
+                    amount: Number(data.amount) || 0,
+                    sortDate: dateValue 
+                };
+            });
+
+            // Sort manually: Newest first
+            allBookings.sort((a, b) => b.sortDate - a.sortDate);
             
-            console.log("✅ Data Received:", allBookings);
+            console.log("📊 Bookings Loaded:", allBookings.length);
             updateUI();
         }, (error) => {
-            console.error("Firebase Error:", error);
-            showToast("Sync Error: " + error.message, true);
+            console.error("🔥 Firestore Error:", error);
+            showToast("Database error: " + error.message, true);
         });
     }
 
-    // --- Baki functions (showToast, toggleTheme, particles, updateUI, etc.) same rahenge ---
-    // [Tumhara baki logic yahan continue hoga...]
-
-    // Make sure updateUI calls renderBookingsTable correctly
     async function updateUI() {
         updateStats();
         await renderBookingsTable();
     }
 
-    // Review Modal & Auth logic remains same as your original code
+    function updateStats() {
+        const total = allBookings.length;
+        const pending = allBookings.filter(b => b.status === 'pending').length;
+        const completed = allBookings.filter(b => b.status === 'confirmed' || b.status === 'completed').length;
+        const cancelled = allBookings.filter(b => b.status === 'cancelled').length;
+        
+        const statsDiv = document.getElementById('statsGrid');
+        if(statsDiv) {
+            statsDiv.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
+                    <div class="stat-value">${total}</div>
+                    <div class="stat-label">Total Bookings</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-hourglass-half" style="color:#f59e0b"></i></div>
+                    <div class="stat-value">${pending}</div>
+                    <div class="stat-label">Pending</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-check-double" style="color:#10b981"></i></div>
+                    <div class="stat-value">${completed}</div>
+                    <div class="stat-label">Completed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-times-circle" style="color:#ef4444"></i></div>
+                    <div class="stat-value">${cancelled}</div>
+                    <div class="stat-label">Cancelled</div>
+                </div>`;
+        }
+    }
+
+    async function renderBookingsTable() {
+        const container = document.getElementById('bookingsContainer');
+        if(!container) return;
+
+        let filtered = allBookings;
+        if (currentFilter === 'pending') filtered = allBookings.filter(b => b.status === 'pending');
+        else if (currentFilter === 'confirmed') filtered = allBookings.filter(b => b.status === 'confirmed' || b.status === 'completed');
+        else if (currentFilter === 'cancelled') filtered = allBookings.filter(b => b.status === 'cancelled');
+
+        if (filtered.length === 0) {
+            container.innerHTML = `<div class="empty-state"><i class="fas fa-folder-open"></i><p>No bookings found here.</p></div>`;
+            return;
+        }
+
+        let tableHTML = `<table><thead><tr><th>Booking ID</th><th>Vendor</th><th>Date</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead><tbody>`;
+
+        for (const b of filtered) {
+            const isDone = (b.status === 'confirmed' || b.status === 'completed');
+            // Check if review already exists
+            const qReview = query(collection(db, "reviews"), where("bookingId", "==", b.id));
+            const reviewSnap = await getDocs(qReview);
+            const reviewed = !reviewSnap.empty;
+
+            tableHTML += `
+                <tr>
+                    <td><small>#${b.id.slice(-6)}</small></td>
+                    <td><strong>${b.vendorName || 'Stadium'}</strong></td>
+                    <td>${b.eventDate || b.date || '-'}</td>
+                    <td style="color:var(--primary)">₹${b.amount}</td>
+                    <td><span class="status-badge status-${b.status || 'pending'}">${b.status || 'pending'}</span></td>
+                    <td>
+                        ${isDone && !reviewed ? 
+                        `<button class="review-btn" onclick="openReviewModal('${b.id}')">Rate</button>` : 
+                        (reviewed ? '<span class="reviewed-badge">Done</span>' : '—')}
+                    </td>
+                </tr>`;
+        }
+        tableHTML += `</tbody></table>`;
+        container.innerHTML = tableHTML;
+    }
+
+    // Modal & Star Logic (Global window scope for HTML onclick)
+    window.openReviewModal = (id) => {
+        currentBookingForReview = allBookings.find(b => b.id === id);
+        selectedRating = 0;
+        document.getElementById('reviewComment').value = '';
+        document.querySelectorAll('#reviewStars i').forEach(s => s.className = 'far fa-star');
+        document.getElementById('reviewModal').classList.add('active');
+    };
+
+    window.submitReviewFromModal = async () => {
+        if (!selectedRating || !document.getElementById('reviewComment').value) {
+            showToast("Please add rating and comment!", true);
+            return;
+        }
+        try {
+            await addDoc(collection(db, 'reviews'), {
+                bookingId: currentBookingForReview.id,
+                vendorId: currentBookingForReview.vendorId,
+                userId: currentUser.uid,
+                userName: currentUser.displayName || "User",
+                rating: selectedRating,
+                comment: document.getElementById('reviewComment').value,
+                createdAt: new Date().toISOString()
+            });
+            showToast("Review submitted!");
+            document.getElementById('reviewModal').classList.remove('active');
+            renderBookingsTable();
+        } catch(e) { showToast("Error: " + e.message, true); }
+    };
+
+    // Star Rating Interactivity
+    document.querySelectorAll('#reviewStars i').forEach(star => {
+        star.onclick = () => {
+            selectedRating = parseInt(star.dataset.rating);
+            document.querySelectorAll('#reviewStars i').forEach(s => {
+                s.className = parseInt(s.dataset.rating) <= selectedRating ? 'fas fa-star active' : 'far fa-star';
+            });
+        };
+    });
+
+    // Auth & Init
     onAuthStateChanged(auth, (user) => {
         if (user) {
             currentUser = user;
@@ -75,7 +203,20 @@
         }
     });
 
-    // Initial setup
-    createParticles();
-    setupStarRating();
+    // Theme Toggle
+    window.toggleTheme = () => {
+        document.body.classList.toggle('light-mode');
+        localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
+    };
+
+    // Filter Listeners
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.onclick = () => {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentFilter = btn.dataset.filter;
+            renderBookingsTable();
+        };
+    });
+
 </script>
