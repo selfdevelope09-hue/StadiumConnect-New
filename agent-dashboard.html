@@ -6,6 +6,8 @@
     <title>Agent Dashboard - StadiumConnect</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background: #f5f7fb; }
@@ -25,9 +27,10 @@
             z-index: 100;
         }
         .logo { font-size: 24px; font-weight: 800; cursor: pointer; background: linear-gradient(135deg, #ff6b35, #ff9068); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .agent-info { background: #fff5f0; padding: 8px 20px; border-radius: 40px; display: flex; align-items: center; gap: 10px; }
+        .agent-info { background: #fff5f0; padding: 8px 20px; border-radius: 40px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
         .agent-info i { color: #ff6b35; }
         .logout-btn { background: #ff6b35; color: white; border: none; padding: 8px 24px; border-radius: 30px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+        .logout-btn:hover { background: #e55a2b; }
         .live-badge {
             background: #28a745;
             color: white;
@@ -107,6 +110,7 @@
             font-weight: 600;
         }
         .status-confirmed { background: #d4edda; color: #155724; }
+        .status-completed { background: #d4edda; color: #155724; }
         .status-pending { background: #fff3cd; color: #856404; }
         .status-cancelled { background: #f8d7da; color: #721c24; }
         .commission-amount { color: #28a745; font-weight: bold; }
@@ -116,6 +120,32 @@
         @media (max-width: 768px) {
             th, td { font-size: 11px; padding: 8px; }
             .stats-grid { grid-template-columns: 1fr 1fr; }
+            .agent-info { font-size: 12px; }
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #ff6b35;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .error-banner {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
     </style>
 </head>
@@ -125,21 +155,28 @@
     <div class="logo" onclick="window.location.href='index.html'">⚡ STADIUM<span>CONNECT</span></div>
     <div class="agent-info">
         <i class="fas fa-user-tie"></i>
-        <span id="agentName"></span>
+        <span id="agentName">Loading...</span>
         <span style="color:#999;">|</span>
-        <span>ID: <strong id="agentIdDisplay"></strong></span>
+        <span>ID: <strong id="agentIdDisplay">---</strong></span>
         <span class="live-badge"><i class="fas fa-circle" style="font-size: 8px;"></i> LIVE</span>
     </div>
     <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
 </header>
 
 <div class="container">
-    <div class="stats-grid" id="statsGrid"></div>
+    <div id="errorContainer"></div>
+    <div class="stats-grid" id="statsGrid">
+        <div class="stat-card"><div class="stat-icon">📋</div><div class="stat-value">--</div><div class="stat-label">Total Bookings</div></div>
+        <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-value">--</div><div class="stat-label">Confirmed</div></div>
+        <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-value">₹--</div><div class="stat-label">Revenue</div></div>
+        <div class="stat-card"><div class="stat-icon">🏆</div><div class="stat-value">₹--</div><div class="stat-label">Your Earnings</div></div>
+        <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-value">₹--</div><div class="stat-label">Pending</div></div>
+    </div>
     
     <div class="target-card">
         <h3><i class="fas fa-bullseye"></i> Monthly Target Progress</h3>
-        <div style="font-size: 26px; font-weight: 800;" id="targetAmount">₹0</div>
-        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        <div style="font-size: 26px; font-weight: 800;" id="targetAmount">🎯 ₹50,000</div>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width: 0%;"></div></div>
         <div class="target-stats">
             <span><i class="fas fa-check-circle"></i> Achieved: <strong id="achievedAmount">₹0</strong></span>
             <span><i class="fas fa-clock"></i> Remaining: <strong id="remainingAmount">₹0</strong></span>
@@ -149,7 +186,7 @@
     
     <div class="analytics-grid">
         <div class="analytics-card">
-            <h3><i class="fas fa-chart-line"></i> Weekly Earnings</h3>
+            <h3><i class="fas fa-chart-line"></i> Weekly Earnings (₹)</h3>
             <div class="chart-container"><canvas id="weeklyChart"></canvas></div>
         </div>
         <div class="analytics-card">
@@ -165,7 +202,8 @@
                 <thead>
                     <tr><th>ID</th><th>Customer</th><th>Vendor</th><th>Date</th><th>Amount</th><th>Commission</th><th>Status</th></tr>
                 </thead>
-                <tbody id="bookingsTableBody"><tr><td colspan="7" class="empty-state">Loading...</td></tr>
+                <tbody id="bookingsTableBody">
+                    <tr><td colspan="7" class="empty-state"><span class="loading-spinner"></span> Loading bookings...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -175,7 +213,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, collection, query, where, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getFirestore, collection, query, where, orderBy, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
@@ -198,42 +236,92 @@
         if (agentData) {
             agentId = agentData.id || agentData.agentId;
             agentName = agentData.name || agentData.displayName || "Agent";
+            // Also support numeric ID if stored as number
+            if (!agentId && agentData.agentIdNum) agentId = agentData.agentIdNum;
+            if (!agentId && agentData.uid) agentId = agentData.uid;
         }
-    } catch(e) {}
-    
-    // If no agent ID, redirect to login
-    if (!agentId) {
-        window.location.href = 'agent-login.html';
+        // Fallback to a test ID for debugging (remove in production)
+        if (!agentId) {
+            // Check URL params as fallback
+            const urlParams = new URLSearchParams(window.location.search);
+            agentId = urlParams.get('agentId');
+            if (!agentId) {
+                // For testing: You can set a default agent ID if needed, but better to redirect
+                console.warn("No agent ID found in localStorage");
+                // Instead of auto-redirect, show error but allow manual override for demo
+                document.getElementById('errorContainer').innerHTML = `
+                    <div class="error-banner">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        No agent login found. Please login again.
+                        <button onclick="window.location.href='agent-login.html'" style="margin-left:auto; background:#ff6b35; border:none; color:white; padding:4px 12px; border-radius:20px;">Login</button>
+                    </div>
+                `;
+            }
+        }
+    } catch(e) {
+        console.error("Error parsing agent data", e);
+        document.getElementById('errorContainer').innerHTML = `
+            <div class="error-banner">
+                <i class="fas fa-exclamation-triangle"></i>
+                Session error. Please login again.
+                <button onclick="window.location.href='agent-login.html'" style="margin-left:auto; background:#ff6b35; border:none; color:white; padding:4px 12px; border-radius:20px;">Login</button>
+            </div>
+        `;
     }
     
-    document.getElementById('agentName').innerText = agentName;
-    document.getElementById('agentIdDisplay').innerText = agentId;
+    // Update UI with agent info if available
+    if (agentId) {
+        document.getElementById('agentName').innerText = agentName;
+        document.getElementById('agentIdDisplay').innerText = agentId;
+    } else {
+        document.getElementById('agentName').innerText = "Not Logged In";
+        document.getElementById('agentIdDisplay').innerText = "???";
+    }
     
     let allBookings = [];
-    let weeklyChart, statusChart;
+    let weeklyChart = null;
+    let statusChart = null;
     
+    // Commission rate: 2.5%
     function calculateCommission(amount) {
-        return Math.floor((Number(amount) || 0) * 0.025);
+        const numAmount = Number(amount) || 0;
+        return Math.floor(numAmount * 0.025);
     }
     
     function updateLastUpdated() {
         document.getElementById('lastUpdated').innerHTML = `Last updated: ${new Date().toLocaleTimeString()}`;
     }
     
+    // Helper to get week day index (Monday=0 to Sunday=6)
+    function getWeekDayIndex(dateString) {
+        if (!dateString) return -1;
+        const d = new Date(dateString);
+        if (isNaN(d.getTime())) return -1;
+        let day = d.getDay(); // 0 = Sunday
+        // Convert to Monday=0, Sunday=6
+        return day === 0 ? 6 : day - 1;
+    }
+    
     function updateUI() {
+        if (!allBookings) allBookings = [];
+        
+        // Filter confirmed/completed for revenue calculation
         const confirmed = allBookings.filter(b => b.status === 'confirmed' || b.status === 'completed');
         const totalRevenue = confirmed.reduce((s, b) => s + (Number(b.amount) || 0), 0);
         const totalCommission = calculateCommission(totalRevenue);
         const pendingAmount = allBookings.filter(b => b.status === 'pending').reduce((s, b) => s + (Number(b.amount) || 0), 0);
+        const cancelledCount = allBookings.filter(b => b.status === 'cancelled').length;
         
+        // Update stats grid
         document.getElementById('statsGrid').innerHTML = `
             <div class="stat-card"><div class="stat-icon">📋</div><div class="stat-value">${allBookings.length}</div><div class="stat-label">Total Bookings</div></div>
             <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-value">${confirmed.length}</div><div class="stat-label">Confirmed</div></div>
             <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-value">₹${totalRevenue.toLocaleString()}</div><div class="stat-label">Revenue</div></div>
             <div class="stat-card"><div class="stat-icon">🏆</div><div class="stat-value">₹${totalCommission.toLocaleString()}</div><div class="stat-label">Your Earnings</div></div>
-            <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-value">₹${pendingAmount.toLocaleString()}</div><div class="stat-label">Pending</div></div>
+            <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-value">₹${pendingAmount.toLocaleString()}</div><div class="stat-label">Pending Amount</div></div>
         `;
         
+        // Target progress (monthly target ₹50,000)
         const target = 50000;
         const percent = Math.min(100, (totalRevenue / target) * 100);
         document.getElementById('targetAmount').innerHTML = `🎯 ₹${target.toLocaleString()}`;
@@ -244,73 +332,217 @@
         
         // Bookings table
         if (allBookings.length === 0) {
-            document.getElementById('bookingsTableBody').innerHTML = '<tr><td colspan="7" class="empty-state">No bookings yet. When customers book using your Agent ID, they will appear here.</td></tr>';
+            document.getElementById('bookingsTableBody').innerHTML = '<tr><td colspan="7" class="empty-state">📭 No bookings yet. When customers book using your Agent ID, they will appear here.</td></tr>';
         } else {
-            document.getElementById('bookingsTableBody').innerHTML = allBookings.map(b => `
-                <tr>
-                    <td><code>${b.id?.slice(-6)}</code></td>
-                    <td><strong>${b.userName || 'Guest'}</strong><br><small>${b.userPhone || ''}</small></td>
-                    <td>${b.vendorName || '-'}</td>
-                    <td>${b.eventDate || '-'}</td>
-                    <td>₹${(Number(b.amount) || 0).toLocaleString()}</td>
-                    <td class="commission-amount">₹${calculateCommission(b.amount).toLocaleString()}</td>
-                    <td><span class="status-badge status-${b.status || 'pending'}">${b.status || 'pending'}</span></td>
-                </tr>
-            `).join('');
+            document.getElementById('bookingsTableBody').innerHTML = allBookings.map(b => {
+                const bookingAmount = Number(b.amount) || 0;
+                const commissionEarned = calculateCommission(bookingAmount);
+                const displayStatus = b.status || 'pending';
+                let statusClass = 'status-pending';
+                if (displayStatus === 'confirmed' || displayStatus === 'completed') statusClass = 'status-confirmed';
+                if (displayStatus === 'cancelled') statusClass = 'status-cancelled';
+                
+                // Format date nicely
+                let formattedDate = b.eventDate || b.date || '-';
+                if (b.createdAt && !formattedDate || formattedDate === '-') {
+                    try {
+                        const dateObj = b.createdAt.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+                        if (!isNaN(dateObj.getTime())) formattedDate = dateObj.toLocaleDateString();
+                    } catch(e) {}
+                }
+                
+                return `
+                    <tr>
+                        <td><code>${b.id?.slice(-8) || 'N/A'}</code></td>
+                        <td><strong>${b.userName || b.customerName || 'Guest'}</strong><br><small>${b.userPhone || b.phone || ''}</small></td>
+                        <td>${b.vendorName || b.vendor || '-'}</td>
+                        <td>${formattedDate}</td>
+                        <td>₹${bookingAmount.toLocaleString()}</td>
+                        <td class="commission-amount">₹${commissionEarned.toLocaleString()}</td>
+                        <td><span class="status-badge ${statusClass}">${displayStatus}</span></td>
+                    </tr>
+                `;
+            }).join('');
         }
         
-        // Weekly chart data
-        const weekly = [0,0,0,0,0,0,0];
+        // Prepare weekly data (Monday to Sunday)
+        const weekly = [0, 0, 0, 0, 0, 0, 0]; // Mon to Sun
         confirmed.forEach(b => {
+            let dateValue = null;
             if (b.createdAt) {
-                const d = new Date(b.createdAt);
-                const day = d.getDay();
-                const idx = day === 0 ? 6 : day - 1;
-                weekly[idx] += Number(b.amount) || 0;
+                dateValue = b.createdAt.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+            } else if (b.bookingDate) {
+                dateValue = new Date(b.bookingDate);
+            } else if (b.date) {
+                dateValue = new Date(b.date);
+            }
+            if (dateValue && !isNaN(dateValue.getTime())) {
+                const dayIdx = getWeekDayIndex(dateValue.toISOString());
+                if (dayIdx >= 0 && dayIdx < 7) {
+                    weekly[dayIdx] += Number(b.amount) || 0;
+                }
             }
         });
         
         // Status counts
         const statusCount = {
-            confirmed: allBookings.filter(b => b.status === 'confirmed').length,
+            confirmed: allBookings.filter(b => b.status === 'confirmed' || b.status === 'completed').length,
             pending: allBookings.filter(b => b.status === 'pending').length,
             cancelled: allBookings.filter(b => b.status === 'cancelled').length
         };
         
-        if (typeof Chart !== 'undefined') {
+        // Render charts safely
+        const weeklyCanvas = document.getElementById('weeklyChart');
+        const statusCanvas = document.getElementById('statusChart');
+        
+        if (weeklyCanvas && typeof Chart !== 'undefined') {
             if (weeklyChart) weeklyChart.destroy();
-            if (statusChart) statusChart.destroy();
-            
-            weeklyChart = new Chart(document.getElementById('weeklyChart'), {
+            const ctx = weeklyCanvas.getContext('2d');
+            weeklyChart = new Chart(ctx, {
                 type: 'bar',
-                data: { labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], datasets: [{ label: '₹', data: weekly, backgroundColor: '#ff6b35' }] },
-                options: { responsive: true, maintainAspectRatio: true }
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{ label: 'Revenue (₹)', data: weekly, backgroundColor: '#ff6b35', borderRadius: 8 }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { legend: { position: 'top' } }
+                }
             });
-            
-            statusChart = new Chart(document.getElementById('statusChart'), {
+        }
+        
+        if (statusCanvas && typeof Chart !== 'undefined') {
+            if (statusChart) statusChart.destroy();
+            const ctx2 = statusCanvas.getContext('2d');
+            statusChart = new Chart(ctx2, {
                 type: 'doughnut',
-                data: { labels: ['Confirmed','Pending','Cancelled'], datasets: [{ data: [statusCount.confirmed, statusCount.pending, statusCount.cancelled], backgroundColor: ['#28a745','#ffc107','#dc3545'] }] },
-                options: { responsive: true, maintainAspectRatio: true }
+                data: {
+                    labels: ['Confirmed', 'Pending', 'Cancelled'],
+                    datasets: [{ data: [statusCount.confirmed, statusCount.pending, statusCount.cancelled], backgroundColor: ['#28a745', '#ffc107', '#dc3545'], borderWidth: 0 }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { legend: { position: 'bottom' } }
+                }
             });
         }
         
         updateLastUpdated();
     }
     
-    // Real-time listener
-    const q = query(collection(db, "bookings"), where("agentId", "==", agentId), orderBy("createdAt", "desc"));
-    onSnapshot(q, (snap) => {
-        allBookings = snap.docs.map(d => ({ id: d.id, ...d.data(), amount: Number(d.data().amount) || 0 }));
-        updateUI();
-    }, (err) => {
-        console.error("Firebase error:", err);
-        document.getElementById('bookingsTableBody').innerHTML = '<tr><td colspan="7" class="empty-state">Error loading bookings. Check console.</td></tr>';
+    // Set up real-time listener ONLY if agentId exists
+    let unsubscribe = null;
+    
+    if (agentId) {
+        try {
+            // IMPORTANT: Make sure the field name matches your Firestore structure
+            // Some collections might use "agentId" or "assignedAgent" or "agent_id"
+            // We'll try both common field names for robustness
+            const bookingsRef = collection(db, "bookings");
+            
+            // First, try with "agentId" field
+            let q = query(bookingsRef, where("agentId", "==", agentId), orderBy("createdAt", "desc"));
+            
+            // Set up listener with error handling
+            unsubscribe = onSnapshot(q, (snapshot) => {
+                const bookings = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    bookings.push({
+                        id: doc.id,
+                        ...data,
+                        amount: Number(data.amount) || 0,
+                        status: data.status || 'pending'
+                    });
+                });
+                allBookings = bookings;
+                updateUI();
+            }, (error) => {
+                console.error("Firebase onSnapshot error (agentId field):", error);
+                // Fallback: try alternative field name "agent_id"
+                const altQuery = query(collection(db, "bookings"), where("agent_id", "==", String(agentId)), orderBy("createdAt", "desc"));
+                const altUnsub = onSnapshot(altQuery, (altSnap) => {
+                    const altBookings = [];
+                    altSnap.forEach(doc => {
+                        const data = doc.data();
+                        altBookings.push({
+                            id: doc.id,
+                            ...data,
+                            amount: Number(data.amount) || 0,
+                            status: data.status || 'pending'
+                        });
+                    });
+                    allBookings = altBookings;
+                    updateUI();
+                }, (altErr) => {
+                    console.error("Firebase alt field error:", altErr);
+                    // If both fail, show error but still try to load static (maybe empty)
+                    document.getElementById('bookingsTableBody').innerHTML = '<tr><td colspan="7" class="empty-state">⚠️ Error connecting to database. Please check your network or contact support.</td></tr>';
+                    document.getElementById('errorContainer').innerHTML = `
+                        <div class="error-banner">
+                            <i class="fas fa-database"></i>
+                            Unable to fetch bookings. Make sure your Firestore rules allow reads and field "agentId" exists.
+                            <button onclick="location.reload()" style="margin-left:auto; background:#ff6b35; border:none; color:white; padding:4px 12px; border-radius:20px;">Retry</button>
+                        </div>
+                    `;
+                    allBookings = [];
+                    updateUI();
+                });
+                // Store both unsubscribers if needed, but we'll just store the alt one for cleanup simplicity
+                window.altUnsub = altUnsub;
+            });
+        } catch (err) {
+            console.error("Fatal error setting up listener:", err);
+            document.getElementById('errorContainer').innerHTML = `
+                <div class="error-banner">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Firestore query failed: ${err.message}
+                </div>
+            `;
+            allBookings = [];
+            updateUI();
+        }
+    } else {
+        // No agent ID, show empty state but don't crash
+        document.getElementById('bookingsTableBody').innerHTML = '<tr><td colspan="7" class="empty-state">🔐 Please login as an agent to view bookings.</td></tr>';
+        document.getElementById('statsGrid').innerHTML = `
+            <div class="stat-card"><div class="stat-icon">📋</div><div class="stat-value">0</div><div class="stat-label">Total Bookings</div></div>
+            <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-value">0</div><div class="stat-label">Confirmed</div></div>
+            <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-value">₹0</div><div class="stat-label">Revenue</div></div>
+            <div class="stat-card"><div class="stat-icon">🏆</div><div class="stat-value">₹0</div><div class="stat-label">Your Earnings</div></div>
+            <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-value">₹0</div><div class="stat-label">Pending</div></div>
+        `;
+        updateUI(); // This will set empty charts
+    }
+    
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+        if (unsubscribe) unsubscribe();
+        if (window.altUnsub) window.altUnsub();
     });
     
     window.logout = () => {
         localStorage.removeItem('agent');
+        sessionStorage.clear();
         window.location.href = 'agent-login.html';
     };
+    
+    // Add a manual refresh button in console for debugging, but not needed UI-wise
+    console.log("Agent Dashboard ready - Listening for live updates on agent ID:", agentId);
+    
+    // If chart.js hasn't loaded from CDN, show fallback
+    setTimeout(() => {
+        if (typeof Chart === 'undefined') {
+            console.warn("Chart.js not loaded, showing fallback");
+            const weeklyDiv = document.getElementById('weeklyChart');
+            const statusDiv = document.getElementById('statusChart');
+            if (weeklyDiv && weeklyDiv.parentElement) {
+                weeklyDiv.parentElement.innerHTML = '<div style="padding:20px;text-align:center">📊 Chart library loading... Please refresh if not visible.</div>';
+            }
+        }
+    }, 1000);
 </script>
 </body>
 </html>
