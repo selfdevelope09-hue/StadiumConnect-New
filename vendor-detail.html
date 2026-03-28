@@ -187,8 +187,17 @@
         }
         .stars {
             color: #ffb347;
-            font-size: 16px;
+            font-size: 18px;
             letter-spacing: 2px;
+        }
+        .rating-number {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .review-count {
+            font-size: 14px;
+            color: var(--text-muted);
         }
 
         /* Info Section */
@@ -432,6 +441,70 @@
             border: 1px solid #eee;
         }
 
+        .reviews-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .reviews-summary {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .avg-rating-box {
+            text-align: center;
+            background: rgba(255,107,53,0.1);
+            padding: 16px 24px;
+            border-radius: 24px;
+        }
+        .avg-rating-number {
+            font-size: 42px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+        .avg-rating-stars {
+            font-size: 14px;
+            color: #ffb347;
+        }
+        .total-reviews {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+        .rating-distribution {
+            flex: 1;
+        }
+        .rating-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        .rating-label {
+            width: 30px;
+            font-size: 13px;
+        }
+        .bar-container {
+            flex: 1;
+            height: 8px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .bar-fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+        .rating-count {
+            width: 35px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
         .review-card {
             background: rgba(255,255,255,0.05);
             border-radius: 20px;
@@ -441,6 +514,7 @@
         }
         body.light-mode .review-card {
             background: #f9f9f9;
+            border: 1px solid #eee;
         }
         .review-header {
             display: flex;
@@ -450,15 +524,35 @@
             flex-wrap: wrap;
             gap: 10px;
         }
+        .reviewer-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .reviewer-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            color: white;
+        }
         .reviewer-name {
             font-weight: 700;
+            font-size: 15px;
         }
         .review-stars {
             color: #ffb347;
+            font-size: 14px;
         }
         .review-text {
             color: rgba(255,255,255,0.8);
             line-height: 1.6;
+            margin: 12px 0;
         }
         body.light-mode .review-text {
             color: #555;
@@ -467,6 +561,14 @@
             font-size: 11px;
             color: rgba(255,255,255,0.5);
             margin-top: 10px;
+        }
+        .verified-badge {
+            background: rgba(16,185,129,0.2);
+            color: var(--success);
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 10px;
+            margin-left: 8px;
         }
 
         .add-review-section {
@@ -577,6 +679,13 @@
             .gallery-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
+            .reviews-header {
+                flex-direction: column;
+            }
+            .reviews-summary {
+                flex-direction: column;
+                text-align: center;
+            }
         }
     </style>
 </head>
@@ -667,8 +776,7 @@
 
     <!-- Reviews Section -->
     <div class="reviews-section" id="reviewsSection">
-        <div class="section-title"><i class="fas fa-star"></i> Customer Reviews</div>
-        <div id="reviewsList"></div>
+        <div id="reviewsContent"></div>
         <div id="addReviewSection" class="add-review-section"></div>
     </div>
 </div>
@@ -735,8 +843,7 @@
         const q = query(
             collection(db, "bookings"),
             where("userId", "==", currentUser.uid),
-            where("vendorId", "==", vendorId),
-            where("status", "in", ["confirmed", "completed"])
+            where("vendorId", "==", vendorId)
         );
         const snapshot = await getDocs(q);
         return snapshot.size > 0;
@@ -751,31 +858,79 @@
         const snapshot = await getDocs(q);
         reviews = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderReviews();
-        
-        // Update average rating
-        if (reviews.length > 0) {
-            const avgRating = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
-            document.getElementById('vendorRating')?.setAttribute('data-rating', avgRating.toFixed(1));
-        }
+    }
+
+    function getRatingDistribution() {
+        const distribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+        reviews.forEach(review => {
+            distribution[review.rating] = (distribution[review.rating] || 0) + 1;
+        });
+        return distribution;
     }
 
     function renderReviews() {
-        const container = document.getElementById('reviewsList');
+        const container = document.getElementById('reviewsContent');
+        
         if (reviews.length === 0) {
-            container.innerHTML = '<div style="text-align: center; padding: 40px; opacity: 0.6;">No reviews yet. Be the first to review!</div>';
+            container.innerHTML = `
+                <div class="section-title"><i class="fas fa-star"></i> Customer Reviews</div>
+                <div style="text-align: center; padding: 40px; opacity: 0.6;">
+                    <i class="fas fa-star" style="font-size: 48px; margin-bottom: 15px; display: block;"></i>
+                    No reviews yet. Be the first to review this vendor!
+                </div>
+            `;
             return;
         }
         
-        container.innerHTML = reviews.map(review => `
-            <div class="review-card">
-                <div class="review-header">
-                    <span class="reviewer-name"><i class="fas fa-user-circle"></i> ${review.userName || 'Anonymous'}</span>
-                    <span class="review-stars">${'★'.repeat(review.rating)}${'☆'.repeat(5-review.rating)}</span>
+        const avgRating = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+        const distribution = getRatingDistribution();
+        const totalReviews = reviews.length;
+        
+        container.innerHTML = `
+            <div class="section-title"><i class="fas fa-star"></i> Customer Reviews</div>
+            <div class="reviews-header">
+                <div class="reviews-summary">
+                    <div class="avg-rating-box">
+                        <div class="avg-rating-number">${avgRating.toFixed(1)}</div>
+                        <div class="avg-rating-stars">${'★'.repeat(Math.floor(avgRating))}${'☆'.repeat(5-Math.floor(avgRating))}</div>
+                        <div class="total-reviews">${totalReviews} reviews</div>
+                    </div>
+                    <div class="rating-distribution">
+                        ${[5,4,3,2,1].map(rating => {
+                            const count = distribution[rating] || 0;
+                            const percentage = (count / totalReviews) * 100;
+                            return `
+                                <div class="rating-bar">
+                                    <span class="rating-label">${rating} ★</span>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: ${percentage}%"></div>
+                                    </div>
+                                    <span class="rating-count">${count}</span>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
                 </div>
-                <div class="review-text">${review.comment}</div>
-                <div class="review-date">${new Date(review.createdAt).toLocaleDateString()}</div>
             </div>
-        `).join('');
+            <div class="reviews-list">
+                ${reviews.map(review => `
+                    <div class="review-card">
+                        <div class="review-header">
+                            <div class="reviewer-info">
+                                <div class="reviewer-avatar">${(review.userName || 'U').charAt(0).toUpperCase()}</div>
+                                <div>
+                                    <span class="reviewer-name">${review.userName || 'Anonymous User'}</span>
+                                    ${review.verified ? '<span class="verified-badge"><i class="fas fa-check-circle"></i> Verified</span>' : ''}
+                                </div>
+                            </div>
+                            <div class="review-stars">${'★'.repeat(review.rating)}${'☆'.repeat(5-review.rating)}</div>
+                        </div>
+                        <div class="review-text">${review.comment || 'Great experience!'}</div>
+                        <div class="review-date"><i class="far fa-calendar-alt"></i> ${new Date(review.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
     }
 
     function renderAddReviewSection() {
@@ -791,7 +946,7 @@
         }
         
         container.innerHTML = `
-            <h4 style="margin-bottom: 15px;">📝 Write a Review</h4>
+            <h4 style="margin-bottom: 15px;"><i class="fas fa-edit"></i> Write a Review</h4>
             <div class="star-rating" id="starRating">
                 <i class="far fa-star" data-rating="1"></i>
                 <i class="far fa-star" data-rating="2"></i>
@@ -800,7 +955,7 @@
                 <i class="far fa-star" data-rating="5"></i>
             </div>
             <textarea id="reviewComment" rows="3" placeholder="Share your experience with this vendor..." style="width:100%; padding:14px; border-radius:20px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:white; margin-bottom:15px;"></textarea>
-            <button onclick="submitReview()" style="background: linear-gradient(135deg, var(--primary), var(--primary-light)); border:none; padding:12px 24px; border-radius:40px; color:white; font-weight:600; cursor:pointer;">Submit Review</button>
+            <button onclick="submitReview()" style="background: linear-gradient(135deg, var(--primary), var(--primary-light)); border:none; padding:12px 24px; border-radius:40px; color:white; font-weight:600; cursor:pointer;"><i class="fas fa-paper-plane"></i> Submit Review</button>
         `;
         
         setupStarRating();
@@ -813,30 +968,49 @@
             star.onclick = () => {
                 selectedRating = parseInt(star.dataset.rating);
                 stars.forEach(s => {
-                    s.className = parseInt(s.dataset.rating) <= selectedRating ? 'fas fa-star' : 'far fa-star';
-                    s.style.color = '#ffb347';
+                    if (parseInt(s.dataset.rating) <= selectedRating) {
+                        s.className = 'fas fa-star';
+                        s.style.color = '#ffb347';
+                    } else {
+                        s.className = 'far fa-star';
+                    }
                 });
             };
             star.onmouseover = () => {
                 const rating = parseInt(star.dataset.rating);
                 stars.forEach(s => {
-                    s.className = parseInt(s.dataset.rating) <= rating ? 'fas fa-star' : 'far fa-star';
+                    if (parseInt(s.dataset.rating) <= rating) {
+                        s.className = 'fas fa-star';
+                    } else {
+                        s.className = 'far fa-star';
+                    }
                 });
             };
             star.onmouseout = () => {
                 stars.forEach(s => {
-                    s.className = parseInt(s.dataset.rating) <= selectedRating ? 'fas fa-star' : 'far fa-star';
+                    if (parseInt(s.dataset.rating) <= selectedRating) {
+                        s.className = 'fas fa-star';
+                    } else {
+                        s.className = 'far fa-star';
+                    }
                 });
             };
         });
-        window.selectedRatingValue = () => selectedRating;
+        window.getSelectedRating = () => selectedRating;
     }
 
     window.submitReview = async () => {
-        const rating = parseInt(document.querySelector('#starRating i.fas')?.dataset.rating) || 0;
+        let selectedRating = 0;
+        const stars = document.querySelectorAll('#starRating i');
+        stars.forEach(star => {
+            if (star.classList.contains('fas')) {
+                selectedRating = Math.max(selectedRating, parseInt(star.dataset.rating));
+            }
+        });
+        
         const comment = document.getElementById('reviewComment').value.trim();
         
-        if (rating === 0) {
+        if (selectedRating === 0) {
             showToast('Please select a rating', true);
             return;
         }
@@ -850,14 +1024,16 @@
                 vendorId: vendorId,
                 vendorName: currentVendor?.name,
                 userId: currentUser.uid,
-                userName: currentUser.displayName || currentUser.email?.split('@')[0],
-                rating: rating,
+                userName: currentUser.displayName || currentUser.email?.split('@')[0] || 'User',
+                rating: selectedRating,
                 comment: comment,
+                verified: hasBooked,
                 createdAt: new Date().toISOString()
             });
             showToast('✅ Review submitted successfully!');
             document.getElementById('reviewComment').value = '';
-            loadReviews();
+            await loadReviews();
+            renderAddReviewSection();
         } catch (error) {
             showToast('Failed to submit review: ' + error.message, true);
         }
@@ -925,7 +1101,7 @@
     }
 
     function renderVendor() {
-        const avgRating = reviews.length > 0 ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1) : (currentVendor.rating || 4.5);
+        const avgRating = reviews.length > 0 ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1) : (currentVendor.rating || '4.5');
         
         document.getElementById('vendorDetail').innerHTML = `
             <div class="vendor-card">
@@ -934,8 +1110,9 @@
                     <div class="vendor-info">
                         <h1>${currentVendor.name || 'Vendor'}</h1>
                         <div class="vendor-rating">
-                            <div class="stars">${getStars(avgRating)}</div>
-                            <span>${avgRating} (${reviews.length} reviews)</span>
+                            <div class="stars">${getStars(parseFloat(avgRating))}</div>
+                            <span class="rating-number">${avgRating}</span>
+                            <span class="review-count">(${reviews.length} reviews)</span>
                         </div>
                     </div>
                 </div>
