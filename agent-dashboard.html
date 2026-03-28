@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Agent Dashboard - StadiumConnect</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background: #f5f7fb; }
-        
+
         .header {
             background: white;
             padding: 16px 24px;
@@ -28,7 +28,6 @@
         .agent-info { background: #fff5f0; padding: 8px 20px; border-radius: 40px; display: flex; align-items: center; gap: 10px; }
         .agent-info i { color: #ff6b35; }
         .logout-btn { background: #ff6b35; color: white; border: none; padding: 8px 24px; border-radius: 30px; cursor: pointer; font-weight: 600; transition: 0.2s; }
-        .logout-btn:hover { background: #e55a2a; }
         .live-badge {
             background: #28a745;
             color: white;
@@ -43,9 +42,9 @@
             50% { opacity: 1; }
             100% { opacity: 0.6; }
         }
-        
+
         .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
-        
+
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -64,7 +63,7 @@
         .stat-value { font-size: 36px; font-weight: 800; color: #ff6b35; margin-bottom: 5px; }
         .stat-label { color: #666; font-size: 14px; }
         .stat-icon { font-size: 40px; margin-bottom: 10px; opacity: 0.7; }
-        
+
         .target-card {
             background: linear-gradient(135deg, #ff6b35, #ff9068);
             border-radius: 24px;
@@ -75,7 +74,7 @@
         .progress-bar { background: rgba(255,255,255,0.3); border-radius: 20px; height: 12px; margin: 15px 0; overflow: hidden; }
         .progress-fill { background: white; border-radius: 20px; height: 100%; width: 0%; transition: width 0.5s ease; }
         .target-stats { display: flex; justify-content: space-between; margin-top: 15px; font-size: 14px; flex-wrap: wrap; gap: 10px; }
-        
+
         .analytics-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
@@ -89,7 +88,7 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         }
         .chart-container { height: 250px; position: relative; }
-        
+
         .bookings-card {
             background: white;
             border-radius: 24px;
@@ -111,13 +110,15 @@
         .status-pending { background: #fff3cd; color: #856404; }
         .status-cancelled { background: #f8d7da; color: #721c24; }
         .status-completed { background: #cce5ff; color: #004085; }
-        .commission-amount { color: #28a745; font-weight: bold; }
+        .commission-amount { color: #28a745; font-weight: bold; font-size: 16px; }
         .empty-state { text-align: center; padding: 40px; color: #999; }
         .last-updated { font-size: 11px; color: #888; margin-top: 15px; text-align: right; }
-        
+        .agent-badge { background: #ff6b35; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; }
+
         @media (max-width: 768px) {
             th, td { font-size: 12px; padding: 8px; }
             .analytics-grid { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
         }
     </style>
 </head>
@@ -165,14 +166,23 @@
     </div>
     
     <div class="bookings-card">
-        <h3><i class="fas fa-calendar-check"></i> My Bookings & Earnings <span style="font-size: 12px; color: #28a745;">(Auto-refreshes in real-time)</span></h3>
+        <h3><i class="fas fa-calendar-check"></i> My Bookings & Earnings <span style="font-size: 12px; color: #28a745;">(Real-time updates)</span></h3>
         <div style="overflow-x: auto;">
             <table id="bookingsTable">
                 <thead>
-                    <tr><th>Booking ID</th><th>Customer</th><th>Vendor</th><th>Date</th><th>Amount</th><th>Commission (2.5%)</th><th>Status</th></tr>
+                    <tr>
+                        <th>Booking ID</th>
+                        <th>Customer</th>
+                        <th>Phone</th>
+                        <th>Vendor</th>
+                        <th>Event Date</th>
+                        <th>Booking Amount</th>
+                        <th>Commission (2.5%)</th>
+                        <th>Status</th>
+                    </tr>
                 </thead>
                 <tbody id="bookingsTableBody">
-                    <tr><td colspan="7" class="empty-state">Loading bookings...<td></tr>
+                    <tr><td colspan="8" class="empty-state">Loading bookings...<td></tr>
                 </tbody>
             </table>
         </div>
@@ -182,7 +192,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, collection, query, where, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getFirestore, collection, query, where, orderBy, onSnapshot, getDoc, doc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
@@ -196,23 +206,41 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     
-    // Get agent data
+    // Get agent data from localStorage (set during login)
     let agentData = null;
+    let agentId = null;
+    
     try {
-        agentData = JSON.parse(localStorage.getItem('agent'));
-        if (!agentData) {
-            window.location.href = 'agent-login.html';
+        // Check multiple possible storage keys
+        agentData = JSON.parse(localStorage.getItem('agent')) || JSON.parse(localStorage.getItem('agentData')) || null;
+        
+        if (agentData) {
+            agentId = agentData.id || agentData.agentId;
+        }
+        
+        if (!agentId) {
+            // Try to get from URL or session
+            const urlParams = new URLSearchParams(window.location.search);
+            agentId = urlParams.get('agentId');
+        }
+        
+        if (!agentId) {
+            console.error("No agent ID found");
+            document.getElementById('bookingsTableBody').innerHTML = '<tr><td colspan="8" class="empty-state">Please login again. <a href="agent-login.html">Login here</a><td></tr>';
         }
     } catch(e) {
+        console.error("Error loading agent data:", e);
         window.location.href = 'agent-login.html';
     }
     
-    document.getElementById('agentName').innerText = agentData.name || agentData.email || 'Agent';
-    document.getElementById('agentIdDisplay').innerText = agentData.id || agentData.agentId || 'N/A';
+    // Display agent info
+    document.getElementById('agentName').innerText = agentData?.name || agentData?.displayName || 'Agent';
+    document.getElementById('agentIdDisplay').innerText = agentId || 'N/A';
     
     let allBookings = [];
     let weeklyChart, statusChart;
     
+    // Calculate commission (2.5%)
     function calculateCommission(amount) {
         const price = Number(amount) || 0;
         return Math.floor(price * 0.025);
@@ -233,6 +261,7 @@
     }
     
     function updateStats() {
+        // Only count confirmed/completed bookings for earnings
         const confirmedBookings = allBookings.filter(b => b.status === 'confirmed' || b.status === 'completed');
         const totalAmount = confirmedBookings.reduce((sum, b) => sum + (Number(b.amount) || 0), 0);
         const totalCommission = calculateCommission(totalAmount);
@@ -242,13 +271,13 @@
             <div class="stat-card"><div class="stat-icon">📋</div><div class="stat-value">${allBookings.length}</div><div class="stat-label">Total Bookings</div></div>
             <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-value">${confirmedBookings.length}</div><div class="stat-label">Confirmed Bookings</div></div>
             <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-value">₹${totalAmount.toLocaleString()}</div><div class="stat-label">Total Revenue</div></div>
-            <div class="stat-card"><div class="stat-icon">🏆</div><div class="stat-value">₹${totalCommission.toLocaleString()}</div><div class="stat-label">Your Earnings</div></div>
+            <div class="stat-card"><div class="stat-icon">🏆</div><div class="stat-value">₹${totalCommission.toLocaleString()}</div><div class="stat-label">Your Earnings (2.5%)</div></div>
             <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-value">₹${pendingAmount.toLocaleString()}</div><div class="stat-label">Pending Amount</div></div>
         `;
     }
     
     function updateTargetProgress() {
-        const target = agentData.target || 50000;
+        const target = agentData?.target || 50000;
         const confirmedBookings = allBookings.filter(b => b.status === 'confirmed' || b.status === 'completed');
         const totalAmount = confirmedBookings.reduce((sum, b) => sum + (Number(b.amount) || 0), 0);
         const percent = Math.min(100, (totalAmount / target) * 100);
@@ -264,7 +293,7 @@
         const tbody = document.getElementById('bookingsTableBody');
         
         if (allBookings.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No bookings found for you yet.<td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No bookings found for you yet. When customers book using your Agent ID, they will appear here.<td></tr>';
             return;
         }
         
@@ -276,7 +305,8 @@
             return `
                 <tr>
                     <td><code>${booking.id?.slice(-8) || 'N/A'}</code></td>
-                    <td><strong>${booking.userName || 'Guest'}</strong><br><small>${booking.userPhone || ''}</small></td>
+                    <td><strong>${booking.userName || 'Guest'}</strong></td>
+                    <td>${booking.userPhone || '-'}</td>
                     <td>${booking.vendorName || '-'}</td>
                     <td>${booking.eventDate || booking.date || '-'}</td>
                     <td>₹${amount.toLocaleString()}</td>
@@ -349,51 +379,65 @@
         }
     }
     
-    // ============= LIVE REAL-TIME LISTENER =============
+    // ============= REAL-TIME LISTENER =============
     function setupRealtimeListener() {
-        let bookingsQuery;
-        
-        if (agentData.id) {
-            bookingsQuery = query(collection(db, "bookings"), where("agentId", "==", agentData.id), orderBy("createdAt", "desc"));
-        } else if (agentData.agentId) {
-            bookingsQuery = query(collection(db, "bookings"), where("agentId", "==", agentData.agentId), orderBy("createdAt", "desc"));
-        } else {
-            bookingsQuery = query(collection(db, "bookings"), where("agentEmail", "==", agentData.email), orderBy("createdAt", "desc"));
+        if (!agentId) {
+            console.error("No agent ID, cannot setup listener");
+            return;
         }
+        
+        // Query bookings where agentId matches
+        const bookingsQuery = query(
+            collection(db, "bookings"), 
+            where("agentId", "==", agentId),
+            orderBy("createdAt", "desc")
+        );
         
         // REAL-TIME LISTENER - Live updates from Firebase
         onSnapshot(bookingsQuery, (snapshot) => {
-            console.log("🔥 Live update received!");
-            allBookings = snapshot.docs.map(doc => ({
-                id: doc.id,
-                bookingId: doc.id,
-                ...doc.data(),
-                amount: Number(doc.data().amount) || 0
-            }));
+            console.log("🔥 Live update received! New/changed bookings for agent:", agentId);
+            
+            allBookings = snapshot.docs.map(doc => {
+                const data = doc.data();
+                return {
+                    id: doc.id,
+                    bookingId: doc.id,
+                    ...data,
+                    amount: Number(data.amount) || 0
+                };
+            });
             
             // Update all UI components
             updateUI();
             
-            // Small animation effect on refresh
-            const header = document.querySelector('.live-badge');
-            if (header) {
-                header.style.animation = 'none';
-                setTimeout(() => header.style.animation = 'pulse 1.5s infinite', 10);
+            // Show notification sound effect (optional)
+            const badge = document.querySelector('.live-badge');
+            if (badge) {
+                badge.style.animation = 'none';
+                setTimeout(() => badge.style.animation = 'pulse 1.5s infinite', 10);
             }
             
         }, (error) => {
             console.error("Error in realtime listener:", error);
-            document.getElementById('bookingsTableBody').innerHTML = '<tr><td colspan="7" class="empty-state">Error loading bookings. Please refresh.<td></tr>';
+            document.getElementById('bookingsTableBody').innerHTML = '<tr><td colspan="8" class="empty-state">Error loading bookings. Please refresh.<td></tr>';
         });
     }
     
+    // Logout function
     window.logout = () => {
         localStorage.removeItem('agent');
+        localStorage.removeItem('agentData');
         window.location.href = 'agent-login.html';
     };
     
     // Start real-time listener
-    setupRealtimeListener();
+    if (agentId) {
+        setupRealtimeListener();
+    } else {
+        document.getElementById('bookingsTableBody').innerHTML = '<tr><td colspan="8" class="empty-state">No agent ID found. Please login again. <a href="agent-login.html">Click here to login</a><td></tr>';
+    }
+    
+    console.log("✅ Agent Dashboard loaded with ID:", agentId);
 </script>
 </body>
 </html>
