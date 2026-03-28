@@ -726,7 +726,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, doc, getDoc, updateDoc, collection, getDocs, query, where, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, updateDoc, collection, getDocs, query, orderBy, onSnapshot, where } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
     import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js";
 
     const firebaseConfig = {
@@ -768,7 +768,6 @@
         setTimeout(() => toast.remove(), 3000);
     }
 
-    // Create particles
     function createParticles() {
         const container = document.getElementById('particles');
         for (let i = 0; i < 50; i++) {
@@ -858,19 +857,13 @@
     
     window.addSelectedDates = async () => {
         if (!flatpickrInstance) return;
-        
-        const selectedDates = flatpickrInstance.selectedDates.map(d => {
-            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-        });
-        
+        const selectedDates = flatpickrInstance.selectedDates.map(d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
         if (selectedDates.length === 0) {
             showToast('Please select dates first', true);
             return;
         }
-        
         const currentBlocked = stadium?.blockedDates || [];
         const newBlocked = [...new Set([...currentBlocked, ...selectedDates])];
-        
         await updateDoc(doc(db, 'vendors', stadiumId), { blockedDates: newBlocked });
         stadium.blockedDates = newBlocked;
         updateBlockedDatesList();
@@ -891,51 +884,38 @@
     function setupBookingsListener() {
         if (unsubscribeBookings) unsubscribeBookings();
         
-        // Try multiple field names to find bookings
-        const checkBookings = async () => {
-            const bookingsRef = collection(db, "bookings");
-            const possibleFields = ['vendorId', 'vendor_id', 'stadiumId', 'stadium_id', 'assignedTo'];
-            let found = false;
-            
-            for (let field of possibleFields) {
-                const q = query(bookingsRef, where(field, "==", stadiumId), orderBy("createdAt", "desc"));
-                const snapshot = await getDocs(q);
-                if (snapshot.size > 0) {
-                    found = true;
-                    const bookings = snapshot.docs.map(d => ({ id: d.id, ...d.data(), amount: Number(d.data().amount) || 0 }));
-                    allBookings = bookings;
-                    updateUI();
-                    
-                    // Setup real-time listener
-                    unsubscribeBookings = onSnapshot(q, (snap) => {
-                        allBookings = snap.docs.map(d => ({ id: d.id, ...d.data(), amount: Number(d.data().amount) || 0 }));
-                        updateUI();
-                        updateLastUpdated();
-                    });
-                    break;
-                }
-            }
-            
-            if (!found) {
-                // Try without filter - show all bookings (admin style)
-                const q = query(bookingsRef, orderBy("createdAt", "desc"));
-                const snapshot = await getDocs(q);
-                allBookings = snapshot.docs.map(d => ({ id: d.id, ...d.data(), amount: Number(d.data().amount) || 0 }));
+        const bookingsRef = collection(db, "bookings");
+        // Primary filter: vendorId OR stadiumId OR assignedTo
+        const vendorFilters = ['vendorId', 'stadiumId', 'vendor_id', 'assignedTo'];
+        
+        // Try to create a query that matches any of these fields to current stadiumId
+        // Since Firestore doesn't support OR queries directly, we'll use a single known field based on our data structure
+        // Most likely 'vendorId' is used in bookings collection. We'll create a query with where('vendorId', '==', stadiumId)
+        // and fallback to manual filtering if needed.
+        const q = query(bookingsRef, where("vendorId", "==", stadiumId), orderBy("createdAt", "desc"));
+        
+        // Real-time listener for bookings belonging to this vendor
+        unsubscribeBookings = onSnapshot(q, 
+            (snapshot) => {
+                const bookings = snapshot.docs.map(d => ({ id: d.id, ...d.data(), amount: Number(d.data().amount) || 0 }));
+                allBookings = bookings;
                 updateUI();
-                
-                unsubscribeBookings = onSnapshot(q, (snap) => {
-                    allBookings = snap.docs.map(d => ({ id: d.id, ...d.data(), amount: Number(d.data().amount) || 0 }));
+                updateLastUpdated();
+            },
+            (error) => {
+                console.warn("Primary query failed, trying fallback:", error);
+                // Fallback: fetch all and filter client-side (for demo compatibility)
+                const fallbackQuery = query(bookingsRef, orderBy("createdAt", "desc"));
+                onSnapshot(fallbackQuery, (snap) => {
+                    let all = snap.docs.map(d => ({ id: d.id, ...d.data(), amount: Number(d.data().amount) || 0 }));
+                    // Filter by any possible vendor id field
+                    all = all.filter(b => b.vendorId === stadiumId || b.stadiumId === stadiumId || b.vendor_id === stadiumId || b.assignedTo === stadiumId);
+                    allBookings = all;
                     updateUI();
                     updateLastUpdated();
                 });
-                
-                if (allBookings.length > 0) {
-                    showToast('Showing all bookings (no vendor filter found)', false);
-                }
             }
-        };
-        
-        checkBookings();
+        );
     }
     
     function updateUI() {
@@ -993,19 +973,22 @@
     function updateBookingsTable() {
         const tableBody = document.getElementById('bookingsTableBody');
         if (allBookings.length === 0) {
-            tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px;"><i class="fas fa-inbox"></i> No bookings found<td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px;"><i class="fas fa-inbox"></i> No bookings found</td></tr>';
             return;
         }
         
         tableBody.innerHTML = allBookings.map(b => {
             const ownerShare = calculateOwnerShare(b.amount);
             const agentShare = calculateAgentShare(b.amount);
+            const eventDateDisplay = b.eventDate || b.date || b.bookingDate || '-';
+            const customerName = b.userName || b.customerName || b.name || 'Guest';
+            const customerPhone = b.userPhone || b.phone || b.mobile || '-';
             return `
                 <tr>
                     <td><code>${b.id.slice(-8)}</code></td>
-                    <td><strong>${b.userName || b.customerName || 'Guest'}</strong></td>
-                    <td>${b.userPhone || b.phone || '-'}</td>
-                    <td>${b.eventDate || b.date || '-'}</td>
+                    <td><strong>${escapeHtml(customerName)}</strong></td>
+                    <td>${escapeHtml(customerPhone)}</td>
+                    <td>${eventDateDisplay}</td>
                     <td><strong>₹${(b.amount || 0).toLocaleString()}</strong></td>
                     <td style="color: #10b981;">₹${ownerShare.toLocaleString()}</td>
                     <td style="color: #f59e0b;">₹${agentShare.toLocaleString()}</td>
@@ -1015,9 +998,10 @@
         }).join('');
     }
     
+    function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+    
     function renderCharts() {
         const confirmed = allBookings.filter(b => b.status === 'confirmed' || b.status === 'completed');
-        
         const monthly = {};
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         const last6Months = [];
@@ -1029,10 +1013,15 @@
         
         confirmed.forEach(b => {
             if (b.createdAt) {
-                const date = b.createdAt.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
-                const monthName = months[date.getMonth()];
-                if (last6Months.includes(monthName)) {
-                    monthly[monthName] = (monthly[monthName] || 0) + (b.amount || 0);
+                let date;
+                if (b.createdAt.toDate) date = b.createdAt.toDate();
+                else if (b.createdAt?.seconds) date = new Date(b.createdAt.seconds * 1000);
+                else date = new Date(b.createdAt);
+                if (!isNaN(date.getTime())) {
+                    const monthName = months[date.getMonth()];
+                    if (last6Months.includes(monthName)) {
+                        monthly[monthName] = (monthly[monthName] || 0) + (b.amount || 0);
+                    }
                 }
             }
         });
