@@ -3,189 +3,808 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>StadiumConnect</title>
+    <title>StadiumConnect | Premium Event Marketplace</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background: #fff; }
-        .header { padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0f0f0; }
-        .logo { font-size: 20px; font-weight: 800; cursor: pointer; }
-        .logo span { color: #ff6b35; }
-        .user-icon { width: 40px; height: 40px; background: #ff6b35; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; }
-        .welcome { padding: 24px 20px; background: #fffaf5; }
-        .welcome h2 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
-        .location-bar { padding: 12px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #f0f0f0; }
-        .location-btn { display: flex; align-items: center; gap: 8px; background: #f5f5f5; padding: 8px 16px; border-radius: 30px; cursor: pointer; }
-        .categories { padding: 24px 20px; }
-        .section-title { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
-        .category-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 12px; }
-        .category-card { background: white; border: 1px solid #f0f0f0; border-radius: 16px; padding: 16px 8px; text-align: center; cursor: pointer; transition: 0.2s; }
-        .category-card:hover { transform: translateY(-2px); border-color: #ffebe3; }
-        .category-icon { font-size: 28px; margin-bottom: 8px; }
-        .category-card h3 { font-size: 12px; font-weight: 600; }
-        .cities { padding: 24px 20px; background: #fffaf5; }
-        .city-list { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
-        .city-chip { background: white; border: 1px solid #e0e0e0; padding: 10px 20px; border-radius: 30px; font-size: 14px; cursor: pointer; transition: 0.2s; }
-        .city-chip:hover { background: #ff6b35; color: white; border-color: #ff6b35; }
-        footer { text-align: center; padding: 24px; font-size: 12px; color: #aaa; }
-        .loading { text-align: center; padding: 20px; color: #999; }
-        @media (max-width: 600px) { .category-grid { grid-template-columns: repeat(2, 1fr); } }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.2s ease;
+        }
+
+        /* Theme Variables */
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #fffaf5;
+            --bg-card: #ffffff;
+            --text-primary: #1a1a2e;
+            --text-secondary: #666;
+            --text-muted: #aaa;
+            --border-color: #f0f0f0;
+            --accent: #ff6b35;
+            --accent-dark: #e55a2b;
+            --shadow: 0 10px 30px rgba(0,0,0,0.05);
+            --shadow-hover: 0 20px 40px rgba(0,0,0,0.1);
+            --header-bg: rgba(255,255,255,0.95);
+        }
+
+        body.dark {
+            --bg-primary: #0a0a2a;
+            --bg-secondary: #0f0f2a;
+            --bg-card: #1a1a3a;
+            --text-primary: #ffffff;
+            --text-secondary: #c0c0e0;
+            --text-muted: #8888aa;
+            --border-color: rgba(255,255,255,0.1);
+            --accent: #ff6b35;
+            --accent-dark: #ff8c5a;
+            --shadow: 0 10px 30px rgba(0,0,0,0.3);
+            --shadow-hover: 0 20px 40px rgba(0,0,0,0.4);
+            --header-bg: rgba(10,10,42,0.95);
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        /* Animated Background (dark mode only subtle) */
+        body.dark .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 0;
+            background: radial-gradient(circle at 20% 30%, rgba(255,107,53,0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        /* Header Premium */
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--header-bg);
+            backdrop-filter: blur(20px);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            cursor: pointer;
+            background: linear-gradient(135deg, var(--accent), #ff9068);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .logo span {
+            background: none;
+            -webkit-text-fill-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 40px;
+            padding: 8px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--accent);
+            transform: scale(1.02);
+        }
+
+        /* User Profile Card */
+        .profile-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 50px;
+            padding: 6px 16px 6px 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .profile-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent), #ff9068);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        .user-email {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* Welcome Hero Section */
+        .hero {
+            background: var(--bg-secondary);
+            padding: 48px 24px;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(255,107,53,0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: floatGlow 8s infinite ease-in-out;
+        }
+
+        @keyframes floatGlow {
+            0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.5; }
+            50% { transform: translate(-30px, -20px) scale(1.1); opacity: 0.8; }
+        }
+
+        .hero h2 {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--accent), #ff9068);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            color: var(--text-secondary);
+            font-size: 16px;
+        }
+
+        /* Location Bar */
+        .location-bar {
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .location-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 12px 24px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            color: var(--text-primary);
+        }
+
+        .location-btn:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .location-btn i {
+            color: var(--accent);
+            font-size: 18px;
+        }
+
+        /* Section Styles */
+        .section {
+            padding: 32px 24px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-title i {
+            color: var(--accent);
+            font-size: 28px;
+        }
+
+        /* Category Grid Premium */
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 20px;
+        }
+
+        .category-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 24px 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .category-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), #ff9068);
+            transform: scaleX(0);
+            transition: transform 0.4s ease;
+        }
+
+        .category-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .category-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .category-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .category-card h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        /* City Chips Premium */
+        .city-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .city-chip {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 12px 28px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-primary);
+        }
+
+        .city-chip:hover {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255,107,53,0.3);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 32px 24px;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        /* Loading Animation */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-color);
+            border-top: 3px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 12px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            padding: 12px 24px;
+            border-radius: 50px;
+            z-index: 2000;
+            animation: slideUp 0.3s ease;
+            border-left: 4px solid var(--accent);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: var(--shadow);
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .header { padding: 12px 16px; }
+            .logo { font-size: 20px; }
+            .user-info { display: none; }
+            .profile-card { padding: 6px 12px; }
+            .hero h2 { font-size: 28px; }
+            .category-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            .section { padding: 24px 16px; }
+            .location-bar { padding: 16px; }
+        }
     </style>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
-            authDomain: "stadiumconnect-8fecb.firebaseapp.com",
-            projectId: "stadiumconnect-8fecb",
-            storageBucket: "stadiumconnect-8fecb.firebasestorage.app",
-            messagingSenderId: "458108198578",
-            appId: "1:458108198578:web:83d83646f0e24e718b73ab"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-
-        // ========== LOAD CATEGORIES FROM FIREBASE ==========
-        async function loadCategories() {
-            const container = document.getElementById('categoryGrid');
-            container.innerHTML = '<div class="loading">Loading categories...</div>';
-            
-            try {
-                const snapshot = await getDocs(collection(db, "categories"));
-                let categories = [];
-                snapshot.forEach(doc => {
-                    if (!doc.data().deleted) {
-                        categories.push({ id: doc.id, ...doc.data() });
-                    }
-                });
-                
-                // Default categories if none in Firebase
-                if (categories.length === 0) {
-                    categories = [
-                        { id: 'decorator', name: 'Decorators', icon: '🎨' },
-                        { id: 'photographer', name: 'Photographers', icon: '📸' },
-                        { id: 'caterer', name: 'Caterers', icon: '🍽️' },
-                        { id: 'bandbaja', name: 'Band Baja', icon: '🎵' },
-                        { id: 'stadium', name: 'Stadiums', icon: '🏟️' }
-                    ];
-                }
-                
-                container.innerHTML = categories.map(cat => `
-                    <div class="category-card" onclick="goToCategory('${cat.id}')">
-                        <div class="category-icon">${cat.icon || '🏷️'}</div>
-                        <h3>${cat.name}</h3>
-                    </div>
-                `).join('');
-                
-            } catch (error) {
-                console.error("Error loading categories:", error);
-                container.innerHTML = '<div class="loading">Error loading categories</div>';
-            }
-        }
-
-        // ========== LOAD POPULAR CITIES ==========
-        async function loadPopularCities() {
-            const container = document.getElementById('cityList');
-            container.innerHTML = '<div class="loading">Loading cities...</div>';
-            
-            try {
-                const docRef = doc(db, 'settings', 'cities');
-                const docSnap = await getDoc(docRef);
-                let cities = [];
-                
-                if (docSnap.exists()) {
-                    cities = docSnap.data().list || [];
-                }
-                
-                const popularCities = cities.filter(c => c.popular === true).map(c => c.name);
-                
-                if (popularCities.length === 0) {
-                    container.innerHTML = '<div class="loading">No popular cities yet</div>';
-                    return;
-                }
-                
-                container.innerHTML = popularCities.map(city => `
-                    <div class="city-chip" onclick="window.location.href='vendors.html?city=${city.toLowerCase()}'">
-                        ${city}
-                    </div>
-                `).join('');
-                
-            } catch (error) {
-                console.error("Error loading cities:", error);
-                container.innerHTML = '<div class="loading">Error loading cities</div>';
-            }
-        }
-
-        // ========== NAVIGATION ==========
-        window.goToCategory = (category) => {
-            window.location.href = `vendors.html?category=${category}`;
-        };
-
-        window.detectLocation = () => {
-            if (navigator.geolocation) {
-                document.getElementById('locationText').innerHTML = '📍 Detecting...';
-                navigator.geolocation.getCurrentPosition(
-                    (pos) => {
-                        window.location.href = `vendors.html?lat=${pos.coords.latitude}&lng=${pos.coords.longitude}`;
-                    },
-                    () => {
-                        document.getElementById('locationText').innerHTML = '📍 Detect location';
-                        alert('Please allow location access to see nearby vendors');
-                    }
-                );
-            }
-        };
-
-        // ========== USER NAME ==========
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                document.getElementById('userName').innerText = user.displayName || user.email.split('@')[0];
-            }
-        });
-
-        // ========== INITIALIZE ==========
-        loadCategories();
-        loadPopularCities();
-    </script>
 </head>
 <body>
+<div class="animated-bg"></div>
 
 <header class="header">
     <div class="logo" onclick="window.location.href='index.html'">STADIUM<span>CONNECT</span></div>
-    <div class="user-icon" onclick="window.location.href='profile.html'">👤</div>
+    <div class="header-actions">
+        <div class="theme-toggle" id="themeToggle">
+            <i class="fas fa-moon"></i>
+            <span>Dark</span>
+        </div>
+        <div class="profile-card" id="profileCard">
+            <div class="avatar" id="userAvatar">👤</div>
+            <div class="user-info">
+                <span class="user-name" id="userNameDisplay">Guest</span>
+                <span class="user-email" id="userEmailDisplay">Sign in</span>
+            </div>
+            <i class="fas fa-chevron-down" style="font-size: 12px; color: var(--text-muted);"></i>
+        </div>
+    </div>
 </header>
 
-<div class="welcome">
-    <h2>Hello, <span id="userName">Guest</span>!</h2>
-    <p>Plan your perfect event with us</p>
+<div class="hero">
+    <h2>Plan Your Perfect Event</h2>
+    <p>Discover premium vendors, stadiums, and services tailored to your needs</p>
 </div>
 
 <div class="location-bar">
     <div class="location-btn" onclick="detectLocation()">
-        <span>📍</span> <span id="locationText">Detect location</span>
+        <i class="fas fa-location-dot"></i>
+        <span id="locationText">Detect my location</span>
     </div>
 </div>
 
-<div class="categories">
-    <div class="section-title">Browse by category</div>
+<div class="section">
+    <div class="section-title">
+        <i class="fas fa-th-large"></i>
+        <span>Browse by Category</span>
+    </div>
     <div class="category-grid" id="categoryGrid">
-        <div class="loading">Loading categories...</div>
+        <div class="loading"><div class="spinner"></div>Loading categories...</div>
     </div>
 </div>
 
-<div class="cities">
-    <div class="section-title">Popular cities</div>
+<div class="section" style="background: var(--bg-secondary);">
+    <div class="section-title">
+        <i class="fas fa-city"></i>
+        <span>Popular Cities</span>
+    </div>
     <div class="city-list" id="cityList">
-        <div class="loading">Loading cities...</div>
+        <div class="loading"><div class="spinner"></div>Loading cities...</div>
     </div>
 </div>
 
-<footer>© 2025 StadiumConnect | Your Need, Our Network</footer>
+<footer>
+    <p>© 2025 StadiumConnect | Your Need, Our Network</p>
+    <p style="margin-top: 8px; font-size: 11px;">Premium Event Marketplace</p>
+</footer>
 
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
+        authDomain: "stadiumconnect-8fecb.firebaseapp.com",
+        projectId: "stadiumconnect-8fecb",
+        storageBucket: "stadiumconnect-8fecb.firebasestorage.app",
+        messagingSenderId: "458108198578",
+        appId: "1:458108198578:web:83d83646f0e24e718b73ab"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    // Theme Management
+    function initTheme() {
+        const savedTheme = localStorage.getItem('theme');
+        const isDark = savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (isDark) {
+            document.body.classList.add('dark');
+            updateThemeToggle(true);
+        } else {
+            document.body.classList.remove('dark');
+            updateThemeToggle(false);
+        }
+    }
+
+    function updateThemeToggle(isDark) {
+        const toggleBtn = document.getElementById('themeToggle');
+        if (isDark) {
+            toggleBtn.innerHTML = '<i class="fas fa-sun"></i><span>Light</span>';
+        } else {
+            toggleBtn.innerHTML = '<i class="fas fa-moon"></i><span>Dark</span>';
+        }
+    }
+
+    function toggleTheme() {
+        const isDark = document.body.classList.toggle('dark');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        updateThemeToggle(isDark);
+        showToast(isDark ? '🌙 Dark mode enabled' : '☀️ Light mode enabled');
+    }
+
+    // Toast Notification
+    function showToast(message, isError = false) {
+        const existing = document.querySelector('.toast');
+        if (existing) existing.remove();
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${message}`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    // Load Categories from Firebase
+    async function loadCategories() {
+        const container = document.getElementById('categoryGrid');
+        container.innerHTML = '<div class="loading"><div class="spinner"></div>Loading categories...</div>';
+        
+        try {
+            const snapshot = await getDocs(collection(db, "categories"));
+            let categories = [];
+            snapshot.forEach(doc => {
+                if (!doc.data().deleted) {
+                    categories.push({ id: doc.id, ...doc.data() });
+                }
+            });
+            
+            // Default categories if none in Firebase
+            if (categories.length === 0) {
+                categories = [
+                    { id: 'decorator', name: 'Decorators', icon: '🎨' },
+                    { id: 'photographer', name: 'Photographers', icon: '📸' },
+                    { id: 'caterer', name: 'Caterers', icon: '🍽️' },
+                    { id: 'bandbaja', name: 'Band Baja', icon: '🎵' },
+                    { id: 'stadium', name: 'Stadiums', icon: '🏟️' },
+                    { id: 'florist', name: 'Florists', icon: '🌸' },
+                    { id: 'makeup', name: 'Makeup Artist', icon: '💄' },
+                    { id: 'venue', name: 'Venues', icon: '🏛️' }
+                ];
+            }
+            
+            container.innerHTML = categories.map(cat => `
+                <div class="category-card" onclick="goToCategory('${cat.id}')">
+                    <div class="category-icon">${cat.icon || '🏷️'}</div>
+                    <h3>${escapeHtml(cat.name)}</h3>
+                </div>
+            `).join('');
+            
+        } catch (error) {
+            console.error("Error loading categories:", error);
+            container.innerHTML = '<div class="loading">⚠️ Error loading categories</div>';
+        }
+    }
+
+    // Load Popular Cities
+    async function loadPopularCities() {
+        const container = document.getElementById('cityList');
+        container.innerHTML = '<div class="loading"><div class="spinner"></div>Loading cities...</div>';
+        
+        try {
+            const docRef = doc(db, 'settings', 'cities');
+            const docSnap = await getDoc(docRef);
+            let cities = [];
+            
+            if (docSnap.exists()) {
+                cities = docSnap.data().list || [];
+            }
+            
+            const popularCities = cities.filter(c => c.popular === true).map(c => c.name);
+            
+            // Default popular cities if none
+            if (popularCities.length === 0) {
+                const defaultCities = ['Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Kolkata', 'Hyderabad', 'Pune', 'Ahmedabad'];
+                container.innerHTML = defaultCities.map(city => `
+                    <div class="city-chip" onclick="goToCity('${city}')">
+                        ${city}
+                    </div>
+                `).join('');
+                return;
+            }
+            
+            container.innerHTML = popularCities.map(city => `
+                <div class="city-chip" onclick="goToCity('${city}')">
+                    ${city}
+                </div>
+            `).join('');
+            
+        } catch (error) {
+            console.error("Error loading cities:", error);
+            container.innerHTML = '<div class="loading">⚠️ Error loading cities</div>';
+        }
+    }
+
+    // Escape HTML
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    // Navigation Functions
+    window.goToCategory = (category) => {
+        window.location.href = `vendors.html?category=${category}`;
+    };
+
+    window.goToCity = (city) => {
+        window.location.href = `vendors.html?city=${city.toLowerCase()}`;
+    };
+
+    window.detectLocation = () => {
+        const locationText = document.getElementById('locationText');
+        if (navigator.geolocation) {
+            locationText.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Detecting...';
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    window.location.href = `vendors.html?lat=${pos.coords.latitude}&lng=${pos.coords.longitude}`;
+                },
+                () => {
+                    locationText.innerHTML = '<i class="fas fa-location-dot"></i> Detect location';
+                    showToast('Please allow location access to see nearby vendors', true);
+                }
+            );
+        } else {
+            showToast('Geolocation not supported', true);
+        }
+    };
+
+    // Profile Dropdown & User Management
+    let currentUser = null;
+
+    function updateProfileUI(user) {
+        const userNameSpan = document.getElementById('userNameDisplay');
+        const userEmailSpan = document.getElementById('userEmailDisplay');
+        const avatarDiv = document.getElementById('userAvatar');
+        
+        if (user) {
+            const displayName = user.displayName || user.email?.split('@')[0] || 'User';
+            const email = user.email || 'No email';
+            userNameSpan.innerText = displayName;
+            userEmailSpan.innerText = email;
+            avatarDiv.innerText = displayName.charAt(0).toUpperCase();
+            
+            // Update hero greeting
+            const heroNameSpan = document.getElementById('heroUserName');
+            if (heroNameSpan) heroNameSpan.innerText = displayName;
+        } else {
+            userNameSpan.innerText = 'Guest';
+            userEmailSpan.innerText = 'Sign in';
+            avatarDiv.innerText = '👤';
+        }
+    }
+
+    // Profile card click handler - redirect or show menu
+    function setupProfileClick() {
+        const profileCard = document.getElementById('profileCard');
+        profileCard.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (currentUser) {
+                // If logged in, go to profile page
+                window.location.href = 'profile.html';
+            } else {
+                // If guest, go to login
+                window.location.href = 'login.html';
+            }
+        });
+    }
+
+    // Add greeting name to hero
+    function addHeroGreeting() {
+        const hero = document.querySelector('.hero h2');
+        const originalText = hero.innerHTML;
+        hero.innerHTML = originalText.replace('Plan Your Perfect Event', 'Plan Your Perfect Event');
+        // We'll dynamically update if needed
+    }
+
+    // Update hero with user name
+    function updateHeroWithUser(user) {
+        const heroTitle = document.querySelector('.hero h2');
+        if (user) {
+            const name = user.displayName || user.email?.split('@')[0] || 'there';
+            heroTitle.innerHTML = `Hello, ${escapeHtml(name)}! <span style="background: linear-gradient(135deg, var(--accent), #ff9068); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">✨</span>`;
+            const subText = document.querySelector('.hero p');
+            if (subText) subText.innerHTML = 'Ready to discover the best vendors for your dream event?';
+        } else {
+            heroTitle.innerHTML = `Plan Your Perfect Event`;
+        }
+    }
+
+    // Auth State Listener
+    onAuthStateChanged(auth, (user) => {
+        currentUser = user;
+        updateProfileUI(user);
+        updateHeroWithUser(user);
+        
+        // Optional: If user is logged in, we can show a welcome toast
+        if (user) {
+            setTimeout(() => {
+                showToast(`Welcome back, ${user.displayName || user.email?.split('@')[0]}! 👋`);
+            }, 500);
+        }
+    });
+
+    // Add animation to cards on scroll
+    function addScrollAnimation() {
+        const cards = document.querySelectorAll('.category-card, .city-chip');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+        
+        document.querySelectorAll('.category-card, .city-chip').forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            observer.observe(card);
+        });
+        
+        // Re-observe when content loads
+        setTimeout(() => {
+            document.querySelectorAll('.category-card, .city-chip').forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                observer.observe(card);
+            });
+        }, 500);
+    }
+
+    // Initialize everything
+    async function init() {
+        initTheme();
+        document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+        setupProfileClick();
+        
+        await loadCategories();
+        await loadPopularCities();
+        
+        // Add scroll animation after content loads
+        setTimeout(addScrollAnimation, 300);
+        
+        // Add floating particles effect for dark mode
+        createParticles();
+    }
+    
+    function createParticles() {
+        const container = document.createElement('div');
+        container.className = 'particle-container';
+        container.style.position = 'fixed';
+        container.style.top = '0';
+        container.style.left = '0';
+        container.style.width = '100%';
+        container.style.height = '100%';
+        container.style.pointerEvents = 'none';
+        container.style.zIndex = '0';
+        container.style.overflow = 'hidden';
+        document.body.appendChild(container);
+        
+        for (let i = 0; i < 30; i++) {
+            const particle = document.createElement('div');
+            particle.style.position = 'absolute';
+            particle.style.width = Math.random() * 4 + 2 + 'px';
+            particle.style.height = particle.style.width;
+            particle.style.background = 'rgba(255,107,53,0.3)';
+            particle.style.borderRadius = '50%';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.top = Math.random() * 100 + '%';
+            particle.style.animation = `floatParticle ${Math.random() * 20 + 15}s infinite ease-in-out`;
+            particle.style.opacity = '0';
+            container.appendChild(particle);
+        }
+        
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes floatParticle {
+                0% { transform: translateY(0) translateX(0); opacity: 0; }
+                10% { opacity: 0.4; }
+                90% { opacity: 0.4; }
+                100% { transform: translateY(-100vh) translateX(100px); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    // Run init
+    init();
+</script>
 </body>
 </html>
