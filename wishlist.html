@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>My Wishlist - StadiumConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a2a 0%, #050517 100%);
+            color: #fff;
+            min-height: 100vh;
+        }
+
+        body.light-mode {
+            background: linear-gradient(135deg, #f5f7fb 0%, #eef2f7 100%);
+            color: #1a1a2e;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(10, 10, 42, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,107,53,0.3);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        body.light-mode .header {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.05);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff, #ff6b35);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            cursor: pointer;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(255,107,53,0.2);
+            padding: 8px 20px;
+            border-radius: 40px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .theme-toggle {
+            background: rgba(255,107,53,0.2);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            color: #ff6b35;
+        }
+
+        .back-btn {
+            background: rgba(255,107,53,0.2);
+            border: none;
+            padding: 8px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            color: #ff6b35;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logout-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+
+        /* Page Header */
+        .page-header {
+            margin-bottom: 30px;
+            animation: fadeInUp 0.5s ease;
+        }
+        .page-header h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        .page-header p {
+            color: rgba(255,255,255,0.6);
+        }
+        body.light-mode .page-header p {
+            color: #666;
+        }
+
+        /* Stats Card */
+        .stats-card {
+            background: rgba(255,107,53,0.1);
+            border: 1px solid rgba(255,107,53,0.3);
+            border-radius: 24px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .stats-card .count {
+            font-size: 36px;
+            font-weight: 800;
+            color: #ff6b35;
+        }
+
+        /* Vendor Grid */
+        .vendor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        .vendor-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 24px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.5s ease;
+        }
+        body.light-mode .vendor-card {
+            background: white;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            border: 1px solid #eee;
+        }
+        .vendor-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255,107,53,0.5);
+        }
+
+        .vendor-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .vendor-info {
+            padding: 20px;
+        }
+
+        .vendor-name {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .vendor-location {
+            color: rgba(255,255,255,0.6);
+            font-size: 14px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        body.light-mode .vendor-location {
+            color: #666;
+        }
+
+        .vendor-price {
+            font-size: 24px;
+            font-weight: 800;
+            color: #ff6b35;
+            margin: 12px 0;
+        }
+
+        .vendor-amenities {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 12px 0;
+        }
+        .amenity-tag {
+            background: rgba(255,107,53,0.2);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 15px;
+        }
+        .btn-view {
+            flex: 1;
+            background: linear-gradient(135deg, #ff6b35, #ff9068);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 40px;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            font-weight: 600;
+        }
+        .btn-wishlist {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,107,53,0.3);
+            color: #ff6b35;
+            padding: 10px 15px;
+            border-radius: 40px;
+            cursor: pointer;
+        }
+        .btn-wishlist.active {
+            background: #ff6b35;
+            color: white;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 24px;
+        }
+        .empty-state i {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(0,0,0,0.9);
+            backdrop-filter: blur(20px);
+            padding: 12px 24px;
+            border-radius: 50px;
+            z-index: 2000;
+            border-left: 4px solid #10b981;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            .vendor-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="logo" onclick="window.location.href='index.html'">🏟️ STADIUM<span>CONNECT</span></div>
+    <div style="display: flex; align-items: center; gap: 15px;">
+        <div class="user-info">
+            <i class="fas fa-user-circle"></i>
+            <span id="userName">Loading...</span>
+        </div>
+        <div class="header-actions">
+            <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+</header>
+
+<div class="container">
+    <div class="page-header">
+        <a href="dashboard.html" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+        <h1><i class="fas fa-store"></i> Browse Vendors</h1>
+        <p>Discover the best stadiums and venues for your next event</p>
+    </div>
+
+    <div class="stats-card" id="statsCard">
+        <span><i class="fas fa-building"></i> Total Vendors</span>
+        <span class="count" id="vendorCount">0</span>
+    </div>
+
+    <div class="vendor-grid" id="vendorGrid">
+        <div class="empty-state"><i class="fas fa-spinner fa-spin"></i><br>Loading vendors...</div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
+        authDomain: "stadiumconnect-8fecb.firebaseapp.com",
+        projectId: "stadiumconnect-8fecb",
+        storageBucket: "stadiumconnect-8fecb.firebasestorage.app",
+        messagingSenderId: "458108198578",
+        appId: "1:458108198578:web:83d83646f0e24e718b73ab"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    let currentUser = null;
+    let vendors = [];
+    let wishlist = [];
+
+    function loadWishlist() {
+        const saved = localStorage.getItem(`wishlist_${currentUser?.uid}`);
+        wishlist = saved ? JSON.parse(saved) : [];
+    }
+
+    function saveWishlist() {
+        localStorage.setItem(`wishlist_${currentUser?.uid}`, JSON.stringify(wishlist));
+    }
+
+    function isInWishlist(vendorId) {
+        return wishlist.includes(vendorId);
+    }
+
+    function addToWishlist(vendorId) {
+        if (!wishlist.includes(vendorId)) {
+            wishlist.push(vendorId);
+            saveWishlist();
+            showToast('Added to wishlist! ❤️');
+            renderVendors();
+        }
+    }
+
+    function removeFromWishlist(vendorId) {
+        wishlist = wishlist.filter(id => id !== vendorId);
+        saveWishlist();
+        showToast('Removed from wishlist');
+        renderVendors();
+    }
+
+    function showToast(message) {
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.innerHTML = `<i class="fas fa-heart"></i> ${message}`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2000);
+    }
+
+    async function loadVendors() {
+        try {
+            const snapshot = await getDocs(collection(db, "vendors"));
+            vendors = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            document.getElementById('vendorCount').innerText = vendors.length;
+            renderVendors();
+        } catch (error) {
+            console.error("Error loading vendors:", error);
+            document.getElementById('vendorGrid').innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><br>Error loading vendors</div>';
+        }
+    }
+
+    function renderVendors() {
+        const container = document.getElementById('vendorGrid');
+        
+        if (vendors.length === 0) {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-store"></i><br>No vendors found</div>';
+            return;
+        }
+
+        container.innerHTML = vendors.map(vendor => {
+            const inWishlist = isInWishlist(vendor.id);
+            return `
+                <div class="vendor-card">
+                    <img class="vendor-image" src="${vendor.imageUrl || 'https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=400&h=200&fit=crop'}" alt="${vendor.name}">
+                    <div class="vendor-info">
+                        <div class="vendor-name">
+                            ${vendor.name || 'Stadium'}
+                            <span style="font-size: 14px;">⭐ ${vendor.rating || '4.5'}</span>
+                        </div>
+                        <div class="vendor-location">
+                            <i class="fas fa-map-marker-alt"></i> ${vendor.city || 'Location'} | ${vendor.capacity?.toLocaleString() || '0'} seats
+                        </div>
+                        <div class="vendor-price">₹${(vendor.basePrice || 50000).toLocaleString()} <span style="font-size: 14px;">/day</span></div>
+                        <div class="vendor-amenities">
+                            ${(vendor.amenities || ['Floodlights', 'Parking', 'WiFi']).slice(0, 3).map(a => `<span class="amenity-tag">${a}</span>`).join('')}
+                        </div>
+                        <div class="card-actions">
+                            <a href="stadium-detail.html?id=${vendor.id}" class="btn-view">View Details →</a>
+                            <button class="btn-wishlist ${inWishlist ? 'active' : ''}" onclick="${inWishlist ? `removeFromWishlist('${vendor.id}')` : `addToWishlist('${vendor.id}')`}">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        // Re-attach event listeners for wishlist buttons
+        document.querySelectorAll('.btn-wishlist').forEach((btn, index) => {
+            const vendorId = vendors[index]?.id;
+            btn.onclick = () => {
+                if (isInWishlist(vendorId)) {
+                    removeFromWishlist(vendorId);
+                } else {
+                    addToWishlist(vendorId);
+                }
+            };
+        });
+    }
+
+    function toggleTheme() {
+        document.body.classList.toggle('light-mode');
+        const btn = document.querySelector('.theme-toggle');
+        if (document.body.classList.contains('light-mode')) {
+            btn.innerHTML = '☀️';
+            localStorage.setItem('theme', 'light');
+        } else {
+            btn.innerHTML = '🌙';
+            localStorage.setItem('theme', 'dark');
+        }
+    }
+
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'light') {
+        document.body.classList.add('light-mode');
+        document.querySelector('.theme-toggle').innerHTML = '☀️';
+    }
+
+    function logout() {
+        auth.signOut();
+        window.location.href = 'index.html';
+    }
+
+    onAuthStateChanged(auth, (user) => {
+        if (!user) {
+            window.location.href = 'login.html';
+            return;
+        }
+        currentUser = user;
+        document.getElementById('userName').innerText = user.displayName || user.email?.split('@')[0] || 'User';
+        loadWishlist();
+        loadVendors();
+    });
+</script>
+</body>
+</html>
