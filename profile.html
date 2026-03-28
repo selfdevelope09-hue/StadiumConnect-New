@@ -44,10 +44,8 @@
             min-height: 100vh;
         }
 
-        /* Header */
         .header {
             background: var(--bg-secondary);
-            backdrop-filter: blur(20px);
             padding: 16px 32px;
             display: flex;
             justify-content: space-between;
@@ -107,14 +105,12 @@
             font-weight: 500;
         }
 
-        /* Container */
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 30px;
         }
 
-        /* Profile Header */
         .profile-header {
             background: var(--bg-card);
             border-radius: 32px;
@@ -168,7 +164,6 @@
             color: var(--text-muted);
         }
 
-        /* Tabs */
         .tabs {
             display: flex;
             gap: 12px;
@@ -202,7 +197,6 @@
             background: var(--accent);
         }
 
-        /* Tab Content */
         .tab-content {
             display: none;
         }
@@ -211,7 +205,6 @@
             display: block;
         }
 
-        /* Cards */
         .info-card {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
@@ -252,7 +245,6 @@
             font-weight: 600;
         }
 
-        /* Form */
         .form-group {
             margin-bottom: 16px;
         }
@@ -291,7 +283,6 @@
             color: var(--text-primary);
         }
 
-        /* Booking Items */
         .booking-item, .review-item {
             background: var(--bg-primary);
             border-radius: 20px;
@@ -515,8 +506,8 @@
             btn.classList.add('active');
             document.getElementById(`${tabName}Tab`).classList.add('active');
             
-            if (tabName === 'bookings') loadBookings();
-            if (tabName === 'reviews') loadReviews();
+            if (tabName === 'bookings') loadUserBookings();
+            if (tabName === 'reviews') loadUserReviews();
         };
     });
 
@@ -545,26 +536,34 @@
         }
     }
 
-    async function loadBookings() {
+    // SIRF CURRENT USER KI BOOKINGS
+    async function loadUserBookings() {
         const container = document.getElementById('bookingsList');
-        container.innerHTML = '<div class="empty-state"><div class="spinner"></div><p>Loading bookings...</p></div>';
+        container.innerHTML = '<div class="empty-state"><div class="spinner"></div><p>Loading your bookings...</p></div>';
         
         try {
             console.log("Fetching bookings for user:", currentUser?.uid);
-            const q = query(collection(db, "bookings"), where("userId", "==", currentUser.uid), orderBy("createdAt", "desc"));
+            
+            // 🔥 IMPORTANT: userId filter - sirf current user ki bookings
+            const q = query(
+                collection(db, "bookings"), 
+                where("userId", "==", currentUser.uid),
+                orderBy("createdAt", "desc")
+            );
+            
             const snapshot = await getDocs(q);
             userBookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            console.log("Bookings found:", userBookings.length);
+            console.log("Your bookings found:", userBookings.length);
             
             if (userBookings.length === 0) {
-                container.innerHTML = '<div class="empty-state"><i class="fas fa-calendar-alt"></i><p>No bookings yet</p><a href="vendors.html" style="color: var(--accent);">Browse vendors →</a></div>';
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-calendar-alt"></i><p>You have no bookings yet</p><a href="vendors.html" style="color: var(--accent);">Browse vendors →</a></div>';
                 return;
             }
             
             container.innerHTML = userBookings.map(booking => `
                 <div class="booking-item">
                     <div class="booking-header">
-                        <span class="booking-vendor">${escapeHtml(booking.vendorName || booking.vendor || 'Vendor')}</span>
+                        <span class="booking-vendor">${escapeHtml(booking.vendorName || booking.stadiumName || 'Vendor')}</span>
                         <span class="status-badge status-${booking.status || 'pending'}">${booking.status || 'pending'}</span>
                     </div>
                     <div class="booking-details">
@@ -585,19 +584,27 @@
         }
     }
 
-    async function loadReviews() {
+    // SIRF CURRENT USER KI REVIEWS
+    async function loadUserReviews() {
         const container = document.getElementById('reviewsList');
-        container.innerHTML = '<div class="empty-state"><div class="spinner"></div><p>Loading reviews...</p></div>';
+        container.innerHTML = '<div class="empty-state"><div class="spinner"></div><p>Loading your reviews...</p></div>';
         
         try {
             console.log("Fetching reviews for user:", currentUser?.uid);
-            const q = query(collection(db, "reviews"), where("userId", "==", currentUser.uid), orderBy("createdAt", "desc"));
+            
+            // 🔥 IMPORTANT: userId filter - sirf current user ki reviews
+            const q = query(
+                collection(db, "reviews"), 
+                where("userId", "==", currentUser.uid),
+                orderBy("createdAt", "desc")
+            );
+            
             const snapshot = await getDocs(q);
             userReviews = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            console.log("Reviews found:", userReviews.length);
+            console.log("Your reviews found:", userReviews.length);
             
             if (userReviews.length === 0) {
-                container.innerHTML = '<div class="empty-state"><i class="fas fa-star"></i><p>No reviews yet</p><p style="font-size: 14px;">Book a service and share your experience!</p></div>';
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-star"></i><p>You have no reviews yet</p><p style="font-size: 14px;">Book a service and share your experience!</p></div>';
                 return;
             }
             
@@ -731,10 +738,10 @@
             return;
         }
         currentUser = user;
-        console.log("User logged in:", currentUser.uid);
+        console.log("✅ User logged in:", currentUser.uid);
         await loadUserData();
-        await loadBookings();
-        await loadReviews();
+        await loadUserBookings();
+        await loadUserReviews();
     });
 </script>
 </body>
