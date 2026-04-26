@@ -8,11 +8,69 @@ import { Linking, Platform } from 'react-native';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 
 import { db } from '@/config/firebase';
-import { getBusinessUpiId, UPI_BUSINESS_NAME } from '@/config/upiConfig';
+import { getBusinessUpiId, UPI_BUSINESS_NAME, UPI_PRIMARY_APP } from '@/config/upiConfig';
 import { sendServerNotification, scheduleLocal } from '@/services/notificationService';
 import type { CommissionBreakdown } from '@/types/payment';
 
 const BOOKINGS = 'bookings';
+
+/** In-app: business QR and app name (all customer-facing payee text uses `UPI_BUSINESS_NAME`). */
+export const BUSINESS_INFO = {
+  name: UPI_BUSINESS_NAME,
+  app: UPI_PRIMARY_APP,
+  qrImage: require('../../assets/images/stadium-qr.png'),
+} as const;
+
+function buildUpiAppQueryString(
+  amount: number,
+  description: string,
+  bookingId: string
+) {
+  const UPI_ID = getBusinessUpiId();
+  const am = amount.toFixed(2);
+  const tn = `${description}_${bookingId}`.replace(/\s+/g, ' ').slice(0, 80);
+  return `pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent(
+    UPI_BUSINESS_NAME
+  )}&am=${encodeURIComponent(am)}&cu=INR&tn=${encodeURIComponent(tn)}`;
+}
+
+/**
+ * Open a specific UPI app with amount, booking id, and note pre-filled.
+ * Falls back to `upi://pay` if the app scheme is not available.
+ */
+export async function openUPIApp(
+  app: 'phonepe' | 'gpay' | 'paytm' | 'bhim',
+  amount: number,
+  bookingId: string,
+  description: string
+): Promise<boolean> {
+  if (Platform.OS === 'web') {
+    return false;
+  }
+  const q = buildUpiAppQueryString(amount, description, bookingId);
+  const deepLinks: Record<typeof app, string> = {
+    phonepe: `phonepe://pay?${q}`,
+    gpay: `tez://upi/pay?${q}`,
+    paytm: `paytmmp://pay?${q}`,
+    bhim: `upi://pay?${q}`,
+  };
+  const primary = deepLinks[app];
+  const fallback = `upi://pay?${q}`;
+  try {
+    if (await Linking.canOpenURL(primary)) {
+      await Linking.openURL(primary);
+      return true;
+    }
+  } catch {
+    // fall through
+  }
+  try {
+    await Linking.openURL(fallback);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 const commissionRate = 0.05;
 const gstOnCommission = 0.18;

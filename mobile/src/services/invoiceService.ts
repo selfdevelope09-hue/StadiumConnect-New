@@ -474,6 +474,11 @@ export function generateInvoiceHTML(d: InvoiceData): string {
     </div>
     <div class="total-row final"><span>TOTAL PAYABLE</span><span>${inr(p.totalPayable)}</span></div>
   </div>
+  <div style="margin-top:20px;padding:12px 15px;border:1px solid #eee;border-radius:8px;background:#fffaf5;font-size:13px;line-height:1.5">
+    <div style="font-weight:bold;margin-bottom:4px">UPI &amp; collections</div>
+    <div>Payee Name: StadiumConnect</div>
+    <div>Description: StadiumConnect Official Payment</div>
+  </div>
   <div style="margin-top:30px">
     <div style="font-weight:bold;font-size:15px;margin-bottom:10px">Payment schedule</div>
     <table class="stages-table">

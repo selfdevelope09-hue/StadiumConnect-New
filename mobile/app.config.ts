@@ -21,6 +21,16 @@ const config: ExpoConfig = {
   ios: {
     supportsTablet: true,
     bundleIdentifier: 'com.stadiumconnect.app',
+    infoPlist: {
+      LSApplicationQueriesSchemes: [
+        'phonepe',
+        'tez',
+        'paytmmp',
+        'gpay',
+        'upi',
+        'paytm',
+      ],
+    },
   },
   android: {
     adaptiveIcon: {
@@ -51,7 +61,8 @@ const config: ExpoConfig = {
   ],
   extra: {
     EXPO_PUBLIC_GEMINI_KEY: process.env.EXPO_PUBLIC_GEMINI_KEY ?? '',
-    EXPO_PUBLIC_BUSINESS_UPI_ID: process.env.EXPO_PUBLIC_BUSINESS_UPI_ID ?? '',
+    EXPO_PUBLIC_BUSINESS_UPI_ID:
+      process.env.EXPO_PUBLIC_BUSINESS_UPI_ID ?? 'atharv@ybl',
     EXPO_PUBLIC_INVOICE_OWNER: process.env.EXPO_PUBLIC_INVOICE_OWNER ?? '',
     EXPO_PUBLIC_INVOICE_CITY: process.env.EXPO_PUBLIC_INVOICE_CITY ?? '',
     EXPO_PUBLIC_INVOICE_PHONE: process.env.EXPO_PUBLIC_INVOICE_PHONE ?? '',
