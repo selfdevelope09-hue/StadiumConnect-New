@@ -2,78 +2,46 @@ import {
   collection,
   getDocs,
   limit,
+  orderBy,
   query,
   where,
 } from 'firebase/firestore';
 
 import { db } from '@/config/firebase';
 import { getGeminiApiKey, GEMINI_GENERATE_URL } from '@/config/geminiConfig';
-import type { AIVendorResultPayload, UserPreferences, Top3Item } from '@/types/aiChat';
 
-const VENDORS = 'vendors';
-
-/** Normalize quick-reply / chip text for DB matching (drop leading emoji) */
-function stripEmojis(s: string): string {
-  return s
-    .replace(
-      /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu,
-      ''
-    )
-    .replace(/^\s*📍\s*/u, '')
-    .replace(/^\s*💰\s*/u, '')
-    .replace(/^\s*📅\s*/u, '')
-    .replace(/^\s*⭐\s*/u, '')
-    .replace(/^\s*✨\s*/u, '')
-    .replace(/^\s*✅\s*/u, '')
-    .trim();
+/** Aligned with AI chat modal flow (event type, not necessarily a date). */
+export interface UserPreferences {
+  category: string;
+  city: string;
+  budget: string;
+  eventType: string;
+  specialReq: string;
 }
 
-function normalizeCategory(raw: string): string {
-  const s = stripEmojis(raw);
-  if (/full event/i.test(s) || /package/i.test(s)) {
-    return 'Full Event Package';
-  }
-  return s || raw;
+export interface VendorResult {
+  vendorId: string;
+  vendorName: string;
+  rank: number;
+  whyPicked: string;
+  matchScore: number;
+  priceRange: string;
+  rating: number;
+  city: string;
+  category: string;
+  image?: string;
 }
 
-function normalizeCity(raw: string): string {
-  let s = stripEmojis(raw);
-  if (/other/i.test(s) || /type/i.test(s)) {
-    return '';
-  }
-  return s;
-}
-
-export function parseBudget(budget: string): number {
-  const s = stripEmojis(budget).toLowerCase();
-  if (s.includes('5l+') || s.includes('5l +')) {
-    return 1e9;
-  }
-  if (s.includes('1l') && s.includes('5l')) {
-    return 5_00_000;
-  }
-  if (s.includes('50k') && s.includes('1l')) {
-    return 1_00_000;
-  }
-  if (s.includes('10k') && s.includes('50k')) {
-    return 50_000;
-  }
-  if (s.includes('10,000') || s.includes('10000') || s.includes('under')) {
-    return 10_000;
-  }
-  const m = s.match(/(\d+\.?\d*)\s*l/i);
-  if (m) {
-    return parseFloat(m[1]) * 1_00_000;
-  }
-  const k = s.match(/(\d+\.?\d*)\s*k/i);
-  if (k) {
-    return parseFloat(k[1]) * 1_000;
-  }
-  const num = s.match(/[\d,]+/);
-  if (num) {
-    return parseInt(num[0].replace(/,/g, ''), 10) || 5_00_000;
-  }
-  return 5_00_000;
+export interface AIResponse {
+  message: string;
+  top3: VendorResult[];
+  myPick: {
+    vendorId: string;
+    vendorName: string;
+    reason: string;
+    tip: string;
+  };
+  followUpQuestion: string;
 }
 
 export type FireVendor = {
@@ -84,292 +52,250 @@ export type FireVendor = {
   area?: string;
   priceRange?: string;
   minPrice?: number;
+  maxPrice?: number;
   rating?: number;
-  reviews?: number;
   reviewCount?: number;
-  isAvailable?: boolean;
+  reviews?: number;
   isActive?: boolean;
-  photoURL?: string;
+  isAvailable?: boolean;
+  image?: string;
   imageUrl?: string;
+  photoURL?: string;
 };
 
-function vendorRowMatches(
-  d: FireVendor,
-  prefs: UserPreferences,
-  maxBudget: number
-): boolean {
-  if (d.isAvailable === false) {
-    return false;
-  }
-  if (d.isActive === false) {
-    return false;
-  }
-  const wantCat = normalizeCategory(prefs.category).toLowerCase();
-  const vCat = (d.category || '').toLowerCase();
-  if (wantCat && vCat) {
-    if (!vCat.includes(wantCat) && !wantCat.includes(vCat) && !/full|package/i.test(prefs.category)) {
-      if (!/full|package/i.test(wantCat)) {
-        // allow if category string overlaps
-        const ok =
-          vCat.split(/\s+/).some((w) => w.length > 2 && wantCat.includes(w)) ||
-          wantCat.split(/\s+/).some((w) => w.length > 2 && vCat.includes(w));
-        if (!ok) {
-          return false;
-        }
-      }
-    }
-  }
-  const low = d.minPrice;
-  if (typeof low === 'number' && low > maxBudget * 1.2) {
-    return false;
-  }
-  if (!prefs.city.trim() || !normalizeCity(prefs.city)) {
-    return true;
-  }
-  const want = normalizeCity(prefs.city).toLowerCase();
-  const loc = (d.city || d.area || '').toLowerCase();
-  if (!loc) {
-    return true;
-  }
-  return loc.includes(want) || want.includes(loc);
+export const PAYMENT_STAGES: Record<string, { stage: number; percent: number; label: string }[]> = {
+  decorator: [
+    { stage: 1, percent: 30, label: 'Booking Advance' },
+    { stage: 2, percent: 50, label: 'Work Start' },
+    { stage: 3, percent: 20, label: 'Final Payment' },
+  ],
+  photographer: [{ stage: 1, percent: 100, label: 'After Photo Delivery' }],
+  caterer: [
+    { stage: 1, percent: 50, label: 'Advance' },
+    { stage: 2, percent: 50, label: 'Day of Event' },
+  ],
+  band_baja: [
+    { stage: 1, percent: 40, label: 'Booking Token' },
+    { stage: 2, percent: 60, label: 'Day of Event' },
+  ],
+  venue: [
+    { stage: 1, percent: 25, label: 'Slot Booking' },
+    { stage: 2, percent: 50, label: '1 Week Before' },
+    { stage: 3, percent: 25, label: 'Final Settlement' },
+  ],
+};
+
+function sortByRatingDesc<T extends { rating?: number }>(rows: T[]): T[] {
+  return [...rows].sort((a, b) => (b.rating || 0) - (a.rating || 0));
 }
 
-export async function fetchVendorsFromFirestore(
+/**
+ * Fetches vendors for Gemini; tries common Firestore field combos (isActive / isAvailable, indexes).
+ */
+export const fetchVendorsFromFirestore = async (
   prefs: UserPreferences
-): Promise<FireVendor[]> {
-  const col = collection(db, VENDORS);
-  const maxB = Math.max(parseBudget(prefs.budget), 0);
-  const wantCat = normalizeCategory(prefs.category);
-  const wantCity = normalizeCity(prefs.city);
+): Promise<FireVendor[]> => {
+  const cat = (prefs.category || '').trim() || 'caterer';
+  const ref = collection(db, 'vendors');
+  const attempts: (() => ReturnType<typeof query>)[] = [
+    () =>
+      query(
+        ref,
+        where('category', '==', cat),
+        where('isActive', '==', true),
+        orderBy('rating', 'desc'),
+        limit(15)
+      ),
+    () => query(ref, where('category', '==', cat), where('isAvailable', '==', true), limit(25)),
+    () => query(ref, where('category', '==', cat), where('isActive', '==', true), limit(25)),
+    () => query(ref, where('isAvailable', '==', true), limit(30)),
+  ];
 
-  let list: FireVendor[] = [];
-  try {
-    const q = query(
-      col,
-      where('category', '==', wantCat),
-      where('isAvailable', '==', true),
-      limit(25)
-    );
-    const snap = await getDocs(q);
-    list = snap.docs.map((d) => ({ id: d.id, ...d.data() } as FireVendor));
-  } catch {
-    /* fall through */ void 0;
-  }
-  if (list.length === 0) {
+  for (const build of attempts) {
     try {
-      const q2 = query(col, where('isAvailable', '==', true), limit(50));
-      const snap2 = await getDocs(q2);
-      list = snap2.docs.map((d) => ({ id: d.id, ...d.data() } as FireVendor));
-    } catch {
-      try {
-        const q3 = query(col, limit(50));
-        const snap3 = await getDocs(q3);
-        list = snap3.docs.map((d) => ({ id: d.id, ...d.data() } as FireVendor));
-      } catch {
-        return [];
+      const snap = await getDocs(build());
+      if (!snap.empty) {
+        return sortByRatingDesc(
+          snap.docs.map((d) => {
+            const data = d.data() as Omit<FireVendor, 'id'>;
+            return { ...data, id: d.id };
+          })
+        ).slice(0, 15);
       }
+    } catch {
+      /* try next */
     }
   }
-
-  if (wantCity) {
-    const c = list.filter(
-      (v) =>
-        (v.city || v.area || '')
-          .toLowerCase()
-          .includes(wantCity.toLowerCase()) ||
-        (v.city || v.area) === wantCity
+  try {
+    const snap = await getDocs(query(ref, limit(30)));
+    const rows = snap.docs.map((d) => {
+      const data = d.data() as Omit<FireVendor, 'id'>;
+      return { ...data, id: d.id };
+    });
+    const c = cat.toLowerCase();
+    const filtered = rows.filter(
+      (r) => (r.category || '').toLowerCase().includes(c) || c.includes((r.category || '').toLowerCase())
     );
-    if (c.length) {
-      list = c;
-    }
+    return sortByRatingDesc((filtered.length ? filtered : rows).slice(0, 15));
+  } catch (error) {
+    console.error('Firestore fetch error:', error);
+    return [];
   }
-  if (wantCat) {
-    const c = list.filter(
-      (v) =>
-        (v.category || '').toLowerCase().includes(wantCat.toLowerCase()) ||
-        wantCat.toLowerCase().includes((v.category || '').toLowerCase())
-    );
-    if (c.length) {
-      list = c;
-    }
-  }
+};
 
-  return list
-    .filter((v) => vendorRowMatches(v, prefs, maxB))
-    .sort((a, b) => (b.rating || 0) - (a.rating || 0))
-    .slice(0, 15);
-}
-
-function extractJsonObject(text: string): unknown {
-  const cleaned = text
-    .replace(/```json\s*/gi, '')
-    .replace(/```/g, '')
-    .trim();
-  const first = cleaned.indexOf('{');
-  const last = cleaned.lastIndexOf('}');
-  if (first === -1) {
-    throw new Error('No JSON in AI response');
-  }
-  return JSON.parse(cleaned.slice(first, last + 1));
-}
-
-export async function getAIRecommendations(
+export const callGeminiAI = async (
   prefs: UserPreferences,
-  rawVendors: FireVendor[]
-): Promise<AIVendorResultPayload> {
+  vendors: FireVendor[]
+): Promise<AIResponse | null> => {
   const key = getGeminiApiKey();
   if (!key) {
-    throw new Error('Missing EXPO_PUBLIC_GEMINI_KEY');
+    console.warn('Missing EXPO_PUBLIC_GEMINI_KEY');
+    return null;
   }
-  const vendors = rawVendors.slice(0, 12).map((v) => ({
-    id: v.id,
-    name: v.name,
-    category: v.category,
-    city: v.city || v.area,
-    priceRange: v.priceRange,
-    minPrice: v.minPrice,
-    rating: v.rating,
-    reviews: v.reviews ?? v.reviewCount,
-    isAvailable: v.isAvailable,
-    photoURL: v.photoURL || v.imageUrl,
-  }));
 
   const prompt = `
-You are a helpful Indian event planning assistant for StadiumConnect app.
-Respond in Hinglish (mix of Hindi and English) to feel friendly and local.
+You are a smart vendor recommendation AI for StadiumConnect app in India.
+Respond in Hinglish (friendly mix of Hindi and English).
 
-USER WANTS:
+USER REQUIREMENTS:
 - Service: ${prefs.category}
-- City: ${prefs.city}  
+- City: ${prefs.city}
 - Budget: ${prefs.budget}
-- Event Date: ${prefs.eventDate}
-- Special Requirement: ${prefs.specialReq}
+- Event Type: ${prefs.eventType}
+- Special Requirements: ${prefs.specialReq || 'None'}
 
-AVAILABLE VENDORS FROM DATABASE:
-${JSON.stringify(vendors)}
+AVAILABLE VENDORS:
+${JSON.stringify(
+  vendors.map((v) => ({
+    id: v.id,
+    name: v.name,
+    rating: v.rating,
+    reviewCount: v.reviewCount || v.reviews || 0,
+    priceRange:
+      v.priceRange ||
+      (v.minPrice != null && v.maxPrice != null
+        ? `${v.minPrice} - ${v.maxPrice}`
+        : '—'),
+    area: v.area || v.city,
+    category: v.category,
+    image: v.image || v.imageUrl || v.photoURL || null,
+  })),
+  null,
+  2
+)}
 
-Give response in this EXACT JSON format only, no extra text:
+Return ONLY valid JSON, no extra text, no markdown:
 {
-  "message": "Friendly 1-2 line intro message in Hinglish about results",
+  "message": "Friendly 1-2 line intro in Hinglish",
   "top3": [
     {
       "vendorId": "...",
       "vendorName": "...",
-      "category": "...",
-      "city": "...",
+      "rank": 1,
+      "whyPicked": "1 line reason in Hinglish",
+      "matchScore": 95,
       "priceRange": "...",
       "rating": 4.5,
-      "whyRecommend": "Short 1 line reason in Hinglish why this is good"
+      "city": "...",
+      "category": "..."
     }
   ],
   "myPick": {
     "vendorId": "...",
     "vendorName": "...",
-    "reason": "2-3 line detailed reason in Hinglish - mention price value, rating, reliability",
-    "tip": "One smart booking tip for the user"
+    "reason": "2-3 line detailed reason in Hinglish",
+    "tip": "One smart booking tip"
   },
-  "followUpQuestion": "Ask if they want to refine search or book directly"
-}
-`;
+  "followUpQuestion": "Short follow up question in Hinglish"
+}`;
 
-  const res = await fetch(GEMINI_GENERATE_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-goog-api-key': key,
-    },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.4, maxOutputTokens: 1200 },
-    }),
-  });
-  if (!res.ok) {
-    throw new Error((await res.text()) || 'Gemini request failed');
+  try {
+    const response = await fetch(GEMINI_GENERATE_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-goog-api-key': key,
+      },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.3, maxOutputTokens: 1200 },
+      }),
+    });
+    if (!response.ok) {
+      throw new Error(await response.text());
+    }
+    const data = (await response.json()) as {
+      candidates?: { content: { parts: { text: string }[] } }[];
+    };
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!text) {
+      return null;
+    }
+    const cleaned = text.replace(/```json|```/g, '').trim();
+    const start = cleaned.indexOf('{');
+    const end = cleaned.lastIndexOf('}');
+    return JSON.parse(
+      start >= 0 ? cleaned.slice(start, end + 1) : cleaned
+    ) as AIResponse;
+  } catch (error) {
+    console.error('Gemini API error:', error);
+    return null;
   }
-  const data = (await res.json()) as {
-    candidates?: { content: { parts: { text: string }[] } }[];
-  };
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text) {
-    throw new Error('Empty AI response');
-  }
-  const parsed = extractJsonObject(text) as {
-    message: string;
-    top3: Top3Item[];
-    myPick: AIVendorResultPayload['myPick'];
-    followUpQuestion: string;
-  };
-  return {
-    message: parsed.message,
-    top3: (parsed.top3 || []).map((t) => ({
-      ...t,
-      photoURL: rawVendors.find((v) => v.id === t.vendorId)?.photoURL,
-    })),
-    myPick: parsed.myPick,
-    followUpQuestion: parsed.followUpQuestion,
-    rawVendors: rawVendors as unknown as Record<string, unknown>[],
-  };
-}
-
-const CHIP = /\[CHIP:\s*([^\]]+?)\]/g;
-
-export type FreeChatResult = {
-  text: string;
-  chips: string[];
 };
 
-export async function runFreeFormChat(
-  userText: string,
+export const callGeminiFreeChat = async (
+  userMessage: string,
   prefs: UserPreferences,
   vendors: FireVendor[]
-): Promise<FreeChatResult> {
+): Promise<{ reply: string; chips: string[] }> => {
   const key = getGeminiApiKey();
   if (!key) {
-    return { text: 'Gemini key missing. Add EXPO_PUBLIC_GEMINI_KEY.', chips: [] };
+    return {
+      reply: 'Gemini key missing. Set EXPO_PUBLIC_GEMINI_KEY in .env / EAS.',
+      chips: ['OK'],
+    };
   }
-  const systemPrompt = `You are StadiumConnect's AI assistant. User is looking for event vendors in India.
-Current context: ${JSON.stringify(prefs)}
-Vendors in our database: ${JSON.stringify(
-    vendors.slice(0, 15).map((v) => ({
-      id: v.id,
-      name: v.name,
-      category: v.category,
-      city: v.city,
-      priceRange: v.priceRange,
-      rating: v.rating,
-    }))
-  )}
+  const prompt = `
+You are StadiumConnect's AI assistant. Answer in Hinglish only.
+Current user context: ${JSON.stringify(prefs)}
+Available vendors: ${JSON.stringify(vendors.slice(0, 8))}
+User says: "${userMessage}"
 
-Answer their question helpfully in Hinglish. 
-If they ask about a specific vendor, provide details.
-If they want to change preference, update and re-search.
-Keep responses SHORT and conversational.
-At the end, include 1-3 lines with optional quick actions in format: [CHIP: text]  for each action on its own.`;
+Reply helpfully in 2-3 lines max.
+End with chips in format: [CHIP:text] max 3 chips.
+Example: [CHIP:Budget change karein] [CHIP:Doosra city] [CHIP:Book karo]
+`;
 
-  const res = await fetch(GEMINI_GENERATE_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-goog-api-key': key,
-    },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: `${systemPrompt}\n\nUser: ${userText}` }] }],
-      generationConfig: { temperature: 0.5, maxOutputTokens: 600 },
-    }),
-  });
-  if (!res.ok) {
-    return { text: 'Network error, try again.', chips: [] };
+  try {
+    const response = await fetch(GEMINI_GENERATE_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-goog-api-key': key,
+      },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.5, maxOutputTokens: 300 },
+      }),
+    });
+    if (!response.ok) {
+      throw new Error(await response.text());
+    }
+    const data = (await response.json()) as {
+      candidates?: { content: { parts: { text: string }[] } }[];
+    };
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const chips: string[] = [];
+    const chipMatches = text.matchAll(/\[CHIP:([^\]]+)\]/g);
+    for (const match of chipMatches) {
+      chips.push(match[1].trim());
+    }
+    const reply = text.replace(/\[CHIP:[^\]]+\]/g, '').trim();
+    return { reply, chips: chips.length ? chips : ['Theek hai'] };
+  } catch {
+    return {
+      reply: 'Kuch issue aaya, please dobara try karo.',
+      chips: ['Retry', 'Main menu'],
+    };
   }
-  const data = (await res.json()) as {
-    candidates?: { content: { parts: { text: string }[] } }[];
-  };
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-  const chips: string[] = [];
-  let m: RegExpExecArray | null;
-  const re = new RegExp(CHIP.source, 'g');
-  while ((m = re.exec(text)) !== null) {
-    chips.push(m[1].trim());
-  }
-  const clean = text.replace(CHIP, '').replace(/\n{3,}/g, '\n\n').trim();
-  return { text: clean, chips };
-}
+};

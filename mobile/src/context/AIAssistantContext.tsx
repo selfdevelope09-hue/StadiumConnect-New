@@ -1,22 +1,31 @@
 import {
   createContext,
+  useCallback,
   useContext,
   useMemo,
+  useRef,
   type ReactNode,
 } from 'react';
 
-type Value = { open: () => void };
+type Value = {
+  open: () => void;
+  registerOpen: (fn: (() => void) | null) => void;
+};
 
 const AIAssistantContext = createContext<Value | null>(null);
 
-export function AIAssistantProvider({
-  children,
-  onOpen,
-}: {
-  children: ReactNode;
-  onOpen: () => void;
-}) {
-  const v = useMemo(() => ({ open: onOpen }), [onOpen]);
+export function AIAssistantProvider({ children }: { children: ReactNode }) {
+  const r = useRef<(() => void) | null>(null);
+  const open = useCallback(() => {
+    r.current?.();
+  }, []);
+  const registerOpen = useCallback((fn: (() => void) | null) => {
+    r.current = fn;
+  }, []);
+  const v = useMemo(
+    () => ({ open, registerOpen }),
+    [open, registerOpen]
+  );
   return (
     <AIAssistantContext.Provider value={v}>
       {children}
@@ -24,8 +33,12 @@ export function AIAssistantProvider({
   );
 }
 
-/** Call from Home (or any screen under UserAppNavigator) to open the same AI modal as the FAB. */
 export function useOpenAIAssistant() {
   const ctx = useContext(AIAssistantContext);
-  return ctx ?? { open: () => {} };
+  return (
+    ctx ?? {
+      open: () => {},
+      registerOpen: () => {},
+    }
+  );
 }
