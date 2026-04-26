@@ -1,11 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import {
-  FlatList,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Card, Surface } from 'react-native-paper';
 import {
   collection,
@@ -140,19 +134,14 @@ export function CommissionDashboard() {
           {rows.length === 0 ? (
             <Text style={styles.muted}>No paid bookings in Firestore yet.</Text>
           ) : (
-            <FlatList
-              scrollEnabled={false}
-              data={rows}
-              keyExtractor={(r) => r.vendorId}
-              renderItem={({ item }) => (
-                <View style={styles.row}>
-                  <Text style={styles.rName}>{item.name}</Text>
-                  <Text style={styles.rSub}>
-                    {item.bookings} booking(s) · fee ₹{item.totalFee.toLocaleString('en-IN')}
-                  </Text>
-                </View>
-              )}
-            />
+            rows.map((item) => (
+              <View key={item.vendorId} style={styles.row}>
+                <Text style={styles.rName}>{item.name}</Text>
+                <Text style={styles.rSub}>
+                  {item.bookings} booking(s) · fee ₹{item.totalFee.toLocaleString('en-IN')}
+                </Text>
+              </View>
+            ))
           )}
         </Card.Content>
       </Card>
