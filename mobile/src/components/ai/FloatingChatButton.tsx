@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -13,9 +13,19 @@ const ORANGE = '#FF6B35';
 const ORANGE_2 = '#FF8C42';
 const SIZE = 58;
 
-type Props = { onPress: () => void };
+/** Extra space above home indicator so the FAB clears the bottom tab bar (~49–62pt). */
+const DEFAULT_TAB_BAR_OFFSET = Platform.select({ ios: 78, android: 72, default: 72 });
 
-export function FloatingChatButton({ onPress }: Props) {
+type Props = {
+  onPress: () => void;
+  /** Add to bottom offset (tab bar). Defaults so the button sits above the tab bar. */
+  extraBottom?: number;
+};
+
+export function FloatingChatButton({
+  onPress,
+  extraBottom = DEFAULT_TAB_BAR_OFFSET,
+}: Props) {
   const insets = useSafeAreaInsets();
   const scale = useSharedValue(1);
   const glow = useSharedValue(0.5);
@@ -49,7 +59,7 @@ export function FloatingChatButton({ onPress }: Props) {
       style={[
         styles.host,
         {
-          bottom: Math.max(16, insets.bottom) + 8,
+          bottom: Math.max(16, insets.bottom) + 8 + extraBottom,
           right: 14 + insets.right,
         },
       ]}
@@ -77,8 +87,8 @@ export function FloatingChatButton({ onPress }: Props) {
 const styles = StyleSheet.create({
   host: {
     position: 'absolute',
-    zIndex: 9999,
-    elevation: 20,
+    zIndex: 99999,
+    elevation: 28,
   },
   glow: {
     position: 'absolute',

@@ -474,8 +474,8 @@
         .ai-fab {
             position: fixed;
             right: 20px;
-            bottom: 24px;
-            z-index: 3000;
+            bottom: max(24px, env(safe-area-inset-bottom, 0px));
+            z-index: 10050;
             width: 58px;
             height: 58px;
             border-radius: 50%;
@@ -566,6 +566,9 @@
 <div class="hero">
     <h2>Plan Your Perfect Event</h2>
     <p>Discover premium vendors, stunning stadiums, and top-rated services for your special occasions</p>
+    <p style="margin-top:14px;font-size:14px;font-weight:600;color:var(--accent);">
+        🤖 <span style="color:var(--text-secondary);font-weight:500;">Tip: Use the orange AI button (bottom-right) for quick vendor help.</span>
+    </p>
 </div>
 
 <div class="location-bar">

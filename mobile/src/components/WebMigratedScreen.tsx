@@ -1,9 +1,6 @@
 import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { useLayoutEffect, useMemo, useState } from 'react';
-import { View } from 'react-native';
-import { AIChatModal } from '@/components/ai/AIChatModal';
-import { FloatingChatButton } from '@/components/ai/FloatingChatButton';
+import { useLayoutEffect, useMemo } from 'react';
 import { MigratedContent } from '@/components/MigratedContent';
 
 import type { UserStackParamList } from '@/navigation/types';
@@ -63,7 +60,6 @@ export function WebMigratedScreen() {
   const nav = useNavigation();
   const route = useRoute<RouteProp<UserStackParamList, keyof UserStackParamList>>();
   const name = route.name;
-  const [aiOpen, setAiOpen] = useState(false);
   const meta = useMemo(() => {
     if (name === 'MigratedFromWeb' && 'params' in route && route.params) {
       const p = route.params as { title: string; sourceHtml: string };
@@ -79,20 +75,6 @@ export function WebMigratedScreen() {
   useLayoutEffect(() => {
     nav.setOptions({ title: meta.title, headerBackTitle: 'Back' });
   }, [meta.title, nav]);
-
-  if (name === 'HomeHtml') {
-    return (
-      <View style={{ flex: 1 }}>
-        <MigratedContent
-          title={meta.title}
-          sourceHtml={meta.sourceHtml}
-          routeName={name}
-        />
-        <FloatingChatButton onPress={() => setAiOpen(true)} />
-        <AIChatModal visible={aiOpen} onClose={() => setAiOpen(false)} />
-      </View>
-    );
-  }
 
   return (
     <MigratedContent

@@ -7,6 +7,7 @@ import { Button, Card, Text } from 'react-native-paper';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
 import { brand } from '@/config/appTheme';
+import { useOpenAIAssistant } from '@/context/AIAssistantContext';
 import type { UserStackParamList, UserTabParamList } from '@/navigation/types';
 
 const primary = brand.primary;
@@ -17,6 +18,7 @@ type Nav = CompositeNavigationProp<TabNav, RootNav>;
 
 export function HomeScreen() {
   const navigation = useNavigation<Nav>();
+  const { open: openAI } = useOpenAIAssistant();
   const open = (screen: keyof UserStackParamList) => {
     navigation.getParent()?.navigate(screen as never);
   };
@@ -29,10 +31,21 @@ export function HomeScreen() {
         <Text variant="headlineMedium" style={{ fontWeight: '800', marginBottom: 8 }}>
           Stadium<Text style={{ color: primary }}>Connect</Text>
         </Text>
-        <Text style={{ color: '#666', marginBottom: 20, lineHeight: 22 }}>
+        <Text style={{ color: '#666', marginBottom: 12, lineHeight: 22 }}>
           Premium event marketplace — find a venue, lock a date, and book trusted
           vendors.
         </Text>
+        <View style={{ marginBottom: 16 }}>
+          <Button
+            mode="contained"
+            buttonColor={primary}
+            onPress={openAI}
+            icon="robot-happy"
+            contentStyle={{ paddingVertical: 6 }}
+          >
+            Open AI assistant (vendors, tips)
+          </Button>
+        </View>
         <Card
           mode="contained"
           style={{ marginBottom: 12, backgroundColor: '#fff5f0' }}
