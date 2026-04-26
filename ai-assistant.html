@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>StadiumConnect AI | Web</title>
+  <title>ConnectAI | StadiumConnect</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -72,16 +72,16 @@
 <body>
   <header>
     <div>
-      <h1>🤖 AI Vendor Assistant</h1>
-      <div style="opacity:0.9;font-size:12px;margin-top:4px">Web — same flow as StadiumConnect app</div>
+      <h1>ConnectAI</h1>
+      <div style="opacity:0.9;font-size:12px;margin-top:4px">StadiumConnect · smart vendor help</div>
     </div>
     <a href="home.html">← Home</a>
   </header>
   <div id="keyRow">
-    <strong>Gemini API key</strong> (saved in this browser only — never commit keys to git):
+    <strong>ConnectAI API key</strong> — stored only in this browser (do not share or commit to git):
     <div>
-      <input type="password" id="geminiKey" placeholder="Paste key once, or set later" autocomplete="off" />
-      <button type="button" class="chip" id="saveKey" style="margin-top:8px">Save key</button>
+      <input type="password" id="connectaiKey" placeholder="Paste your API key once" autocomplete="off" />
+      <button type="button" class="chip" id="saveKey" style="margin-top:8px">Save securely</button>
     </div>
   </div>
   <div id="log"></div>
@@ -108,7 +108,7 @@
     const db = getFirestore(app);
 
     const logEl = document.getElementById("log");
-    const keyInput = document.getElementById("geminiKey");
+    const keyInput = document.getElementById("connectaiKey");
     const saveKey = document.getElementById("saveKey");
     const freeText = document.getElementById("freeText");
     const sendBtn = document.getElementById("sendBtn");
@@ -126,16 +126,25 @@
       extras: ["⭐ Top Rated Only", "✅ Skip - Show Results"],
     };
 
-    const saved = sessionStorage.getItem("sc_gemini");
+    const saved =
+      sessionStorage.getItem("sc_connectai") || sessionStorage.getItem("sc_gemini");
     if (saved) keyInput.value = saved;
 
     saveKey.addEventListener("click", () => {
-      sessionStorage.setItem("sc_gemini", keyInput.value.trim());
-      alert("Saved in this browser.");
+      const v = keyInput.value.trim();
+      sessionStorage.setItem("sc_connectai", v);
+      try {
+        sessionStorage.removeItem("sc_gemini");
+      } catch (_) {}
+      alert("Saved in this browser only.");
     });
 
     function getKey() {
-      return sessionStorage.getItem("sc_gemini")?.trim() || keyInput.value.trim();
+      return (
+        sessionStorage.getItem("sc_connectai")?.trim() ||
+        sessionStorage.getItem("sc_gemini")?.trim() ||
+        keyInput.value.trim()
+      );
     }
 
     function addBubble(text, who) {
@@ -181,10 +190,10 @@
       return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
     }
 
-    async function callGeminiAI(p, vlist) {
+    async function runConnectAI(p, vlist) {
       const key = getKey();
-      if (!key) throw new Error("Add Gemini key above");
-      const prompt = `You are StadiumConnect AI India. Hinglish. USER: ${JSON.stringify(p)} VENDORS: ${JSON.stringify(vlist.slice(0, 12).map(x => ({ id: x.id, name: x.name, rating: x.rating, category: x.category, city: x.city || x.area, priceRange: x.priceRange })))}
+      if (!key) throw new Error("Add your ConnectAI API key above");
+      const prompt = `You are ConnectAI, StadiumConnect's assistant in India. Hinglish. USER: ${JSON.stringify(p)} VENDORS: ${JSON.stringify(vlist.slice(0, 12).map(x => ({ id: x.id, name: x.name, rating: x.rating, category: x.category, city: x.city || x.area, priceRange: x.priceRange })))}
 Return ONLY valid JSON:
 {"message":"...","top3":[{"vendorId":"","vendorName":"","rank":1,"whyPicked":"","matchScore":90,"priceRange":"","rating":4.5,"city":"","category":""}],"myPick":{"vendorId":"","vendorName":"","reason":"","tip":""},"followUpQuestion":"..."}`;
       const r = await fetch(GEMINI_URL, {
@@ -274,7 +283,7 @@ Return ONLY valid JSON:
         prefs.specialReq = chip.includes("Skip") ? "" : clean(chip);
         const ty = document.createElement("p");
         ty.className = "typing";
-        ty.textContent = "…soch raha hoon (Firestore + Gemini)";
+        ty.textContent = "…soch raha hoon (ConnectAI)";
         logEl.appendChild(ty);
         try {
           vendors = await fetchVendors(prefs);
@@ -283,7 +292,7 @@ Return ONLY valid JSON:
             addBubble("Is category/city par abhi data kam hai — vendors.html dekho.", "ai");
             return;
           }
-          const ai = await callGeminiAI(prefs, vendors);
+          const ai = await runConnectAI(prefs, vendors);
           ty.remove();
           addBubble(ai.message, "ai");
           renderResults(ai);
@@ -306,8 +315,8 @@ Return ONLY valid JSON:
       addBubble(t, "user");
       freeText.value = "";
       const key = getKey();
-      if (!key) { addBubble("Pehle Gemini key save karo.", "ai"); return; }
-      const prompt = `Hinglish. Context: ${JSON.stringify(prefs)} Vendors: ${JSON.stringify(vendors.slice(0,8))} User: ${t}  Reply short. [CHIP: a] [CHIP: b] end with max 2 chips.`;
+      if (!key) { addBubble("Pehle ConnectAI key save karo (upar).", "ai"); return; }
+      const prompt = `You are ConnectAI (StadiumConnect). Hinglish. Context: ${JSON.stringify(prefs)} Vendors: ${JSON.stringify(vendors.slice(0,8))} User: ${t}  Reply short. [CHIP: a] [CHIP: b] end with max 2 chips.`;
       const r = await fetch(GEMINI_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-goog-api-key": key },

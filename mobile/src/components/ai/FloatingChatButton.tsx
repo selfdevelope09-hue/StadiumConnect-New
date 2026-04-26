@@ -80,7 +80,7 @@ export function FloatingChatButton({ onBookNow }: Props) {
             style={styles.button}
             onPress={() => setModalVisible(true)}
             activeOpacity={0.85}
-            accessibilityLabel="Open AI vendor assistant"
+            accessibilityLabel="Open ConnectAI assistant"
           >
             <View style={styles.badge}>
               <Text style={styles.badgeTxt}>AI</Text>

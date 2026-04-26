@@ -90,7 +90,7 @@ function sortByRatingDesc<T extends { rating?: number }>(rows: T[]): T[] {
 }
 
 /**
- * Fetches vendors for Gemini; tries common Firestore field combos (isActive / isAvailable, indexes).
+ * Fetches vendors for ConnectAI; tries common Firestore field combos (isActive / isAvailable, indexes).
  */
 export const fetchVendorsFromFirestore = async (
   prefs: UserPreferences
@@ -154,7 +154,7 @@ export const callGeminiAI = async (
   }
 
   const prompt = `
-You are a smart vendor recommendation AI for StadiumConnect app in India.
+You are ConnectAI, the smart vendor assistant for StadiumConnect in India.
 Respond in Hinglish (friendly mix of Hindi and English).
 
 USER REQUIREMENTS:
@@ -238,7 +238,7 @@ Return ONLY valid JSON, no extra text, no markdown:
       start >= 0 ? cleaned.slice(start, end + 1) : cleaned
     ) as AIResponse;
   } catch (error) {
-    console.error('Gemini API error:', error);
+    console.error('ConnectAI API error:', error);
     return null;
   }
 };
@@ -251,12 +251,12 @@ export const callGeminiFreeChat = async (
   const key = getGeminiApiKey();
   if (!key) {
     return {
-      reply: 'Gemini key missing. Set EXPO_PUBLIC_GEMINI_KEY in .env / EAS.',
+      reply: 'ConnectAI abhi set up nahi hai. App .env mein API key add karo (dekh: .env.example).',
       chips: ['OK'],
     };
   }
   const prompt = `
-You are StadiumConnect's AI assistant. Answer in Hinglish only.
+You are ConnectAI, StadiumConnect's assistant. Answer in Hinglish only.
 Current user context: ${JSON.stringify(prefs)}
 Available vendors: ${JSON.stringify(vendors.slice(0, 8))}
 User says: "${userMessage}"
