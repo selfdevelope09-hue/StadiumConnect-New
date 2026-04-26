@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { AIChatModal } from '@/components/ai/AIChatModal';
 import { FloatingChatButton } from '@/components/ai/FloatingChatButton';
+import { AIAssistantProvider } from '@/context/AIAssistantContext';
 import { WebMigratedScreen } from '@/components/WebMigratedScreen';
 import { UserTabNavigator } from '@/navigation/UserTabNavigator';
 import { BookingConfirmedScreen } from '@/screens/user/BookingConfirmedScreen';
@@ -41,7 +42,9 @@ const stackScreens: (keyof UserStackParamList)[] = [
 
 export function UserAppNavigator() {
   const [aiOpen, setAiOpen] = useState(false);
+  const openAi = () => setAiOpen(true);
   return (
+    <AIAssistantProvider onOpen={openAi}>
     <View style={{ flex: 1 }}>
       <Stack.Navigator>
         <Stack.Screen
@@ -87,8 +90,9 @@ export function UserAppNavigator() {
           />
         ))}
       </Stack.Navigator>
-      <FloatingChatButton onPress={() => setAiOpen(true)} />
+      <FloatingChatButton onPress={openAi} />
       <AIChatModal visible={aiOpen} onClose={() => setAiOpen(false)} />
     </View>
+    </AIAssistantProvider>
   );
 }
