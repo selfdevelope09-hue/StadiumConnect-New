@@ -1,0 +1,16 @@
+{
+  "name": "stadiumconnect-functions",
+  "description": "Razorpay + Expo push (callable + webhook)",
+  "engines": { "node": ">=18" },
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "serve": "firebase emulators:start --only functions",
+    "deploy": "firebase deploy --only functions"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.7.0",
+    "firebase-functions": "^5.0.0",
+    "razorpay": "^2.9.5"
+  }
+}
