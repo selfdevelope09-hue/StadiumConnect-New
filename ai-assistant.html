@@ -19,8 +19,6 @@
       gap: 8px;
     }
     header a { color: #fff; text-decoration: underline; font-size: 14px; }
-    #keyRow { background: #fff8f2; padding: 10px 16px; font-size: 13px; border-bottom: 1px solid #ffe0d0; }
-    #keyRow input { width: 100%; max-width: 360px; padding: 8px 12px; border-radius: 8px; border: 1px solid #ddd; margin-top: 6px; }
     #log { flex: 1; overflow-y: auto; padding: 16px; max-width: 560px; margin: 0 auto; width: 100%; }
     .bubble { margin: 10px 0; padding: 12px 14px; border-radius: 14px; max-width: 92%; line-height: 1.45; font-size: 14px; }
     .ai { background: #fff0ea; align-self: flex-start; border-bottom-left-radius: 4px; }
@@ -73,20 +71,13 @@
   <header>
     <div>
       <h1>ConnectAI</h1>
-      <div style="opacity:0.9;font-size:12px;margin-top:4px">StadiumConnect · smart vendor help</div>
+      <div style="opacity:0.9;font-size:12px;margin-top:4px">StadiumConnect — sirf vendors, events, city &amp; budget</div>
     </div>
     <a href="home.html">← Home</a>
   </header>
-  <div id="keyRow">
-    <strong>ConnectAI API key</strong> — stored only in this browser (do not share or commit to git):
-    <div>
-      <input type="password" id="connectaiKey" placeholder="Paste your API key once" autocomplete="off" />
-      <button type="button" class="chip" id="saveKey" style="margin-top:8px">Save securely</button>
-    </div>
-  </div>
   <div id="log"></div>
   <footer>
-    <input type="text" id="freeText" placeholder="Free chat (after results)…" />
+    <input type="text" id="freeText" placeholder="Vendors / city / budget poochho…" />
     <button type="button" id="sendBtn" title="Send">➤</button>
   </footer>
 
@@ -103,13 +94,12 @@
       appId: "1:458108198578:web:83d83646f0e24e718b73ab"
     };
 
-    const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+    const CONNECTAI_URL =
+      "https://us-central1-stadiumconnect-8fecb.cloudfunctions.net/connectAI";
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
     const logEl = document.getElementById("log");
-    const keyInput = document.getElementById("connectaiKey");
-    const saveKey = document.getElementById("saveKey");
     const freeText = document.getElementById("freeText");
     const sendBtn = document.getElementById("sendBtn");
 
@@ -126,25 +116,30 @@
       extras: ["⭐ Top Rated Only", "✅ Skip - Show Results"],
     };
 
-    const saved =
-      sessionStorage.getItem("sc_connectai") || sessionStorage.getItem("sc_gemini");
-    if (saved) keyInput.value = saved;
-
-    saveKey.addEventListener("click", () => {
-      const v = keyInput.value.trim();
-      sessionStorage.setItem("sc_connectai", v);
+    async function callConnectAPI(prompt, generationConfig = {}) {
+      const r = await fetch(CONNECTAI_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt, generationConfig }),
+      });
+      let data = {};
       try {
-        sessionStorage.removeItem("sc_gemini");
+        data = await r.json();
       } catch (_) {}
-      alert("Saved in this browser only.");
-    });
-
-    function getKey() {
-      return (
-        sessionStorage.getItem("sc_connectai")?.trim() ||
-        sessionStorage.getItem("sc_gemini")?.trim() ||
-        keyInput.value.trim()
-      );
+      if (r.status === 503 || data.error === "connectAI_not_configured") {
+        throw new Error(
+          "Abhi ConnectAI server pe setup pending hai — thodi der baad try karo ya support se contact karo."
+        );
+      }
+      if (!r.ok) {
+        throw new Error(
+          data.message || data.error || "ConnectAI abhi respond nahi kar paaya — dubara try karo."
+        );
+      }
+      if (typeof data.text !== "string") {
+        throw new Error("Unexpected response — dubara try karo.");
+      }
+      return data.text;
     }
 
     function addBubble(text, who) {
@@ -191,19 +186,11 @@
     }
 
     async function runConnectAI(p, vlist) {
-      const key = getKey();
-      if (!key) throw new Error("Add your ConnectAI API key above");
       const prompt = `You are ConnectAI, StadiumConnect's assistant in India. Hinglish. USER: ${JSON.stringify(p)} VENDORS: ${JSON.stringify(vlist.slice(0, 12).map(x => ({ id: x.id, name: x.name, rating: x.rating, category: x.category, city: x.city || x.area, priceRange: x.priceRange })))}
 Return ONLY valid JSON:
 {"message":"...","top3":[{"vendorId":"","vendorName":"","rank":1,"whyPicked":"","matchScore":90,"priceRange":"","rating":4.5,"city":"","category":""}],"myPick":{"vendorId":"","vendorName":"","reason":"","tip":""},"followUpQuestion":"..."}`;
-      const r = await fetch(GEMINI_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-goog-api-key": key },
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.3, maxOutputTokens: 1200 } }),
-      });
-      if (!r.ok) throw new Error(await r.text());
-      const data = await r.json();
-      const text = data.candidates[0].content.parts[0].text.replace(/```json|```/g, "").trim();
+      const raw = await callConnectAPI(prompt, { temperature: 0.3, maxOutputTokens: 1200 });
+      const text = raw.replace(/```json|```/g, "").trim();
       const i = text.indexOf("{");
       const j = text.lastIndexOf("}");
       return JSON.parse(text.slice(i, j + 1));
@@ -314,21 +301,17 @@ Return ONLY valid JSON:
       if (!t) return;
       addBubble(t, "user");
       freeText.value = "";
-      const key = getKey();
-      if (!key) { addBubble("Pehle ConnectAI key save karo (upar).", "ai"); return; }
       const prompt = `You are ConnectAI (StadiumConnect). Hinglish. Context: ${JSON.stringify(prefs)} Vendors: ${JSON.stringify(vendors.slice(0,8))} User: ${t}  Reply short. [CHIP: a] [CHIP: b] end with max 2 chips.`;
-      const r = await fetch(GEMINI_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-goog-api-key": key },
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: 400, temperature: 0.5 } }),
-      });
-      const data = await r.json();
-      const text = data.candidates[0].content.parts[0].text;
-      const chips = [];
-      for (const m of text.matchAll(/\[CHIP:([^\]]+)\]/g)) chips.push(m[1]);
-      const reply = text.replace(/\[CHIP:[^\]]+\]/g, "").trim();
-      addBubble(reply, "ai");
-      if (chips.length) addChips(chips, (c) => addBubble("Selected: " + c, "user"));
+      try {
+        const text = await callConnectAPI(prompt, { maxOutputTokens: 400, temperature: 0.5 });
+        const chips = [];
+        for (const m of text.matchAll(/\[CHIP:([^\]]+)\]/g)) chips.push(m[1]);
+        const reply = text.replace(/\[CHIP:[^\]]+\]/g, "").trim();
+        addBubble(reply || "Arre, kuch clear nahi aaya — dubara short mein poochho.", "ai");
+        if (chips.length) addChips(chips, (c) => addBubble("Selected: " + c, "user"));
+      } catch (e) {
+        addBubble(e.message || "Kuch garbar ho gayi — dubara try karo.", "ai");
+      }
     }
     sendBtn.addEventListener("click", freeChatSend);
     freeText.addEventListener("keydown", (e) => { if (e.key === "Enter") freeChatSend(); });

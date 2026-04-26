@@ -135,7 +135,7 @@ export async function fetchFilteredVendors(
 }
 
 const buildGeminiPrompt = (userInput: AIVendorFormInput, vendors: AIVendorRecord[]) => `
-You are a smart vendor recommendation AI for StadiumConnect app in India.
+You are ConnectAI for StadiumConnect in India. Only discuss vendors, budgets, locations, and event planning — not general knowledge or other topics.
 
 USER REQUIREMENTS:
 - Budget: ₹${userInput.budget}

@@ -10,6 +10,14 @@ import {
 import { db } from '@/config/firebase';
 import { getGeminiApiKey, GEMINI_GENERATE_URL } from '@/config/geminiConfig';
 
+/** Mobile app: same domain rule as Cloud Function (vendors / events / StadiumConnect only). */
+const VENDOR_ONLY_PREFIX = `
+[CONNECTAI SCOPE]
+You only help with: Indian event vendors, cities, budgets, event types, StadiumConnect booking, UPI in app. If user goes off-topic, reply briefly in Hinglish that you only discuss vendors/events — then ask city or category. Do not answer off-topic.
+[/SCOPE]
+
+`;
+
 /** Aligned with AI chat modal flow (event type, not necessarily a date). */
 export interface UserPreferences {
   category: string;
@@ -153,7 +161,7 @@ export const callGeminiAI = async (
     return null;
   }
 
-  const prompt = `
+  const prompt = `${VENDOR_ONLY_PREFIX}
 You are ConnectAI, the smart vendor assistant for StadiumConnect in India.
 Respond in Hinglish (friendly mix of Hindi and English).
 
@@ -255,8 +263,8 @@ export const callGeminiFreeChat = async (
       chips: ['OK'],
     };
   }
-  const prompt = `
-You are ConnectAI, StadiumConnect's assistant. Answer in Hinglish only.
+  const prompt = `${VENDOR_ONLY_PREFIX}
+You are ConnectAI, StadiumConnect's assistant. Answer in Hinglish only — only about vendors, booking, or the context below.
 Current user context: ${JSON.stringify(prefs)}
 Available vendors: ${JSON.stringify(vendors.slice(0, 8))}
 User says: "${userMessage}"
