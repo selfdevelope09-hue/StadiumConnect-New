@@ -38,6 +38,7 @@ export type UserStackParamList = {
     amount?: number;
     service?: string;
     eventDate?: string;
+    category?: string;
   };
   BookingConfirmed: {
     bookingId: string;
@@ -48,6 +49,17 @@ export type UserStackParamList = {
     vendorId: string;
   };
   Notifications: undefined;
+  UPIPayment: {
+    bookingId?: string;
+    stageIndex?: number;
+    totalAmount?: number;
+    vendorId?: string;
+    vendorName?: string;
+    service?: string;
+    eventDate?: string;
+    category?: string;
+  };
+  BookingTracking: { bookingId?: string };
   Wishlist: undefined;
   Support: undefined;
   Profile: undefined;

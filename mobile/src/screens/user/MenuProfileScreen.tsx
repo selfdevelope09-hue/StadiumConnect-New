@@ -52,6 +52,28 @@ export function MenuProfileScreen() {
           />
         ))}
         <List.Item
+          title="UPI demo (staged ₹30k caterer)"
+          description="Creates a demo booking and opens UPI flow"
+          onPress={() =>
+            navigation.getParent()?.navigate('UPIPayment', {
+              totalAmount: 30000,
+              vendorId: 'demo_vendor',
+              vendorName: 'Demo Caterer',
+              category: 'caterer',
+              service: 'Wedding lunch',
+              eventDate: 'TBD',
+            })
+          }
+          right={(p) => <List.Icon {...p} icon="chevron-right" />}
+        />
+        <List.Item
+          title="Track UPI booking"
+          onPress={() =>
+            navigation.getParent()?.navigate('BookingTracking', {})
+          }
+          right={(p) => <List.Icon {...p} icon="chevron-right" />}
+        />
+        <List.Item
           title="Sign out"
           onPress={onLogout}
           disabled={busy}

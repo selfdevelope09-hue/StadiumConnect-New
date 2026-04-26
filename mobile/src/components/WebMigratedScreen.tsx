@@ -37,6 +37,8 @@ const PAGE_MAP: Record<
   Payment: undefined,
   BookingConfirmed: undefined,
   Notifications: undefined,
+  UPIPayment: undefined,
+  BookingTracking: undefined,
   Wishlist: { title: 'Wishlist', sourceHtml: 'wishlist.html' },
   Support: { title: 'Support', sourceHtml: 'support.html' },
   Profile: { title: 'Profile', sourceHtml: 'profile.html' },

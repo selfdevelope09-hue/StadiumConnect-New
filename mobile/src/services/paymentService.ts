@@ -1,20 +1,18 @@
-import { Platform } from 'react-native';
-import {
-  addDoc,
-  collection,
-  doc,
-  increment,
-  serverTimestamp,
-  updateDoc,
-} from 'firebase/firestore';
-import { httpsCallable } from 'firebase/functions';
+/**
+ * StadiumConnect payments: UPI (deep link + QR) and cash on delivery.
+ * Staged tranches, invoice, and commission logic live in dedicated modules
+ * re-exported below — no card gateway or third-party payment SDKs.
+ */
+import { Linking, Platform } from 'react-native';
 
-import { db, functions } from '@/config/firebase';
-import { getRazorpayKeyId, RAZORPAY_THEME, STADIUMCONNECT_LOGO } from '@/config/razorpayConfig';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+
+import { db } from '@/config/firebase';
+import { getBusinessUpiId, UPI_BUSINESS_NAME } from '@/config/upiConfig';
 import { sendServerNotification, scheduleLocal } from '@/services/notificationService';
-import type { CommissionBreakdown, CreateOrderResponse, RazorpaySuccessPayload } from '@/types/payment';
+import type { CommissionBreakdown } from '@/types/payment';
+
 const BOOKINGS = 'bookings';
-const VENDORS = 'vendors';
 
 const commissionRate = 0.05;
 const gstOnCommission = 0.18;
@@ -35,210 +33,97 @@ export function calculateCommission(
   };
 }
 
-type BookingData = {
-  vendorId: string;
-  userId: string;
-  amount: number;
-  vendorName: string;
-  currency?: string;
-  receipt?: string;
-  notes?: Record<string, string>;
-};
+/** How customers can pay (no in-app card SDKs). */
+export const PAYMENT_METHODS = {
+  UPI_DEEPLINK: 'upi_deeplink',
+  UPI_QR: 'upi_qr',
+  CASH_ON_DELIVERY: 'cod',
+} as const;
 
-export type CreateRazorpayOrderResult = CreateOrderResponse;
-
-export async function createRazorpayOrder(
-  bookingData: BookingData
-): Promise<CreateRazorpayOrderResult> {
-  const createOrder = httpsCallable<
-    {
-      amount: number;
-      currency: string;
-      receipt: string;
-      notes: Record<string, string>;
-    },
-    CreateOrderResponse
-  >(functions, 'createRazorpayOrder');
-  const result = await createOrder({
-    amount: Math.round(bookingData.amount * 100),
-    currency: bookingData.currency ?? 'INR',
-    receipt: bookingData.receipt ?? `bk_${Date.now()}`,
-    notes: {
-      vendorId: bookingData.vendorId,
-      userId: bookingData.userId,
-      vendorName: bookingData.vendorName,
-      ...bookingData.notes,
-    },
-  });
-  if (!result.data) {
-    throw new Error('No order returned. Deploy createRazorpayOrder in Firebase Cloud Functions.');
-  }
-  return result.data;
-}
-
-export type UserInfo = { email: string; contact: string; name: string };
-
-type OpenCb = (data: RazorpaySuccessPayload) => void;
-type ErrCb = (e: { code: string; description: string; error?: { description: string } }) => void;
+export type PaymentMethodId =
+  (typeof PAYMENT_METHODS)[keyof typeof PAYMENT_METHODS];
 
 /**
- * iOS / Android: native module. **Web** / **Expo Go**: use a dev build; web uses
- * checkout.js. Keys must come from `EXPO_PUBLIC_RAZORPAY_KEY_ID` in `.env`.
+ * Open system UPI with amount + VPA. Same URL works for GPay, PhonePe, Paytm, BHIM.
+ * For staged bookings use `buildUpiIntentUrl` from `stagedPaymentService` (re-exported).
  */
-export async function openRazorpayCheckout(
-  orderData: { id: string; amount: number; currency: string; receipt?: string },
-  userInfo: UserInfo,
-  onSuccess: OpenCb,
-  onFailure: ErrCb
-): Promise<void> {
-  const key = getRazorpayKeyId();
-  if (!key) {
-    onFailure({ code: 'KEY', description: 'Set EXPO_PUBLIC_RAZORPAY_KEY_ID in .env' });
-    return;
+export async function openUpiDeepLink(
+  amountRupees: number,
+  transactionNote: string
+): Promise<boolean> {
+  const upi = getBusinessUpiId();
+  if (!upi || upi.startsWith('YOUR_')) {
+    return false;
   }
+  const am = amountRupees.toFixed(2);
+  const tn = encodeURIComponent(transactionNote.slice(0, 80));
+  const url = `upi://pay?pa=${encodeURIComponent(upi)}&pn=${encodeURIComponent(
+    UPI_BUSINESS_NAME
+  )}&am=${am}&cu=INR&tn=${tn}`;
   if (Platform.OS === 'web') {
-    return openRazorpayWeb(orderData, userInfo, key, onSuccess, onFailure);
+    return false;
   }
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const RazorpayCheckout = require('react-native-razorpay') as { open: (o: object) => Promise<RazorpaySuccessPayload> };
-  const options = {
-    description: 'StadiumConnect booking',
-    image: STADIUMCONNECT_LOGO,
-    currency: orderData.currency || 'INR',
-    key,
-    amount: String(orderData.amount),
-    order_id: orderData.id,
-    name: 'StadiumConnect',
-    prefill: {
-      email: userInfo.email,
-      contact: userInfo.contact,
-      name: userInfo.name,
-    },
-    theme: { color: RAZORPAY_THEME },
-  };
-  try {
-    const data = await RazorpayCheckout.open(options);
-    onSuccess(data);
-  } catch (e: unknown) {
-    onFailure(
-      (e as { code: string; description: string; error: { description: string } }) ||
-        (e as { code: string; description: string })
-    );
-  }
-}
-
-function openRazorpayWeb(
-  orderData: { id: string; amount: number; currency: string },
-  userInfo: UserInfo,
-  key: string,
-  onSuccess: OpenCb,
-  onFailure: ErrCb
-): void {
-  if (typeof document === 'undefined' || typeof window === 'undefined') {
-    onFailure({ code: 'WEB', description: 'Document not available' });
-    return;
-  }
-  if ((window as unknown as { Razorpay?: unknown }).Razorpay) {
-    startWebCheckout(orderData, userInfo, key, onSuccess, onFailure);
-    return;
-  }
-  const s = document.createElement('script');
-  s.src = 'https://checkout.razorpay.com/v1/checkout.js';
-  s.async = true;
-  s.onload = () =>
-    startWebCheckout(orderData, userInfo, key, onSuccess, onFailure);
-  s.onerror = () => onFailure({ code: 'SCRIPT', description: 'Failed to load Razorpay' });
-  document.body.appendChild(s);
-}
-
-function startWebCheckout(
-  orderData: { id: string; amount: number; currency: string },
-  userInfo: UserInfo,
-  key: string,
-  onSuccess: OpenCb,
-  onFailure: ErrCb
-) {
-  const Rzp = (window as unknown as { Razorpay: new (o: object) => { open: () => void } })
-    .Razorpay;
-  if (!Rzp) {
-    onFailure({ code: 'Rzp', description: 'Razorpay not available' });
-    return;
-  }
-  const rzp = new Rzp({
-    key,
-    amount: orderData.amount,
-    currency: orderData.currency,
-    name: 'StadiumConnect',
-    description: 'Booking',
-    order_id: orderData.id,
-    prefill: {
-      name: userInfo.name,
-      email: userInfo.email,
-      contact: userInfo.contact,
-    },
-    theme: { color: RAZORPAY_THEME },
-    handler(response: RazorpaySuccessPayload) {
-      onSuccess(response);
-    },
-    modal: { ondismiss: () => {} },
+  return Linking.canOpenURL(url).then((ok) => {
+    if (ok) {
+      return Linking.openURL(url);
+    }
+    return false;
   });
-  rzp.open();
 }
 
-type BookingDetails = {
+/**
+ * In-app: prefer staged flow (`UPIPayment` screen) which also shows a static business QR.
+ * This helper is for quick deep-link opens without a `bookingId` in the URL.
+ * (Re-exported from `stagedPaymentService` at the end of this file.)
+ */
+
+export const paymentHelp = {
+  qr: 'Open your UPI app and scan the StadiumConnect static QR, or use Pay to number.',
+  cod: 'Pay the vendor in cash on delivery. Confirm with support if your booking is COD-only.',
+} as const;
+
+type CodBookingInput = {
   userId: string;
   vendorId: string;
-  amount: number;
   vendorName: string;
   service?: string;
   eventDate?: string;
-  orderId: string;
+  /** Expected cash amount in rupees (reference only) */
+  expectedAmount: number;
 };
 
-export async function confirmBookingAfterPayment(
-  payment: RazorpaySuccessPayload,
-  details: BookingDetails
+/**
+ * Create a **pending** booking for cash-on-delivery. Ops/vendor confirm when cash is received.
+ */
+export async function createCodPendingBooking(
+  data: CodBookingInput
 ): Promise<string> {
-  const commission = calculateCommission(details.amount);
   const ref = await addDoc(collection(db, BOOKINGS), {
-    userId: details.userId,
-    vendorId: details.vendorId,
-    amount: details.amount,
-    status: 'confirmed',
-    paymentId: payment.razorpay_payment_id,
-    orderId: payment.razorpay_order_id,
-    orderIdRzp: details.orderId,
-    vendorName: details.vendorName,
-    service: details.service,
-    eventDate: details.eventDate,
-    commission,
+    userId: data.userId,
+    vendorId: data.vendorId,
+    vendorName: data.vendorName,
+    service: data.service,
+    eventDate: data.eventDate,
+    amount: data.expectedAmount,
+    paymentModel: 'cod' as const,
+    status: 'pending_cash' as const,
     createdAt: serverTimestamp(),
-    paidAt: serverTimestamp(),
   });
-  const vendorRef = doc(db, VENDORS, details.vendorId);
-  const toVendor = Math.max(
-    0,
-    details.amount - commission.platformFee
-  );
-  try {
-    await updateDoc(vendorRef, {
-      totalBookings: increment(1),
-      totalEarnings: increment(toVendor),
-    });
-  } catch {
-    // vendor doc may be missing; ignore
-  }
   return ref.id;
 }
 
-export async function notifyAfterSuccessfulPayment(
+export async function notifyAfterCodBooking(
   userId: string,
   vendorId: string,
-  data: { amount: number; bookingId: string; vendorName: string; userName: string; eventDate?: string }
+  data: {
+    amount: number;
+    bookingId: string;
+    vendorName: string;
+    userName: string;
+    eventDate?: string;
+  }
 ) {
-  await sendServerNotification(userId, 'PAYMENT_SUCCESS', {
-    amount: data.amount,
-    bookingId: data.bookingId,
+  await sendServerNotification(userId, 'BOOKING_CONFIRMED', {
     vendorName: data.vendorName,
   });
   await sendServerNotification(vendorId, 'NEW_BOOKING_REQUEST', {
@@ -248,8 +133,18 @@ export async function notifyAfterSuccessfulPayment(
     bookingId: data.bookingId,
   });
   await scheduleLocal(
-    'Payment received',
-    `Booking ${data.bookingId} — ${data.vendorName}`,
+    'COD booking created',
+    `${data.bookingId} — pay cash on delivery`,
     { bookingId: data.bookingId }
   );
 }
+
+export * from './stagedPaymentService';
+export { calculateFinalPrice, type FinalPrice } from './pricingService';
+export {
+  buildInvoiceData,
+  generateInvoiceHTML,
+  generateAndShareInvoice,
+  recordInvoiceAfterPayment,
+  generateInvoiceNumber,
+} from './invoiceService';

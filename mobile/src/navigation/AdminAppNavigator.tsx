@@ -3,6 +3,7 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 import { MigratedContent } from '@/components/MigratedContent';
 import { SignOutAction } from '@/components/SignOutAction';
 import { CommissionDashboard } from '@/screens/admin/CommissionDashboard';
+import { PaymentVerificationScreen } from '@/screens/admin/PaymentVerificationScreen';
 
 const Drawer = createDrawerNavigator();
 
@@ -33,6 +34,11 @@ export function AdminAppNavigator() {
         name="CommissionDashboard"
         options={{ title: 'Commissions & payouts' }}
         component={CommissionDashboard}
+      />
+      <Drawer.Screen
+        name="PaymentVerification"
+        options={{ title: 'Verify UPI payments' }}
+        component={PaymentVerificationScreen}
       />
       <Drawer.Screen
         name="AdminVendors"

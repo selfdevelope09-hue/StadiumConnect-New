@@ -8,29 +8,15 @@ export type CommissionBreakdown = {
   platformFee: number;
 };
 
-export type CreateOrderResponse = {
-  id: string;
-  amount: number;
-  currency: string;
-  receipt?: string;
-  status?: string;
-  [k: string]: unknown;
-};
-
-export type RazorpaySuccessPayload = {
-  razorpay_payment_id: string;
-  razorpay_order_id: string;
-  razorpay_signature: string;
-};
-
 export type BookingRecord = {
   userId: string;
   vendorId: string;
   amount: number;
-  status: 'pending' | 'paid' | 'confirmed' | 'failed';
+  status: 'pending' | 'paid' | 'confirmed' | 'failed' | 'pending_cash';
   paymentId?: string;
   orderId?: string;
-  commission: CommissionBreakdown;
+  paymentModel?: 'upi_staged' | 'cod';
+  commission?: CommissionBreakdown;
   vendorName?: string;
   service?: string;
   eventDate?: string;

@@ -13,8 +13,6 @@ const config: ExpoConfig = {
   icon: './assets/icon.png',
   userInterfaceStyle: 'automatic',
   scheme: 'stadiumconnect',
-  // Native Razorpay module does not support New Architecture yet (Expo 54)
-  newArchEnabled: false,
   splash: {
     image: './assets/splash-icon.png',
     resizeMode: 'contain',
@@ -53,7 +51,11 @@ const config: ExpoConfig = {
   ],
   extra: {
     EXPO_PUBLIC_GEMINI_KEY: process.env.EXPO_PUBLIC_GEMINI_KEY ?? '',
-    EXPO_PUBLIC_RAZORPAY_KEY_ID: process.env.EXPO_PUBLIC_RAZORPAY_KEY_ID ?? '',
+    EXPO_PUBLIC_BUSINESS_UPI_ID: process.env.EXPO_PUBLIC_BUSINESS_UPI_ID ?? '',
+    EXPO_PUBLIC_INVOICE_OWNER: process.env.EXPO_PUBLIC_INVOICE_OWNER ?? '',
+    EXPO_PUBLIC_INVOICE_CITY: process.env.EXPO_PUBLIC_INVOICE_CITY ?? '',
+    EXPO_PUBLIC_INVOICE_PHONE: process.env.EXPO_PUBLIC_INVOICE_PHONE ?? '',
+    EXPO_PUBLIC_SUPPORT_EMAIL: process.env.EXPO_PUBLIC_SUPPORT_EMAIL ?? '',
   },
 };
 

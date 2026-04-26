@@ -1,8 +1,11 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
+import { Pressable, Text, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
 import { MigratedContent } from '@/components/MigratedContent';
 import { SignOutAction } from '@/components/SignOutAction';
+import { VendorEarningsScreen } from '@/screens/vendor/VendorEarningsScreen';
 
 const mk = (title: string, sourceHtml: string) =>
   function Screen() {
@@ -16,6 +19,18 @@ const VendorStack = createNativeStackNavigator();
 const DSuper = createDrawerNavigator();
 
 const headerWithSignOut = { headerRight: () => <SignOutAction /> };
+
+function VendorEarningsLink() {
+  const n = useNavigation();
+  return (
+    <Pressable
+      onPress={() => n.navigate('VendorEarnings' as never)}
+      style={{ marginRight: 8 }}
+    >
+      <Text style={{ color: '#ff6b35', fontWeight: '600' }}>Earnings</Text>
+    </Pressable>
+  );
+}
 
 export function OwnerAppNavigator() {
   return (
@@ -70,11 +85,25 @@ export function DeveloperAppNavigator() {
 
 export function VendorAppNavigator() {
   return (
-    <VendorStack.Navigator screenOptions={headerWithSignOut}>
+    <VendorStack.Navigator
+      screenOptions={({ route }) => ({
+        headerRight: () => (
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            {route.name === 'VendorDash' ? <VendorEarningsLink /> : null}
+            <SignOutAction />
+          </View>
+        ),
+      })}
+    >
       <VendorStack.Screen
         name="VendorDash"
         options={{ title: 'Vendor' }}
         component={mk('Vendor', 'vendor-dashboard.html')}
+      />
+      <VendorStack.Screen
+        name="VendorEarnings"
+        options={{ title: 'Earnings' }}
+        component={VendorEarningsScreen}
       />
     </VendorStack.Navigator>
   );

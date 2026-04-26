@@ -17,6 +17,8 @@ export type NotificationType =
   | 'NEW_BOOKING_REQUEST'
   | 'REVIEW_RECEIVED'
   | 'PAYOUT_PROCESSED'
+  | 'PAYMENT_RECEIVED'
+  | 'PAYMENT_CONFIRMED'
   | 'PROMOTIONAL';
 
 Notifications.setNotificationHandler({

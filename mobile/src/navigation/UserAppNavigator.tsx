@@ -9,6 +9,8 @@ import { UserTabNavigator } from '@/navigation/UserTabNavigator';
 import { BookingConfirmedScreen } from '@/screens/user/BookingConfirmedScreen';
 import { PaymentScreen } from '@/screens/user/PaymentScreen';
 import { NotificationsScreen } from '@/screens/user/NotificationsScreen';
+import { UPIPaymentScreen } from '@/screens/payment/UPIPaymentScreen';
+import { BookingTrackingScreen } from '@/screens/user/BookingTrackingScreen';
 
 import type { UserStackParamList } from './types';
 
@@ -61,6 +63,16 @@ export function UserAppNavigator() {
           name="Notifications"
           component={NotificationsScreen}
           options={{ title: 'Notifications', headerBackTitle: 'Back' }}
+        />
+        <Stack.Screen
+          name="UPIPayment"
+          component={UPIPaymentScreen}
+          options={{ title: 'UPI pay', headerBackTitle: 'Back' }}
+        />
+        <Stack.Screen
+          name="BookingTracking"
+          component={BookingTrackingScreen}
+          options={{ title: 'Track booking', headerBackTitle: 'Back' }}
         />
         {stackScreens.map((name) => (
           <Stack.Screen

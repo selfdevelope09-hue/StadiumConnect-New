@@ -83,10 +83,22 @@ export function NotificationsScreen() {
       }
       if (
         n.type === 'PAYMENT_SUCCESS' ||
+        n.type === 'PAYMENT_CONFIRMED' ||
+        n.type === 'PAYMENT_RECEIVED' ||
         n.type === 'BOOKING_CONFIRMED' ||
         n.type === 'PAYMENT_FAILED'
       ) {
-        navigation.navigate('Bookings');
+        if (
+          n.type === 'PAYMENT_CONFIRMED' ||
+          n.type === 'PAYMENT_RECEIVED' ||
+          n.type === 'PAYMENT_SUCCESS'
+        ) {
+          const bid =
+            (n.data?.bookingId as string | undefined) || undefined;
+          navigation.navigate('BookingTracking', { bookingId: bid });
+        } else {
+          navigation.navigate('Bookings');
+        }
         return;
       }
       if (n.type === 'NEW_BOOKING_REQUEST' || n.type === 'PAYOUT_PROCESSED') {
