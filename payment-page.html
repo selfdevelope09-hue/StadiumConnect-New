@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Payment - StadiumConnect</title>
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
@@ -28,7 +27,7 @@
 </div>
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
     import { getAuth } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -45,6 +44,8 @@
 
     const urlParams = new URLSearchParams(window.location.search);
     const bookingId = urlParams.get('id');
+    /** Set to your org UPI VPA (e.g. stadiumconnect@ybl) for the web UPI link fallback. */
+    const MERCHANT_VPA = 'yours@upi';
     let booking = null;
     let selectedInstallment = 1;
 
@@ -99,32 +100,17 @@
     window.initiatePayment = async () => {
         const user = auth.currentUser;
         if (!user) { alert('Please login'); window.location.href = 'login.html'; return; }
-        
-        const options = {
-            key: "rzp_test_XXXXXXXX", // Replace with your Razorpay key
-            amount: window.selectedAmount * 100,
-            currency: "INR",
-            name: "StadiumConnect",
-            description: `Booking: ${booking.vendorName} - Installment ${selectedInstallment}`,
-            handler: async (response) => {
-                await updateDoc(doc(db, 'bookings', bookingId), {
-                    [`installment_${selectedInstallment}`]: {
-                        paid: true,
-                        paymentId: response.razorpay_payment_id,
-                        paidAt: new Date().toISOString(),
-                        amount: window.selectedAmount
-                    },
-                    status: selectedInstallment === 3 ? 'confirmed' : 'partial',
-                    lastPayment: new Date().toISOString()
-                });
-                alert('✅ Payment successful!');
-                window.location.href = 'dashboard.html';
-            },
-            prefill: { name: user.displayName, email: user.email },
-            theme: { color: "#ff6b35" }
-        };
-        const rzp = new Razorpay(options);
-        rzp.open();
+        if (!booking || !MERCHANT_VPA || MERCHANT_VPA === 'yours@upi') {
+            alert('Configure MERCHANT_VPA in this file, or use the StadiumConnect app for UPI / tranche tracking.');
+            return;
+        }
+        const amount = String(window.selectedAmount);
+        const tn = (booking && booking.vendorName) ? `${booking.vendorName} · Inst ${selectedInstallment}` : `Booking ${bookingId}`;
+        const u = `upi://pay?pa=${encodeURIComponent(MERCHANT_VPA)}&pn=${encodeURIComponent('StadiumConnect')}&am=${encodeURIComponent(amount)}&cu=INR&tn=${encodeURIComponent(tn)}`;
+        window.location.href = u;
+        setTimeout(() => {
+            alert('We opened your UPI app. Tranche updates happen when you pay from the mobile app, or your vendor confirms.');
+        }, 500);
     };
 
     loadBooking();
