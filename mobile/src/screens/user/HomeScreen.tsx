@@ -55,6 +55,17 @@ export function HomeScreen() {
           </Card.Content>
         </Card>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+          <Button
+            mode="contained"
+            buttonColor={primary}
+            onPress={() => open('HomeHtml')}
+            style={{ marginBottom: 4 }}
+            icon="robot-outline"
+          >
+            Home (HTML) + AI
+          </Button>
+        </View>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
           <Button mode="outlined" onPress={() => open('Directory')} textColor={primary}>
             Directory
           </Button>

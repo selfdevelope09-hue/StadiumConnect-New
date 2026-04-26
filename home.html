@@ -469,6 +469,77 @@
             .cta-section { margin: 16px; padding: 32px 20px; }
             .cta-section h3 { font-size: 22px; }
         }
+
+        /* Floating AI (StadiumConnect) */
+        .ai-fab {
+            position: fixed;
+            right: 20px;
+            bottom: 24px;
+            z-index: 3000;
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, var(--accent), #ff8c5a);
+            color: #fff;
+            border: 2px solid #fff;
+            box-shadow: 0 8px 24px rgba(255, 107, 53, 0.45);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .ai-fab:hover { transform: scale(1.06); box-shadow: 0 12px 32px rgba(255, 107, 53, 0.55); }
+        .ai-fab-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #fff;
+            color: var(--accent);
+            font-size: 9px;
+            font-weight: 900;
+            padding: 2px 6px;
+            border-radius: 6px;
+            border: 1px solid var(--accent);
+        }
+        .ai-modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 4000;
+            background: rgba(0,0,0,0.45);
+            backdrop-filter: blur(4px);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .ai-modal-backdrop.open { display: flex; }
+        .ai-modal {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            max-width: 420px;
+            width: 100%;
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: var(--shadow-hover);
+            border: 1px solid var(--border-color);
+        }
+        .ai-modal h3 { font-size: 1.2rem; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+        .ai-modal p { color: var(--text-secondary); line-height: 1.5; font-size: 14px; margin-bottom: 16px; }
+        .ai-modal-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+        .ai-modal .btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            font-size: 14px;
+        }
+        .ai-modal .btn-primary { background: var(--accent); color: #fff; }
+        .ai-modal .btn-ghost { background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color); }
     </style>
 </head>
 <body>
@@ -541,6 +612,22 @@
     <p>© 2025 StadiumConnect | Your Need, Our Network</p>
     <p style="margin-top: 8px; font-size: 11px;">Premium Event Marketplace | 50,000+ Happy Customers</p>
 </footer>
+
+<!-- Floating AI (same idea as the mobile app) -->
+<button type="button" class="ai-fab" id="aiFab" aria-label="Open AI vendor assistant" title="AI assistant">
+    <span class="ai-fab-badge">AI</span>
+    🤖
+</button>
+<div class="ai-modal-backdrop" id="aiModalBackdrop" role="dialog" aria-modal="true" aria-labelledby="aiModalTitle">
+    <div class="ai-modal" onclick="event.stopPropagation()">
+        <h3 id="aiModalTitle"><span>🤖</span> StadiumConnect AI</h3>
+        <p>Smart vendor picks for your city — decorators, food, photo & more. Browse vendors, or get the <strong>StadiumConnect app</strong> for the full AI chat & booking flow.</p>
+        <div class="ai-modal-actions">
+            <button type="button" class="btn btn-primary" onclick="window.location.href='vendors.html'">Find vendors</button>
+            <button type="button" class="btn btn-ghost" id="aiModalClose">Close</button>
+        </div>
+    </div>
+</div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
@@ -810,11 +897,26 @@
         });
     }
 
+    // Floating AI modal
+    function setupAIFab() {
+        const fab = document.getElementById('aiFab');
+        const backdrop = document.getElementById('aiModalBackdrop');
+        const closeBtn = document.getElementById('aiModalClose');
+        if (!fab || !backdrop) return;
+        const open = () => { backdrop.classList.add('open'); document.body.style.overflow = 'hidden'; };
+        const close = () => { backdrop.classList.remove('open'); document.body.style.overflow = ''; };
+        fab.addEventListener('click', (e) => { e.stopPropagation(); open(); });
+        closeBtn?.addEventListener('click', close);
+        backdrop.addEventListener('click', (e) => { if (e.target === backdrop) close(); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+    }
+
     // Initialize everything
     async function init() {
         initTheme();
         document.getElementById('themeToggle').addEventListener('click', toggleTheme);
         setupProfileClick();
+        setupAIFab();
         
         await loadCategories();
         await loadPopularCities();
