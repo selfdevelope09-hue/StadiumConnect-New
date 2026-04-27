@@ -2,3 +2,4 @@
 .env
 .env.*
 functions/node_modules/
+.vercel

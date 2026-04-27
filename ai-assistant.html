@@ -94,8 +94,11 @@
       appId: "1:458108198578:web:83d83646f0e24e718b73ab"
     };
 
-    const CONNECTAI_URL =
-      "https://us-central1-stadiumconnect-8fecb.cloudfunctions.net/connectAI";
+    /* Vercel: full app URL jahan /api deploy hai. Same Vercel pe ai-assistant host ho to "" rehne do. GitHub Pages / alag host pe: "https://tumhara-proj.vercel.app" */
+    const VERCEL_CONNECTAI_ORIGIN = "";
+    const CONNECTAI_URL = VERCEL_CONNECTAI_ORIGIN
+      ? `${VERCEL_CONNECTAI_ORIGIN.replace(/\/$/, "")}/api/connect-ai`
+      : new URL("/api/connect-ai", window.location.origin).href;
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
