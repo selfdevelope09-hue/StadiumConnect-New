@@ -18,16 +18,16 @@
             --primary: #ff7a1a;
             --primary-dark: #e86600;
             --primary-light: #ffb066;
-            --dark: #0a0a2a;
-            --darker: #050517;
+            --dark: #0e2a47;
+            --darker: #0b1f33;
             --light: #ffffff;
-            --gray: #f8f9fa;
-            --dark-gray: #2d2d44;
+            --gray: #f5faff;
+            --dark-gray: #4f6f8d;
             --success: #28a745;
         }
 
         body {
-            background: linear-gradient(135deg, #f5f7fb 0%, #eef2f7 100%);
+            background: #ffffff;
             min-height: 100vh;
         }
 
@@ -46,7 +46,7 @@
             position: absolute;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle at 20% 50%, rgba(255,107,53,0.05) 0%, transparent 50%);
+            background: radial-gradient(circle at 20% 50%, rgba(42,140,255,0.08) 0%, transparent 50%);
             animation: pulse 10s ease-in-out infinite;
         }
         @keyframes pulse {
@@ -62,7 +62,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid rgba(255,107,53,0.2);
+            border-bottom: 1px solid #cfe7ff;
             position: sticky;
             top: 0;
             z-index: 1000;
@@ -107,7 +107,7 @@
         }
 
         .stats-badge {
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            background: linear-gradient(135deg, #2a8cff, #0e2a47);
             padding: 8px 20px;
             border-radius: 40px;
             color: white;
@@ -334,13 +334,13 @@
         }
         .vendor-card-premium:hover {
             transform: translateY(-8px);
-            box-shadow: 0 20px 40px rgba(255,107,53,0.15);
+            box-shadow: 0 20px 40px rgba(42,140,255,0.15);
         }
         .vendor-image-premium {
             height: 200px;
             position: relative;
             overflow: hidden;
-            background: linear-gradient(135deg, #eef6ff, #ffe8e0);
+            background: linear-gradient(135deg, #eef6ff, #ffffff);
         }
         .vendor-image-premium img {
             width: 100%;

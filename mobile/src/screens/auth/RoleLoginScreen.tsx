@@ -51,7 +51,7 @@ export function RoleLoginScreen({ route, navigation }: Props) {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: '#f8f9fa' }}
+      style={{ flex: 1, backgroundColor: '#ffffff' }}
       behavior={Platform.select({ ios: 'padding', android: undefined })}
     >
       <ScrollView
@@ -70,14 +70,14 @@ export function RoleLoginScreen({ route, navigation }: Props) {
           value={email}
           onChangeText={setEmail}
           autoCapitalize="none"
-          style={{ marginBottom: 8, backgroundColor: '#fff' }}
+          style={{ marginBottom: 8, backgroundColor: '#eef6ff' }}
         />
         <TextInput
           label="Password"
           value={password}
           onChangeText={setPassword}
           secureTextEntry
-          style={{ marginBottom: 16, backgroundColor: '#fff' }}
+          style={{ marginBottom: 16, backgroundColor: '#eef6ff' }}
         />
         <Button
           mode="contained"
