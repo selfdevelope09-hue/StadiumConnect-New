@@ -75,7 +75,7 @@ export function RegisterScreen({ navigation }: AuthStackProps<'UserRegister'>) {
         <Text variant="headlineSmall" style={{ fontWeight: '700', marginBottom: 4 }}>
           Create account
         </Text>
-        <Text style={{ color: '#666', marginBottom: 20 }}>Join StadiumConnect</Text>
+        <Text style={{ color: '#4f6f8d', marginBottom: 20 }}>Join StadiumConnect</Text>
         {error ? (
           <HelperText type="error" style={{ marginBottom: 8 }}>
             {error}

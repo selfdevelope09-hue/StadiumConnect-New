@@ -27,7 +27,7 @@ function VendorEarningsLink() {
       onPress={() => n.navigate('VendorEarnings' as never)}
       style={{ marginRight: 8 }}
     >
-      <Text style={{ color: '#ff6b35', fontWeight: '600' }}>Earnings</Text>
+      <Text style={{ color: '#ff7a1a', fontWeight: '600' }}>Earnings</Text>
     </Pressable>
   );
 }

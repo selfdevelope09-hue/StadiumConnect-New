@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
   card: { marginBottom: 12, backgroundColor: '#fff' },
   r: { flexDirection: 'row', justifyContent: 'space-between' },
   bid: { fontWeight: '700' },
-  muted: { color: '#666', fontSize: 12, marginTop: 4 },
+  muted: { color: '#4f6f8d', fontSize: 12, marginTop: 4 },
   muted2: { color: '#999', textAlign: 'center', marginTop: 20 },
   utr: { fontSize: 16, fontWeight: '600', marginTop: 6 },
   link: { color: ORANGE, textDecorationLine: 'underline' },

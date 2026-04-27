@@ -31,7 +31,7 @@ export function LandingScreen() {
         style={{
           textAlign: 'center',
           marginBottom: 32,
-          color: '#666',
+          color: '#4f6f8d',
           lineHeight: 22,
         }}
       >

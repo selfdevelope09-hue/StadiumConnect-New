@@ -25,10 +25,10 @@
             gap: 15px;
         }
         .logo { font-size: 22px; font-weight: 800; }
-        .logo span { color: #ff6b35; }
-        .badge { background: #ff6b35; color: white; font-size: 10px; padding: 2px 8px; border-radius: 20px; margin-left: 8px; }
-        .dev-info { background: #fff5f0; padding: 8px 20px; border-radius: 40px; }
-        .logout-btn { background: #ff6b35; color: white; border: none; padding: 8px 20px; border-radius: 30px; cursor: pointer; }
+        .logo span { color: #ff7a1a; }
+        .badge { background: #ff7a1a; color: white; font-size: 10px; padding: 2px 8px; border-radius: 20px; margin-left: 8px; }
+        .dev-info { background: #eef6ff; padding: 8px 20px; border-radius: 40px; }
+        .logout-btn { background: #ff7a1a; color: white; border: none; padding: 8px 20px; border-radius: 30px; cursor: pointer; }
         
         .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
         
@@ -49,7 +49,7 @@
             font-size: 15px;
             outline: none;
         }
-        .search-input:focus { border-color: #ff6b35; }
+        .search-input:focus { border-color: #ff7a1a; }
         .autocomplete-dropdown {
             position: absolute;
             top: 100%;
@@ -65,19 +65,19 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
         .autocomplete-item { padding: 12px 20px; cursor: pointer; transition: 0.2s; border-bottom: 1px solid #f0f0f0; }
-        .autocomplete-item:hover { background: #fff5f0; }
+        .autocomplete-item:hover { background: #eef6ff; }
         
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
         .stat-card { background: white; border-radius: 20px; padding: 20px; text-align: center; }
-        .stat-value { font-size: 32px; font-weight: 800; color: #ff6b35; }
+        .stat-value { font-size: 32px; font-weight: 800; color: #ff7a1a; }
         
         .agents-card { background: white; border-radius: 24px; padding: 24px; margin-bottom: 30px; }
         .section-title { font-size: 20px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: space-between; }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 14px 12px; text-align: left; border-bottom: 1px solid #eee; }
         th { color: #666; font-weight: 500; }
-        .agent-name { color: #ff6b35; font-weight: 600; cursor: pointer; text-decoration: underline; }
-        .rank-badge { display: inline-block; width: 30px; height: 30px; background: #ff6b35; color: white; border-radius: 50%; text-align: center; line-height: 30px; font-weight: 700; font-size: 14px; }
+        .agent-name { color: #ff7a1a; font-weight: 600; cursor: pointer; text-decoration: underline; }
+        .rank-badge { display: inline-block; width: 30px; height: 30px; background: #ff7a1a; color: white; border-radius: 50%; text-align: center; line-height: 30px; font-weight: 700; font-size: 14px; }
         .rank-1 { background: #ffd700; color: #000; }
         .rank-2 { background: #c0c0c0; color: #000; }
         .rank-3 { background: #cd7f32; color: #fff; }
@@ -109,7 +109,7 @@
         .close-modal { position: absolute; right: 20px; top: 20px; font-size: 28px; cursor: pointer; color: #666; }
         .agent-detail-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin: 20px 0; }
         .detail-card { background: #f8f9fa; padding: 15px; border-radius: 16px; text-align: center; }
-        .detail-value { font-size: 28px; font-weight: 800; color: #ff6b35; }
+        .detail-value { font-size: 28px; font-weight: 800; color: #ff7a1a; }
         
         @media (max-width: 768px) { th, td { font-size: 12px; padding: 8px; } .stats-grid { grid-template-columns: 1fr; } }
     </style>
@@ -268,7 +268,7 @@
                     <td>${a.city || '-'}</td>
                     <td>₹${target.toLocaleString()}</td>
                     <td>₹${achieved.toLocaleString()}</td>
-                    <td><div style="width:80px; background:#e0e0e0; border-radius:10px;"><div style="width:${percent}%; background:#ff6b35; height:6px; border-radius:10px;"></div></div> ${Math.floor(percent)}%</td>
+                    <td><div style="width:80px; background:#e0e0e0; border-radius:10px;"><div style="width:${percent}%; background:#ff7a1a; height:6px; border-radius:10px;"></div></div> ${Math.floor(percent)}%</td>
                     <td>₹${a.totalAmount.toLocaleString()}</td>
                     <td class="earnings-cell">₹${a.commission.toLocaleString()}</td>
                     <td><button class="btn-set-target" onclick="setAgentTarget('${a.id}', ${target})">Set Target</button></td>
@@ -313,7 +313,7 @@
         const progress = Math.min(100, (stats.totalAmount / target) * 100);
         
         document.getElementById('agentDetailContent').innerHTML = `
-            <h2 style="color:#ff6b35;"><i class="fas fa-user-tie"></i> ${agent.name || agent.id}</h2>
+            <h2 style="color:#ff7a1a;"><i class="fas fa-user-tie"></i> ${agent.name || agent.id}</h2>
             <div class="agent-detail-stats">
                 <div class="detail-card"><div>Agent ID</div><div class="detail-value">${agent.id}</div></div>
                 <div class="detail-card"><div>City</div><div class="detail-value">${agent.city || '-'}</div></div>
@@ -321,7 +321,7 @@
                 <div class="detail-card"><div>Email</div><div>${agent.email || '-'}</div></div>
                 <div class="detail-card"><div>Target</div><div class="detail-value">₹${target.toLocaleString()}</div></div>
                 <div class="detail-card"><div>Achieved</div><div class="detail-value">₹${stats.totalAmount.toLocaleString()}</div></div>
-                <div class="detail-card"><div>Progress</div><div><div style="background:#e0e0e0; border-radius:10px; margin-top:5px;"><div style="width:${progress}%; background:#ff6b35; height:8px; border-radius:10px;"></div></div>${Math.floor(progress)}%</div></div>
+                <div class="detail-card"><div>Progress</div><div><div style="background:#e0e0e0; border-radius:10px; margin-top:5px;"><div style="width:${progress}%; background:#ff7a1a; height:8px; border-radius:10px;"></div></div>${Math.floor(progress)}%</div></div>
                 <div class="detail-card"><div>Total Bookings</div><div class="detail-value">${stats.bookings}</div></div>
                 <div class="detail-card"><div>Total Revenue</div><div class="detail-value">₹${stats.totalAmount.toLocaleString()}</div></div>
                 <div class="detail-card"><div>Commission (2.5%)</div><div class="detail-value">₹${stats.commission.toLocaleString()}</div></div>

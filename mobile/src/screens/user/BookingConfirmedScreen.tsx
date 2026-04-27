@@ -30,8 +30,8 @@ function htmlReceipt(p: {
 }) {
   return `<!DOCTYPE html>
 <html><head><meta charset="utf-8"/><style>
-body { font-family: system-ui, sans-serif; padding: 24px; color: #1a1a1a; }
-h1 { color: #FF6B35; } .row { margin: 8px 0; } .muted { color: #666; }
+body { font-family: system-ui, sans-serif; padding: 24px; color: #0e2a47; }
+h1 { color: #FF6B35; } .row { margin: 8px 0; } .muted { color: #4f6f8d; }
 </style></head><body>
 <h1>StadiumConnect</h1>
 <p class="muted">Booking receipt</p>
@@ -182,10 +182,10 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '800',
     textAlign: 'center',
-    color: '#1a1a1a',
+    color: '#0e2a47',
   },
-  muted: { textAlign: 'center', color: '#666', marginTop: 8, marginBottom: 16 },
-  card: { backgroundColor: '#fffaf6', marginBottom: 20 },
+  muted: { textAlign: 'center', color: '#4f6f8d', marginTop: 8, marginBottom: 16 },
+  card: { backgroundColor: '#f5faff', marginBottom: 20 },
   label: { color: '#888', fontSize: 12, marginTop: 8 },
   id: { fontSize: 16, fontWeight: '700' },
   v: { fontSize: 16, fontWeight: '600' },

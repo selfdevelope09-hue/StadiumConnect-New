@@ -20,7 +20,7 @@ export function AdminAppNavigator() {
     <Drawer.Navigator
       screenOptions={{
         headerShown: true,
-        drawerActiveTintColor: '#ff6b35',
+        drawerActiveTintColor: '#ff7a1a',
         drawerType: 'front',
         headerRight: () => <SignOutAction />,
       }}

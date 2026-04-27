@@ -109,7 +109,7 @@ export function MenuProfileScreen() {
             onPress={() => navigation.getParent()?.navigate('Support' as never)}
             right={(p) => <List.Icon {...p} icon="open-in-new" />}
           />
-          <Text style={{ paddingHorizontal: 16, paddingBottom: 12, color: '#666', fontSize: 12 }}>
+          <Text style={{ paddingHorizontal: 16, paddingBottom: 12, color: '#4f6f8d', fontSize: 12 }}>
             Support hours: 10:00 AM - 8:00 PM IST. Response in 2-6 hours.
           </Text>
         </List.Accordion>

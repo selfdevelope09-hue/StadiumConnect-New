@@ -325,7 +325,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   ratingText: { fontSize: 12, fontWeight: 'bold', color: '#FF6B35' },
-  vendorCity: { fontSize: 12, color: '#666', marginBottom: 2 },
+  vendorCity: { fontSize: 12, color: '#4f6f8d', marginBottom: 2 },
   vendorPrice: { fontSize: 13, color: '#FF6B35', fontWeight: '600', marginBottom: 4 },
   whyText: { fontSize: 12, color: '#888', fontStyle: 'italic', marginBottom: 8 },
   bookBtn: {

@@ -23,9 +23,9 @@
             z-index: 100;
         }
         .logo { font-size: 22px; font-weight: 800; }
-        .logo span { color: #ff6b35; }
+        .logo span { color: #ff7a1a; }
         .date-badge { background: #f0f2f5; padding: 8px 16px; border-radius: 30px; font-size: 14px; }
-        .logout-btn { background: #ff6b35; color: white; border: none; padding: 8px 20px; border-radius: 30px; cursor: pointer; font-weight: 500; }
+        .logout-btn { background: #ff7a1a; color: white; border: none; padding: 8px 20px; border-radius: 30px; cursor: pointer; font-weight: 500; }
         
         .container { max-width: 1400px; margin: 0 auto; padding: 30px; }
         
@@ -68,7 +68,7 @@
             outline: none;
             transition: 0.2s;
         }
-        .search-input:focus { border-color: #ff6b35; box-shadow: 0 0 0 3px rgba(255,107,53,0.1); }
+        .search-input:focus { border-color: #ff7a1a; box-shadow: 0 0 0 3px rgba(255,107,53,0.1); }
         .autocomplete-dropdown {
             position: absolute;
             top: 100%;
@@ -89,7 +89,7 @@
             transition: 0.2s;
             border-bottom: 1px solid #f0f0f0;
         }
-        .autocomplete-item:hover { background: #fff5f0; }
+        .autocomplete-item:hover { background: #eef6ff; }
         
         .charts-grid {
             display: grid;
@@ -116,12 +116,12 @@
         .vendor-table { width: 100%; border-collapse: collapse; }
         .vendor-table th, .vendor-table td { padding: 14px 12px; text-align: left; border-bottom: 1px solid #f0f0f0; }
         .vendor-table th { color: #666; font-weight: 500; font-size: 13px; text-transform: uppercase; }
-        .vendor-rank { width: 50px; font-weight: 700; color: #ff6b35; }
+        .vendor-rank { width: 50px; font-weight: 700; color: #ff7a1a; }
         .vendor-name { font-weight: 600; }
         .vendor-booking { font-weight: 600; color: #28a745; }
         
         .empty-state { text-align: center; padding: 60px; color: #999; }
-        .loading { text-align: center; padding: 40px; color: #ff6b35; }
+        .loading { text-align: center; padding: 40px; color: #ff7a1a; }
         
         @media (max-width: 900px) {
             .charts-grid { grid-template-columns: 1fr; }
@@ -313,7 +313,7 @@
         const ctx1 = document.getElementById('monthlyChart').getContext('2d');
         monthlyChart = new Chart(ctx1, {
             type: 'line',
-            data: { labels: months, datasets: [{ label: 'Bookings', data: monthlyCounts, borderColor: '#ff6b35', backgroundColor: 'rgba(255,107,53,0.1)', fill: true, tension: 0.3 }] },
+            data: { labels: months, datasets: [{ label: 'Bookings', data: monthlyCounts, borderColor: '#ff7a1a', backgroundColor: 'rgba(255,107,53,0.1)', fill: true, tension: 0.3 }] },
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } } }
         });
         
@@ -329,7 +329,7 @@
         const ctx2 = document.getElementById('categoryChart').getContext('2d');
         categoryChart = new Chart(ctx2, {
             type: 'doughnut',
-            data: { labels: Object.keys(categoryCount), datasets: [{ data: Object.values(categoryCount), backgroundColor: ['#ff6b35', '#ffa502', '#2ed573', '#1e90ff', '#ff4757'] }] },
+            data: { labels: Object.keys(categoryCount), datasets: [{ data: Object.values(categoryCount), backgroundColor: ['#ff7a1a', '#ffa502', '#2ed573', '#1e90ff', '#ff4757'] }] },
             options: { responsive: true, maintainAspectRatio: false }
         });
         

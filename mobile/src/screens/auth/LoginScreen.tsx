@@ -73,7 +73,7 @@ export function LoginScreen({ navigation }: { navigation: Nav }) {
         >
           Welcome back
         </Text>
-        <Text style={{ color: '#666', marginBottom: 20 }}>Sign in to continue</Text>
+        <Text style={{ color: '#4f6f8d', marginBottom: 20 }}>Sign in to continue</Text>
         {error ? (
           <HelperText type="error" style={{ marginBottom: 8 }}>
             {error}

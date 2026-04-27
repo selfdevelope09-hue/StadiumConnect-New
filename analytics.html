@@ -13,7 +13,7 @@
         .header { background: white; padding: 20px 30px; border-radius: 24px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; }
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; }
         .stat-card { background: white; border-radius: 24px; padding: 24px; }
-        .stat-value { font-size: 32px; font-weight: 800; color: #ff6b35; }
+        .stat-value { font-size: 32px; font-weight: 800; color: #ff7a1a; }
         .charts-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-bottom: 30px; }
         .chart-card { background: white; border-radius: 24px; padding: 24px; }
         .chart-container { height: 300px; }
@@ -103,7 +103,7 @@
         
         new Chart(document.getElementById('revenueChart'), {
             type: 'line',
-            data: { labels: months, datasets: [{ label: 'Revenue (₹)', data: revenueData, borderColor: '#ff6b35', fill: true, backgroundColor: 'rgba(255,107,53,0.1)' }] }
+            data: { labels: months, datasets: [{ label: 'Revenue (₹)', data: revenueData, borderColor: '#ff7a1a', fill: true, backgroundColor: 'rgba(255,107,53,0.1)' }] }
         });
         
         // Category distribution
@@ -115,7 +115,7 @@
         });
         new Chart(document.getElementById('categoryChart'), {
             type: 'doughnut',
-            data: { labels: Object.keys(catCount), datasets: [{ data: Object.values(catCount), backgroundColor: ['#ff6b35', '#ffa502', '#2ed573', '#1e90ff', '#ff4757'] }] }
+            data: { labels: Object.keys(catCount), datasets: [{ data: Object.values(catCount), backgroundColor: ['#ff7a1a', '#ffa502', '#2ed573', '#1e90ff', '#ff4757'] }] }
         });
     }
 
