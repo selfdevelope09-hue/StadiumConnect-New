@@ -784,7 +784,7 @@
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
     import { getAuth } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
     AOS.init({ duration: 800, once: true });
@@ -804,6 +804,8 @@
     let allVendors = [];
     let allStadiums = [];
     let allCitiesData = [];
+    /** City names from Firestore settings/cities (Super Admin) — merged into search + grid */
+    let settingsCityNames = [];
     let currentCategory = 'all';
 
     const defaultVendors = [
@@ -842,6 +844,19 @@
             allItems.forEach(item => {
                 if (item.city) cityMap.set(item.city, (cityMap.get(item.city) || 0) + 1);
             });
+            try {
+                const cityDoc = await getDoc(doc(db, 'settings', 'cities'));
+                const list = cityDoc.exists() ? (cityDoc.data().list || []) : [];
+                settingsCityNames = list
+                    .map((c) => (typeof c === 'string' ? c : (c && c.name) ? String(c.name) : ''))
+                    .map((n) => n.trim())
+                    .filter(Boolean);
+                settingsCityNames.forEach((name) => {
+                    if (!cityMap.has(name)) cityMap.set(name, 0);
+                });
+            } catch (_) {
+                settingsCityNames = [];
+            }
             allCitiesData = Array.from(cityMap.entries()).map(([name, count]) => ({ name, count })).sort((a,b) => b.count - a.count);
             
             updateStats();
@@ -858,6 +873,19 @@
             allItems.forEach(item => {
                 if (item.city) cityMap.set(item.city, (cityMap.get(item.city) || 0) + 1);
             });
+            try {
+                const cityDoc = await getDoc(doc(db, 'settings', 'cities'));
+                const list = cityDoc.exists() ? (cityDoc.data().list || []) : [];
+                settingsCityNames = list
+                    .map((c) => (typeof c === 'string' ? c : (c && c.name) ? String(c.name) : ''))
+                    .map((n) => n.trim())
+                    .filter(Boolean);
+                settingsCityNames.forEach((name) => {
+                    if (!cityMap.has(name)) cityMap.set(name, 0);
+                });
+            } catch (_) {
+                settingsCityNames = [];
+            }
             allCitiesData = Array.from(cityMap.entries()).map(([name, count]) => ({ name, count })).sort((a,b) => b.count - a.count);
             updateStats();
             renderCities();
@@ -959,14 +987,15 @@
         const searchInput = document.getElementById('searchInput');
         const dropdown = document.getElementById('autocompleteDropdown');
         const allItems = [...allVendors, ...allStadiums];
-        const allCitiesList = [...new Set(allItems.map(i => i.city))];
+        const fromVendors = [...new Set(allItems.map(i => i.city).filter(Boolean))];
+        const allCitiesList = [...new Set([...fromVendors, ...settingsCityNames])];
         
         searchInput.addEventListener('input', function() {
             const value = this.value.toLowerCase().trim();
             if (value.length === 0) { dropdown.classList.remove('show'); return; }
             
-            const matchedCities = allCitiesList.filter(city => city.toLowerCase().includes(value)).slice(0, 5);
-            const matchedVendors = allItems.filter(v => v.name.toLowerCase().includes(value)).slice(0, 5);
+            const matchedCities = allCitiesList.filter(city => city && String(city).toLowerCase().includes(value)).slice(0, 8);
+            const matchedVendors = allItems.filter(v => v.name && String(v.name).toLowerCase().includes(value)).slice(0, 5);
             
             if (matchedCities.length === 0 && matchedVendors.length === 0) {
                 dropdown.classList.remove('show');

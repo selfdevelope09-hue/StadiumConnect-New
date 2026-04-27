@@ -114,10 +114,10 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, updateDoc, deleteDoc, doc, addDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, getDoc, updateDoc, deleteDoc, doc, addDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
     import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js";
     
-    const firebaseConfig = { apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM", authDomain: "stadiumconnect-8fecb.firebaseapp.com", projectId: "stadiumconnect-8fecb", storageBucket: "stadiumconnect-8fecb.appspot.com", messagingSenderId: "458108198578", appId: "1:458108198578:web:83d83646f0e24e718b73ab" };
+    const firebaseConfig = { apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM", authDomain: "stadiumconnect-8fecb.firebaseapp.com", projectId: "stadiumconnect-8fecb", storageBucket: "stadiumconnect-8fecb.firebasestorage.app", messagingSenderId: "458108198578", appId: "1:458108198578:web:83d83646f0e24e718b73ab" };
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const storage = getStorage(app);
@@ -129,10 +129,38 @@
     function showToast(msg, isError = false) { const toast = document.createElement('div'); toast.className = `toast ${isError ? 'error' : ''}`; toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i> ${msg}`; document.body.appendChild(toast); setTimeout(() => toast.remove(), 2800); }
     function generateRandomId(prefix) { return prefix + '-' + Math.random().toString(36).substring(2, 8).toUpperCase(); }
     function generateRandomPassword() { return Math.random().toString(36).slice(-8); }
-    async function uploadImage(file, folder) { if(!file) return null; try { const fileRef = ref(storage, `${folder}/${Date.now()}_${file.name}`); await uploadBytes(fileRef, file); return await getDownloadURL(fileRef); } catch(e) { return null; } }
+    async function uploadImage(file, folder) {
+        if (!file) return null;
+        try {
+            const safeName = String(file.name || 'image').replace(/[^\w.\-]+/g, '_');
+            const fileRef = ref(storage, `${folder}/${Date.now()}_${safeName}`);
+            await uploadBytes(fileRef, file);
+            return await getDownloadURL(fileRef);
+        } catch (e) {
+            console.error('uploadImage', e);
+            showToast('Photo upload failed: ' + (e.message || e), true);
+            return null;
+        }
+    }
     async function uploadMultipleImages(files, folder) { if(!files || !files.length) return []; const out = []; for (const file of files) { const url = await uploadImage(file, folder); if (url) out.push(url); } return out; }
     function splitLines(id) { return (document.getElementById(id)?.value || '').split('\n').map(x => x.trim()).filter(Boolean); }
     function parsePipeRows(id, keys) { return splitLines(id).map((line) => { const parts = line.split('|').map(p => p.trim()); const row = {}; keys.forEach((k, idx) => row[k] = parts[idx] || ''); return row; }).filter(r => Object.values(r).some(Boolean)); }
+    /** Firestore rejects undefined anywhere in the document */
+    function stripUndefinedDeep(val) {
+        if (val === undefined) return undefined;
+        if (val === null || typeof val !== 'object') return val;
+        if (Array.isArray(val)) {
+            return val.map(stripUndefinedDeep).filter((x) => x !== undefined);
+        }
+        const out = {};
+        for (const [k, v] of Object.entries(val)) {
+            if (v === undefined) continue;
+            const nv = stripUndefinedDeep(v);
+            if (nv === undefined) continue;
+            out[k] = nv;
+        }
+        return out;
+    }
     
     // REAL-TIME LISTENERS
     function startRealtimeSync() {
@@ -246,13 +274,105 @@
     window.editStadium = (id) => { const s = allStadiums.find(s => s.id === id); if(s) { document.getElementById('stadiumModalTitle').innerText = 'Edit Stadium'; document.getElementById('stadiumEditId').value = s.id; document.getElementById('stadiumName').value = s.name; document.getElementById('stadiumCity').value = s.city; document.getElementById('stadiumPrice').value = s.basePrice; document.getElementById('stadiumCapacity').value = s.capacity; document.getElementById('stadiumDescription').value = s.description; document.getElementById('stadiumCredBox').style.display = 'none'; openModal('stadiumModal'); } };
     window.editVendor = (id) => { const v = allVendors.find(v => v.id === id); if(v) { document.getElementById('vendorModalTitle').innerText = 'Edit Vendor'; document.getElementById('vendorEditId').value = v.id; document.getElementById('vendorName').value = v.name; document.getElementById('vendorCategory').value = v.category; document.getElementById('vendorCity').value = v.city; document.getElementById('vendorPrice').value = v.priceRange; document.getElementById('vendorDescription').value = v.description; openModal('vendorModal'); } };
     window.editAgent = (id) => { const a = allAgents.find(a => a.id === id); if(a) { document.getElementById('agentModalTitle').innerText = 'Edit Agent'; document.getElementById('agentEditId').value = a.id; document.getElementById('agentName').value = a.name; document.getElementById('agentPhone').value = a.phone; document.getElementById('agentCity').value = a.city; document.getElementById('agentEmail').value = a.email; openModal('agentModal'); } };
-    window.editPackage = (id) => { const p = allPackages.find(x => x.id === id); if(p) { document.getElementById('packageModalTitle').innerText = 'Edit Package'; document.getElementById('packageEditId').value = p.id; document.getElementById('packageName').value = p.name || ''; document.getElementById('packageCity').value = p.city || ''; document.getElementById('packageEventType').value = p.eventType || ''; document.getElementById('packageBudgetRange').value = p.budgetRange || ''; document.getElementById('packageTotalPrice').value = p.totalPrice || ''; document.getElementById('packagePerGuestEstimate').value = p.perGuestEstimate || ''; document.getElementById('packageIdealFor').value = p.idealFor || ''; document.getElementById('packageDuration').value = p.duration || ''; document.getElementById('packageGuestRange').value = p.guestRange || ''; document.getElementById('packageSortOrder').value = Number(p.sortOrder) || 0; document.getElementById('packageDescription').value = p.description || ''; document.getElementById('packageHighlights').value = (p.highlights || []).join('\n'); document.getElementById('packageInclusions').value = (p.inclusions || []).join('\n'); document.getElementById('packageExclusions').value = (p.exclusions || []).join('\n'); document.getElementById('packageTimeline').value = (p.timelineSteps || []).join('\n'); document.getElementById('packageCostBreakup').value = (p.costBreakup || []).map(x => `${x.title || ''} | ${x.price || ''} | ${x.note || ''}`).join('\n'); document.getElementById('packageFaqs').value = (p.faqs || []).map(x => `${x.question || ''} | ${x.answer || ''}`).join('\n'); document.getElementById('packageGalleryUrls').value = (p.galleryImages || []).join('\n'); document.getElementById('packageVendorDetails').value = (p.vendorsDetailed || []).map(x => `${x.vendorId || ''} | ${x.role || ''} | ${x.details || ''} | ${x.price || ''} | ${x.photoUrl || ''}`).join('\n'); document.getElementById('packageCoverFile').value = ''; document.getElementById('packageGalleryFiles').value = ''; document.getElementById('packageIsActive').checked = p.isActive !== false; const selected = Array.isArray(p.vendorIds) ? p.vendorIds : []; populatePackageVendorSelect(selected); openModal('packageModal'); } };
+    window.editPackage = (id) => { const p = allPackages.find(x => x.id === id); if(p) { document.getElementById('packageModalTitle').innerText = 'Edit Package'; document.getElementById('packageEditId').value = p.id; document.getElementById('packageName').value = p.name || ''; document.getElementById('packageCity').value = p.city || ''; document.getElementById('packageEventType').value = p.eventType || ''; document.getElementById('packageBudgetRange').value = p.budgetRange || ''; document.getElementById('packageTotalPrice').value = p.totalPrice || ''; document.getElementById('packagePerGuestEstimate').value = p.perGuestEstimate || ''; document.getElementById('packageIdealFor').value = p.idealFor || ''; document.getElementById('packageDuration').value = p.duration || ''; document.getElementById('packageGuestRange').value = p.guestRange || ''; document.getElementById('packageSortOrder').value = Number(p.sortOrder) || 0; document.getElementById('packageDescription').value = p.description || ''; document.getElementById('packageHighlights').value = (p.highlights || []).join('\n'); document.getElementById('packageInclusions').value = (p.inclusions || []).join('\n'); document.getElementById('packageExclusions').value = (p.exclusions || []).join('\n'); document.getElementById('packageTimeline').value = (p.timelineSteps || []).join('\n'); document.getElementById('packageCostBreakup').value = (p.costBreakup || []).map(x => (x.title ? `${x.title} | ${x.price || ''} | ${x.note || ''}` : `${x.category || ''} | ${x.estimate || x.price || ''} | ${x.note || ''}`)).join('\n'); document.getElementById('packageFaqs').value = (p.faqs || []).map(x => `${x.question || ''} | ${x.answer || ''}`).join('\n'); document.getElementById('packageGalleryUrls').value = (p.galleryImages || []).join('\n'); document.getElementById('packageVendorDetails').value = (p.vendorsDetailed || []).map(x => `${x.vendorId || ''} | ${x.role || ''} | ${x.details || ''} | ${x.price || ''} | ${x.photoUrl || ''}`).join('\n'); document.getElementById('packageCoverFile').value = ''; document.getElementById('packageGalleryFiles').value = ''; document.getElementById('packageIsActive').checked = p.isActive !== false; const selected = Array.isArray(p.vendorIds) ? p.vendorIds : []; populatePackageVendorSelect(selected); openModal('packageModal'); } };
     
     document.getElementById('saveStadiumBtn').onclick = async () => { const id = document.getElementById('stadiumEditId').value; const loginId = id ? undefined : generateRandomId('STAD'); const password = id ? undefined : generateRandomPassword(); const data = { name: document.getElementById('stadiumName').value, category: 'stadium', city: document.getElementById('stadiumCity').value, basePrice: Number(document.getElementById('stadiumPrice').value) || 50000, capacity: Number(document.getElementById('stadiumCapacity').value)||0, description: document.getElementById('stadiumDescription').value, updatedAt: new Date().toISOString() }; if(!id) { data.loginId = loginId; data.password = password; data.createdAt = new Date().toISOString(); } const file = document.getElementById('stadiumLogoFile').files[0]; if(file) data.imageUrl = await uploadImage(file, 'stadiums'); if(id) await updateDoc(doc(db, 'vendors', id), data); else await addDoc(collection(db, 'vendors'), data); closeModal('stadiumModal'); showToast(id ? 'Updated' : `Stadium added! ID: ${loginId} Pass: ${password}`); };
     document.getElementById('saveVendorBtn').onclick = async () => { const id = document.getElementById('vendorEditId').value; const data = { name: document.getElementById('vendorName').value, category: document.getElementById('vendorCategory').value, city: document.getElementById('vendorCity').value, priceRange: document.getElementById('vendorPrice').value, description: document.getElementById('vendorDescription').value, updatedAt: new Date().toISOString() }; const file = document.getElementById('vendorLogoFile').files[0]; if(file) data.imageUrl = await uploadImage(file, 'vendors'); if(id) await updateDoc(doc(db, 'vendors', id), data); else { data.createdAt = new Date().toISOString(); await addDoc(collection(db, 'vendors'), data); } closeModal('vendorModal'); showToast('Vendor saved'); };
     document.getElementById('saveAgentBtn').onclick = async () => { const id = document.getElementById('agentEditId').value; const data = { name: document.getElementById('agentName').value, phone: document.getElementById('agentPhone').value, city: document.getElementById('agentCity').value, email: document.getElementById('agentEmail').value, updatedAt: new Date().toISOString() }; if(id) await updateDoc(doc(db, 'agents', id), data); else { data.createdAt = new Date().toISOString(); await addDoc(collection(db, 'agents'), data); } closeModal('agentModal'); showToast('Agent saved'); };
-    document.getElementById('savePackageBtn').onclick = async () => { const id = document.getElementById('packageEditId').value; const selected = Array.from(document.getElementById('packageVendorSelect').selectedOptions).map(o => o.value); if(selected.length < 1) { showToast('Select at least 1 vendor', true); return; } const selectedVendors = allVendors.filter(v => selected.includes(v.id)).map(v => ({ vendorId: v.id, vendorName: v.name || 'Vendor', category: v.category || '', city: v.city || '', priceRange: v.priceRange || '', photoUrl: v.imageUrl || v.logoUrl || v.photoUrl || '' })); const coverFile = document.getElementById('packageCoverFile').files[0]; const galleryFiles = Array.from(document.getElementById('packageGalleryFiles').files || []); const uploadedCover = coverFile ? await uploadImage(coverFile, 'packages') : null; const uploadedGallery = await uploadMultipleImages(galleryFiles, 'packages'); const manualGallery = splitLines('packageGalleryUrls'); const data = { name: document.getElementById('packageName').value.trim(), city: document.getElementById('packageCity').value.trim(), eventType: document.getElementById('packageEventType').value.trim(), budgetRange: document.getElementById('packageBudgetRange').value.trim(), totalPrice: Number(document.getElementById('packageTotalPrice').value) || 0, perGuestEstimate: document.getElementById('packagePerGuestEstimate').value.trim(), idealFor: document.getElementById('packageIdealFor').value.trim(), duration: document.getElementById('packageDuration').value.trim(), guestRange: document.getElementById('packageGuestRange').value.trim(), sortOrder: Number(document.getElementById('packageSortOrder').value) || 0, description: document.getElementById('packageDescription').value.trim(), highlights: splitLines('packageHighlights'), inclusions: splitLines('packageInclusions'), exclusions: splitLines('packageExclusions'), timelineSteps: splitLines('packageTimeline'), costBreakup: parsePipeRows('packageCostBreakup', ['title', 'price', 'note']), faqs: parsePipeRows('packageFaqs', ['question', 'answer']), vendorIds: selected, vendors: selectedVendors, vendorsDetailed: parsePipeRows('packageVendorDetails', ['vendorId', 'role', 'details', 'price', 'photoUrl']), galleryImages: [...uploadedGallery, ...manualGallery], isActive: document.getElementById('packageIsActive').checked, updatedAt: new Date().toISOString() }; if (uploadedCover) data.coverImage = uploadedCover; if (!data.coverImage && manualGallery.length) data.coverImage = manualGallery[0]; if(!data.name || !data.city || !data.totalPrice) { showToast('Name, city and total price required', true); return; } if(id) await updateDoc(doc(db, 'packages', id), data); else { data.createdAt = new Date().toISOString(); await addDoc(collection(db, 'packages'), data); } closeModal('packageModal'); showToast('Package saved'); };
-    document.getElementById('saveCityBtn').onclick = async () => { const name = document.getElementById('cityName').value.trim(); if(!name) return; const newList = [...allCities, { name, popular: document.getElementById('cityPopular').checked }]; await setDoc(doc(db, 'settings', 'cities'), { list: newList }); closeModal('cityModal'); showToast('City added'); };
+    document.getElementById('savePackageBtn').onclick = async () => {
+        const id = document.getElementById('packageEditId').value;
+        const selected = Array.from(document.getElementById('packageVendorSelect').selectedOptions).map((o) => o.value);
+        if (selected.length < 1) {
+            showToast('Select at least 1 vendor', true);
+            return;
+        }
+        try {
+            const selectedVendors = allVendors
+                .filter((v) => selected.includes(v.id))
+                .map((v) => ({
+                    vendorId: v.id,
+                    vendorName: v.name || 'Vendor',
+                    category: v.category || '',
+                    city: v.city || '',
+                    priceRange: v.priceRange || '',
+                    photoUrl: String(v.imageUrl || v.logoUrl || v.photoUrl || '').trim(),
+                }));
+            const coverFile = document.getElementById('packageCoverFile').files[0];
+            const galleryFiles = Array.from(document.getElementById('packageGalleryFiles').files || []);
+            const uploadedCover = coverFile ? await uploadImage(coverFile, 'packages') : null;
+            const uploadedGallery = await uploadMultipleImages(galleryFiles, 'packages');
+            const manualGallery = splitLines('packageGalleryUrls');
+            let costRows = parsePipeRows('packageCostBreakup', ['title', 'price', 'note']);
+            costRows = costRows
+                .map((row) => ({
+                    title: row.title || '',
+                    price: row.price || '',
+                    note: row.note || '',
+                }))
+                .filter((r) => r.title || r.price);
+            const data = stripUndefinedDeep({
+                name: document.getElementById('packageName').value.trim(),
+                city: document.getElementById('packageCity').value.trim(),
+                eventType: document.getElementById('packageEventType').value.trim(),
+                budgetRange: document.getElementById('packageBudgetRange').value.trim(),
+                totalPrice: Number(document.getElementById('packageTotalPrice').value) || 0,
+                perGuestEstimate: document.getElementById('packagePerGuestEstimate').value.trim(),
+                idealFor: document.getElementById('packageIdealFor').value.trim(),
+                duration: document.getElementById('packageDuration').value.trim(),
+                guestRange: document.getElementById('packageGuestRange').value.trim(),
+                sortOrder: Number(document.getElementById('packageSortOrder').value) || 0,
+                description: document.getElementById('packageDescription').value.trim(),
+                highlights: splitLines('packageHighlights'),
+                inclusions: splitLines('packageInclusions'),
+                exclusions: splitLines('packageExclusions'),
+                timelineSteps: splitLines('packageTimeline'),
+                costBreakup: costRows,
+                faqs: parsePipeRows('packageFaqs', ['question', 'answer']),
+                vendorIds: selected,
+                vendors: selectedVendors,
+                vendorsDetailed: parsePipeRows('packageVendorDetails', ['vendorId', 'role', 'details', 'price', 'photoUrl']).filter((r) => r.vendorId),
+                galleryImages: [...uploadedGallery, ...manualGallery],
+                isActive: document.getElementById('packageIsActive').checked,
+                updatedAt: new Date().toISOString(),
+            });
+            if (uploadedCover) data.coverImage = uploadedCover;
+            if (!data.coverImage && manualGallery.length) data.coverImage = manualGallery[0];
+            if (!data.name || !data.city || !data.totalPrice) {
+                showToast('Name, city and total price required', true);
+                return;
+            }
+            if (id) await updateDoc(doc(db, 'packages', id), data);
+            else {
+                data.createdAt = new Date().toISOString();
+                await addDoc(collection(db, 'packages'), data);
+            }
+            closeModal('packageModal');
+            showToast('Package saved');
+        } catch (e) {
+            console.error(e);
+            showToast('Package save failed: ' + (e.message || e), true);
+        }
+    };
+    document.getElementById('saveCityBtn').onclick = async () => {
+        const name = document.getElementById('cityName').value.trim();
+        if (!name) return;
+        try {
+            const snap = await getDoc(doc(db, 'settings', 'cities'));
+            const existing = snap.exists() && Array.isArray(snap.data().list) ? snap.data().list : [];
+            const norm = (c) => (typeof c === 'string' ? c : (c && c.name) || '').toString().trim().toLowerCase();
+            if (existing.some((c) => norm(c) === name.toLowerCase())) {
+                showToast('City already in list', true);
+                return;
+            }
+            const newList = [...existing, { name, popular: document.getElementById('cityPopular').checked }];
+            await setDoc(doc(db, 'settings', 'cities'), { list: newList }, { merge: true });
+            closeModal('cityModal');
+            showToast('City added');
+        } catch (e) {
+            console.error(e);
+            showToast('City save failed: ' + (e.message || e), true);
+        }
+    };
     document.getElementById('confirmBookingBtn').onclick = () => updateBookingStatus('confirmed'); document.getElementById('cancelBookingBtn').onclick = () => updateBookingStatus('cancelled');
     function switchPanel(panel) { document.querySelectorAll('.sidebar-item').forEach(i=>i.classList.remove('active')); document.querySelector(`.sidebar-item[data-panel="${panel}"]`).classList.add('active'); document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active')); document.getElementById(`${panel}Panel`).classList.add('active'); }
     document.querySelectorAll('.sidebar-item').forEach(item => item.addEventListener('click', () => switchPanel(item.dataset.panel)));
