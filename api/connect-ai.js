@@ -10,6 +10,13 @@ If the user asks ANYTHING else (sports, news, code, other apps, politics, person
 
 `;
 
+function extractRetrySeconds(message) {
+  const m = String(message || '').match(/retry in\s+([\d.]+)s/i);
+  if (!m) return null;
+  const v = Number(m[1]);
+  return Number.isFinite(v) ? Math.ceil(v) : null;
+}
+
 /**
  * Vercel serverless: ConnectAI proxy (no Firebase / Blaze). Set GEMINI_KEY in Vercel → Settings → Environment Variables.
  */
@@ -67,9 +74,20 @@ function handler(req, res) {
     .then((r) => r.json().then((data) => ({ r, data })))
     .then(({ r, data }) => {
       if (!r.ok) {
+        const upstreamMsg = (data && data.error && data.error.message) || r.statusText || 'Upstream error';
+        const low = String(upstreamMsg).toLowerCase();
+        if (low.includes('quota exceeded') || low.includes('rate limit')) {
+          const retrySeconds = extractRetrySeconds(upstreamMsg);
+          return res.status(429).json({
+            error: 'quota_exceeded',
+            message: retrySeconds
+              ? `ConnectAI abhi busy hai. ${retrySeconds} sec baad dobara try karein.`
+              : 'ConnectAI abhi busy hai. Thodi der baad dobara try karein.',
+          });
+        }
         return res.status(502).json({
           error: 'upstream',
-          message: (data && data.error && data.error.message) || r.statusText,
+          message: upstreamMsg,
         });
       }
       const out = (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text) || '';
