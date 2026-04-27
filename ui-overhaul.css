@@ -1,0 +1,146 @@
+:root {
+  --sc-bg: #ffffff;
+  --sc-surface: #f5faff;
+  --sc-surface-2: #eef6ff;
+  --sc-border: #cfe7ff;
+  --sc-text: #0e2a47;
+  --sc-text-2: #4f6f8d;
+  --sc-primary: #ff7a1a;
+  --sc-primary-dark: #e86600;
+  --sc-success: #16a34a;
+  --sc-danger: #dc2626;
+  --sc-shadow: 0 8px 24px rgba(15, 42, 71, 0.08);
+}
+
+* {
+  scrollbar-color: #9ecbff #f3f8ff;
+}
+
+body {
+  background: var(--sc-bg) !important;
+  color: var(--sc-text) !important;
+}
+
+header,
+.header {
+  background: #ffffff !important;
+  border-bottom: 1px solid var(--sc-border) !important;
+  box-shadow: 0 2px 14px rgba(15, 42, 71, 0.05) !important;
+}
+
+.logo {
+  color: var(--sc-text) !important;
+}
+
+.card,
+.stat-card,
+.category-card,
+.vendor-card,
+.vendor-card-premium,
+.table-container,
+.auth-container,
+.panel,
+.modal-content {
+  background: var(--sc-surface) !important;
+  border: 1px solid var(--sc-border) !important;
+  box-shadow: var(--sc-shadow) !important;
+}
+
+button,
+.btn,
+.btn-primary,
+.book,
+.book-now-btn,
+.search-btn,
+.logout-btn,
+.refresh-btn {
+  border-radius: 999px !important;
+}
+
+.btn-primary,
+.book,
+.book-now-btn,
+.search-btn,
+button[type="submit"],
+.cta-section button {
+  background: var(--sc-primary) !important;
+  color: #fff !important;
+  border: none !important;
+}
+
+.btn-primary:hover,
+.book:hover,
+.book-now-btn:hover,
+.search-btn:hover,
+button[type="submit"]:hover,
+.cta-section button:hover {
+  background: var(--sc-primary-dark) !important;
+}
+
+.btn-outline,
+.btn-ghost,
+button.mode-outlined,
+.filter-chip-premium,
+.chip,
+.city-chip {
+  background: var(--sc-surface-2) !important;
+  border: 1px solid var(--sc-border) !important;
+  color: var(--sc-text) !important;
+}
+
+input,
+select,
+textarea,
+.search-input,
+.city-input {
+  background: #ffffff !important;
+  border: 1px solid var(--sc-border) !important;
+  color: var(--sc-text) !important;
+  border-radius: 14px !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus,
+.search-input:focus,
+.city-input:focus {
+  outline: none !important;
+  border-color: #8fc2ff !important;
+  box-shadow: 0 0 0 3px rgba(42, 140, 255, 0.15) !important;
+}
+
+table {
+  background: #ffffff !important;
+}
+
+th {
+  background: #eef6ff !important;
+  color: var(--sc-text) !important;
+}
+
+td {
+  color: var(--sc-text) !important;
+  border-bottom: 1px solid #e8f2ff !important;
+}
+
+tr:hover {
+  background: #f3f9ff !important;
+}
+
+.status-confirmed,
+.badge.confirmed {
+  background: #dcfce7 !important;
+  color: #166534 !important;
+}
+
+.status-cancelled,
+.badge.cancelled {
+  background: #fee2e2 !important;
+  color: #991b1b !important;
+}
+
+.status-pending,
+.badge.pending {
+  background: #fff7d6 !important;
+  color: #9a5800 !important;
+}
