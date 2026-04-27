@@ -4,13 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>StadiumConnect - Book Stadiums & Vendors</title>
+    <link rel="icon" type="image/png" href="web-logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background: #fff; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
         .container { text-align: center; padding: 20px; max-width: 500px; margin: 0 auto; }
-        .logo { font-size: 48px; font-weight: 800; margin-bottom: 20px; }
-        .logo span { color: #ff6b35; }
+        .logo { margin-bottom: 20px; display: flex; justify-content: center; }
+        .logo img { width: 88px; height: 88px; border-radius: 18px; object-fit: cover; box-shadow: 0 10px 30px rgba(0,0,0,0.18); }
         
         /* Google Button */
         .google-btn {
@@ -188,12 +189,12 @@
         .toast.error { background: #dc3545; }
         .toast.success { background: #28a745; }
         
-        @media (max-width: 500px) { .logo { font-size: 32px; } .btn { padding: 10px 24px; } }
+        @media (max-width: 500px) { .logo img { width: 70px; height: 70px; border-radius: 14px; } .btn { padding: 10px 24px; } }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="logo">STADIUM<span>CONNECT</span></div>
+        <div class="logo"><img src="web-logo.png" alt="StadiumConnect logo"></div>
         
         <!-- Google Sign-In Button -->
         <button class="google-btn" id="googleSignInBtn">

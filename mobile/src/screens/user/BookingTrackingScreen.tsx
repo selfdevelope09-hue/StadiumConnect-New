@@ -49,6 +49,10 @@ function formatStatus(s: StagedRow) {
   return '⏳ PAY NOW';
 }
 
+function fmtInr(n: number) {
+  return `₹${n.toLocaleString('en-IN')}`;
+}
+
 export function BookingTrackingScreen() {
   const route = useRoute<R>();
   const navigation = useNavigation<Nav>();
@@ -206,6 +210,21 @@ export function BookingTrackingScreen() {
     typeof b.vendorBasePrice === 'number'
       ? calculateFinalPrice(b.vendorBasePrice, 0)
       : null;
+  const paidAmount = b.paymentStages
+    .filter((s) => s.status === 'paid')
+    .reduce((sum, s) => sum + (s.amount || 0), 0);
+  const pendingAmount = b.paymentStages
+    .filter((s) => s.amount > 0 && s.status !== 'paid' && s.status !== 'waived')
+    .reduce((sum, s) => sum + (s.amount || 0), 0);
+  const nextStageIndex = b.paymentStages.findIndex((s, idx) => {
+    if (s.amount <= 0 || s.status !== 'pending') {
+      return false;
+    }
+    return !b.paymentStages.some(
+      (x, j) => j < idx && x.amount > 0 && x.status !== 'paid' && x.status !== 'waived'
+    );
+  });
+  const nextPayable = nextStageIndex >= 0 ? b.paymentStages[nextStageIndex] : null;
   return (
     <ScrollView contentContainerStyle={styles.scroll}>
       <Button mode="text" onPress={() => setId('')} textColor={ORANGE}>
@@ -223,6 +242,42 @@ export function BookingTrackingScreen() {
         Tranches (UPI) follow your category schedule. Platform keeps a small
         tranche-based fee on each collection (see admin).
       </Text>
+      <Card style={styles.payCenter} mode="outlined">
+        <Card.Content>
+          <Text style={styles.payTitle}>Payment Center</Text>
+          <Text style={styles.payRow}>Total: {fmtInr(b.totalAmount || 0)}</Text>
+          <Text style={styles.payRow}>Paid: {fmtInr(paidAmount)}</Text>
+          <Text style={styles.payDue}>Remaining due: {fmtInr(pendingAmount)}</Text>
+          {nextPayable ? (
+            <>
+              <Text style={styles.payHint}>
+                Next payable: Stage {nextPayable.stage} ({nextPayable.label}) ·{' '}
+                {fmtInr(nextPayable.amount)}
+              </Text>
+              <Button
+                mode="contained"
+                buttonColor={ORANGE}
+                onPress={() => goPay(id, nextStageIndex)}
+                style={styles.payBtn}
+              >
+                Pay remaining due now
+              </Button>
+            </>
+          ) : (
+            <Text style={styles.payHint}>All scheduled payments are completed.</Text>
+          )}
+          <Button
+            mode="outlined"
+            textColor={ORANGE}
+            onPress={onInvoice}
+            disabled={invBusy}
+            style={styles.shareBtn}
+          >
+            {invBusy ? 'Preparing…' : 'Share receipt / invoice'}
+          </Button>
+          {invMsg ? <Text style={styles.invNote}>{invMsg}</Text> : null}
+        </Card.Content>
+      </Card>
       <Button
         mode="contained"
         buttonColor={ORANGE}
@@ -232,7 +287,6 @@ export function BookingTrackingScreen() {
       >
         {invBusy ? 'Preparing…' : 'Download / share tax invoice (PDF)'}
       </Button>
-      {invMsg ? <Text style={styles.invNote}>{invMsg}</Text> : null}
       {b.paymentStages.map((s, idx) => {
         const isLocked =
           s.amount > 0 &&
@@ -289,6 +343,13 @@ const styles = StyleSheet.create({
   card: { marginBottom: 8, backgroundColor: '#fffaf6' },
   t: { fontSize: 16, fontWeight: '600' },
   stage: { marginBottom: 10, backgroundColor: '#fff' },
+  payCenter: { marginBottom: 12, backgroundColor: '#fffaf6', borderColor: '#ffd7c5' },
+  payTitle: { fontSize: 16, fontWeight: '800', color: ORANGE, marginBottom: 6 },
+  payRow: { fontSize: 13, color: '#333', marginBottom: 2 },
+  payDue: { fontSize: 16, fontWeight: '800', color: '#b45309', marginTop: 4 },
+  payHint: { color: '#555', fontSize: 12, marginTop: 6, marginBottom: 8 },
+  payBtn: { marginTop: 4 },
+  shareBtn: { marginTop: 8 },
   row: { flexDirection: 'row', justifyContent: 'space-between', flexWrap: 'wrap' },
   stTitle: { flex: 1, fontSize: 14, fontWeight: '600' },
   utr: { fontSize: 12, color: '#444', marginTop: 4 },

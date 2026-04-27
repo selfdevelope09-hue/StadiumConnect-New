@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ConnectAI | StadiumConnect</title>
+  <link rel="icon" type="image/png" href="web-logo.png" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -19,6 +20,8 @@
       gap: 8px;
     }
     header a { color: #fff; text-decoration: underline; font-size: 14px; }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand img { width: 34px; height: 34px; border-radius: 8px; object-fit: cover; box-shadow: 0 6px 18px rgba(0,0,0,0.2); }
     #log { flex: 1; overflow-y: auto; padding: 16px; max-width: 560px; margin: 0 auto; width: 100%; }
     .bubble { margin: 10px 0; padding: 12px 14px; border-radius: 14px; max-width: 92%; line-height: 1.45; font-size: 14px; }
     .ai { background: #fff0ea; align-self: flex-start; border-bottom-left-radius: 4px; }
@@ -69,9 +72,12 @@
 </head>
 <body>
   <header>
-    <div>
+    <div class="brand">
+      <img src="web-logo.png" alt="StadiumConnect logo" />
+      <div>
       <h1>ConnectAI</h1>
       <div style="opacity:0.9;font-size:12px;margin-top:4px">StadiumConnect — sirf vendors, events, city &amp; budget</div>
+      </div>
     </div>
     <a href="home.html">← Home</a>
   </header>
@@ -106,7 +112,7 @@
     const freeText = document.getElementById("freeText");
     const sendBtn = document.getElementById("sendBtn");
 
-    let prefs = { category: "", city: "", budget: "", eventType: "", specialReq: "" };
+    let prefs = { category: "", city: "", guestCount: "", budget: "", eventType: "", specialReq: "" };
     let vendors = [];
     let step = "category";
     const STEP_CITY = "Aapka city?";
@@ -114,7 +120,8 @@
     const STEP_CHIPS = {
       category: ["🎨 Decorator", "📸 Photographer", "🍽️ Caterer", "🎵 Band Baja", "🏛️ Venue", "✨ Full Package"],
       city: ["📍 Nagpur", "📍 Mumbai", "📍 Pune", "📍 Delhi", "📍 Other"],
-      budget: ["💰 Under ₹10,000", "💰 ₹10K - ₹50K", "💰 ₹50K - ₹1L", "💰 ₹1L - ₹5L", "💰 ₹5L+"],
+      guests: ["👥 50", "👥 100", "👥 200", "👥 500", "👥 1000+"],
+      budget: ["💰 Under ₹50K", "💰 ₹50K - ₹2L", "💰 ₹2L - ₹5L", "💰 ₹5L - ₹10L", "💰 ₹10L+"],
       eventType: ["💍 Wedding", "🎂 Birthday", "🏢 Corporate", "🎉 Anniversary"],
       extras: ["⭐ Top Rated Only", "✅ Skip - Show Results"],
     };
@@ -132,6 +139,11 @@
       if (r.status === 503 || data.error === "connectAI_not_configured") {
         throw new Error(
           "Abhi ConnectAI server pe setup pending hai — thodi der baad try karo ya support se contact karo."
+        );
+      }
+      if (r.status === 429 || data.error === "quota_exceeded") {
+        throw new Error(
+          data.message || "ConnectAI abhi busy hai (quota limit). 20-30 sec baad retry karo."
         );
       }
       if (!r.ok) {
@@ -168,31 +180,149 @@
       logEl.scrollTop = logEl.scrollHeight;
     }
 
+    function toCategory(raw) {
+      const s = String(raw || "").toLowerCase().replace(/\s+/g, "_");
+      if (s.includes("cater")) return "caterer";
+      if (s.includes("decor")) return "decorator";
+      if (s.includes("photo")) return "photographer";
+      if (s.includes("venue")) return "venue";
+      if (s.includes("band")) return "band_baja";
+      return s;
+    }
+
+    function parseGuestCount(text) {
+      const n = Number(String(text || "").replace(/[^\d]/g, ""));
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function computeRequiredCategories(p) {
+      const set = new Set();
+      const selected = toCategory(p.category || "");
+      if (selected && selected !== "full_package") set.add(selected);
+      const guests = parseGuestCount(p.guestCount);
+      if (selected === "full_package" || guests >= 150) {
+        set.add("caterer");
+        set.add("decorator");
+      }
+      const event = String(p.eventType || "").toLowerCase();
+      if (event.includes("wedding")) {
+        set.add("caterer");
+        set.add("decorator");
+        set.add("photographer");
+      }
+      if (event.includes("corporate")) {
+        set.add("caterer");
+        set.add("venue");
+      }
+      if (String(p.specialReq || "").toLowerCase().includes("mandap")) {
+        set.add("decorator");
+      }
+      if (!set.size) set.add("caterer");
+      return [...set];
+    }
+
+    function normalizeVendor(v) {
+      return {
+        id: v.id,
+        name: v.name || "Unknown vendor",
+        rating: Number(v.rating || 0),
+        category: toCategory(v.category || ""),
+        city: v.city || v.area || "N/A",
+        area: v.area || v.city || "N/A",
+        priceRange: v.priceRange || (v.minPrice != null && v.maxPrice != null ? `₹${v.minPrice} - ₹${v.maxPrice}` : "On request"),
+      };
+    }
+
     async function fetchVendors(p) {
-      const cat = (p.category || "caterer").trim();
       const ref = collection(db, "vendors");
       const attempts = [
-        () => query(ref, where("category", "==", cat), where("isActive", "==", true), orderBy("rating", "desc"), limit(15)),
-        () => query(ref, where("category", "==", cat), where("isAvailable", "==", true), limit(25)),
-        () => query(ref, where("isAvailable", "==", true), limit(30)),
+        () => query(ref, where("isAvailable", "==", true), orderBy("rating", "desc"), limit(80)),
+        () => query(ref, where("isActive", "==", true), orderBy("rating", "desc"), limit(80)),
+        () => query(ref, limit(120)),
       ];
+      const reqCats = computeRequiredCategories(p);
+      const cityFilter = String(p.city || "").toLowerCase();
       for (const build of attempts) {
         try {
           const snap = await getDocs(build());
           if (!snap.empty) {
-            return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+            const rows = snap.docs.map((d) => normalizeVendor({ id: d.id, ...d.data() }));
+            const cityRows = cityFilter ? rows.filter((v) => String(v.city || "").toLowerCase().includes(cityFilter) || String(v.area || "").toLowerCase().includes(cityFilter)) : rows;
+            const scoped = cityRows.filter((v) => reqCats.includes(v.category));
+            const finalRows = (scoped.length ? scoped : cityRows).sort((a, b) => (b.rating || 0) - (a.rating || 0));
+            if (finalRows.length) return finalRows.slice(0, 60);
           }
         } catch (_) { /* try next */ }
       }
-      const snap = await getDocs(query(ref, limit(30)));
-      return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      const snap = await getDocs(query(ref, limit(120)));
+      return snap.docs.map((d) => normalizeVendor({ id: d.id, ...d.data() })).slice(0, 40);
     }
 
     async function runConnectAI(p, vlist) {
-      const prompt = `You are ConnectAI, StadiumConnect's assistant in India. Hinglish. USER: ${JSON.stringify(p)} VENDORS: ${JSON.stringify(vlist.slice(0, 12).map(x => ({ id: x.id, name: x.name, rating: x.rating, category: x.category, city: x.city || x.area, priceRange: x.priceRange })))}
+      const requiredCategories = computeRequiredCategories(p);
+      const vendorCatalog = vlist.slice(0, 50).map((x) => ({
+        id: x.id,
+        name: x.name,
+        rating: x.rating,
+        category: x.category,
+        city: x.city || x.area,
+        priceRange: x.priceRange,
+      }));
+      const prompt = `You are ConnectAI (StadiumConnect India), a professional package consultant in Hinglish.
+User needs:
+${JSON.stringify(p, null, 2)}
+Required categories for package:
+${JSON.stringify(requiredCategories)}
+
+Use ONLY these vendors from app data:
+${JSON.stringify(vendorCatalog, null, 2)}
+
+Task:
+1) Build 5 or 6 package options.
+2) Packages must combine multiple vendors where needed (for example catering + decorator for bigger events).
+3) Mention estimated total price and simple breakup.
+4) Keep package names professional and practical.
+5) If user gave guestCount, include per-guest hint whenever possible.
+6) Do NOT invent vendors outside the list.
+
 Return ONLY valid JSON:
-{"message":"...","top3":[{"vendorId":"","vendorName":"","rank":1,"whyPicked":"","matchScore":90,"priceRange":"","rating":4.5,"city":"","category":""}],"myPick":{"vendorId":"","vendorName":"","reason":"","tip":""},"followUpQuestion":"..."}`;
-      const raw = await callConnectAPI(prompt, { temperature: 0.3, maxOutputTokens: 1200 });
+{
+  "message": "1-2 line intro",
+  "packages": [
+    {
+      "rank": 1,
+      "packageName": "Premium Wedding Smart Pack",
+      "idealFor": "Who this package suits",
+      "estimatedTotal": "₹4.2L - ₹4.8L",
+      "perGuestEstimate": "₹850 - ₹950",
+      "vendors": [
+        {
+          "vendorId": "",
+          "vendorName": "",
+          "category": "",
+          "city": "",
+          "priceRange": "",
+          "rating": 4.5,
+          "whyIncluded": ""
+        }
+      ],
+      "costBreakup": [
+        { "category": "caterer", "estimate": "₹2.8L", "note": "500 guests meal plan" }
+      ],
+      "highlights": ["", ""],
+      "tradeOff": "One realistic limitation",
+      "bookingTip": "One practical booking tip"
+    }
+  ],
+  "myPick": {
+    "packageName": "",
+    "reason": "",
+    "totalEstimate": "",
+    "nextStep": ""
+  },
+  "followUpQuestion": ""
+}`;
+      const raw = await callConnectAPI(prompt, { temperature: 0.25, maxOutputTokens: 1800 });
       const text = raw.replace(/```json|```/g, "").trim();
       const i = text.indexOf("{");
       const j = text.lastIndexOf("}");
@@ -201,30 +331,49 @@ Return ONLY valid JSON:
 
     function renderResults(data) {
       const wrap = document.createElement("div");
-      (data.top3 || []).forEach((v) => {
+      const packages = Array.isArray(data.packages) ? data.packages.slice(0, 6) : [];
+      packages.forEach((pkg, idx) => {
         const c = document.createElement("div");
         c.className = "card";
-        c.innerHTML = `<strong>#${v.rank} ${v.vendorName}</strong><br/><small>${v.category} · ⭐${v.rating}</small><br/>📍 ${v.city}<br/>💰 ${v.priceRange}<br/><em>💡 ${v.whyPicked}</em>`;
+        const vendorsHtml = (pkg.vendors || []).slice(0, 5).map((v) => {
+          return `• ${v.vendorName || "Vendor"} (${v.category || "service"}) · ${v.priceRange || "On request"} · ⭐${v.rating || "-"}`;
+        }).join("<br/>");
+        const breakupHtml = (pkg.costBreakup || []).slice(0, 5).map((x) => {
+          return `• ${x.category || "service"}: ${x.estimate || "—"}${x.note ? ` (${x.note})` : ""}`;
+        }).join("<br/>");
+        const highlights = (pkg.highlights || []).slice(0, 3).join(" | ");
+        c.innerHTML = `
+          <strong>#${pkg.rank || idx + 1} ${pkg.packageName || "Custom package"}</strong><br/>
+          <small>${pkg.idealFor || "Customized for your requirement"}</small><br/>
+          💰 <strong>${pkg.estimatedTotal || "Estimate on request"}</strong>${pkg.perGuestEstimate ? ` <br/>👤 Per guest: ${pkg.perGuestEstimate}` : ""}<br/><br/>
+          <strong>Included vendors:</strong><br/>${vendorsHtml || "Vendor list finalizing..."}<br/><br/>
+          <strong>Cost breakup:</strong><br/>${breakupHtml || "Custom breakup on confirmation"}<br/><br/>
+          ${highlights ? `✨ ${highlights}<br/>` : ""}
+          ${pkg.tradeOff ? `<em>Trade-off: ${pkg.tradeOff}</em><br/>` : ""}
+          ${pkg.bookingTip ? `<em>💡 Tip: ${pkg.bookingTip}</em>` : ""}
+        `;
         const btn = document.createElement("button");
         btn.className = "book";
-        btn.textContent = "View vendors page →";
+        btn.textContent = "Book this package →";
         btn.onclick = () => (location.href = "vendors.html");
         c.appendChild(btn);
         wrap.appendChild(c);
       });
-      const pick = document.createElement("div");
-      pick.className = "card";
-      pick.style.border = "2px solid #ff6b35";
-      pick.innerHTML = `<div style="color:#ff6b35;font-weight:800">⭐ AI pick</div><strong>${data.myPick.vendorName}</strong><p>${data.myPick.reason}</p><p>💡 ${data.myPick.tip}</p>`;
-      const b2 = document.createElement("button");
-      b2.className = "book";
-      b2.textContent = "Open vendors";
-      b2.onclick = () => (location.href = "vendors.html");
-      pick.appendChild(b2);
-      wrap.appendChild(pick);
+      if (data.myPick && typeof data.myPick === "object") {
+        const pick = document.createElement("div");
+        pick.className = "card";
+        pick.style.border = "2px solid #ff6b35";
+        pick.innerHTML = `<div style="color:#ff6b35;font-weight:800">⭐ AI recommended package</div><strong>${data.myPick.packageName || "Best match package"}</strong><p>${data.myPick.reason || ""}</p><p>💰 ${data.myPick.totalEstimate || ""}</p><p>💡 ${data.myPick.nextStep || ""}</p>`;
+        const b2 = document.createElement("button");
+        b2.className = "book";
+        b2.textContent = "Open vendors";
+        b2.onclick = () => (location.href = "vendors.html");
+        pick.appendChild(b2);
+        wrap.appendChild(pick);
+      }
       logEl.appendChild(wrap);
       addBubble(data.followUpQuestion || "Aur kuch?", "ai");
-      addChips(["🔄 Naya Search", "📋 Vendors", "💬 Poochho"], onChip);
+      addChips(["🔄 Naya Search", "📋 Vendors", "💬 Poochho", "🎯 Better budget package"], onChip);
     }
 
     async function onChip(chip) {
@@ -232,9 +381,9 @@ Return ONLY valid JSON:
       const clean = (s) => s.replace(/^[^\s]+\s+/, "").trim();
 
       if (chip === "🔄 Naya Search") {
-        prefs = { category: "", city: "", budget: "", eventType: "", specialReq: "" };
+        prefs = { category: "", city: "", guestCount: "", budget: "", eventType: "", specialReq: "" };
         step = "category";
-        addBubble("Kaunsi service?", "ai");
+        addBubble("Kaunsi primary service chahiye?", "ai");
         addChips(STEP_CHIPS.category, onChip);
         return;
       }
@@ -250,8 +399,15 @@ Return ONLY valid JSON:
       }
       if (step === "city") {
         prefs.city = clean(chip).replace(/^📍\s*/, "");
+        step = "guests";
+        addBubble("Kitne guests expected hain?", "ai");
+        addChips(STEP_CHIPS.guests, onChip);
+        return;
+      }
+      if (step === "guests") {
+        prefs.guestCount = clean(chip).replace(/^👥\s*/, "");
         step = "budget";
-        addBubble("Budget?", "ai");
+        addBubble("Total budget range kya rakhna hai?", "ai");
         addChips(STEP_CHIPS.budget, onChip);
         return;
       }
@@ -265,7 +421,7 @@ Return ONLY valid JSON:
       if (step === "eventType") {
         prefs.eventType = clean(chip);
         step = "extras";
-        addBubble("Extra filter?", "ai");
+        addBubble("Koi special need? (mandap/theme/top-rated)", "ai");
         addChips(STEP_CHIPS.extras, onChip);
         return;
       }
@@ -279,7 +435,7 @@ Return ONLY valid JSON:
           vendors = await fetchVendors(prefs);
           if (!vendors.length) {
             ty.remove();
-            addBubble("Is category/city par abhi data kam hai — vendors.html dekho.", "ai");
+            addBubble("Is city ya requirement par abhi enough vendor data nahi mila — vendors page check karo.", "ai");
             return;
           }
           const ai = await runConnectAI(prefs, vendors);
@@ -294,7 +450,7 @@ Return ONLY valid JSON:
     }
 
     function boot() {
-      addBubble("Namaste! 🙏 Service chuno:", "ai");
+      addBubble("Namaste! 🙏 Main aapke liye professional vendor packages banaunga. Pehle primary service chuno:", "ai");
       addChips(STEP_CHIPS.category, onChip);
     }
     boot();

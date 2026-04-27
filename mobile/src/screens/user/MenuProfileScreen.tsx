@@ -20,7 +20,7 @@ const items: { title: string; screen: keyof UserStackParamList }[] = [
   { title: 'Wishlist', screen: 'Wishlist' },
   { title: 'Support', screen: 'Support' },
   { title: 'Analytics', screen: 'Analytics' },
-  { title: 'Payment (test)', screen: 'Payment' },
+  { title: 'Payments & Remaining Due', screen: 'BookingTracking' },
   { title: 'Agent management', screen: 'AgentManagement' },
   { title: 'Vendor management', screen: 'VendorManagement' },
   { title: 'Stadium management', screen: 'StadiumManagement' },

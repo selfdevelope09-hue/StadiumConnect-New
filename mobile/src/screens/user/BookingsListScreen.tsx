@@ -30,6 +30,14 @@ export function BookingsListScreen() {
         Open full booking list
       </Button>
       <Button
+        mode="contained-tonal"
+        onPress={() => navigation.getParent()?.navigate('BookingTracking' as never)}
+        textColor={primary}
+        style={{ marginTop: 8 }}
+      >
+        Payment center (due + receipt)
+      </Button>
+      <Button
         mode="text"
         onPress={() => navigation.getParent()?.navigate('BookingAnalytics' as never)}
         textColor={primary}
