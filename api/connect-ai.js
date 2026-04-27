@@ -1,11 +1,14 @@
-const GEMINI_URL =
-  'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
+const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 
-const VENDOR_ONLY_SCOPE = `
+const PLATFORM_SCOPE = `
 [CONNECTAI SCOPE — STRICT]
-You are ConnectAI for StadiumConnect (India event marketplace). You ONLY help with:
-event vendors (decorator, caterer, photographer, venue, band, florist, etc.), Indian cities, budgets, wedding/birthday/corporate events, finding & comparing vendors, StadiumConnect booking flow, UPI on platform.
-If the user asks ANYTHING else (sports, news, code, other apps, politics, personal advice), reply in 1–2 short lines in Hinglish: sorry, main sirf StadiumConnect vendors / event booking par baat kar sakta hoon — batao city ya category? Do NOT answer the off-topic request.
+You are ConnectAI for StadiumConnect (India event marketplace). You ONLY help with StadiumConnect platform topics:
+1) Vendor discovery: specific vendor dhundhna, category/city/rating/budget ke basis par shortlist banana, vendor compare karna.
+2) Package planning: multi-vendor package suggestions with realistic estimates from provided app vendor data.
+3) Booking guidance: booking flow, availability checks, payment stages, pending due, receipt/share flow, support/help center usage.
+4) Product help: StadiumConnect app/website ke andar jo features hain unka user guidance.
+If user asks ANYTHING outside StadiumConnect (sports/news/coding/politics/personal advice/other apps), politely refuse in 1-2 Hinglish lines and redirect to StadiumConnect need (city/category/booking issue/vendor type).
 [END SCOPE]
 
 `;
@@ -18,7 +21,8 @@ function extractRetrySeconds(message) {
 }
 
 /**
- * Vercel serverless: ConnectAI proxy (no Firebase / Blaze). Set GEMINI_KEY in Vercel → Settings → Environment Variables.
+ * Vercel serverless: ConnectAI proxy via OpenAI.
+ * Set OPENAI_API_KEY in Vercel → Settings → Environment Variables.
  */
 function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -32,11 +36,11 @@ function handler(req, res) {
     return res.status(405).json({ error: 'Use POST' });
   }
 
-  const key = (process.env.GEMINI_KEY || process.env.GEMINI_API_KEY || '').trim();
+  const key = (process.env.OPENAI_API_KEY || '').trim();
   if (!key) {
     return res
       .status(503)
-      .json({ error: 'connectAI_not_configured', message: 'Server missing AI key' });
+      .json({ error: 'connectAI_not_configured', message: 'Server missing OPENAI_API_KEY' });
   }
 
   let body;
@@ -54,21 +58,35 @@ function handler(req, res) {
     return res.status(400).json({ error: 'prompt too long' });
   }
 
-  const text = VENDOR_ONLY_SCOPE + prompt;
+  const text = PLATFORM_SCOPE + prompt;
 
-  return fetch(GEMINI_URL, {
+  return fetch(OPENAI_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-goog-api-key': key,
+      Authorization: `Bearer ${key}`,
     },
     body: JSON.stringify({
-      contents: [{ parts: [{ text }] }],
-      generationConfig: {
-        temperature: 0.35,
-        maxOutputTokens: 1200,
-        ...generationConfig,
-      },
+      model: OPENAI_MODEL,
+      messages: [
+        {
+          role: 'system',
+          content:
+            'You are ConnectAI for StadiumConnect. Help across all StadiumConnect features (vendors, packages, booking, payment, support) and reply in Hinglish. Stay strictly inside StadiumConnect scope.',
+        },
+        {
+          role: 'user',
+          content: text,
+        },
+      ],
+      temperature:
+        typeof generationConfig.temperature === 'number'
+          ? generationConfig.temperature
+          : 0.35,
+      max_tokens:
+        typeof generationConfig.maxOutputTokens === 'number'
+          ? generationConfig.maxOutputTokens
+          : 1200,
     }),
   })
     .then((r) => r.json().then((data) => ({ r, data })))
@@ -76,7 +94,13 @@ function handler(req, res) {
       if (!r.ok) {
         const upstreamMsg = (data && data.error && data.error.message) || r.statusText || 'Upstream error';
         const low = String(upstreamMsg).toLowerCase();
-        if (low.includes('quota exceeded') || low.includes('rate limit')) {
+        if (r.status === 401 || low.includes('invalid api key')) {
+          return res.status(502).json({
+            error: 'upstream_auth',
+            message: 'OpenAI key invalid or expired. Update OPENAI_API_KEY in Vercel.',
+          });
+        }
+        if (r.status === 429 || low.includes('quota exceeded') || low.includes('rate limit')) {
           const retrySeconds = extractRetrySeconds(upstreamMsg);
           return res.status(429).json({
             error: 'quota_exceeded',
@@ -90,7 +114,13 @@ function handler(req, res) {
           message: upstreamMsg,
         });
       }
-      const out = (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text) || '';
+      const out =
+        (data &&
+          data.choices &&
+          data.choices[0] &&
+          data.choices[0].message &&
+          data.choices[0].message.content) ||
+        '';
       return res.json({ text: out });
     })
     .catch((e) => res.status(500).json({ error: 'internal', message: e.message || String(e) }));

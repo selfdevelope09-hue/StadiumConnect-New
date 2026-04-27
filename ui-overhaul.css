@@ -5,6 +5,8 @@
   --sc-border: #cfe7ff;
   --sc-text: #0e2a47;
   --sc-text-2: #4f6f8d;
+  --sc-blue: #2a8cff;
+  --sc-blue-dark: #1f6fd1;
   --sc-primary: #ff7a1a;
   --sc-primary-dark: #e86600;
   --sc-success: #16a34a;
@@ -21,6 +23,13 @@ body {
   color: var(--sc-text) !important;
 }
 
+/* Global motion reduction: remove decorative animations */
+*,
+*::before,
+*::after {
+  animation: none !important;
+}
+
 header,
 .header {
   background: #ffffff !important;
@@ -30,6 +39,8 @@ header,
 
 .logo {
   color: var(--sc-text) !important;
+  background: none !important;
+  -webkit-text-fill-color: var(--sc-text) !important;
 }
 
 .card,
@@ -82,10 +93,15 @@ button[type="submit"]:hover,
 button.mode-outlined,
 .filter-chip-premium,
 .chip,
-.city-chip {
-  background: var(--sc-surface-2) !important;
-  border: 1px solid var(--sc-border) !important;
-  color: var(--sc-text) !important;
+.city-chip,
+.category-tab,
+.location-chip,
+.vendor-book-btn,
+.close-results,
+.nav-buttons a:first-child {
+  background: var(--sc-blue) !important;
+  border: 1px solid var(--sc-blue) !important;
+  color: #ffffff !important;
 }
 
 input,
@@ -125,6 +141,44 @@ td {
 
 tr:hover {
   background: #f3f9ff !important;
+}
+
+.hero h1,
+.hero p,
+.section-title,
+.section-title::after,
+.stadiums-header h2,
+.stadiums-header p,
+.vendor-name,
+.vendor-location,
+.vendor-category,
+.footer-section p,
+.footer-bottom {
+  background: none !important;
+  -webkit-text-fill-color: initial !important;
+}
+
+.hero h1,
+.section-title,
+.stadiums-header h2,
+.vendor-name {
+  color: var(--sc-text) !important;
+}
+
+.hero p,
+.stadiums-header p,
+.vendor-location,
+.footer-section p,
+.footer-bottom {
+  color: var(--sc-text-2) !important;
+}
+
+.section-title::after {
+  background: var(--sc-primary) !important;
+}
+
+.bg-animation {
+  display: none !important;
 }
 
 .status-confirmed,

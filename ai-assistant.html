@@ -8,7 +8,49 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: Inter, sans-serif; background: #ffffff; color: #0e2a47; min-height: 100vh; display: flex; flex-direction: column; }
+    body { font-family: Inter, sans-serif; background: #ffffff; color: #0e2a47; min-height: 100vh; }
+    .app-shell { display: flex; min-height: 100vh; }
+    .sidebar {
+      width: 280px;
+      border-right: 1px solid #d9e9fb;
+      background: #f5faff;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .new-chat-btn {
+      border: none;
+      border-radius: 10px;
+      background: #2a8cff;
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 10px 12px;
+      text-align: left;
+    }
+    .history-list { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; padding-right: 2px; }
+    .history-item {
+      border: 1px solid #d9e9fb;
+      border-radius: 10px;
+      padding: 8px;
+      background: #fff;
+      cursor: pointer;
+    }
+    .history-item.active { border-color: #ff7a1a; box-shadow: 0 0 0 1px rgba(255,122,26,0.22); }
+    .history-title { font-size: 13px; font-weight: 700; color: #0e2a47; }
+    .history-time { font-size: 11px; color: #55718f; margin-top: 4px; }
+    .history-actions { display: flex; gap: 6px; margin-top: 8px; }
+    .history-actions button {
+      border: 1px solid #cfe7ff;
+      background: #eef6ff;
+      color: #1f6fd1;
+      border-radius: 8px;
+      font-size: 11px;
+      padding: 5px 8px;
+      cursor: pointer;
+    }
+    .main-pane { flex: 1; display: flex; flex-direction: column; min-width: 0; }
     header {
       background: linear-gradient(135deg, #2a8cff, #0e2a47);
       color: #fff;
@@ -22,7 +64,7 @@
     header a { color: #fff; text-decoration: underline; font-size: 14px; }
     .brand { display: flex; align-items: center; gap: 10px; }
     .brand img { width: 34px; height: 34px; border-radius: 8px; object-fit: cover; box-shadow: 0 6px 18px rgba(0,0,0,0.2); }
-    #log { flex: 1; overflow-y: auto; padding: 16px; max-width: 560px; margin: 0 auto; width: 100%; }
+    #log { flex: 1; overflow-y: auto; padding: 16px; max-width: 760px; margin: 0 auto; width: 100%; }
     .bubble { margin: 10px 0; padding: 12px 14px; border-radius: 14px; max-width: 92%; line-height: 1.45; font-size: 14px; }
     .ai { background: #eef6ff; align-self: flex-start; border-bottom-left-radius: 4px; }
     .user { background: #ff7a1a; color: #fff; margin-left: auto; border-bottom-right-radius: 4px; }
@@ -68,26 +110,38 @@
     }
     .typing { color: #888; font-style: italic; margin: 8px 0; }
     h1 { font-size: 18px; font-weight: 800; }
+    @media (max-width: 900px) {
+      .app-shell { flex-direction: column; }
+      .sidebar { width: 100%; border-right: none; border-bottom: 1px solid #d9e9fb; max-height: 40vh; }
+    }
   </style>
 
     <link rel="stylesheet" href="ui-overhaul.css">
 </head>
 <body>
-  <header>
-    <div class="brand">
-      <img src="web-logo.png" alt="StadiumConnect logo" />
-      <div>
-      <h1>ConnectAI</h1>
-      <div style="opacity:0.9;font-size:12px;margin-top:4px">StadiumConnect — sirf vendors, events, city &amp; budget</div>
-      </div>
-    </div>
-    <a href="home.html">← Home</a>
-  </header>
-  <div id="log"></div>
-  <footer>
-    <input type="text" id="freeText" placeholder="Vendors / city / budget poochho…" />
-    <button type="button" id="sendBtn" title="Send">➤</button>
-  </footer>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <button type="button" class="new-chat-btn" id="newChatBtn">+ New chat</button>
+      <div class="history-list" id="historyList"></div>
+    </aside>
+    <main class="main-pane">
+      <header>
+        <div class="brand">
+          <img src="web-logo.png" alt="StadiumConnect logo" />
+          <div>
+            <h1>ConnectAI</h1>
+            <div style="opacity:0.9;font-size:12px;margin-top:4px">StadiumConnect — vendors, packages, booking, payment aur support help</div>
+          </div>
+        </div>
+        <a href="home.html">← Home</a>
+      </header>
+      <div id="log"></div>
+      <footer>
+        <input type="text" id="freeText" placeholder="Vendors / city / budget poochho…" />
+        <button type="button" id="sendBtn" title="Send">➤</button>
+      </footer>
+    </main>
+  </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
@@ -113,11 +167,151 @@
     const logEl = document.getElementById("log");
     const freeText = document.getElementById("freeText");
     const sendBtn = document.getElementById("sendBtn");
+    const historyList = document.getElementById("historyList");
+    const newChatBtn = document.getElementById("newChatBtn");
+    const CHAT_STORAGE_KEY = "stadiumconnect_connectai_history_v1";
 
     let prefs = { category: "", city: "", guestCount: "", budget: "", eventType: "", specialReq: "" };
     let vendors = [];
     let step = "category";
+    let chats = [];
+    let activeChatId = "";
     const STEP_CITY = "Aapka city?";
+    function makeId() {
+      return `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    }
+
+    function fmtTime(ts) {
+      try {
+        return new Date(ts).toLocaleString("en-IN", { dateStyle: "short", timeStyle: "short" });
+      } catch (_) {
+        return "";
+      }
+    }
+
+    function loadChats() {
+      try {
+        const raw = localStorage.getItem(CHAT_STORAGE_KEY);
+        chats = raw ? JSON.parse(raw) : [];
+      } catch (_) {
+        chats = [];
+      }
+      if (!Array.isArray(chats)) chats = [];
+    }
+
+    function saveChats() {
+      localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(chats));
+    }
+
+    function chatById(id) {
+      return chats.find((x) => x.id === id);
+    }
+
+    function inferTitleFromHtml(html) {
+      const temp = document.createElement("div");
+      temp.innerHTML = html || "";
+      const users = [...temp.querySelectorAll(".bubble.user")];
+      const first = users.length ? users[0].textContent : "";
+      if (!first) return "New chat";
+      return first.length > 36 ? `${first.slice(0, 36)}...` : first;
+    }
+
+    function persistCurrentChat() {
+      const item = chatById(activeChatId);
+      if (!item) return;
+      item.logHtml = logEl.innerHTML;
+      item.prefs = prefs;
+      item.vendors = vendors;
+      item.step = step;
+      if (!item.title || item.title === "New chat") {
+        item.title = inferTitleFromHtml(item.logHtml);
+      }
+      item.updatedAt = Date.now();
+      chats.sort((a, b) => b.updatedAt - a.updatedAt);
+      saveChats();
+      renderHistoryList();
+    }
+
+    function renderHistoryList() {
+      historyList.innerHTML = "";
+      chats.forEach((chat) => {
+        const row = document.createElement("div");
+        row.className = `history-item${chat.id === activeChatId ? " active" : ""}`;
+        row.innerHTML = `
+          <div class="history-title">${chat.title || "New chat"}</div>
+          <div class="history-time">${fmtTime(chat.updatedAt)}</div>
+          <div class="history-actions">
+            <button type="button" data-act="rename">Rename</button>
+            <button type="button" data-act="delete">Delete</button>
+          </div>
+        `;
+        row.onclick = (e) => {
+          const act = e.target && e.target.getAttribute ? e.target.getAttribute("data-act") : "";
+          if (act === "rename") {
+            e.stopPropagation();
+            const next = prompt("New chat title:", chat.title || "");
+            if (next && next.trim()) {
+              chat.title = next.trim();
+              chat.updatedAt = Date.now();
+              saveChats();
+              renderHistoryList();
+            }
+            return;
+          }
+          if (act === "delete") {
+            e.stopPropagation();
+            chats = chats.filter((x) => x.id !== chat.id);
+            if (activeChatId === chat.id) {
+              if (!chats.length) createNewChat(true);
+              else openChat(chats[0].id);
+            }
+            saveChats();
+            renderHistoryList();
+            return;
+          }
+          openChat(chat.id);
+        };
+        historyList.appendChild(row);
+      });
+    }
+
+    function createNewChat(skipPersist) {
+      if (!skipPersist) persistCurrentChat();
+      const now = Date.now();
+      const fresh = {
+        id: makeId(),
+        title: "New chat",
+        updatedAt: now,
+        logHtml: "",
+        prefs: { category: "", city: "", guestCount: "", budget: "", eventType: "", specialReq: "" },
+        vendors: [],
+        step: "category",
+      };
+      chats.unshift(fresh);
+      activeChatId = fresh.id;
+      prefs = { ...fresh.prefs };
+      vendors = [];
+      step = "category";
+      logEl.innerHTML = "";
+      saveChats();
+      renderHistoryList();
+      boot();
+      persistCurrentChat();
+    }
+
+    function openChat(id) {
+      persistCurrentChat();
+      const chat = chatById(id);
+      if (!chat) return;
+      activeChatId = chat.id;
+      prefs = chat.prefs || { category: "", city: "", guestCount: "", budget: "", eventType: "", specialReq: "" };
+      vendors = Array.isArray(chat.vendors) ? chat.vendors : [];
+      step = chat.step || "category";
+      logEl.innerHTML = chat.logHtml || "";
+      renderHistoryList();
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
 
     const STEP_CHIPS = {
       category: ["🎨 Decorator", "📸 Photographer", "🍽️ Caterer", "🎵 Band Baja", "🏛️ Venue", "✨ Full Package"],
@@ -165,6 +359,7 @@
       d.textContent = text;
       logEl.appendChild(d);
       logEl.scrollTop = logEl.scrollHeight;
+      persistCurrentChat();
     }
 
     function addChips(items, handler) {
@@ -180,6 +375,7 @@
       });
       logEl.appendChild(row);
       logEl.scrollTop = logEl.scrollHeight;
+      persistCurrentChat();
     }
 
     function toCategory(raw) {
@@ -399,6 +595,7 @@ Return ONLY valid JSON:
       logEl.appendChild(wrap);
       addBubble(data.followUpQuestion || "Aur kuch?", "ai");
       addChips(["🔄 Naya Search", "📋 Vendors", "💬 Poochho", "🎯 Better budget package"], onChip);
+      persistCurrentChat();
     }
 
     async function onChip(chip) {
@@ -475,17 +672,30 @@ Return ONLY valid JSON:
     }
 
     function boot() {
-      addBubble("Namaste! 🙏 Main aapke liye professional vendor packages banaunga. Pehle primary service chuno:", "ai");
+      addBubble("Namaste! 🙏 Main packages bana sakta hoon, specific vendor dhundh sakta hoon, aur StadiumConnect booking/payment/support mein help kar sakta hoon. Pehle primary service chuno:", "ai");
       addChips(STEP_CHIPS.category, onChip);
     }
-    boot();
+    loadChats();
+    if (chats.length) {
+      chats.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+      activeChatId = chats[0].id;
+      openChat(activeChatId);
+      if (!logEl.innerHTML.trim()) boot();
+    } else {
+      createNewChat(true);
+    }
+    newChatBtn.addEventListener("click", () => createNewChat(false));
 
     async function freeChatSend() {
       const t = freeText.value.trim();
       if (!t) return;
       addBubble(t, "user");
       freeText.value = "";
-      const prompt = `You are ConnectAI (StadiumConnect). Hinglish. Context: ${JSON.stringify(prefs)} Vendors: ${JSON.stringify(vendors.slice(0,8))} User: ${t}  Reply short. [CHIP: a] [CHIP: b] end with max 2 chips.`;
+      const prompt = `You are ConnectAI for StadiumConnect. Reply in Hinglish. Help with anything inside StadiumConnect (vendor search, package suggestions, booking, payment due, receipt/share, support/help center, panel navigation). If user asks outside StadiumConnect, politely refuse and redirect.
+Context: ${JSON.stringify(prefs)}
+Vendors: ${JSON.stringify(vendors.slice(0, 12))}
+User: ${t}
+Reply concise and useful. Add at most 2 next-action chips in format [CHIP: ...].`;
       try {
         const text = await callConnectAPI(prompt, { maxOutputTokens: 400, temperature: 0.5 });
         const chips = [];
