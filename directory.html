@@ -1021,7 +1021,7 @@
             document.getElementById('locationText').innerHTML = '📍 Detecting...';
             navigator.geolocation.getCurrentPosition(() => {
                 document.getElementById('locationText').innerHTML = '📍 Location Detected';
-                setTimeout(() => { if(confirm('Show vendors near your location?')) window.location.href = `vendors.html`; }, 500);
+                setTimeout(() => { if(confirm('Show vendors near your location?')) window.location.href = `directory.html`; }, 500);
             }, () => { document.getElementById('locationText').innerHTML = '📍 Detect Location'; alert('Please allow location access'); });
         }
     };

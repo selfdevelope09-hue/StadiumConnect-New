@@ -356,7 +356,7 @@ Return ONLY valid JSON:
         const btn = document.createElement("button");
         btn.className = "book";
         btn.textContent = "Book this package →";
-        btn.onclick = () => (location.href = "vendors.html");
+        btn.onclick = () => (location.href = "directory.html");
         c.appendChild(btn);
 
         if (pkgVendors.length) {
@@ -373,7 +373,7 @@ Return ONLY valid JSON:
               if (id) {
                 location.href = `vendor-detail.html?id=${encodeURIComponent(id)}`;
               } else {
-                location.href = "vendors.html";
+                location.href = "directory.html";
               }
             };
             vendorActions.appendChild(b);
@@ -390,7 +390,7 @@ Return ONLY valid JSON:
         const b2 = document.createElement("button");
         b2.className = "book";
         b2.textContent = "Open vendors";
-        b2.onclick = () => (location.href = "vendors.html");
+        b2.onclick = () => (location.href = "directory.html");
         pick.appendChild(b2);
         wrap.appendChild(pick);
       }
@@ -410,7 +410,7 @@ Return ONLY valid JSON:
         addChips(STEP_CHIPS.category, onChip);
         return;
       }
-      if (chip.includes("Vendors")) { location.href = "vendors.html"; return; }
+      if (chip.includes("Vendors")) { location.href = "directory.html"; return; }
       if (chip.includes("Poochho")) { step = "free"; addBubble("Bolo! 😊", "ai"); return; }
 
       if (step === "category") {

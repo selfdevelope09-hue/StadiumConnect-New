@@ -628,7 +628,7 @@
         <i class="fas fa-location-dot"></i>
         <span id="locationText">📍 Detect my location</span>
     </div>
-    <div class="location-btn" onclick="window.location.href='vendors.html'">
+    <div class="location-btn" onclick="window.location.href='directory.html'">
         <i class="fas fa-search"></i>
         <span>Browse All Vendors</span>
     </div>
@@ -671,7 +671,7 @@
 <div class="cta-section">
     <h3>✨ Ready to Create Magic?</h3>
     <p>Join thousands of happy customers who found their perfect vendors through StadiumConnect</p>
-    <button onclick="window.location.href='vendors.html'">Explore Now →</button>
+    <button onclick="window.location.href='directory.html'">Explore Now →</button>
 </div>
 
 <footer>
@@ -690,7 +690,7 @@
         <p>Smart vendor picks for your city — StadiumConnect <strong>ConnectAI</strong> (web + app). Vendors browse karo ya full chat khol do.</p>
         <div class="ai-modal-actions">
             <button type="button" class="btn btn-primary" onclick="window.location.href='ai-assistant.html'">ConnectAI (full chat)</button>
-            <button type="button" class="btn btn-primary" style="background:#333" onclick="window.location.href='vendors.html'">Browse vendors</button>
+            <button type="button" class="btn btn-primary" style="background:#333" onclick="window.location.href='directory.html'">Browse vendors</button>
             <button type="button" class="btn btn-ghost" id="aiModalClose">Close</button>
         </div>
     </div>
@@ -859,17 +859,17 @@
 
     // Navigation Functions
     window.goToCategory = (category) => {
-        window.location.href = `vendors.html?category=${category}`;
+        window.location.href = `directory.html?category=${category}`;
     };
 
     window.goToCity = (city) => {
-        window.location.href = `vendors.html?city=${city.toLowerCase()}`;
+        window.location.href = `directory.html?city=${city.toLowerCase()}`;
     };
     window.openVendorProfile = (vendorId) => {
         if (vendorId) {
             window.location.href = `vendor-detail.html?id=${vendorId}`;
         } else {
-            window.location.href = 'vendors.html';
+            window.location.href = 'directory.html';
         }
     };
 
@@ -879,7 +879,7 @@
             locationText.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Detecting...';
             navigator.geolocation.getCurrentPosition(
                 (pos) => {
-                    window.location.href = `vendors.html?lat=${pos.coords.latitude}&lng=${pos.coords.longitude}`;
+                    window.location.href = `directory.html?lat=${pos.coords.latitude}&lng=${pos.coords.longitude}`;
                 },
                 () => {
                     locationText.innerHTML = '📍 Detect my location';
