@@ -275,6 +275,53 @@
             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
             gap: 24px;
         }
+        .packages-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 18px;
+        }
+        .package-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 18px;
+            box-shadow: var(--shadow);
+        }
+        .package-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+        .package-meta {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+        .package-price {
+            font-size: 18px;
+            color: var(--accent);
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+        .mini-chip-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .mini-chip {
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border-radius: 999px;
+            padding: 6px 10px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .mini-chip:hover {
+            border-color: var(--accent);
+        }
 
         .category-card {
             background: var(--bg-card);
@@ -609,6 +656,17 @@
     </div>
 </div>
 
+<!-- Packages Section -->
+<div class="section">
+    <div class="section-title">
+        <i class="fas fa-box-open"></i>
+        <span>Packages</span>
+    </div>
+    <div class="packages-grid" id="packagesGrid">
+        <div class="loading"><div class="spinner"></div>Loading packages...</div>
+    </div>
+</div>
+
 <!-- CTA Section -->
 <div class="cta-section">
     <h3>✨ Ready to Create Magic?</h3>
@@ -763,6 +821,42 @@
         }
     }
 
+    async function loadPackages() {
+        const grid = document.getElementById('packagesGrid');
+        if (!grid) return;
+        grid.innerHTML = '<div class="loading"><div class="spinner"></div>Loading packages...</div>';
+        try {
+            const snap = await getDocs(collection(db, 'packages'));
+            const rows = snap.docs
+                .map((d) => ({ id: d.id, ...d.data() }))
+                .filter((p) => p.isActive !== false)
+                .slice(0, 12);
+            if (!rows.length) {
+                grid.innerHTML = '<div class="card"><p style="color:var(--text-secondary);">No packages published yet.</p></div>';
+                return;
+            }
+            grid.innerHTML = rows.map((p) => {
+                const vendors = Array.isArray(p.vendors) ? p.vendors.slice(0, 4) : [];
+                const vendorChips = vendors.map((v) => {
+                    const id = encodeURIComponent(v.vendorId || '');
+                    return `<button class="mini-chip" onclick="openVendorProfile('${id}')">${escapeHtml(v.vendorName || 'Vendor')}</button>`;
+                }).join('');
+                return `
+                    <div class="package-card">
+                        <div class="package-title">${escapeHtml(p.name || 'Package')}</div>
+                        <div class="package-meta">📍 ${escapeHtml(p.city || 'City')} · ${escapeHtml(p.eventType || 'Event')}</div>
+                        <div class="package-price">₹${(Number(p.totalPrice) || 0).toLocaleString('en-IN')}</div>
+                        <div class="package-meta">${escapeHtml(p.description || 'Curated package by StadiumConnect')}</div>
+                        <div class="mini-chip-row">${vendorChips || ''}</div>
+                    </div>
+                `;
+            }).join('');
+        } catch (e) {
+            console.error('Error loading packages:', e);
+            grid.innerHTML = '<div class="card"><p style="color:var(--text-secondary);">Could not load packages right now.</p></div>';
+        }
+    }
+
     // Navigation Functions
     window.goToCategory = (category) => {
         window.location.href = `vendors.html?category=${category}`;
@@ -770,6 +864,13 @@
 
     window.goToCity = (city) => {
         window.location.href = `vendors.html?city=${city.toLowerCase()}`;
+    };
+    window.openVendorProfile = (vendorId) => {
+        if (vendorId) {
+            window.location.href = `vendor-detail.html?id=${vendorId}`;
+        } else {
+            window.location.href = 'vendors.html';
+        }
     };
 
     window.detectLocation = () => {
@@ -929,6 +1030,7 @@
         
         await loadCategories();
         await loadPopularCities();
+        await loadPackages();
         
         setTimeout(addScrollAnimation, 300);
     }
