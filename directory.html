@@ -239,14 +239,15 @@
             top: 100%;
             left: 20px;
             right: 20px;
-            background: rgba(30,30,60,0.98);
-            backdrop-filter: blur(20px);
+            background: #ffffff;
+            backdrop-filter: none;
             border-radius: 20px;
             margin-top: 10px;
             z-index: 1000;
             max-height: 400px;
             overflow-y: auto;
-            border: 1px solid rgba(255,107,53,0.3);
+            border: 1px solid #cfe7ff;
+            box-shadow: 0 10px 24px rgba(15, 42, 71, 0.12);
             display: none;
         }
         .autocomplete-dropdown.show {
@@ -261,16 +262,18 @@
             padding: 14px 20px;
             cursor: pointer;
             transition: 0.2s;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid #e8f2ff;
             display: flex;
             align-items: center;
             gap: 12px;
+            color: #0e2a47;
+            background: #ffffff;
         }
         .autocomplete-item:hover {
-            background: rgba(255,107,53,0.2);
+            background: #eef6ff;
         }
         .autocomplete-item i {
-            color: var(--primary);
+            color: #2a8cff;
             width: 24px;
         }
 
@@ -377,7 +380,7 @@
         }
         .vendor-logo {
             height: 180px;
-            background: linear-gradient(135deg, #2a2a4a, #1a1a3a);
+            background: #eef6ff;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -870,21 +873,56 @@
         document.getElementById('cityCount').innerHTML = allCitiesData.length;
     }
 
+    function resolveVendorLogoUrl(vendor) {
+        const keys = ["logo", "logoUrl", "image", "imageUrl", "profileImage", "photoUrl", "bannerUrl"];
+        for (const k of keys) {
+            const val = vendor && vendor[k];
+            if (typeof val === "string" && val.trim()) {
+                return val.trim();
+            }
+        }
+        return "";
+    }
+
+    function normalizeCategory(raw) {
+        const c = String(raw || "").toLowerCase().replace(/\s+/g, "").replace(/[_-]/g, "");
+        if (c.includes("decor")) return "decorator";
+        if (c.includes("photo")) return "photographer";
+        if (c.includes("cater")) return "caterer";
+        if (c.includes("band")) return "bandbaja";
+        if (c.includes("stadium") || c.includes("venue")) return "stadium";
+        return c || "service";
+    }
+
+    function categoryMeta(rawCategory) {
+        const category = normalizeCategory(rawCategory);
+        const map = {
+            decorator: { label: "🎨 Decorator", icon: "🎨" },
+            photographer: { label: "📸 Photographer", icon: "📸" },
+            caterer: { label: "🍽️ Caterer", icon: "🍽️" },
+            bandbaja: { label: "🎵 Band Baja", icon: "🎵" },
+            stadium: { label: "🏟️ Stadium", icon: "🏟️" },
+            service: { label: "🛎️ Service", icon: "🛎️" },
+        };
+        return map[category] || { label: `🛎️ ${String(rawCategory || "Service")}`, icon: "🛎️" };
+    }
+
     function renderVendors() {
         let filtered = allVendors;
         if (currentCategory !== 'all') {
-            filtered = allVendors.filter(v => v.category === currentCategory);
+            filtered = allVendors.filter(v => normalizeCategory(v.category) === normalizeCategory(currentCategory));
         }
         const container = document.getElementById('vendorsGrid');
         container.innerHTML = filtered.map(v => `
             <div class="vendor-card" data-aos="fade-up" onclick="openVendor('${v.id}')">
                 <div class="vendor-logo">
-                    ${v.logo && v.logo.startsWith('http') ? `<img src="${v.logo}" alt="${v.name}">` : `<span style="font-size: 70px;">${v.logo || (v.category === 'decorator' ? '🎨' : v.category === 'photographer' ? '📸' : v.category === 'caterer' ? '🍽️' : '🎵')}</span>`}
+                    ${resolveVendorLogoUrl(v) ? `<img src="${resolveVendorLogoUrl(v)}" alt="${v.name} logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">` : ""}
+                    <span style="font-size: 70px; ${resolveVendorLogoUrl(v) ? "display:none;" : ""}">${categoryMeta(v.category).icon}</span>
                     <div class="vendor-rating">⭐ ${v.rating || 4.5}</div>
                 </div>
                 <div class="vendor-info">
                     <div class="vendor-name">${v.name}</div>
-                    <div class="vendor-category">${v.category === 'decorator' ? '🎨 Decorator' : v.category === 'photographer' ? '📸 Photographer' : v.category === 'caterer' ? '🍽️ Caterer' : '🎵 Band Baja'}</div>
+                    <div class="vendor-category">${categoryMeta(v.category).label}</div>
                     <div class="vendor-location"><i class="fas fa-map-marker-alt"></i> ${v.city} • ${v.location || ''}</div>
                     <div class="vendor-price">${v.priceRange || 'Contact for quote'}</div>
                     <div class="vendor-book-btn">Book Now →</div>
@@ -939,14 +977,14 @@
             matchedCities.forEach(city => {
                 const item = document.createElement('div');
                 item.className = 'autocomplete-item';
-                item.innerHTML = `<i class="fas fa-city"></i> ${city} <span style="color:#ffaa66; margin-left:auto;">City</span>`;
+                item.innerHTML = `<i class="fas fa-city"></i> ${city} <span style="color:#1f6fd1; margin-left:auto;">City</span>`;
                 item.onclick = () => { searchInput.value = city; dropdown.classList.remove('show'); searchByCity(city); };
                 dropdown.appendChild(item);
             });
             matchedVendors.forEach(vendor => {
                 const item = document.createElement('div');
                 item.className = 'autocomplete-item';
-                item.innerHTML = `<i class="fas fa-store"></i> ${vendor.name} <span style="color:#ffaa66; margin-left:auto;">${vendor.category}</span>`;
+                item.innerHTML = `<i class="fas fa-store"></i> ${vendor.name} <span style="color:#1f6fd1; margin-left:auto;">${vendor.category}</span>`;
                 item.onclick = () => { searchInput.value = vendor.name; dropdown.classList.remove('show'); performSearch(); };
                 dropdown.appendChild(item);
             });

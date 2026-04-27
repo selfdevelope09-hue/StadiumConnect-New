@@ -33,18 +33,18 @@
         }
 
         body.dark {
-            --bg-primary: #0a0a2a;
-            --bg-secondary: #0f0f2a;
-            --bg-card: #1a1a3a;
-            --text-primary: #ffffff;
-            --text-secondary: #c0c0e0;
-            --text-muted: #8888aa;
-            --border-color: rgba(255,255,255,0.1);
+            --bg-primary: #071a2f;
+            --bg-secondary: #0b2542;
+            --bg-card: #12355b;
+            --text-primary: #eaf4ff;
+            --text-secondary: #bdd7f3;
+            --text-muted: #88aed3;
+            --border-color: rgba(109, 176, 255, 0.35);
             --accent: #ff7a1a;
             --accent-dark: #e86600;
-            --shadow: 0 10px 30px rgba(0,0,0,0.3);
-            --shadow-hover: 0 20px 40px rgba(0,0,0,0.4);
-            --header-bg: rgba(10,10,42,0.95);
+            --shadow: 0 10px 30px rgba(0,0,0,0.35);
+            --shadow-hover: 0 20px 40px rgba(0,0,0,0.45);
+            --header-bg: rgba(7, 26, 47, 0.95);
         }
 
         body {
@@ -61,7 +61,7 @@
             right: 0;
             bottom: 0;
             z-index: 0;
-            background: radial-gradient(circle at 20% 30%, rgba(255,107,53,0.08) 0%, transparent 70%);
+            background: radial-gradient(circle at 20% 30%, rgba(42,140,255,0.16) 0%, transparent 70%);
             pointer-events: none;
         }
 
@@ -122,6 +122,48 @@
             border-color: var(--accent);
             transform: scale(1.02);
         }
+
+        .menu-toggle {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 40px;
+            padding: 8px 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+        .menu-toggle:hover {
+            border-color: var(--accent);
+            transform: scale(1.02);
+        }
+        .quick-menu {
+            position: absolute;
+            top: 70px;
+            right: 24px;
+            z-index: 1200;
+            min-width: 190px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            box-shadow: var(--shadow-hover);
+            padding: 8px;
+            display: none;
+        }
+        .quick-menu.open { display: block; }
+        .quick-menu a {
+            display: block;
+            text-decoration: none;
+            color: var(--text-primary);
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .quick-menu a:hover { background: var(--bg-secondary); }
 
         /* User Profile Card */
         .profile-card {
@@ -605,6 +647,10 @@
             <i class="fas fa-moon"></i>
             <span>Dark</span>
         </div>
+        <button type="button" class="menu-toggle" id="menuToggle">
+            <i class="fas fa-bars"></i>
+            <span>Menu</span>
+        </button>
         <div class="profile-card" id="profileCard">
             <div class="avatar" id="userAvatar">👤</div>
             <div class="user-info">
@@ -615,6 +661,14 @@
         </div>
     </div>
 </header>
+<div class="quick-menu" id="quickMenu">
+    <a href="home.html"><i class="fas fa-house"></i> Home</a>
+    <a href="directory.html"><i class="fas fa-store"></i> Vendors</a>
+    <a href="bookings.html"><i class="fas fa-calendar-check"></i> Bookings</a>
+    <a href="profile.html"><i class="fas fa-user"></i> Profile</a>
+    <a href="support.html"><i class="fas fa-headset"></i> Support</a>
+    <a href="ai-assistant.html"><i class="fas fa-robot"></i> ConnectAI</a>
+</div>
 
 <div class="hero">
     <h2>Plan Your Perfect Event</h2>
@@ -943,6 +997,21 @@
         showToast(isDark ? '🌙 Dark mode enabled' : '☀️ Light mode enabled');
     }
 
+    function setupMenuToggle() {
+        const menuBtn = document.getElementById('menuToggle');
+        const menu = document.getElementById('quickMenu');
+        if (!menuBtn || !menu) return;
+        menuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            menu.classList.toggle('open');
+        });
+        document.addEventListener('click', (e) => {
+            if (!menu.contains(e.target) && !menuBtn.contains(e.target)) {
+                menu.classList.remove('open');
+            }
+        });
+    }
+
     // User Profile
     let currentUser = null;
 
@@ -1027,6 +1096,7 @@
     async function init() {
         initTheme();
         document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+        setupMenuToggle();
         setupProfileClick();
         setupAIFab();
         

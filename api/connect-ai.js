@@ -23,6 +23,7 @@ function extractRetrySeconds(message) {
 /**
  * Vercel serverless: ConnectAI proxy via OpenAI.
  * Set OPENAI_API_KEY in Vercel → Settings → Environment Variables.
+ * Backward compatible: OPENAI_KEY also supported.
  */
 function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -36,11 +37,11 @@ function handler(req, res) {
     return res.status(405).json({ error: 'Use POST' });
   }
 
-  const key = (process.env.OPENAI_API_KEY || '').trim();
+  const key = (process.env.OPENAI_API_KEY || process.env.OPENAI_KEY || '').trim();
   if (!key) {
     return res
       .status(503)
-      .json({ error: 'connectAI_not_configured', message: 'Server missing OPENAI_API_KEY' });
+      .json({ error: 'connectAI_not_configured', message: 'Server missing OPENAI_API_KEY (or OPENAI_KEY)' });
   }
 
   let body;
@@ -102,11 +103,17 @@ function handler(req, res) {
         }
         if (r.status === 429 || low.includes('quota exceeded') || low.includes('rate limit')) {
           const retrySeconds = extractRetrySeconds(upstreamMsg);
+          const isBillingIssue =
+            low.includes('insufficient_quota') ||
+            low.includes('billing') ||
+            low.includes('exceeded your current quota');
           return res.status(429).json({
             error: 'quota_exceeded',
-            message: retrySeconds
-              ? `ConnectAI abhi busy hai. ${retrySeconds} sec baad dobara try karein.`
-              : 'ConnectAI abhi busy hai. Thodi der baad dobara try karein.',
+            message: isBillingIssue
+              ? 'OpenAI quota/billing issue hai. Vercel key check karo aur OpenAI billing enable karo.'
+              : retrySeconds
+                ? `ConnectAI abhi busy hai. ${retrySeconds} sec baad dobara try karein.`
+                : 'ConnectAI abhi busy hai. Thodi der baad dobara try karein.',
           });
         }
         return res.status(502).json({
