@@ -664,6 +664,7 @@
 <div class="quick-menu" id="quickMenu">
     <a href="home.html"><i class="fas fa-house"></i> Home</a>
     <a href="directory.html"><i class="fas fa-store"></i> Vendors</a>
+    <a href="home.html#packagesSection"><i class="fas fa-box-open"></i> Packages</a>
     <a href="bookings.html"><i class="fas fa-calendar-check"></i> Bookings</a>
     <a href="profile.html"><i class="fas fa-user"></i> Profile</a>
     <a href="support.html"><i class="fas fa-headset"></i> Support</a>
@@ -691,7 +692,7 @@
 </div>
 
 <!-- Categories Section -->
-<div class="section">
+<div class="section" id="packagesSection">
     <div class="section-title">
         <i class="fas fa-th-large"></i>
         <span>Browse by Category</span>
@@ -895,10 +896,10 @@
                 const vendors = Array.isArray(p.vendors) ? p.vendors.slice(0, 4) : [];
                 const vendorChips = vendors.map((v) => {
                     const id = encodeURIComponent(v.vendorId || '');
-                    return `<button class="mini-chip" onclick="openVendorProfile('${id}')">${escapeHtml(v.vendorName || 'Vendor')}</button>`;
+                    return `<button class="mini-chip" onclick="event.stopPropagation(); openVendorProfile('${id}')">${escapeHtml(v.vendorName || 'Vendor')}</button>`;
                 }).join('');
                 return `
-                    <div class="package-card">
+                    <div class="package-card" onclick="openPackageDetail('${encodeURIComponent(p.id)}')" style="cursor:pointer;">
                         <div class="package-title">${escapeHtml(p.name || 'Package')}</div>
                         <div class="package-meta">📍 ${escapeHtml(p.city || 'City')} · ${escapeHtml(p.eventType || 'Event')}</div>
                         <div class="package-price">₹${(Number(p.totalPrice) || 0).toLocaleString('en-IN')}</div>
@@ -926,6 +927,11 @@
             window.location.href = `vendor-detail.html?id=${vendorId}`;
         } else {
             window.location.href = 'directory.html';
+        }
+    };
+    window.openPackageDetail = (packageId) => {
+        if (packageId) {
+            window.location.href = `package-detail.html?id=${packageId}`;
         }
     };
 

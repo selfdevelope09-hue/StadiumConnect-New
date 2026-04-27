@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Package Detail | StadiumConnect</title>
+  <link rel="icon" type="image/png" href="web-logo.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root { --bg:#fff; --surface:#f5faff; --border:#cfe7ff; --text:#0e2a47; --muted:#4f6f8d; --accent:#ff7a1a; --blue:#2a8cff; }
+    * { box-sizing: border-box; font-family: Inter, sans-serif; }
+    body { margin: 0; background: var(--bg); color: var(--text); }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 20px; }
+    .top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .top a { text-decoration: none; color: #fff; background: var(--blue); border-radius: 999px; padding: 10px 14px; font-weight: 700; }
+    .hero { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 20px; }
+    .hero h1 { margin: 0; font-size: 30px; }
+    .meta { color: var(--muted); margin-top: 8px; }
+    .price { margin-top: 10px; font-size: 26px; color: var(--accent); font-weight: 800; }
+    .grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-top: 16px; }
+    .card { background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 16px; }
+    .card h3 { margin: 0 0 12px; font-size: 18px; }
+    .num-list { margin: 0; padding-left: 18px; }
+    .num-list li { margin: 8px 0; color: var(--text); }
+    .muted { color: var(--muted); }
+    .vendor { border: 1px solid var(--border); border-radius: 14px; padding: 12px; margin-bottom: 10px; background: var(--surface); }
+    .vendor-top { display: flex; gap: 10px; align-items: center; }
+    .vendor img { width: 52px; height: 52px; border-radius: 10px; object-fit: cover; background: #eaf4ff; }
+    .vendor .name { font-weight: 800; }
+    .chip { display: inline-block; margin-top: 6px; font-size: 12px; background: #eaf4ff; border: 1px solid var(--border); color: #1f6fd1; border-radius: 999px; padding: 4px 10px; }
+    .gallery { display: grid; grid-template-columns: repeat(auto-fill,minmax(150px,1fr)); gap: 10px; }
+    .gallery img { width: 100%; height: 110px; object-fit: cover; border-radius: 12px; border: 1px solid var(--border); }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+  </style>
+  <link rel="stylesheet" href="ui-overhaul.css">
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <a href="home.html#packagesSection">← Back to Packages</a>
+      <a href="directory.html">Browse Vendors</a>
+    </div>
+    <div id="content" class="card">Loading package details...</div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    const firebaseConfig = {
+      apiKey: "AIzaSyAzorBcavy3e12mTbGKgUud-Mm-TxnnZIM",
+      authDomain: "stadiumconnect-8fecb.firebaseapp.com",
+      projectId: "stadiumconnect-8fecb",
+      storageBucket: "stadiumconnect-8fecb.firebasestorage.app",
+      messagingSenderId: "458108198578",
+      appId: "1:458108198578:web:83d83646f0e24e718b73ab"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const content = document.getElementById("content");
+    const id = new URLSearchParams(location.search).get("id");
+
+    function esc(v) { return String(v || "").replace(/[&<>"]/g, (m) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[m])); }
+    function listHtml(title, rows) {
+      const data = Array.isArray(rows) ? rows.filter(Boolean) : [];
+      if (!data.length) return "";
+      return `<div class="card"><h3>${title}</h3><ol class="num-list">${data.map((x) => `<li>${esc(x)}</li>`).join("")}</ol></div>`;
+    }
+
+    async function load() {
+      if (!id) { content.innerHTML = "Package ID missing."; return; }
+      const snap = await getDoc(doc(db, "packages", id));
+      if (!snap.exists()) { content.innerHTML = "Package not found."; return; }
+      const p = { id: snap.id, ...snap.data() };
+      const vendors = Array.isArray(p.vendorsDetailed) && p.vendorsDetailed.length ? p.vendorsDetailed : (p.vendors || []);
+      const gallery = Array.isArray(p.galleryImages) ? p.galleryImages.filter(Boolean) : [];
+      content.className = "";
+      content.innerHTML = `
+        <div class="hero">
+          <h1>${esc(p.name || "Package")}</h1>
+          <div class="meta">📍 ${esc(p.city || "City")} • ${esc(p.eventType || "Event")} • 👥 ${esc(p.guestRange || "As required")} • ⏱ ${esc(p.duration || "Flexible")}</div>
+          <div class="price">₹${(Number(p.totalPrice) || 0).toLocaleString("en-IN")} ${p.perGuestEstimate ? `<span class="muted" style="font-size:14px;">(${esc(p.perGuestEstimate)} per guest)</span>` : ""}</div>
+          <div class="muted" style="margin-top:8px;">${esc(p.description || p.idealFor || "Curated package by StadiumConnect.")}</div>
+        </div>
+        <div class="grid">
+          <div>
+            ${listHtml("1) Package Highlights", p.highlights)}
+            ${listHtml("2) Inclusions", p.inclusions)}
+            ${listHtml("3) Exclusions", p.exclusions)}
+            ${listHtml("4) Timeline / Execution Plan", p.timelineSteps)}
+            <div class="card">
+              <h3>5) Vendor Details (No.-wise)</h3>
+              ${(vendors || []).map((v, idx) => `
+                <div class="vendor">
+                  <div class="vendor-top">
+                    <img src="${esc(v.photoUrl || v.imageUrl || "")}" alt="vendor" onerror="this.style.display='none'">
+                    <div>
+                      <div class="name">${idx + 1}. ${esc(v.vendorName || v.vendorId || "Vendor")}</div>
+                      <div class="muted">${esc(v.role || v.category || "Service Partner")}</div>
+                      ${v.vendorId ? `<a class="chip" href="vendor-detail.html?id=${encodeURIComponent(v.vendorId)}">Open profile</a>` : ""}
+                    </div>
+                  </div>
+                  <div class="muted" style="margin-top:8px;">${esc(v.details || v.whyIncluded || "")}</div>
+                  ${v.price ? `<div class="chip">Price: ${esc(v.price)}</div>` : (v.priceRange ? `<div class="chip">Price: ${esc(v.priceRange)}</div>` : "")}
+                </div>
+              `).join("") || `<div class="muted">Vendor details will be updated by admin.</div>`}
+            </div>
+            ${Array.isArray(p.costBreakup) && p.costBreakup.length ? `<div class="card"><h3>6) Cost Breakdown</h3><ol class="num-list">${p.costBreakup.map((x) => `<li><strong>${esc(x.title || x.category || "Item")}:</strong> ${esc(x.price || x.estimate || "-")} ${x.note ? `(${esc(x.note)})` : ""}</li>`).join("")}</ol></div>` : ""}
+            ${Array.isArray(p.faqs) && p.faqs.length ? `<div class="card"><h3>7) FAQs</h3><ol class="num-list">${p.faqs.map((x) => `<li><strong>${esc(x.question)}:</strong> ${esc(x.answer)}</li>`).join("")}</ol></div>` : ""}
+          </div>
+          <div>
+            <div class="card">
+              <h3>Package Photos</h3>
+              <div class="gallery">
+                ${(p.coverImage ? [p.coverImage, ...gallery] : gallery).slice(0, 20).map((src) => `<img src="${esc(src)}" alt="package">`).join("") || `<div class="muted">No gallery uploaded yet.</div>`}
+              </div>
+            </div>
+          </div>
+        </div>`;
+    }
+    load().catch((e) => { content.innerHTML = `Failed to load package: ${esc(e.message || e)}`; });
+  </script>
+</body>
+</html>

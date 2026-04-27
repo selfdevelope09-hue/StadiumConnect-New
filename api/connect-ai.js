@@ -1,5 +1,5 @@
-const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
-const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
+const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
+const GROQ_MODEL = process.env.GROQ_MODEL || 'llama-3.1-8b-instant';
 
 const PLATFORM_SCOPE = `
 [CONNECTAI SCOPE — STRICT]
@@ -21,9 +21,9 @@ function extractRetrySeconds(message) {
 }
 
 /**
- * Vercel serverless: ConnectAI proxy via OpenAI.
- * Set OPENAI_API_KEY in Vercel → Settings → Environment Variables.
- * Backward compatible: OPENAI_KEY also supported.
+ * Vercel serverless: ConnectAI proxy via Groq.
+ * Set GROQ_API_KEY in Vercel → Settings → Environment Variables.
+ * Backward compatible: GROQ_KEY also supported.
  */
 function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -37,11 +37,11 @@ function handler(req, res) {
     return res.status(405).json({ error: 'Use POST' });
   }
 
-  const key = (process.env.OPENAI_API_KEY || process.env.OPENAI_KEY || '').trim();
+  const key = (process.env.GROQ_API_KEY || process.env.GROQ_KEY || '').trim();
   if (!key) {
     return res
       .status(503)
-      .json({ error: 'connectAI_not_configured', message: 'Server missing OPENAI_API_KEY (or OPENAI_KEY)' });
+      .json({ error: 'connectAI_not_configured', message: 'Server missing GROQ_API_KEY (or GROQ_KEY)' });
   }
 
   let body;
@@ -61,14 +61,14 @@ function handler(req, res) {
 
   const text = PLATFORM_SCOPE + prompt;
 
-  return fetch(OPENAI_URL, {
+  return fetch(GROQ_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${key}`,
     },
     body: JSON.stringify({
-      model: OPENAI_MODEL,
+      model: GROQ_MODEL,
       messages: [
         {
           role: 'system',
@@ -98,7 +98,7 @@ function handler(req, res) {
         if (r.status === 401 || low.includes('invalid api key')) {
           return res.status(502).json({
             error: 'upstream_auth',
-            message: 'OpenAI key invalid or expired. Update OPENAI_API_KEY in Vercel.',
+            message: 'Groq key invalid or expired. Update GROQ_API_KEY in Vercel.',
           });
         }
         if (r.status === 429 || low.includes('quota exceeded') || low.includes('rate limit')) {
@@ -110,7 +110,7 @@ function handler(req, res) {
           return res.status(429).json({
             error: 'quota_exceeded',
             message: isBillingIssue
-              ? 'OpenAI quota/billing issue hai. Vercel key check karo aur OpenAI billing enable karo.'
+              ? 'Groq quota/limit issue hai. Vercel key check karo aur Groq plan/limits verify karo.'
               : retrySeconds
                 ? `ConnectAI abhi busy hai. ${retrySeconds} sec baad dobara try karein.`
                 : 'ConnectAI abhi busy hai. Thodi der baad dobara try karein.',
