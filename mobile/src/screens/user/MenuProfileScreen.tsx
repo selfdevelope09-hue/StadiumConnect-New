@@ -3,8 +3,8 @@ import type { CompositeNavigationProp } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useState } from 'react';
-import { ScrollView } from 'react-native';
-import { List } from 'react-native-paper';
+import { Linking, ScrollView } from 'react-native';
+import { List, Text } from 'react-native-paper';
 
 import type { UserStackParamList, UserTabParamList } from '@/navigation/types';
 import { signOutUser } from '@/services/authService';
@@ -14,27 +14,37 @@ type TabNav = BottomTabNavigationProp<UserTabParamList, 'ProfileTab'>;
 type RootNav = NativeStackNavigationProp<UserStackParamList>;
 type Nav = CompositeNavigationProp<TabNav, RootNav>;
 
-const items: { title: string; screen: keyof UserStackParamList }[] = [
+const accountItems: { title: string; screen: keyof UserStackParamList }[] = [
   { title: 'Profile', screen: 'Profile' },
   { title: 'Notifications', screen: 'Notifications' },
   { title: 'Wishlist', screen: 'Wishlist' },
-  { title: 'Support', screen: 'Support' },
   { title: 'Analytics', screen: 'Analytics' },
+];
+
+const bookingItems: { title: string; screen: keyof UserStackParamList }[] = [
   { title: 'Payments & Remaining Due', screen: 'BookingTracking' },
-  { title: 'Agent management', screen: 'AgentManagement' },
-  { title: 'Vendor management', screen: 'VendorManagement' },
-  { title: 'Stadium management', screen: 'StadiumManagement' },
+  { title: 'Booking list', screen: 'Bookings' },
+  { title: 'Booking analytics', screen: 'BookingAnalytics' },
 ];
 
 export function MenuProfileScreen() {
   const navigation = useNavigation<Nav>();
   const name = useAuthStore((s) => s.user?.displayName) ?? 'Guest';
   const [busy, setBusy] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(true);
 
   const onLogout = async () => {
     setBusy(true);
     await signOutUser();
     setBusy(false);
+  };
+
+  const openExternal = async (url: string) => {
+    const can = await Linking.canOpenURL(url);
+    if (!can) {
+      return;
+    }
+    await Linking.openURL(url);
   };
 
   return (
@@ -43,7 +53,7 @@ export function MenuProfileScreen() {
         <List.Subheader>
           {name} — signed in
         </List.Subheader>
-        {items.map((it) => (
+        {accountItems.map((it) => (
           <List.Item
             key={it.title}
             title={it.title}
@@ -51,28 +61,58 @@ export function MenuProfileScreen() {
             right={(p) => <List.Icon {...p} icon="chevron-right" />}
           />
         ))}
-        <List.Item
-          title="UPI demo (staged ₹30k caterer)"
-          description="Creates a demo booking and opens UPI flow"
-          onPress={() =>
-            navigation.getParent()?.navigate('UPIPayment', {
-              totalAmount: 30000,
-              vendorId: 'demo_vendor',
-              vendorName: 'Demo Caterer',
-              category: 'caterer',
-              service: 'Wedding lunch',
-              eventDate: 'TBD',
-            })
-          }
-          right={(p) => <List.Icon {...p} icon="chevron-right" />}
-        />
-        <List.Item
-          title="Track UPI booking"
-          onPress={() =>
-            navigation.getParent()?.navigate('BookingTracking', {})
-          }
-          right={(p) => <List.Icon {...p} icon="chevron-right" />}
-        />
+        <List.Accordion
+          title="Bookings & Payments"
+          description="Track due, pay and receipts"
+          expanded
+          id="bookings-payments"
+          left={(p) => <List.Icon {...p} icon="credit-card-outline" />}
+        >
+          {bookingItems.map((it) => (
+            <List.Item
+              key={it.title}
+              title={it.title}
+              onPress={() => navigation.getParent()?.navigate(it.screen as never)}
+              right={(p) => <List.Icon {...p} icon="chevron-right" />}
+            />
+          ))}
+        </List.Accordion>
+        <List.Accordion
+          title="Help Centre"
+          description="Customer support and issue help"
+          expanded={helpOpen}
+          onPress={() => setHelpOpen((v) => !v)}
+          id="help-center"
+          left={(p) => <List.Icon {...p} icon="lifebuoy" />}
+        >
+          <List.Item
+            title="Email support"
+            description="stadiumconnect9@gmail.com"
+            onPress={() => void openExternal('mailto:stadiumconnect9@gmail.com')}
+            right={(p) => <List.Icon {...p} icon="email-outline" />}
+          />
+          <List.Item
+            title="Call support"
+            description="+91 7972343530"
+            onPress={() => void openExternal('tel:+917972343530')}
+            right={(p) => <List.Icon {...p} icon="phone-outline" />}
+          />
+          <List.Item
+            title="WhatsApp support"
+            description="Chat with support team"
+            onPress={() => void openExternal('https://wa.me/917972343530')}
+            right={(p) => <List.Icon {...p} icon="whatsapp" />}
+          />
+          <List.Item
+            title="Open support page"
+            description="FAQs and issue submission"
+            onPress={() => navigation.getParent()?.navigate('Support' as never)}
+            right={(p) => <List.Icon {...p} icon="open-in-new" />}
+          />
+          <Text style={{ paddingHorizontal: 16, paddingBottom: 12, color: '#666', fontSize: 12 }}>
+            Support hours: 10:00 AM - 8:00 PM IST. Response in 2-6 hours.
+          </Text>
+        </List.Accordion>
         <List.Item
           title="Sign out"
           onPress={onLogout}

@@ -2,7 +2,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { CompositeNavigationProp } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { ScrollView, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Card, Text } from 'react-native-paper';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
@@ -25,36 +25,36 @@ export function HomeScreen() {
 
   return (
     <ScrollView
-      contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
+      contentContainerStyle={styles.scroll}
     >
       <Animated.View entering={FadeIn.duration(450)}>
-        <Text variant="headlineMedium" style={{ fontWeight: '800', marginBottom: 8 }}>
+        <Text variant="headlineMedium" style={styles.title}>
           Stadium<Text style={{ color: primary }}>Connect</Text>
         </Text>
-        <Text style={{ color: '#666', marginBottom: 12, lineHeight: 22 }}>
+        <Text style={styles.subtitle}>
           Premium event marketplace — find a venue, lock a date, and book trusted
           vendors.
         </Text>
-        <View style={{ marginBottom: 16 }}>
+        <View style={styles.ctaWrap}>
           <Button
             mode="contained"
             buttonColor={primary}
             onPress={openAI}
             icon="robot-happy"
-            contentStyle={{ paddingVertical: 6 }}
+            contentStyle={styles.ctaContent}
           >
             Open ConnectAI (vendors, tips)
           </Button>
         </View>
         <Card
           mode="contained"
-          style={{ marginBottom: 12, backgroundColor: '#fff5f0' }}
+          style={styles.mainCard}
         >
           <Card.Content>
-            <Text variant="titleMedium" style={{ fontWeight: '700', marginBottom: 8 }}>
+            <Text variant="titleMedium" style={styles.cardTitle}>
               Book a stadium
             </Text>
-            <Text variant="bodyMedium" style={{ marginBottom: 12, color: '#555' }}>
+            <Text variant="bodyMedium" style={styles.cardBody}>
               Same flow as stadium-booking.html — being ported to native lists,
               maps, and payments.
             </Text>
@@ -67,18 +67,38 @@ export function HomeScreen() {
             </Button>
           </Card.Content>
         </Card>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+        <View style={styles.twoCol}>
+          <Card mode="contained" style={styles.dualCard}>
+            <Card.Content>
+              <Text style={styles.dualTitle}>Vendors</Text>
+              <Text style={styles.dualSub}>Find trusted service partners by city.</Text>
+              <Button mode="contained" buttonColor={primary} onPress={() => open('Vendors')}>
+                Open vendors
+              </Button>
+            </Card.Content>
+          </Card>
+          <Card mode="contained" style={styles.dualCard}>
+            <Card.Content>
+              <Text style={styles.dualTitle}>Packages</Text>
+              <Text style={styles.dualSub}>Curated multi-vendor event bundles.</Text>
+              <Button mode="contained" buttonColor={primary} onPress={() => open('Vendors')}>
+                View packages
+              </Button>
+            </Card.Content>
+          </Card>
+        </View>
+        <View style={styles.rowButtons}>
           <Button
             mode="contained"
             buttonColor={primary}
             onPress={() => open('HomeHtml')}
-            style={{ marginBottom: 4 }}
+            style={styles.smallBtn}
             icon="robot-outline"
           >
             Home (HTML) + AI
           </Button>
         </View>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+        <View style={styles.rowButtons}>
           <Button mode="outlined" onPress={() => open('Directory')} textColor={primary}>
             Directory
           </Button>
@@ -96,3 +116,20 @@ export function HomeScreen() {
     </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  scroll: { padding: 16, paddingBottom: 100, backgroundColor: '#ffffff' },
+  title: { fontWeight: '800', marginBottom: 8, color: '#0e2a47' },
+  subtitle: { color: '#4f6f8d', marginBottom: 12, lineHeight: 22 },
+  ctaWrap: { marginBottom: 16 },
+  ctaContent: { paddingVertical: 6 },
+  mainCard: { marginBottom: 12, backgroundColor: '#eef6ff' },
+  cardTitle: { fontWeight: '700', marginBottom: 8, color: '#0e2a47' },
+  cardBody: { marginBottom: 12, color: '#4f6f8d' },
+  twoCol: { flexDirection: 'row', gap: 10, marginBottom: 12 },
+  dualCard: { flex: 1, backgroundColor: '#f5faff' },
+  dualTitle: { fontSize: 16, fontWeight: '800', color: '#0e2a47', marginBottom: 6 },
+  dualSub: { fontSize: 12, color: '#5f7d99', marginBottom: 10, minHeight: 34 },
+  rowButtons: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  smallBtn: { marginBottom: 4 },
+});

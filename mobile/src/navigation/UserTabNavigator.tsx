@@ -2,6 +2,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 import { NotificationBellButton } from '@/components/NotificationBellButton';
+import { brand } from '@/config/appTheme';
 import { BookingsListScreen } from '@/screens/user/BookingsListScreen';
 import { HomeScreen } from '@/screens/user/HomeScreen';
 import { MenuProfileScreen } from '@/screens/user/MenuProfileScreen';
@@ -15,8 +16,19 @@ export function UserTabNavigator() {
   return (
     <Tab.Navigator
       screenOptions={{
-        tabBarActiveTintColor: '#ff6b35',
-        tabBarInactiveTintColor: '#888',
+        tabBarActiveTintColor: brand.primary,
+        tabBarInactiveTintColor: '#5f7d99',
+        tabBarStyle: {
+          backgroundColor: '#ffffff',
+          borderTopColor: brand.blueBorder,
+          borderTopWidth: 1,
+          height: 62,
+          paddingBottom: 6,
+          paddingTop: 6,
+        },
+        tabBarLabelStyle: { fontSize: 12, fontWeight: '600' },
+        headerStyle: { backgroundColor: '#ffffff' },
+        headerShadowVisible: false,
         headerTitle: 'StadiumConnect',
         headerRight: () => <NotificationBellButton />,
       }}
