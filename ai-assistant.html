@@ -335,6 +335,7 @@ Return ONLY valid JSON:
       packages.forEach((pkg, idx) => {
         const c = document.createElement("div");
         c.className = "card";
+        const pkgVendors = Array.isArray(pkg.vendors) ? pkg.vendors.slice(0, 5) : [];
         const vendorsHtml = (pkg.vendors || []).slice(0, 5).map((v) => {
           return `• ${v.vendorName || "Vendor"} (${v.category || "service"}) · ${v.priceRange || "On request"} · ⭐${v.rating || "-"}`;
         }).join("<br/>");
@@ -357,6 +358,28 @@ Return ONLY valid JSON:
         btn.textContent = "Book this package →";
         btn.onclick = () => (location.href = "vendors.html");
         c.appendChild(btn);
+
+        if (pkgVendors.length) {
+          const vendorActions = document.createElement("div");
+          vendorActions.className = "chips";
+          vendorActions.style.marginTop = "10px";
+          pkgVendors.forEach((v) => {
+            const b = document.createElement("button");
+            b.type = "button";
+            b.className = "chip";
+            b.textContent = `${v.vendorName || "Vendor"} profile`;
+            b.onclick = () => {
+              const id = String(v.vendorId || "").trim();
+              if (id) {
+                location.href = `vendor-detail.html?id=${encodeURIComponent(id)}`;
+              } else {
+                location.href = "vendors.html";
+              }
+            };
+            vendorActions.appendChild(b);
+          });
+          c.appendChild(vendorActions);
+        }
         wrap.appendChild(c);
       });
       if (data.myPick && typeof data.myPick === "object") {
