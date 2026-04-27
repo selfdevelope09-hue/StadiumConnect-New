@@ -22,9 +22,9 @@
             gap: 15px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
-        .logo { font-size: 22px; font-weight: 800; background: linear-gradient(135deg, #ff6b35, #ff9068); -webkit-background-clip: text; -webkit-text-fill-color: transparent; cursor: pointer; }
-        .vendor-badge { background: #fff5f0; padding: 8px 20px; border-radius: 40px; color: #ff6b35; font-weight: 600; }
-        .logout-btn { background: #ff6b35; color: white; border: none; padding: 8px 20px; border-radius: 30px; cursor: pointer; transition: 0.3s; }
+        .logo { font-size: 22px; font-weight: 800; background: linear-gradient(135deg, #ff7a1a, #ffb066); -webkit-background-clip: text; -webkit-text-fill-color: transparent; cursor: pointer; }
+        .vendor-badge { background: #eef6ff; padding: 8px 20px; border-radius: 40px; color: #ff7a1a; font-weight: 600; }
+        .logout-btn { background: #ff7a1a; color: white; border: none; padding: 8px 20px; border-radius: 30px; cursor: pointer; transition: 0.3s; }
         .logout-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255,107,53,0.3); }
         .refresh-btn { background: #28a745; color: white; border: none; padding: 8px 20px; border-radius: 30px; cursor: pointer; margin-right: 10px; transition: 0.3s; }
         .refresh-btn:hover { transform: translateY(-2px); }
@@ -47,7 +47,7 @@
             border: 1px solid #f0f0f0;
         }
         .stat-card:hover { transform: translateY(-4px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
-        .stat-value { font-size: 36px; font-weight: 800; color: #ff6b35; }
+        .stat-value { font-size: 36px; font-weight: 800; color: #ff7a1a; }
         .stat-label { color: #666; margin-top: 8px; font-size: 14px; }
         
         .card {
@@ -67,11 +67,11 @@
             transition: 0.3s;
         }
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-            outline: none; border-color: #ff6b35; box-shadow: 0 0 0 3px rgba(255,107,53,0.1);
+            outline: none; border-color: #ff7a1a; box-shadow: 0 0 0 3px rgba(255,107,53,0.1);
         }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         
-        .btn-primary { background: linear-gradient(135deg, #ff6b35, #ff9068); color: white; border: none; padding: 12px 28px; border-radius: 30px; cursor: pointer; font-weight: 600; transition: 0.3s; }
+        .btn-primary { background: linear-gradient(135deg, #ff7a1a, #ffb066); color: white; border: none; padding: 12px 28px; border-radius: 30px; cursor: pointer; font-weight: 600; transition: 0.3s; }
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255,107,53,0.3); }
         
         table { width: 100%; border-collapse: collapse; }
@@ -100,7 +100,7 @@
             margin-bottom: 15px;
             background: #fafafa;
         }
-        .image-upload-area:hover { border-color: #ff6b35; background: #fff5f0; }
+        .image-upload-area:hover { border-color: #ff7a1a; background: #eef6ff; }
         .image-preview { margin-top: 15px; display: flex; flex-wrap: wrap; gap: 12px; }
         .preview-item {
             width: 100px;
@@ -157,7 +157,7 @@
             width: 40px;
             height: 40px;
             border: 3px solid #f0f0f0;
-            border-top: 3px solid #ff6b35;
+            border-top: 3px solid #ff7a1a;
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin: 0 auto 15px;
@@ -206,13 +206,13 @@
 
     <!-- Earnings Chart -->
     <div class="card">
-        <h3><i class="fas fa-chart-line" style="color: #ff6b35;"></i> Earnings Overview</h3>
+        <h3><i class="fas fa-chart-line" style="color: #ff7a1a;"></i> Earnings Overview</h3>
         <canvas id="earningsChart" style="max-height: 300px; width: 100%;"></canvas>
     </div>
 
     <!-- Edit Vendor Details -->
     <div class="card">
-        <h3><i class="fas fa-edit" style="color: #ff6b35;"></i> Edit Your Profile</h3>
+        <h3><i class="fas fa-edit" style="color: #ff7a1a;"></i> Edit Your Profile</h3>
         <div class="form-row">
             <div class="form-group"><label>Business Name</label><input type="text" id="vendorName" placeholder="Enter business name"></div>
             <div class="form-group"><label>Category</label><input type="text" id="vendorCategory" readonly style="background:#f5f5f5;"></div>
@@ -232,7 +232,7 @@
         <div class="form-group">
             <label><i class="fas fa-image"></i> Logo / Profile Photo</label>
             <div class="image-upload-area" onclick="document.getElementById('vendorLogoInput').click()">
-                <i class="fas fa-cloud-upload-alt" style="font-size: 32px; color: #ff6b35;"></i>
+                <i class="fas fa-cloud-upload-alt" style="font-size: 32px; color: #ff7a1a;"></i>
                 <p>Click to upload logo</p>
                 <small style="color:#666;">PNG, JPG, JPEG (Max 5MB)</small>
             </div>
@@ -245,7 +245,7 @@
 
     <!-- Recent Bookings -->
     <div class="card">
-        <h3><i class="fas fa-calendar-check" style="color: #ff6b35;"></i> Recent Bookings</h3>
+        <h3><i class="fas fa-calendar-check" style="color: #ff7a1a;"></i> Recent Bookings</h3>
         <div style="overflow-x:auto;">
             <table style="width:100%;">
                 <thead>
@@ -455,7 +455,7 @@
                     <td>${eventDate}</td>
                     <td>₹${amount.toLocaleString()}</td>
                     <td class="revenue-cell">₹${vendorEarnings.toLocaleString()}</td>
-                    <td><a href="tel:${agentPhone}" style="color:#ff6b35; text-decoration:none;"><i class="fas fa-phone-alt"></i> ${agentPhone}</a></td>
+                    <td><a href="tel:${agentPhone}" style="color:#ff7a1a; text-decoration:none;"><i class="fas fa-phone-alt"></i> ${agentPhone}</a></td>
                     <td><span class="status-badge status-${b.status || 'pending'}">${b.status || 'pending'}</span></td>
                 </tr>
             `;
@@ -501,7 +501,7 @@
                     label: 'Your Earnings (₹)',
                     data: data,
                     backgroundColor: 'rgba(255,107,53,0.7)',
-                    borderColor: '#ff6b35',
+                    borderColor: '#ff7a1a',
                     borderWidth: 1,
                     borderRadius: 8
                 }]

@@ -174,11 +174,11 @@ function Row({
 
 const styles = StyleSheet.create({
   scroll: { padding: 20, paddingBottom: 40 },
-  h1: { fontSize: 24, fontWeight: '800', color: '#1a1a1a' },
-  muted: { color: '#666', marginTop: 6, marginBottom: 16 },
+  h1: { fontSize: 24, fontWeight: '800', color: '#0e2a47' },
+  muted: { color: '#4f6f8d', marginTop: 6, marginBottom: 16 },
   sub: { fontWeight: '700', color: ORANGE, marginTop: 12, marginBottom: 6 },
-  muted2: { color: '#666', fontSize: 12, lineHeight: 18, marginBottom: 6 },
-  card: { marginBottom: 20, backgroundColor: '#fffaf6' },
+  muted2: { color: '#4f6f8d', fontSize: 12, lineHeight: 18, marginBottom: 6 },
+  card: { marginBottom: 20, backgroundColor: '#f5faff' },
   vname: { fontSize: 18, fontWeight: '800', color: ORANGE, marginBottom: 8 },
   row: { color: '#444', marginBottom: 4 },
   section: { fontWeight: '800', color: '#333', marginBottom: 8 },

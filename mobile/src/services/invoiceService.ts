@@ -369,7 +369,7 @@ export function generateInvoiceHTML(d: InvoiceData): string {
     .terms { 
       margin-top: 30px; padding: 15px;
       background: #f8f8f8; border-radius: 8px;
-      font-size: 11px; color: #666; line-height: 1.6;
+      font-size: 11px; color: #4f6f8d; line-height: 1.6;
     }
     .footer { 
       text-align: center; margin-top: 25px;
@@ -412,7 +412,7 @@ export function generateInvoiceHTML(d: InvoiceData): string {
     <div class="party-box">
       <div class="party-title">Billed to (Customer)</div>
       <div style="font-weight:bold;font-size:15px">${escapeXml(c.name)}</div>
-      <div style="color:#666;font-size:13px;margin-top:5px">
+      <div style="color:#4f6f8d;font-size:13px;margin-top:5px">
         ${escapeXml(c.phone)}<br>
         ${escapeXml(c.city)}, ${escapeXml(c.state)}<br>
         ${escapeXml(c.email)}
@@ -421,7 +421,7 @@ export function generateInvoiceHTML(d: InvoiceData): string {
     <div class="party-box">
       <div class="party-title">Service by</div>
       <div style="font-weight:bold;font-size:15px">${escapeXml(v.name)}</div>
-      <div style="color:#666;font-size:13px;margin-top:5px">
+      <div style="color:#4f6f8d;font-size:13px;margin-top:5px">
         ${escapeXml(v.category)}<br>
         ${escapeXml(v.city)}<br>
         ⭐ ${escapeXml(v.rating)}/5 (${escapeXml(v.reviews)} reviews)

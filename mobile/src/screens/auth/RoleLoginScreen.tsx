@@ -61,7 +61,7 @@ export function RoleLoginScreen({ route, navigation }: Props) {
         <Text variant="headlineSmall" style={{ fontWeight: '800', color: accent }}>
           {title}
         </Text>
-        <Text style={{ color: '#666', marginTop: 4, marginBottom: 20 }}>
+        <Text style={{ color: '#4f6f8d', marginTop: 4, marginBottom: 20 }}>
           Sign in with a Firebase user whose Firestore role is {role}.
         </Text>
         {error ? <HelperText type="error">{error}</HelperText> : null}
