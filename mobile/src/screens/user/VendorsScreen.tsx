@@ -22,7 +22,7 @@ type RootNav = NativeStackNavigationProp<UserStackParamList>;
 type Nav = CompositeNavigationProp<TabNav, RootNav>;
 
 /**
- * Vendors “hub” with category tiles; matches StadiumConnect orange / white theme.
+ * Vendors hub with white + light-blue + orange investor-friendly theme.
  */
 export function VendorsScreen() {
   const navigation = useNavigation<Nav>();
@@ -57,18 +57,18 @@ export function VendorsScreen() {
 
 const styles = StyleSheet.create({
   scroll: { padding: 16, paddingBottom: 100 },
-  h1: { fontSize: 26, fontWeight: '800', color: '#1a1a1a' },
-  sub: { color: '#666', marginTop: 8, marginBottom: 20, lineHeight: 22 },
+  h1: { fontSize: 26, fontWeight: '800', color: '#0e2a47' },
+  sub: { color: '#4f6f8d', marginTop: 8, marginBottom: 20, lineHeight: 22 },
   b: { color: ORANGE, fontWeight: '700' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   card: {
     width: '47%',
     minWidth: 150,
-    backgroundColor: '#fff',
+    backgroundColor: '#eef6ff',
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#ffe0d4',
+    borderColor: '#cfe7ff',
     shadowColor: ORANGE_2,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.12,
@@ -76,5 +76,5 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   emoji: { fontSize: 28, marginBottom: 8 },
-  cardT: { fontWeight: '700', color: ORANGE, fontSize: 15 },
+  cardT: { fontWeight: '700', color: '#0e2a47', fontSize: 15 },
 });
