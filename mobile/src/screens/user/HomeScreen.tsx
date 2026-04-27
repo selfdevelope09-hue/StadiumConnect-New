@@ -43,7 +43,7 @@ export function HomeScreen() {
             icon="robot-happy"
             contentStyle={{ paddingVertical: 6 }}
           >
-            Open AI assistant (vendors, tips)
+            Open ConnectAI (vendors, tips)
           </Button>
         </View>
         <Card

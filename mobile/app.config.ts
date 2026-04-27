@@ -2,8 +2,8 @@ import 'dotenv/config';
 import type { ExpoConfig } from 'expo/config';
 
 /**
- * Gemini key: set in `.env` as EXPO_PUBLIC_GEMINI_KEY=... (gitignored) or
- * in EAS / CI. Injected at build time into `expo-constants` `extra`.
+ * ConnectAI (generative API key): set `EXPO_PUBLIC_GEMINI_KEY` in `.env` (gitignored)
+ * or EAS secrets — name is fixed by Expo; powers ConnectAI in the app.
  */
 const config: ExpoConfig = {
   name: 'StadiumConnect',

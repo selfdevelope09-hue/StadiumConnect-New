@@ -77,7 +77,7 @@ const STEP_CHIPS: Record<Step, string[]> = {
 
 const STEP_QUESTIONS: Record<Step, string> = {
   category:
-    'Namaste! 🙏 Main hoon aapka StadiumConnect AI Assistant!\n\nAapko kaunsi service chahiye?',
+    'Namaste! 🙏 Main hoon ConnectAI — StadiumConnect ka smart assistant.\n\nAapko kaunsi service chahiye?',
   city: 'Great choice! 🎯 Aap kaunse city mein service dhundh rahe hain?',
   budget: 'Perfect! Aapka approximate budget kya hai?',
   eventType: 'Kaun sa event plan kar rahe hain aap? 🎉',
@@ -261,7 +261,7 @@ export const AIChatModal: React.FC<Props> = ({
       if (!aiResult) {
         addMessage({
           type: 'ai_text',
-          text: 'AI response mein thodi problem aayi. Kripya .env mein EXPO_PUBLIC_GEMINI_KEY check karo.',
+          text: 'ConnectAI response mein issue aaya. App mein API key (.env) check karo ya thodi der baad try karo.',
         });
         return;
       }
@@ -323,9 +323,9 @@ export const AIChatModal: React.FC<Props> = ({
           <View style={styles.headerLeft}>
             <Text style={styles.headerEmoji}>🤖</Text>
             <View style={styles.headerTitles}>
-              <Text style={styles.headerTitle}>AI Vendor Assistant</Text>
+              <Text style={styles.headerTitle}>ConnectAI</Text>
               <Text style={styles.headerSub}>
-                {isTyping ? 'Soch raha hoon...' : 'Online • Ready to help'}
+                {isTyping ? 'Soch raha hoon...' : 'StadiumConnect · vendor help'}
               </Text>
             </View>
           </View>

@@ -331,7 +331,7 @@ function AIVendorSheetInner({ sheetRef }: InnerProps) {
                   multiline
                 />
                 <Text style={styles.hint}>
-                  We’ll ask Gemini to read this together with your budget and area.
+                  ConnectAI yeh budget aur area ke saath use karega.
                 </Text>
               </View>
             )}

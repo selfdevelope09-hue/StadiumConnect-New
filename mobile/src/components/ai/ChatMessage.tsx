@@ -199,7 +199,7 @@ const ResultsCard = ({
       ))}
 
       <View style={styles.topPickCard}>
-        <Text style={styles.topPickLabel}>⭐ AI की Best Pick</Text>
+        <Text style={styles.topPickLabel}>⭐ ConnectAI pick</Text>
         <Text style={styles.topPickName}>{myPick.vendorName}</Text>
         <Text style={styles.topPickReason}>{myPick.reason}</Text>
         <View style={styles.tipBox}>

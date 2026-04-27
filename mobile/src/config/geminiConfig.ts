@@ -1,9 +1,8 @@
 import Constants from 'expo-constants';
 
 /**
- * Key source: `app.config.ts` → `extra.EXPO_PUBLIC_GEMINI_KEY` (from env at build)
- * and/or Metro-inlined `process.env.EXPO_PUBLIC_GEMINI_KEY` from `.env`.
- * Set `EXPO_PUBLIC_GEMINI_KEY` in `.env` (see `.env.example`) or EAS secrets.
+ * ConnectAI backend: Google Generative API key (Expo still uses env name
+ * `EXPO_PUBLIC_GEMINI_KEY`). Set in `.env` / EAS; never commit real keys.
  */
 export function getGeminiApiKey(): string {
   const extra = Constants.expoConfig?.extra;
